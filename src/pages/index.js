@@ -1,0 +1,8 @@
+export { Home } from './Home'
+export { Login } from './Login'
+export { Cadastro } from './Cadastro'
+export { Dashboard } from './Dashboard'
+export { Rewards } from './Rewards'
+export { Tasks } from './Tasks'
+export { Profile } from './Profile'
+export { Leaderboard } from './Leaderboard'

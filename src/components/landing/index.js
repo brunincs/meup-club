@@ -1,0 +1,7 @@
+export { Hero } from './Hero'
+export { HowItWorks } from './HowItWorks'
+export { Ranking } from './Ranking'
+export { Rewards } from './Rewards'
+export { Statement } from './Statement'
+export { FinalCTA } from './FinalCTA'
+export { Footer } from './Footer'
