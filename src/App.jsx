@@ -9,7 +9,8 @@ import {
   AdminSales,
   AdminUsers,
   AdminTasks,
-  AdminRewards
+  AdminRewards,
+  AdminHistory
 } from '@/pages/admin'
 
 function App() {
@@ -94,6 +95,7 @@ function App() {
           <Route path="/admin/usuarios" element={<AdminUsers />} />
           <Route path="/admin/tarefas" element={<AdminTasks />} />
           <Route path="/admin/recompensas" element={<AdminRewards />} />
+          <Route path="/admin/historico" element={<AdminHistory />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

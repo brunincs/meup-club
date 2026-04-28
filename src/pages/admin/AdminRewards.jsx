@@ -7,7 +7,7 @@ import { format } from '@/services/copy'
 import toast from 'react-hot-toast'
 
 const categoryLabels = {
-  cash: { label: 'Cashback', icon: '$' },
+  cash: { label: 'Crédito disponível', icon: '$' },
   travel: { label: 'Viagem', icon: '✈' },
   experience: { label: 'Experiência', icon: '◆' },
   premium: { label: 'Premium', icon: '★' }

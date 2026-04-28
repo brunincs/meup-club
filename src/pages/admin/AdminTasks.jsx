@@ -5,9 +5,10 @@ import { getAllTasksAdmin, approveTask, rejectTask } from '@/services/adminData'
 import toast from 'react-hot-toast'
 
 const statusConfig = {
-  pending: { label: 'Pendente', color: 'text-amber-400', bgColor: 'bg-amber-500/10', borderColor: 'border-amber-500/20' },
-  approved: { label: 'Aprovada', color: 'text-green-400', bgColor: 'bg-green-500/10', borderColor: 'border-green-500/20' },
-  rejected: { label: 'Rejeitada', color: 'text-red-400', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/20' }
+  pending: { label: 'Aguardando validação', color: 'text-amber-400', bgColor: 'bg-amber-500/10', borderColor: 'border-amber-500/20' },
+  awaiting_validation: { label: 'Aguardando validação', color: 'text-amber-400', bgColor: 'bg-amber-500/10', borderColor: 'border-amber-500/20' },
+  approved: { label: 'Aprovado', color: 'text-green-400', bgColor: 'bg-green-500/10', borderColor: 'border-green-500/20' },
+  rejected: { label: 'Rejeitado', color: 'text-red-400', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/20' }
 }
 
 const taskTypeLabels = {
@@ -52,9 +53,9 @@ export function AdminTasks() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {[
-            { value: 'pending', label: 'Pendentes' },
+            { value: 'pending', label: 'Aguardando validação' },
             { value: 'all', label: 'Todas' },
             { value: 'approved', label: 'Aprovadas' },
             { value: 'rejected', label: 'Rejeitadas' }
@@ -142,7 +143,7 @@ export function AdminTasks() {
         {filteredTasks.length === 0 && (
           <div className="p-8 text-center rounded-xl border border-dark-700/50 bg-dark-800/30">
             <p className="text-sm text-neutral-500">
-              {filter === 'pending' ? 'Nenhuma tarefa pendente' : 'Nenhuma tarefa encontrada'}
+              {filter === 'pending' ? 'Nenhuma tarefa aguardando validação' : 'Nenhuma tarefa encontrada'}
             </p>
           </div>
         )}

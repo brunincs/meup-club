@@ -9,7 +9,8 @@ const navItems = [
   { path: '/admin/vendas', label: 'Vendas', icon: '$' },
   { path: '/admin/usuarios', label: 'Usuários', icon: '◇' },
   { path: '/admin/tarefas', label: 'Tarefas', icon: '✓' },
-  { path: '/admin/recompensas', label: 'Recompensas', icon: '★' }
+  { path: '/admin/recompensas', label: 'Recompensas', icon: '★' },
+  { path: '/admin/historico', label: 'Histórico', icon: '⊙' }
 ]
 
 export function AdminLayout({ children }) {

@@ -1,9 +1,24 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
-import { getAllUsers, updateUserPoints, toggleUserStatus } from '@/services/adminData'
+import { AdvancedFilters } from '@/components/admin/AdvancedFilters'
+import { CreditAdjustModal } from '@/components/admin/CreditAdjustModal'
+import { getAllUsers, updateUserPoints, toggleUserStatus, adjustUserCredits } from '@/services/adminData'
+import { levels } from '@/services/pointsSystem'
 import { format } from '@/services/copy'
 import toast from 'react-hot-toast'
+
+const advancedFiltersConfig = [
+  { key: 'dateFrom', label: 'Cadastro de', type: 'date', field: 'joinDate' },
+  { key: 'dateTo', label: 'Cadastro até', type: 'date', field: 'joinDate' },
+  {
+    key: 'levelId',
+    label: 'Nível',
+    type: 'select',
+    field: 'levelId',
+    options: levels.map(l => ({ value: String(l.id), label: l.name }))
+  }
+]
 
 function EditPointsModal({ user, onClose, onSave }) {
   const [newPoints, setNewPoints] = useState(user.points.toString())
@@ -76,12 +91,26 @@ export function AdminUsers() {
   const [users, setUsers] = useState(getAllUsers())
   const [filter, setFilter] = useState('all')
   const [editingUser, setEditingUser] = useState(null)
+  const [adjustingUser, setAdjustingUser] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [advancedFilterValues, setAdvancedFilterValues] = useState({})
 
   const filteredUsers = users.filter(u => {
     const matchesFilter = filter === 'all' || u.status === filter
     const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           u.email.toLowerCase().includes(searchQuery.toLowerCase())
+
+    // Advanced filters
+    if (advancedFilterValues.dateFrom && new Date(u.joinDate) < new Date(advancedFilterValues.dateFrom)) {
+      return false
+    }
+    if (advancedFilterValues.dateTo && new Date(u.joinDate) > new Date(advancedFilterValues.dateTo)) {
+      return false
+    }
+    if (advancedFilterValues.levelId && String(u.levelId) !== advancedFilterValues.levelId) {
+      return false
+    }
+
     return matchesFilter && matchesSearch
   })
 
@@ -98,6 +127,17 @@ export function AdminUsers() {
     if (toggleUserStatus(userId)) {
       setUsers(getAllUsers())
       toast.success('Status do usuário atualizado')
+    }
+  }
+
+  const handleAdjustCredits = (userId, amount, reason) => {
+    const result = adjustUserCredits(userId, amount, reason)
+    if (result.success) {
+      setUsers(getAllUsers())
+      setAdjustingUser(null)
+      toast.success(`Créditos ajustados (${amount > 0 ? '+' : ''}${amount})`)
+    } else {
+      toast.error(result.message)
     }
   }
 
@@ -118,35 +158,43 @@ export function AdminUsers() {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por nome ou email..."
-              className="w-full px-4 py-2.5 rounded-lg bg-dark-800/50 border border-dark-700/50 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
-            />
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar por nome ou email..."
+                className="w-full px-4 py-2.5 rounded-lg bg-dark-800/50 border border-dark-700/50 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
+              />
+            </div>
+            <div className="flex gap-2">
+              {[
+                { value: 'all', label: 'Todos' },
+                { value: 'active', label: 'Ativos' },
+                { value: 'blocked', label: 'Bloqueados' }
+              ].map(f => (
+                <button
+                  key={f.value}
+                  onClick={() => setFilter(f.value)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    filter === f.value
+                      ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20'
+                      : 'bg-dark-800/50 text-neutral-500 border border-dark-700/50 hover:text-neutral-300'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2">
-            {[
-              { value: 'all', label: 'Todos' },
-              { value: 'active', label: 'Ativos' },
-              { value: 'blocked', label: 'Bloqueados' }
-            ].map(f => (
-              <button
-                key={f.value}
-                onClick={() => setFilter(f.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  filter === f.value
-                    ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20'
-                    : 'bg-dark-800/50 text-neutral-500 border border-dark-700/50 hover:text-neutral-300'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+
+          <AdvancedFilters
+            filters={advancedFiltersConfig}
+            values={advancedFilterValues}
+            onChange={setAdvancedFilterValues}
+          />
         </div>
 
         {/* Users Table */}
@@ -207,6 +255,12 @@ export function AdminUsers() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
                         <button
+                          onClick={() => setAdjustingUser(user)}
+                          className="px-2.5 py-1 rounded-lg text-xs text-accent-gold hover:bg-accent-gold/10 transition-colors"
+                        >
+                          Ajustar
+                        </button>
+                        <button
                           onClick={() => setEditingUser(user)}
                           className="px-2.5 py-1 rounded-lg text-xs text-neutral-400 hover:text-neutral-200 hover:bg-dark-700/50 transition-colors"
                         >
@@ -244,6 +298,15 @@ export function AdminUsers() {
           user={editingUser}
           onClose={() => setEditingUser(null)}
           onSave={handleUpdatePoints}
+        />
+      )}
+
+      {/* Credit Adjust Modal */}
+      {adjustingUser && (
+        <CreditAdjustModal
+          user={adjustingUser}
+          onClose={() => setAdjustingUser(null)}
+          onAdjust={handleAdjustCredits}
         />
       )}
     </AdminLayout>

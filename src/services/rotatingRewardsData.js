@@ -20,8 +20,8 @@ export const rotatingRewardsPool = [
   },
   {
     id: 'rot_2',
-    name: 'Cashback Dobrado',
-    description: 'Receba cashback em dobro na sua próxima indicação convertida',
+    name: 'Crédito Dobrado',
+    description: 'Receba crédito em dobro na sua próxima indicação convertida',
     points_required: 500,
     category: 'cash',
     realCost: 25,

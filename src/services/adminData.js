@@ -1,7 +1,7 @@
 // Serviço de Dados Administrativos - Meup Club
 // Gerenciamento completo do sistema
 
-import { levels, rewardsTable } from './pointsSystem'
+import { levels, rewardsTable, calculateSaleCredits, creditsConfig, validateMonthlyWithdrawal } from './pointsSystem'
 
 // ============================================
 // MOCK DE USUÁRIOS
@@ -34,14 +34,71 @@ export const mockReferralsAdmin = [
 ]
 
 // ============================================
-// MOCK DE VENDAS
+// MOCK DE VENDAS (com novo sistema de créditos)
 // ============================================
 export const mockSales = [
-  { id: '1', clientName: 'Roberto Almeida', referralId: '3', referrerId: '1', referrerName: 'Marina Silva', value: 5000, profit: 500, pointsGenerated: 500, date: '2024-04-05' },
-  { id: '2', clientName: 'Camila Santos', referralId: '4', referrerId: '3', referrerName: 'Ana Costa', value: 3500, profit: 350, pointsGenerated: 350, date: '2024-04-03' },
-  { id: '3', clientName: 'Larissa Mendes', referralId: '6', referrerId: '2', referrerName: 'Pedro Lima', value: 8000, profit: 800, pointsGenerated: 800, date: '2024-03-28' },
-  { id: '4', clientName: 'Patrícia Lima', referralId: '8', referrerId: '1', referrerName: 'Marina Silva', value: 4500, profit: 450, pointsGenerated: 450, date: '2024-03-25' }
+  { id: '1', clientName: 'Roberto Almeida', clientId: null, referralId: '3', referrerId: '1', referrerName: 'Marina Silva', value: 5000, profit: 500, referrerCredits: 500, buyerCredits: 150, totalCredits: 650, estimatedCost: 32.50, costPercentage: 6.5, date: '2024-04-05' },
+  { id: '2', clientName: 'Camila Santos', clientId: null, referralId: '4', referrerId: '3', referrerName: 'Ana Costa', value: 3500, profit: 350, referrerCredits: 350, buyerCredits: 105, totalCredits: 455, estimatedCost: 22.75, costPercentage: 6.5, date: '2024-04-03' },
+  { id: '3', clientName: 'Larissa Mendes', clientId: null, referralId: '6', referrerId: '2', referrerName: 'Pedro Lima', value: 8000, profit: 800, referrerCredits: 800, buyerCredits: 240, totalCredits: 1040, estimatedCost: 52.00, costPercentage: 6.5, date: '2024-03-28' },
+  { id: '4', clientName: 'Patrícia Lima', clientId: null, referralId: '8', referrerId: '1', referrerName: 'Marina Silva', value: 4500, profit: 450, referrerCredits: 450, buyerCredits: 135, totalCredits: 585, estimatedCost: 29.25, costPercentage: 6.5, date: '2024-03-25' }
 ]
+
+// ============================================
+// MOCK DE SAQUES MENSAIS (controle de limite)
+// ============================================
+export const mockWithdrawals = []
+
+export function getUserMonthlyWithdrawals(userId, month = new Date().getMonth(), year = new Date().getFullYear()) {
+  return mockWithdrawals
+    .filter(w => {
+      const date = new Date(w.createdAt)
+      return w.userId === userId && date.getMonth() === month && date.getFullYear() === year
+    })
+    .reduce((sum, w) => sum + w.amount, 0)
+}
+
+export function requestWithdrawal(userId, amount, type = 'cash') {
+  const user = mockUsers.find(u => u.id === userId)
+  if (!user) {
+    return { success: false, message: 'Usuário não encontrado' }
+  }
+
+  // Verificar saldo
+  if (user.points < amount) {
+    return { success: false, message: 'Saldo insuficiente' }
+  }
+
+  // Verificar limite mensal
+  const currentMonthWithdrawals = getUserMonthlyWithdrawals(userId)
+  const validation = validateMonthlyWithdrawal(currentMonthWithdrawals, amount)
+
+  if (!validation.canWithdraw) {
+    return {
+      success: false,
+      message: `Limite mensal excedido. Disponível: R$ ${validation.remainingLimit.toFixed(2)} de R$ ${validation.monthlyLimit.toFixed(2)}`,
+      validation
+    }
+  }
+
+  // Registrar saque
+  const withdrawal = {
+    id: String(mockWithdrawals.length + 1),
+    userId,
+    userName: user.name,
+    amount: validation.allowedAmount,
+    type,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  }
+  mockWithdrawals.push(withdrawal)
+
+  return {
+    success: true,
+    message: 'Solicitação de saque registrada',
+    withdrawal,
+    validation
+  }
+}
 
 // ============================================
 // MOCK DE TASKS PENDENTES
@@ -79,6 +136,13 @@ export function getAdminStats() {
   const totalPointsDistributed = mockUsers.reduce((sum, u) => sum + u.points, 0)
   const pendingTasks = mockPendingTasks.filter(t => t.status === 'pending').length
 
+  // Novos campos: créditos detalhados
+  const totalReferrerCredits = mockSales.reduce((sum, s) => sum + (s.referrerCredits || s.profit || 0), 0)
+  const totalBuyerCredits = mockSales.reduce((sum, s) => sum + (s.buyerCredits || 0), 0)
+  const totalCreditsDistributed = totalReferrerCredits + totalBuyerCredits
+  const totalEstimatedCost = mockSales.reduce((sum, s) => sum + (s.estimatedCost || 0), 0)
+  const avgCostPercentage = totalProfit > 0 ? (totalEstimatedCost / totalProfit) * 100 : 0
+
   return {
     totalUsers,
     activeUsers,
@@ -89,7 +153,21 @@ export function getAdminStats() {
     totalSalesValue,
     totalProfit,
     totalPointsDistributed,
-    pendingTasks
+    pendingTasks,
+    // Novos campos
+    totalReferrerCredits,
+    totalBuyerCredits,
+    totalCreditsDistributed,
+    totalEstimatedCost,
+    avgCostPercentage: Math.round(avgCostPercentage * 10) / 10,
+    // Configurações atuais
+    config: {
+      referrerPercentage: creditsConfig.referrerPercentage * 100,
+      buyerPercentage: creditsConfig.buyerPercentage * 100,
+      minProfit: creditsConfig.minProfitToGenerateCredits,
+      monthlyWithdrawalLimit: creditsConfig.monthlyWithdrawalLimit,
+      maxExtraBonusPercentage: creditsConfig.maxExtraBonusPercentage * 100
+    }
   }
 }
 
@@ -117,41 +195,101 @@ export function getAllReferrals() {
   return mockReferralsAdmin
 }
 
-export function approveReferral(referralId, saleValue, profit) {
+export function approveReferral(referralId, saleValue, profit, clientId = null) {
   const referral = mockReferralsAdmin.find(r => r.id === referralId)
-  if (referral) {
-    referral.status = 'approved'
-    referral.value = saleValue
-    referral.profit = profit
-
-    // Adicionar pontos ao usuário
-    const user = mockUsers.find(u => u.id === referral.referrerId)
-    if (user) {
-      user.points += profit // 1 real de lucro = 1 ponto
-    }
-
-    // Registrar venda
-    mockSales.push({
-      id: String(mockSales.length + 1),
-      clientName: referral.clientName,
-      referralId: referral.id,
-      referrerId: referral.referrerId,
-      referrerName: referral.referrerName,
-      value: saleValue,
-      profit: profit,
-      pointsGenerated: profit,
-      date: new Date().toISOString().split('T')[0]
-    })
-
-    return true
+  if (!referral) {
+    return { success: false, message: 'Indicação não encontrada' }
   }
-  return false
+
+  // Calcular créditos usando o novo sistema
+  const creditsCalc = calculateSaleCredits(profit)
+
+  // Verificar se lucro atinge o mínimo
+  if (!creditsCalc.eligible) {
+    return {
+      success: false,
+      message: creditsCalc.reason,
+      minProfit: creditsConfig.minProfitToGenerateCredits
+    }
+  }
+
+  referral.status = 'approved'
+  referral.value = saleValue
+  referral.profit = profit
+
+  // Adicionar créditos ao indicador (100% do lucro)
+  const user = mockUsers.find(u => u.id === referral.referrerId)
+  if (user) {
+    user.points += creditsCalc.referrerCredits
+  }
+
+  // Adicionar créditos ao comprador (30% do lucro) - se tiver clientId
+  let buyer = null
+  if (clientId) {
+    buyer = mockUsers.find(u => u.id === clientId)
+    if (buyer) {
+      buyer.points += creditsCalc.buyerCredits
+    }
+  }
+
+  // Registrar venda com detalhamento de créditos
+  const sale = {
+    id: String(mockSales.length + 1),
+    clientName: referral.clientName,
+    clientId,
+    referralId: referral.id,
+    referrerId: referral.referrerId,
+    referrerName: referral.referrerName,
+    value: saleValue,
+    profit: profit,
+    referrerCredits: creditsCalc.referrerCredits,
+    buyerCredits: creditsCalc.buyerCredits,
+    totalCredits: creditsCalc.totalCredits,
+    estimatedCost: creditsCalc.estimatedCost,
+    costPercentage: creditsCalc.costPercentage,
+    date: new Date().toISOString().split('T')[0]
+  }
+  mockSales.push(sale)
+
+  // Registrar no audit log
+  logAdminAction({
+    actionType: 'approve',
+    resourceType: 'referral',
+    resourceId: referralId,
+    affectedUserId: referral.referrerId,
+    affectedUserName: referral.referrerName,
+    newValue: {
+      saleValue,
+      profit,
+      referrerCredits: creditsCalc.referrerCredits,
+      buyerCredits: creditsCalc.buyerCredits,
+      costPercentage: creditsCalc.costPercentage
+    },
+    description: `Indicação aprovada: ${referral.clientName} - R$${saleValue} | Indicador: +${creditsCalc.referrerCredits} | Comprador: +${creditsCalc.buyerCredits}`
+  })
+
+  return {
+    success: true,
+    sale,
+    credits: creditsCalc
+  }
 }
 
 export function rejectReferral(referralId) {
   const referral = mockReferralsAdmin.find(r => r.id === referralId)
   if (referral) {
     referral.status = 'rejected'
+
+    // Registrar no audit log
+    logAdminAction({
+      actionType: 'reject',
+      resourceType: 'referral',
+      resourceId: referralId,
+      affectedUserId: referral.referrerId,
+      affectedUserName: referral.referrerName,
+      description: `Indicação rejeitada: ${referral.clientName}`
+    })
+
     return true
   }
   return false
@@ -164,45 +302,123 @@ export function getAllSales() {
   return mockSales
 }
 
-export function registerSale(clientName, referralCode, saleValue, profit) {
-  // Encontrar usuário pelo código (simplificado - usando nome)
-  const user = mockUsers.find(u => u.name.toLowerCase().includes(referralCode.toLowerCase()))
+export function registerSale(clientName, referralCode, saleValue, profit, existingReferralId = null, clientId = null) {
+  let user = null
+  let referral = null
 
-  if (!user) {
-    return { success: false, message: 'Código de indicação não encontrado' }
+  // Calcular créditos usando o novo sistema
+  const creditsCalc = calculateSaleCredits(profit)
+
+  // Verificar se lucro atinge o mínimo
+  if (!creditsCalc.eligible) {
+    return {
+      success: false,
+      message: creditsCalc.reason,
+      minProfit: creditsConfig.minProfitToGenerateCredits
+    }
   }
 
-  // Criar indicação
-  const newReferral = {
-    id: String(mockReferralsAdmin.length + 1),
-    clientName,
-    referrerId: user.id,
-    referrerName: user.name,
-    status: 'approved',
-    date: new Date().toISOString().split('T')[0],
-    value: saleValue,
-    profit: profit
+  // Se um ID de indicação existente foi fornecido, usar ele
+  if (existingReferralId) {
+    referral = mockReferralsAdmin.find(r => r.id === existingReferralId)
+    if (!referral) {
+      return { success: false, message: 'Indicação não encontrada' }
+    }
+    user = mockUsers.find(u => u.id === referral.referrerId)
+    if (!user) {
+      return { success: false, message: 'Usuário indicador não encontrado' }
+    }
+
+    // Atualizar a indicação existente
+    referral.status = 'approved'
+    referral.value = saleValue
+    referral.profit = profit
+
+    // Usar o nome do cliente da indicação original se não foi informado
+    if (!clientName || clientName.trim() === '') {
+      clientName = referral.clientName
+    }
+  } else {
+    // Encontrar usuário pelo código (simplificado - usando nome)
+    user = mockUsers.find(u => u.name.toLowerCase().includes(referralCode.toLowerCase()))
+
+    if (!user) {
+      return { success: false, message: 'Código de indicação não encontrado' }
+    }
+
+    // Criar indicação
+    referral = {
+      id: String(mockReferralsAdmin.length + 1),
+      clientName,
+      referrerId: user.id,
+      referrerName: user.name,
+      status: 'approved',
+      date: new Date().toISOString().split('T')[0],
+      value: saleValue,
+      profit: profit
+    }
+    mockReferralsAdmin.push(referral)
+    user.referrals += 1
   }
-  mockReferralsAdmin.push(newReferral)
 
-  // Adicionar pontos
-  user.points += profit
-  user.referrals += 1
+  // Adicionar créditos ao indicador (100% do lucro)
+  user.points += creditsCalc.referrerCredits
 
-  // Registrar venda
-  mockSales.push({
+  // Adicionar créditos ao comprador (30% do lucro) - se tiver clientId
+  let buyer = null
+  if (clientId) {
+    buyer = mockUsers.find(u => u.id === clientId)
+    if (buyer) {
+      buyer.points += creditsCalc.buyerCredits
+    }
+  }
+
+  // Registrar venda com detalhamento de créditos
+  const sale = {
     id: String(mockSales.length + 1),
     clientName,
-    referralId: newReferral.id,
+    clientId,
+    referralId: referral.id,
     referrerId: user.id,
     referrerName: user.name,
     value: saleValue,
     profit: profit,
-    pointsGenerated: profit,
+    referrerCredits: creditsCalc.referrerCredits,
+    buyerCredits: creditsCalc.buyerCredits,
+    totalCredits: creditsCalc.totalCredits,
+    estimatedCost: creditsCalc.estimatedCost,
+    costPercentage: creditsCalc.costPercentage,
     date: new Date().toISOString().split('T')[0]
+  }
+  mockSales.push(sale)
+
+  // Atualizar a indicação com o sale_id (vínculo bidirecional)
+  referral.saleId = sale.id
+
+  // Registrar no audit log
+  logAdminAction({
+    actionType: 'approve',
+    resourceType: 'sale',
+    resourceId: sale.id,
+    affectedUserId: user.id,
+    affectedUserName: user.name,
+    newValue: {
+      saleValue,
+      profit,
+      referrerCredits: creditsCalc.referrerCredits,
+      buyerCredits: creditsCalc.buyerCredits,
+      totalCredits: creditsCalc.totalCredits,
+      costPercentage: creditsCalc.costPercentage
+    },
+    description: `Venda registrada: ${clientName} - R$${saleValue} | Indicador: +${creditsCalc.referrerCredits} | Comprador: +${creditsCalc.buyerCredits}`
   })
 
-  return { success: true, message: 'Venda registrada com sucesso', pointsAdded: profit }
+  return {
+    success: true,
+    message: 'Venda registrada com sucesso',
+    sale,
+    credits: creditsCalc
+  }
 }
 
 // ============================================
@@ -235,7 +451,21 @@ export function updateUserPoints(userId, newPoints) {
 export function toggleUserStatus(userId) {
   const user = mockUsers.find(u => u.id === userId)
   if (user) {
+    const oldStatus = user.status
     user.status = user.status === 'active' ? 'blocked' : 'active'
+
+    // Registrar no audit log
+    logAdminAction({
+      actionType: 'edit',
+      resourceType: 'user',
+      resourceId: userId,
+      affectedUserId: userId,
+      affectedUserName: user.name,
+      oldValue: { status: oldStatus },
+      newValue: { status: user.status },
+      description: `Status alterado: ${oldStatus} → ${user.status}`
+    })
+
     return true
   }
   return false
@@ -261,6 +491,18 @@ export function approveTask(taskId) {
     if (user) {
       user.points += task.points
     }
+
+    // Registrar no audit log
+    logAdminAction({
+      actionType: 'approve',
+      resourceType: 'task',
+      resourceId: taskId,
+      affectedUserId: task.userId,
+      affectedUserName: task.userName,
+      newValue: { points: task.points },
+      description: `Tarefa aprovada: ${task.taskName} (+${task.points} créditos)`
+    })
+
     return true
   }
   return false
@@ -270,6 +512,17 @@ export function rejectTask(taskId) {
   const task = mockPendingTasks.find(t => t.id === taskId)
   if (task) {
     task.status = 'rejected'
+
+    // Registrar no audit log
+    logAdminAction({
+      actionType: 'reject',
+      resourceType: 'task',
+      resourceId: taskId,
+      affectedUserId: task.userId,
+      affectedUserName: task.userName,
+      description: `Tarefa rejeitada: ${task.taskName}`
+    })
+
     return true
   }
   return false
@@ -285,8 +538,20 @@ export function getAllRewardsAdmin() {
 export function toggleRewardStatus(rewardId) {
   const reward = mockRewardsAdmin.find(r => r.id === rewardId)
   if (reward) {
+    const oldStatus = reward.isActive
     reward.isActive = !reward.isActive
     reward.lastEdited = new Date().toISOString().split('T')[0]
+
+    // Registrar no audit log
+    logAdminAction({
+      actionType: 'edit',
+      resourceType: 'reward',
+      resourceId: rewardId,
+      oldValue: { isActive: oldStatus },
+      newValue: { isActive: reward.isActive },
+      description: `Recompensa ${reward.name}: ${oldStatus ? 'desativada' : 'ativada'}`
+    })
+
     return true
   }
   return false
@@ -295,9 +560,142 @@ export function toggleRewardStatus(rewardId) {
 export function updateReward(rewardId, updates) {
   const reward = mockRewardsAdmin.find(r => r.id === rewardId)
   if (reward) {
+    const oldValues = { name: reward.name, description: reward.description, points_required: reward.points_required }
     Object.assign(reward, updates)
     reward.lastEdited = new Date().toISOString().split('T')[0]
+
+    // Registrar no audit log
+    logAdminAction({
+      actionType: 'edit',
+      resourceType: 'reward',
+      resourceId: rewardId,
+      oldValue: oldValues,
+      newValue: updates,
+      description: `Recompensa editada: ${reward.name}`
+    })
+
     return true
   }
   return false
+}
+
+// ============================================
+// AJUSTE MANUAL DE CRÉDITOS
+// ============================================
+export const mockCreditAdjustments = []
+
+export function adjustUserCredits(userId, amount, reason, adminName = 'Admin') {
+  const user = mockUsers.find(u => u.id === userId)
+  if (!user) {
+    return { success: false, message: 'Usuário não encontrado' }
+  }
+
+  const oldPoints = user.points
+  const newPoints = Math.max(0, user.points + amount)
+  user.points = newPoints
+
+  // Recalcular nível
+  for (let i = levels.length - 1; i >= 0; i--) {
+    if (newPoints >= levels[i].minPoints) {
+      user.levelId = levels[i].id
+      break
+    }
+  }
+
+  // Registrar ajuste
+  const adjustment = {
+    id: String(mockCreditAdjustments.length + 1),
+    userId,
+    userName: user.name,
+    adminName,
+    amount,
+    oldBalance: oldPoints,
+    newBalance: newPoints,
+    reason,
+    createdAt: new Date().toISOString()
+  }
+  mockCreditAdjustments.push(adjustment)
+
+  // Registrar no audit log
+  logAdminAction({
+    actionType: 'credit_adjust',
+    resourceType: 'user',
+    resourceId: userId,
+    affectedUserId: userId,
+    affectedUserName: user.name,
+    oldValue: { points: oldPoints },
+    newValue: { points: newPoints },
+    description: `Ajuste de ${amount > 0 ? '+' : ''}${amount} créditos. Motivo: ${reason}`
+  })
+
+  return {
+    success: true,
+    message: `Créditos ajustados com sucesso`,
+    oldBalance: oldPoints,
+    newBalance: newPoints,
+    adjustment
+  }
+}
+
+export function getCreditAdjustments(userId = null) {
+  if (userId) {
+    return mockCreditAdjustments.filter(a => a.userId === userId)
+  }
+  return mockCreditAdjustments
+}
+
+// ============================================
+// HISTÓRICO DE AÇÕES (Audit Log)
+// ============================================
+export const mockAuditLogs = []
+
+export function logAdminAction({
+  adminId = 'admin-1',
+  adminName = 'Admin',
+  actionType,
+  resourceType,
+  resourceId,
+  affectedUserId,
+  affectedUserName,
+  oldValue = null,
+  newValue = null,
+  description
+}) {
+  const log = {
+    id: String(mockAuditLogs.length + 1),
+    adminId,
+    adminName,
+    actionType,
+    resourceType,
+    resourceId,
+    affectedUserId,
+    affectedUserName,
+    oldValue,
+    newValue,
+    description,
+    createdAt: new Date().toISOString()
+  }
+  mockAuditLogs.unshift(log) // Adiciona no início para ordenar por mais recente
+  return log
+}
+
+export function getAuditLogs(filters = {}) {
+  let logs = [...mockAuditLogs]
+
+  if (filters.actionType) {
+    logs = logs.filter(l => l.actionType === filters.actionType)
+  }
+  if (filters.resourceType) {
+    logs = logs.filter(l => l.resourceType === filters.resourceType)
+  }
+  if (filters.dateFrom) {
+    logs = logs.filter(l => new Date(l.createdAt) >= new Date(filters.dateFrom))
+  }
+  if (filters.dateTo) {
+    const endDate = new Date(filters.dateTo)
+    endDate.setHours(23, 59, 59, 999)
+    logs = logs.filter(l => new Date(l.createdAt) <= endDate)
+  }
+
+  return logs
 }

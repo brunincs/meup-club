@@ -2,6 +2,27 @@
 // Economia interna equilibrada e sustentável
 
 // ============================================
+// CONFIGURAÇÃO PRINCIPAL DE CRÉDITOS
+// ============================================
+export const creditsConfig = {
+  // Distribuição de créditos (% do lucro)
+  referrerPercentage: 1.0,    // 100% do lucro para o indicador
+  buyerPercentage: 0.30,      // 30% do lucro para o comprador
+
+  // Condição mínima para gerar créditos
+  minProfitToGenerateCredits: 50, // R$50 mínimo de lucro
+
+  // Limite mensal de saque
+  monthlyWithdrawalLimit: 300, // R$300 máximo por mês
+
+  // Limite de bônus extras (% do total de créditos de vendas)
+  maxExtraBonusPercentage: 0.20, // 20% máximo
+
+  // Custo real estimado por crédito (para cálculo de sustentabilidade)
+  creditCostRatio: 0.05 // R$0.05 por crédito
+}
+
+// ============================================
 // CONFIGURAÇÃO DE MULTIPLICADORES
 // ============================================
 export const multipliers = {
@@ -46,7 +67,7 @@ export const levels = [
     minPoints: 4000,
     maxPoints: 7999,
     bonusMultiplier: 1.15,
-    perks: ['15% bônus nos pontos', 'Suporte VIP', 'Cashback extra']
+    perks: ['15% bônus nos pontos', 'Suporte VIP', 'Crédito extra para viagem']
   },
   {
     id: 5,
@@ -239,8 +260,59 @@ export const extraPointsConfig = {
     { id: 'anniversary', points: 200, name: 'Aniversário no programa', yearly: true }
   ],
 
-  // Limite de segurança: pontos extras máximo 25% do total
-  maxExtraPointsRatio: 0.25
+  // Limite de segurança: pontos extras máximo 20% do total (alinhado com creditsConfig)
+  maxExtraPointsRatio: creditsConfig.maxExtraBonusPercentage
+}
+
+// ============================================
+// CÁLCULO DE CRÉDITOS POR VENDA
+// ============================================
+
+/**
+ * Calcula os créditos gerados por uma venda
+ * @param {number} profit - Lucro da venda em reais
+ * @param {string} type - Tipo de multiplicador (opcional)
+ * @returns {object} - Detalhamento dos créditos
+ */
+export function calculateSaleCredits(profit, type = 'padrao') {
+  const config = creditsConfig
+  const multiplier = multipliers[type]?.value || 1
+
+  // Verificar lucro mínimo
+  if (profit < config.minProfitToGenerateCredits) {
+    return {
+      eligible: false,
+      reason: `Lucro mínimo de R$${config.minProfitToGenerateCredits} não atingido`,
+      profit,
+      referrerCredits: 0,
+      buyerCredits: 0,
+      totalCredits: 0,
+      estimatedCost: 0,
+      costPercentage: 0
+    }
+  }
+
+  // Calcular créditos base
+  const baseReferrerCredits = Math.floor(profit * config.referrerPercentage * multiplier)
+  const baseBuyerCredits = Math.floor(profit * config.buyerPercentage * multiplier)
+  const totalCredits = baseReferrerCredits + baseBuyerCredits
+
+  // Calcular custo estimado
+  const estimatedCost = totalCredits * config.creditCostRatio
+  const costPercentage = (estimatedCost / profit) * 100
+
+  return {
+    eligible: true,
+    profit,
+    multiplier,
+    multiplierLabel: multipliers[type]?.label || 'Padrão',
+    referrerCredits: baseReferrerCredits,
+    buyerCredits: baseBuyerCredits,
+    totalCredits,
+    estimatedCost,
+    costPercentage: Math.round(costPercentage * 10) / 10,
+    marginRetained: Math.round((100 - costPercentage) * 10) / 10
+  }
 }
 
 // ============================================
@@ -314,21 +386,83 @@ export function calculateLevel(points) {
 }
 
 /**
- * Valida se pontos extras estão dentro do limite de segurança
- * @param {number} salePoints - Pontos de vendas
- * @param {number} extraPoints - Pontos extras (CPA + tasks)
- * @returns {object} - Validação e pontos ajustados
+ * Valida se pontos extras estão dentro do limite de segurança (20%)
+ * @param {number} saleCredits - Créditos de vendas
+ * @param {number} extraCredits - Créditos extras (CPA + tasks)
+ * @returns {object} - Validação e créditos ajustados
  */
-export function validateExtraPoints(salePoints, extraPoints) {
-  const maxAllowed = salePoints * extraPointsConfig.maxExtraPointsRatio
-  const isValid = extraPoints <= maxAllowed
+export function validateExtraCredits(saleCredits, extraCredits) {
+  const maxAllowed = saleCredits * creditsConfig.maxExtraBonusPercentage
+  const isValid = extraCredits <= maxAllowed
 
   return {
     isValid,
     maxAllowed: Math.floor(maxAllowed),
-    extraPoints,
-    adjustedExtra: Math.min(extraPoints, Math.floor(maxAllowed)),
-    excess: isValid ? 0 : extraPoints - Math.floor(maxAllowed)
+    extraCredits,
+    adjustedExtra: Math.min(extraCredits, Math.floor(maxAllowed)),
+    excess: isValid ? 0 : extraCredits - Math.floor(maxAllowed),
+    limitPercentage: creditsConfig.maxExtraBonusPercentage * 100
+  }
+}
+
+// Alias para compatibilidade
+export const validateExtraPoints = validateExtraCredits
+
+/**
+ * Verifica o limite de saque mensal do usuário
+ * @param {number} currentMonthWithdrawals - Total já sacado no mês
+ * @param {number} requestedAmount - Valor solicitado para saque
+ * @returns {object} - Validação e valores permitidos
+ */
+export function validateMonthlyWithdrawal(currentMonthWithdrawals, requestedAmount) {
+  const limit = creditsConfig.monthlyWithdrawalLimit
+  const remaining = Math.max(0, limit - currentMonthWithdrawals)
+  const canWithdraw = requestedAmount <= remaining
+  const allowedAmount = Math.min(requestedAmount, remaining)
+
+  return {
+    canWithdraw,
+    monthlyLimit: limit,
+    alreadyWithdrawn: currentMonthWithdrawals,
+    remainingLimit: remaining,
+    requestedAmount,
+    allowedAmount,
+    exceededBy: canWithdraw ? 0 : requestedAmount - remaining
+  }
+}
+
+/**
+ * Calcula o resumo financeiro de uma venda para exibição no admin
+ * @param {number} profit - Lucro da venda
+ * @param {string} type - Tipo de multiplicador
+ * @returns {object} - Resumo completo para exibição
+ */
+export function getSaleFinancialSummary(profit, type = 'padrao') {
+  const credits = calculateSaleCredits(profit, type)
+
+  if (!credits.eligible) {
+    return {
+      ...credits,
+      summary: {
+        profit: `R$ ${profit.toFixed(2)}`,
+        referrerCredits: '0 (lucro insuficiente)',
+        buyerCredits: '0 (lucro insuficiente)',
+        totalCost: 'R$ 0,00',
+        costPercentage: '0%'
+      }
+    }
+  }
+
+  return {
+    ...credits,
+    summary: {
+      profit: `R$ ${profit.toFixed(2)}`,
+      referrerCredits: `${credits.referrerCredits} créditos`,
+      buyerCredits: `${credits.buyerCredits} créditos`,
+      totalCost: `R$ ${credits.estimatedCost.toFixed(2)}`,
+      costPercentage: `${credits.costPercentage}%`,
+      marginRetained: `${credits.marginRetained}%`
+    }
   }
 }
 

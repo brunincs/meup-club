@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
+import { AdvancedFilters, applyFilters } from '@/components/admin/AdvancedFilters'
 import { getAllReferrals, approveReferral, rejectReferral } from '@/services/adminData'
 import toast from 'react-hot-toast'
 
@@ -88,14 +89,48 @@ function ApproveModal({ referral, onClose, onApprove }) {
   )
 }
 
+const advancedFiltersConfig = [
+  { key: 'dateFrom', label: 'Data de', type: 'date', field: 'date' },
+  { key: 'dateTo', label: 'Data até', type: 'date', field: 'date' },
+  { key: 'clientName', label: 'Nome do cliente', type: 'text', field: 'clientName', placeholder: 'Buscar cliente...' },
+  { key: 'referrerName', label: 'Indicador', type: 'text', field: 'referrerName', placeholder: 'Buscar indicador...' }
+]
+
 export function AdminReferrals() {
   const [referrals, setReferrals] = useState(getAllReferrals())
   const [filter, setFilter] = useState('all')
   const [approveModal, setApproveModal] = useState(null)
+  const [advancedFilterValues, setAdvancedFilterValues] = useState({})
 
-  const filteredReferrals = filter === 'all'
+  // Apply status filter first
+  const statusFiltered = filter === 'all'
     ? referrals
     : referrals.filter(r => r.status === filter)
+
+  // Then apply advanced filters
+  const filteredReferrals = applyAdvancedFilters(statusFiltered, advancedFilterValues)
+
+  function applyAdvancedFilters(data, filterValues) {
+    return data.filter(item => {
+      // Date from
+      if (filterValues.dateFrom && new Date(item.date) < new Date(filterValues.dateFrom)) {
+        return false
+      }
+      // Date to
+      if (filterValues.dateTo && new Date(item.date) > new Date(filterValues.dateTo)) {
+        return false
+      }
+      // Client name
+      if (filterValues.clientName && !item.clientName.toLowerCase().includes(filterValues.clientName.toLowerCase())) {
+        return false
+      }
+      // Referrer name
+      if (filterValues.referrerName && !item.referrerName.toLowerCase().includes(filterValues.referrerName.toLowerCase())) {
+        return false
+      }
+      return true
+    })
+  }
 
   const handleApprove = (referralId, saleValue, profit) => {
     if (approveReferral(referralId, saleValue, profit)) {
@@ -129,25 +164,33 @@ export function AdminReferrals() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2">
-          {[
-            { value: 'all', label: 'Todas' },
-            { value: 'pending', label: 'Pendentes' },
-            { value: 'approved', label: 'Aprovadas' },
-            { value: 'rejected', label: 'Rejeitadas' }
-          ].map(f => (
-            <button
-              key={f.value}
-              onClick={() => setFilter(f.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                filter === f.value
-                  ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20'
-                  : 'bg-dark-800/50 text-neutral-500 border border-dark-700/50 hover:text-neutral-300'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'all', label: 'Todas' },
+              { value: 'pending', label: 'Pendentes' },
+              { value: 'approved', label: 'Aprovadas' },
+              { value: 'rejected', label: 'Rejeitadas' }
+            ].map(f => (
+              <button
+                key={f.value}
+                onClick={() => setFilter(f.value)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  filter === f.value
+                    ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20'
+                    : 'bg-dark-800/50 text-neutral-500 border border-dark-700/50 hover:text-neutral-300'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          <AdvancedFilters
+            filters={advancedFiltersConfig}
+            values={advancedFilterValues}
+            onChange={setAdvancedFilterValues}
+          />
         </div>
 
         {/* Table */}

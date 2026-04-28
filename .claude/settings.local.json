@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start \"\")",
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(dir:*)",
+      "Bash(npm install:*)",
+      "Bash(vercel login:*)",
+      "Bash(vercel link:*)",
+      "Bash(vercel env add:*)",
+      "Bash(vercel:*)",
+      "Bash(start https://meup-club.vercel.app)",
+      "Bash(start https://supabase.com/dashboard/project/dmemturmddbzbspvdgoh/sql)",
+      "Bash(node -e:*)",
+      "Bash(curl:*)",
+      "Bash(curl.exe:*)",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri ''https://dmemturmddbzbspvdgoh.supabase.co/rest/v1/rewards?select=name,points_required'' -Headers @{apikey=''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZW10dXJtZGRiYnpzcHZkZ29oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MzAyNTAsImV4cCI6MjA5MjAwNjI1MH0.aXqHDEpuwts6tR5yZnrzO9bs6joZADj1K6tKdRaNBMY''} | ConvertTo-Json\")",
+      "Bash(powershell -Command:*)",
+      "Bash(wc:*)",
+      "Bash(npm run build:*)",
+      "Bash(where:*)",
+      "Bash(clip.exe:*)",
+      "Bash(start \"\" \"https://supabase.com/dashboard/project/dmemturmddbbzspvdgoh/sql/new\")",
+      "Bash(start \"\" \"http://localhost:5173\")"
+    ]
+  }
+}
