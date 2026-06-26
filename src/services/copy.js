@@ -1,30 +1,64 @@
 // Copy Centralizado - Meup Club
 // Comunicação premium, elegante e aspiracional
-// Variações naturais para evitar repetição
+// Inspirado em: Amex Platinum, Nomad, XP Visa Infinite, LATAM Pass Black
 
 // ============================================
-// VARIAÇÕES DE TERMINOLOGIA (evitar repetição)
+// CLASSES DE VOO (NÍVEIS)
+// ============================================
+export const levels = {
+  names: {
+    1: 'Classe Econômica',
+    2: 'Premium Economy',
+    3: 'Classe Executiva',
+    4: 'Primeira Classe',
+    5: 'Meup Exclusive'
+  },
+  shortNames: {
+    1: 'Economy',
+    2: 'Premium',
+    3: 'Business',
+    4: 'First',
+    5: 'Exclusive'
+  },
+  icons: {
+    1: '✈️',
+    2: '🌟',
+    3: '💼',
+    4: '👑',
+    5: '💎'
+  },
+  descriptions: {
+    1: 'Início da sua jornada',
+    2: 'Conforto elevado',
+    3: 'Experiência refinada',
+    4: 'Exclusividade absoluta',
+    5: 'O ápice do privilégio'
+  },
+  unlockNew: 'Desbloqueia novas experiências',
+  current: 'Sua classe',
+  next: 'Próxima classe',
+  perks: 'Privilégios exclusivos'
+}
+
+// ============================================
+// VARIAÇÕES DE TERMINOLOGIA
 // ============================================
 export const variations = {
-  // Alternativas para "benefícios"
-  benefits: ['experiências', 'vantagens', 'acessos', 'oportunidades', 'benefícios'],
-  // Alternativas para "pontos"
-  points: ['créditos', 'progressos', 'avanços'],
+  benefits: ['experiências', 'privilégios', 'vantagens', 'acessos'],
+  points: ['benefícios', 'progressos', 'conquistas'],
 
-  // Função para obter variação aleatória
   get: (type, index = null) => {
     const options = variations[type] || variations.benefits
     if (index !== null) return options[index % options.length]
     return options[Math.floor(Math.random() * options.length)]
   },
 
-  // Variações por contexto
   forContext: {
-    dashboard: 'vantagens',
+    dashboard: 'privilégios',
     rewards: 'experiências',
-    rotating: 'acessos',
-    tasks: 'benefícios',
-    profile: 'conquistas'
+    ranking: 'conquistas',
+    tasks: 'missões',
+    profile: 'jornada'
   }
 }
 
@@ -32,271 +66,282 @@ export const variations = {
 // TERMOS BASE
 // ============================================
 export const terms = {
-  points: 'créditos acumulados',
-  pointsShort: 'créditos',
+  points: 'benefícios acumulados',
+  pointsShort: 'benefícios',
   rewards: 'experiências',
-  ranking: 'posição',
-  missions: 'ações disponíveis',
+  ranking: 'posição no clube',
+  missions: 'missões disponíveis',
   earn: 'acumular',
   redeem: 'ativar',
-  tasks: 'ações',
-  streak: 'consistência',
-  level: 'nível',
-  referral: 'convite',
-  referrals: 'convites',
-  profile: 'seu espaço',
-  dashboard: 'início'
+  tasks: 'missões',
+  streak: 'dias consecutivos',
+  level: 'classe',
+  referral: 'indicação',
+  referrals: 'indicações',
+  profile: 'passaporte',
+  dashboard: 'clube'
 }
 
 // ============================================
-// SAUDAÇÕES SOFISTICADAS
+// SAUDAÇÕES - CONCIERGE DE VIAGENS
 // ============================================
 export const greetings = {
-  welcome: (name) => `Bem-vinda, ${name}`,
-  welcomeNeutral: (name) => `Bem-vindo, ${name}`,
-  moment: 'Seu momento atual',
-  subtitle: 'Sua evolução no clube'
+  welcome: (name) => `${name}`,
+  tagline: 'Sua próxima viagem começa antes do embarque.',
+  subtitle: 'Bem-vindo ao Meup Club.',
+  moment: 'Seu momento no clube',
+
+  // Saudações por período
+  morning: 'Bom dia',
+  afternoon: 'Boa tarde',
+  evening: 'Boa noite',
+
+  getGreeting: () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return greetings.morning
+    if (hour < 18) return greetings.afternoon
+    return greetings.evening
+  }
 }
 
 // ============================================
-// MENSAGENS DE PROGRESSO (sofisticadas)
+// MENSAGENS DE PROGRESSÃO (JORNADA)
 // ============================================
 export const progress = {
-  // Variações sofisticadas (evitar "continue assim")
   motivational: [
-    'Seu progresso segue ativo',
-    'Você está em movimento',
-    'Evolução consistente',
-    'Trajetória ascendente',
-    'Caminho de conquistas'
+    'Sua jornada continua',
+    'Evolução em andamento',
+    'Sua trajetória no clube',
+    'Rumo à próxima classe'
   ],
   getMotivational: () => {
     const options = progress.motivational
     return options[Math.floor(Math.random() * options.length)]
   },
 
-  closeToUnlock: 'Próxima de novas experiências',
-  closeToUnlockNeutral: 'Próximo de novas experiências',
-  toNextLevel: (points) => `${points.toLocaleString('pt-BR')} para evoluir`,
+  closeToUnlock: 'Próximo de novas experiências',
+  toNextLevel: (points) => `${points.toLocaleString('pt-BR')} benefícios para a próxima classe`,
   toNextPosition: (name) => `Supere ${name} para avançar`,
   almostThere: 'Quase lá',
-  keepGoing: 'Continue evoluindo',
+  keepGoing: 'Continue sua jornada',
 
   // Indicadores de conquista
-  unlockedCount: (n) => `${n} ${n === 1 ? 'experiência desbloqueada' : 'experiências desbloqueadas'}`,
-  usedCount: (n) => `${n} ${n === 1 ? 'vantagem aproveitada' : 'vantagens aproveitadas'}`,
-  activeFor: (n) => `Ativa há ${n} dias`
+  unlockedCount: (n) => `${n} ${n === 1 ? 'experiência disponível' : 'experiências disponíveis'}`,
+  usedCount: (n) => `${n} ${n === 1 ? 'experiência ativada' : 'experiências ativadas'}`,
+  activeFor: (n) => `${n} dias consecutivos`
 }
 
 // ============================================
-// BOTÕES E AÇÕES (variadas)
+// BOTÕES E AÇÕES
 // ============================================
 export const buttons = {
-  // Variações de ação principal
-  actions: ['Ativar', 'Aproveitar', 'Explorar', 'Usar', 'Acessar'],
+  actions: ['Ativar', 'Acessar', 'Explorar', 'Desbloquear'],
   getAction: (index = 0) => buttons.actions[index % buttons.actions.length],
 
   // Ações específicas
-  activate: 'Ativar',
+  activate: 'Ativar Experiência',
   enjoy: 'Aproveitar',
-  explore: 'Explorar',
-  use: 'Usar',
+  explore: 'Explorar Catálogo',
   access: 'Acessar',
 
   // Navegação
-  continueEvolving: 'Continuar evoluindo',
-  unlockExperiences: 'Desbloquear experiências',
-  discoverMore: 'Descobrir mais',
-  seeAll: 'Ver tudo',
+  continueJourney: 'Continuar jornada',
+  unlockExperiences: 'Ver Experiências',
+  viewCatalog: 'Catálogo de Experiências',
+  seeAll: 'Ver todos',
   exploreMore: 'Explorar',
   back: 'Voltar',
   confirm: 'Confirmar',
   cancel: 'Cancelar',
 
   // Ações de convite
-  copyAccess: 'Copiar',
+  copyCode: 'Copiar código',
   shareInvite: 'Compartilhar',
-  completeAction: 'Concluir'
+  inviteTraveler: 'Convidar viajante'
 }
 
 // ============================================
-// EXPERIÊNCIAS (RECOMPENSAS) - linguagem premium
+// CATÁLOGO DE EXPERIÊNCIAS
 // ============================================
 export const benefits = {
-  title: 'Suas experiências',
-  showcaseTitle: 'Escolha sua próxima experiência',
-  showcaseSubtitle: 'Acessos exclusivos selecionados para você',
+  title: 'Catálogo de Experiências',
+  showcaseTitle: 'Experiências Exclusivas',
+  showcaseSubtitle: 'Privilégios selecionados para membros do clube',
 
-  // Status variados
+  // Status
   available: 'Disponível',
   locked: 'Em breve',
-  lockedByLevel: (level) => `A partir do nível ${level}`,
-  nextLevel: 'Próximo nível',
+  lockedByLevel: (level) => `Disponível a partir de ${levels.names[level]}`,
+  nextLevel: 'Próxima classe',
   activating: 'Ativando',
-  activated: 'Ativado com sucesso',
-  inProgress: 'Em andamento',
-  accumulating: 'Acumulando',
+  activated: 'Experiência ativada',
+  inProgress: 'Em processamento',
 
   // Crédito
-  creditAvailable: 'Crédito disponível',
-  creditDescription: 'Utilize da forma que preferir.',
+  creditAvailable: 'Créditos disponíveis',
+  creditDescription: 'Use em qualquer experiência',
   valueAvailable: 'Valor liberado',
 
-  // Tempo limitado - mensagens de exclusividade
+  // Exclusividade
   limitedTime: 'Por tempo limitado',
-  weekOffer: 'Selecionado para você',
-  fewSpots: 'Acesso especial',
-  expiresIn: 'Disponível por mais',
   exclusive: 'Exclusivo',
-  selectedForYou: 'Preparado para você',
+  selectedForYou: 'Selecionado para você',
   specialAccess: 'Acesso privilegiado',
+  fewSpots: 'Vagas limitadas',
 
-  // Contadores de conquista
-  alreadyUnlocked: (n) => `Você já desbloqueou ${n} experiências`,
-  alreadyUsed: (n) => `${n} vantagens aproveitadas`
+  // Contadores
+  alreadyUnlocked: (n) => `${n} experiências desbloqueadas`,
+  alreadyUsed: (n) => `${n} experiências ativadas`
 }
 
 // ============================================
-// AÇÕES (TASKS) - linguagem natural
+// MISSÕES (TASKS)
 // ============================================
-export const actions = {
-  title: 'Ações disponíveis',
-  subtitle: 'Oportunidades de evolução',
-  daily: 'Diárias',
-  weekly: 'Semanais',
-  oneTime: 'Especiais',
+export const missions = {
+  title: 'Missões',
+  subtitle: 'Acumule benefícios completando missões',
+  daily: 'Missões do Dia',
+  weekly: 'Missões da Semana',
+  special: 'Missões Especiais',
   completed: 'Concluída',
   pending: 'Disponível',
-  pointsFormat: (pts) => `+${pts} créditos`,
-  dailyAccess: 'Acesso diário',
-  shareCode: 'Compartilhar convite',
-  checkRewards: 'Explorar experiências',
-  checkRanking: 'Ver posição'
+  inProgress: 'Em andamento',
+  benefitsFormat: (pts) => `+${pts} benefícios`,
+  startMission: 'Iniciar missão'
 }
 
+// Alias para compatibilidade
+export const actions = missions
+
 // ============================================
-// POSIÇÃO - linguagem elegante
+// RANKING DO CLUBE
 // ============================================
 export const position = {
-  title: 'Sua posição',
-  subtitle: 'Entre os membros do clube',
-  yourPosition: 'Posição atual',
-  closeToAdvance: 'Próxima de avançar',
-  closeToAdvanceNeutral: 'Próximo de avançar',
+  title: 'Ranking do Clube',
+  subtitle: 'Principais viajantes',
+  yourPosition: 'Sua posição',
+  closeToAdvance: 'Próximo de avançar',
   weeklyReset: 'Atualização semanal',
   general: 'Geral',
   weekly: 'Semanal',
   membersSuffix: 'membros',
-  toAdvance: 'para avançar',
-  climbing: 'Em ascensão',
+  toAdvance: 'benefícios para o próximo',
+  climbing: 'Subindo',
   stable: 'Estável',
-  topPerformer: 'Destaque'
+  topPerformer: 'Destaque',
+  rewardAtGoal: 'Ao alcançar:'
 }
 
 // ============================================
-// CONSISTÊNCIA (STREAK) - tom natural
+// CONSISTÊNCIA (STREAK)
 // ============================================
 export const consistency = {
-  title: 'Sua consistência',
+  title: 'Dias Consecutivos',
   days: (n) => `${n} ${n === 1 ? 'dia' : 'dias'}`,
   daysConsecutive: (n) => `${n} dias consecutivos`,
-  activeFor: (n) => `Ativa há ${n} dias`,
-  activeForNeutral: (n) => `Ativo há ${n} dias`,
-  keepIt: 'Mantenha seu ritmo',
+  activeFor: (n) => `${n} dias ativos`,
+  keepIt: 'Mantenha sua sequência',
   bonus: 'Bônus de consistência',
   milestone: 'Próximo marco',
-  record: 'Seu melhor'
+  record: 'Seu recorde'
 }
 
 // ============================================
-// ATIVIDADE - tom discreto e elegante
+// HISTÓRICO (TIMELINE)
+// ============================================
+export const history = {
+  title: 'Sua Jornada',
+  today: 'Hoje',
+  yesterday: 'Ontem',
+  thisWeek: 'Esta semana',
+  thisMonth: 'Este mês',
+  earlier: 'Anteriormente',
+
+  // Tipos de eventos
+  purchase: 'Compra confirmada',
+  experienceActivated: 'Experiência ativada',
+  referralApproved: 'Indicação aprovada',
+  levelUp: 'Nova classe alcançada',
+  benefitsEarned: 'Benefícios recebidos'
+}
+
+// ============================================
+// ATIVIDADE DO CLUBE
 // ============================================
 export const activity = {
-  title: 'Atividade recente',
+  title: 'Atividade do Clube',
   newActivity: 'Nova atividade',
   experienceActivated: 'Nova experiência ativada',
   benefitActivated: (name) => `${name} ativou uma experiência`,
-  levelUp: (name, level) => `${name} evoluiu para ${level}`,
-  newInvite: (name) => `${name} fez um convite`,
-  consistency: (name, days) => `${name} mantém ${days} dias de consistência`,
+  levelUp: (name, level) => `${name} alcançou ${level}`,
+  newInvite: (name) => `${name} fez uma indicação`,
+  consistency: (name, days) => `${name} mantém ${days} dias consecutivos`,
   topPosition: (name) => `${name} está em destaque`,
   live: 'Agora'
 }
 
 // ============================================
-// NÍVEIS - nomes premium
-// ============================================
-export const levels = {
-  names: {
-    1: 'Início',
-    2: 'Descoberta',
-    3: 'Experiência',
-    4: 'Destaque',
-    5: 'Excelência'
-  },
-  unlockNew: 'Desbloqueia novas experiências',
-  current: 'Seu nível',
-  next: 'Próximo',
-  perks: 'Vantagens exclusivas'
-}
-
-// ============================================
-// ALERTAS - tom suave
+// ALERTAS
 // ============================================
 export const alerts = {
   success: 'Pronto',
   error: 'Algo não funcionou',
   copied: 'Copiado',
-  linkCopied: 'Link copiado',
-  benefitActivated: 'Experiência ativada',
-  actionCompleted: 'Ação concluída',
+  linkCopied: 'Código copiado',
+  benefitActivated: 'Experiência ativada com sucesso',
+  actionCompleted: 'Missão concluída',
   tryAgain: 'Tente novamente',
   loading: 'Carregando'
 }
 
 // ============================================
-// PERFIL - linguagem pessoal
+// PERFIL (PASSAPORTE DIGITAL)
 // ============================================
 export const profile = {
-  title: 'Seu espaço',
-  status: 'Seu status',
-  evolution: 'Sua evolução',
+  title: 'Seu Passaporte',
+  header: 'Passaporte Digital',
+  status: 'Sua classe',
+  evolution: 'Sua jornada',
   history: 'Histórico',
-  benefitsOrigin: 'Origem dos créditos',
-  statistics: 'Números',
+  benefitsOrigin: 'Origem dos benefícios',
+  statistics: 'Estatísticas',
   achievements: 'Conquistas',
-  memberSince: 'Membro desde'
+  memberSince: 'Membro desde',
+  journeys: 'Jornadas realizadas',
+  experiences: 'Experiências ativadas',
+  ranking: 'Posição no clube',
+  streak: 'Maior sequência'
 }
 
 // ============================================
-// CONVITES
+// INDICAÇÕES
 // ============================================
 export const invites = {
-  title: 'Convites',
-  code: 'Seu código',
+  title: 'Indicações',
+  subtitle: 'Convide viajantes para o clube',
+  code: 'Seu código exclusivo',
   copyCode: 'Copiar',
   shareInvite: 'Compartilhar',
-  inviteSent: 'Convite enviado',
-  history: 'Histórico',
+  inviteSent: 'Indicação enviada',
+  history: 'Histórico de indicações',
   pending: 'Aguardando',
-  converted: 'Convertido',
-  benefits: 'Créditos gerados'
+  converted: 'Aprovada',
+  benefits: 'Benefícios gerados'
 }
 
 // ============================================
-// MENSAGENS MOTIVACIONAIS SOFISTICADAS
+// MENSAGENS MOTIVACIONAIS
 // ============================================
 export const motivation = {
-  closeToLevel: 'Sua evolução está próxima',
-  closeToPosition: 'Você está em ascensão',
+  closeToLevel: 'Próximo da nova classe',
+  closeToPosition: 'Em ascensão no clube',
   consistency: 'Sua dedicação faz diferença',
-  general: 'Aproveite suas vantagens exclusivas',
+  general: 'Aproveite seus privilégios exclusivos',
 
-  // Variações contextuais
   dashboard: [
-    'Seu progresso está ativo',
-    'Evolução em andamento',
-    'Trajetória consistente'
+    'Sua próxima viagem começa aqui',
+    'Privilégios esperando por você',
+    'Continue sua jornada no clube'
   ],
   getDashboard: () => {
     const options = motivation.dashboard
@@ -308,7 +353,7 @@ export const motivation = {
 // FORMATADORES
 // ============================================
 export const format = {
-  points: (n) => `${n.toLocaleString('pt-BR')} créditos`,
+  points: (n) => `${n.toLocaleString('pt-BR')} benefícios`,
   pointsShort: (n) => n.toLocaleString('pt-BR'),
   currency: (n) => `R$ ${n.toLocaleString('pt-BR')}`,
   percentage: (n) => `${Math.round(n)}%`,
@@ -321,15 +366,20 @@ export const format = {
 }
 
 // ============================================
-// HELPER: Obter variação por índice
+// HELPERS
 // ============================================
 export function getVariation(type, index) {
   return variations.get(type, index)
 }
 
-// ============================================
-// HELPER: Texto contextual
-// ============================================
 export function getContextualTerm(context) {
   return variations.forContext[context] || 'experiências'
+}
+
+export function getClassName(levelId) {
+  return levels.names[levelId] || levels.names[1]
+}
+
+export function getClassIcon(levelId) {
+  return levels.icons[levelId] || levels.icons[1]
 }

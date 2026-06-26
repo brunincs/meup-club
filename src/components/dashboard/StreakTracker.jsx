@@ -4,7 +4,7 @@ import {
   getStreakBonus,
   mockUserEngagement
 } from '@/services/engagementData'
-import { consistency, format, actions } from '@/services/copy'
+import { consistency, format } from '@/services/copy'
 
 export function StreakTracker() {
   const currentStreak = mockUserEngagement.streak.current
@@ -25,25 +25,25 @@ export function StreakTracker() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="rounded-2xl border border-dark-700/50 bg-dark-800/30 overflow-hidden"
+      className="rounded-2xl border border-dark-700/30 bg-dark-800/20 overflow-hidden"
     >
       {/* Header */}
       <div className="p-5 border-b border-dark-700/30">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-semibold text-neutral-100">
+            <h3 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">
               {consistency.title}
             </h3>
-            <p className="text-xs text-neutral-500 mt-1">
+            <p className="text-xs text-neutral-500">
               {consistency.keepIt}
             </p>
           </div>
 
           <div className="text-center">
-            <p className="text-2xl font-display font-bold text-accent-gold">
+            <p className="text-2xl font-light text-neutral-100">
               {currentStreak}
             </p>
-            <p className="text-[10px] text-neutral-500">
+            <p className="text-[10px] text-neutral-600">
               dias
             </p>
           </div>
@@ -52,7 +52,7 @@ export function StreakTracker() {
 
       {/* Milestones */}
       <div className="p-5">
-        <p className="text-xs text-neutral-500 mb-4">
+        <p className="text-[10px] uppercase tracking-wider text-neutral-700 mb-4">
           {consistency.milestone}
         </p>
 
@@ -65,63 +65,62 @@ export function StreakTracker() {
             return (
               <motion.div
                 key={bonus.days}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * index }}
+                transition={{ delay: 0.05 * index }}
                 className={`relative p-3 rounded-xl border transition-all ${
                   isAchieved
-                    ? 'bg-accent-gold/5 border-accent-gold/20'
+                    ? 'bg-neutral-100/5 border-neutral-100/10'
                     : isNext
-                    ? 'bg-dark-800/50 border-dark-600/50'
-                    : 'bg-dark-800/20 border-dark-700/20 opacity-50'
+                    ? 'bg-dark-700/20 border-dark-600/50'
+                    : 'bg-dark-700/10 border-dark-700/20 opacity-50'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
                     isAchieved
-                      ? 'bg-accent-gold/20 text-accent-gold'
-                      : 'bg-dark-700 text-neutral-500'
+                      ? 'bg-neutral-100/10 text-neutral-300'
+                      : 'bg-dark-700/30 text-neutral-600'
                   }`}>
-                    {isAchieved ? '✓' : bonus.days}
+                    {isAchieved ? '✓' : '○'}
                   </div>
 
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium ${
-                        isAchieved ? 'text-accent-gold' : 'text-neutral-400'
+                      <span className={`text-sm ${
+                        isAchieved ? 'text-neutral-200' : 'text-neutral-500'
                       }`}>
                         {milestoneLabels[bonus.days] || `${bonus.days} dias`}
                       </span>
                       {isNext && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-dark-700 text-neutral-500">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-dark-700/30 text-neutral-600">
                           Próximo
                         </span>
                       )}
                     </div>
 
                     {isNext && (
-                      <div className="mt-2 h-1 bg-dark-700 rounded-full overflow-hidden">
+                      <div className="mt-2 h-0.5 bg-dark-700/50 rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${progress}%` }}
-                          className="h-full bg-accent-gold/50 rounded-full"
+                          className="h-full bg-neutral-500 rounded-full"
                         />
                       </div>
                     )}
                   </div>
 
                   <div className="text-right">
-                    <span className={`text-sm font-mono ${
-                      isAchieved ? 'text-accent-gold' : 'text-neutral-600'
+                    <span className={`text-sm font-light ${
+                      isAchieved ? 'text-neutral-300' : 'text-neutral-600'
                     }`}>
-                      +{bonus.points}
+                      +{format.pointsShort(bonus.points)}
                     </span>
-                    <p className="text-[10px] text-neutral-600">benefícios</p>
                   </div>
                 </div>
 
                 {isNext && (
-                  <p className="text-xs text-neutral-500 mt-2 pl-11">
+                  <p className="text-[10px] text-neutral-600 mt-2 pl-11">
                     Faltam {bonus.days - currentStreak} dias
                   </p>
                 )}
@@ -132,12 +131,12 @@ export function StreakTracker() {
 
         {/* Bonus multiplier */}
         {streakInfo.multiplier > 1 && (
-          <div className="mt-4 p-3 rounded-xl bg-accent-gold/5 border border-accent-gold/10">
+          <div className="mt-4 p-3 rounded-xl bg-neutral-100/5 border border-neutral-100/10">
             <div className="flex items-center justify-between">
               <span className="text-sm text-neutral-400">
                 {consistency.bonus}
               </span>
-              <span className="text-sm font-medium text-accent-gold">
+              <span className="text-sm font-light text-neutral-200">
                 +{Math.round((streakInfo.multiplier - 1) * 100)}%
               </span>
             </div>
@@ -146,10 +145,10 @@ export function StreakTracker() {
 
         {/* Record */}
         <div className="mt-4 pt-4 border-t border-dark-700/30 flex items-center justify-between">
-          <span className="text-xs text-neutral-500">
+          <span className="text-[10px] text-neutral-600">
             {consistency.record}
           </span>
-          <span className="text-sm text-neutral-400">
+          <span className="text-sm text-neutral-500">
             {bestStreak} dias
           </span>
         </div>

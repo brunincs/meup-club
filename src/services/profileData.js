@@ -16,7 +16,7 @@ export const mockProfileData = {
 
   // Foto/Avatar
   avatar: null,
-  avatarColor: 'gold',
+  avatarColor: 'neutral',
 
   // Status do perfil
   profileComplete: true,
@@ -28,54 +28,50 @@ export const mockProfileData = {
 export function getPointsBreakdown(userPoints = 10940) {
   const tasksPoints = calculateTasksPoints()
 
-  // Simulação de distribuição de pontos
-  const salesPoints = Math.floor(userPoints * 0.75) // 75% de vendas
-  const tasksPointsEarned = tasksPoints.earned
-  const bonusPoints = Math.floor(userPoints * 0.10) // 10% bônus de nível
-  const rankingPoints = Math.floor(userPoints * 0.05) // 5% bônus de ranking
+  // Distribuição de benefícios
+  const referralPoints = Math.floor(userPoints * 0.75) // 75% indicações
+  const missionsPoints = tasksPoints.earned
+  const classBonus = Math.floor(userPoints * 0.10) // 10% bônus de classe
+  const rankingBonus = Math.floor(userPoints * 0.05) // 5% bônus de posição
 
   // Ajustar para o total bater
-  const calculated = salesPoints + tasksPointsEarned + bonusPoints + rankingPoints
+  const calculated = referralPoints + missionsPoints + classBonus + rankingBonus
   const adjustment = userPoints - calculated
 
   return {
     total: userPoints,
     breakdown: [
       {
-        id: 'sales',
-        label: 'Pontos por Vendas',
+        id: 'referrals',
+        label: 'Indicações',
         description: 'Indicações aprovadas',
-        points: salesPoints + adjustment,
-        percentage: Math.round(((salesPoints + adjustment) / userPoints) * 100),
-        icon: '💰',
-        color: 'text-green-400'
+        points: referralPoints + adjustment,
+        percentage: Math.round(((referralPoints + adjustment) / userPoints) * 100),
+        icon: '◆'
       },
       {
-        id: 'tasks',
-        label: 'Pontos por Tasks',
-        description: 'Missões completadas',
-        points: tasksPointsEarned,
-        percentage: Math.round((tasksPointsEarned / userPoints) * 100),
-        icon: '✅',
-        color: 'text-blue-400'
+        id: 'missions',
+        label: 'Missões',
+        description: 'Missões concluídas',
+        points: missionsPoints,
+        percentage: Math.round((missionsPoints / userPoints) * 100),
+        icon: '◇'
       },
       {
-        id: 'bonus',
-        label: 'Bônus de Nível',
-        description: 'Multiplicador do seu nível',
-        points: bonusPoints,
-        percentage: Math.round((bonusPoints / userPoints) * 100),
-        icon: '⭐',
-        color: 'text-accent-gold'
+        id: 'classBonus',
+        label: 'Bônus de Classe',
+        description: 'Multiplicador da sua classe',
+        points: classBonus,
+        percentage: Math.round((classBonus / userPoints) * 100),
+        icon: '✦'
       },
       {
-        id: 'ranking',
-        label: 'Bônus de Ranking',
-        description: 'Recompensa por posição',
-        points: rankingPoints,
-        percentage: Math.round((rankingPoints / userPoints) * 100),
-        icon: '🏆',
-        color: 'text-purple-400'
+        id: 'rankingBonus',
+        label: 'Bônus de Posição',
+        description: 'Benefício por posição no clube',
+        points: rankingBonus,
+        percentage: Math.round((rankingBonus / userPoints) * 100),
+        icon: '▲'
       }
     ]
   }
@@ -119,7 +115,7 @@ export function getUserStatistics() {
       currentStreak,
       longestStreak,
       daysActive: 30,
-      tasksCompleted: 12
+      missionsCompleted: 12
     },
     ranking: {
       currentPosition: getCurrentUserPosition('allTime'),
@@ -130,90 +126,90 @@ export function getUserStatistics() {
   }
 }
 
-// Conquistas/Badges
+// Conquistas/Marcos da Jornada
 export const mockAchievements = [
   {
     id: 'first_steps',
-    name: 'Primeiros Passos',
-    description: 'Completou o cadastro',
-    icon: '🎯',
+    name: 'Embarque',
+    description: 'Primeiro acesso ao clube',
+    icon: '✈',
     earnedAt: '2024-01-01T10:00:00Z',
     unlocked: true
   },
   {
     id: 'first_referral',
-    name: 'Indicador',
-    description: 'Fez sua primeira indicação',
-    icon: '👥',
+    name: 'Primeira Indicação',
+    description: 'Convidou um viajante',
+    icon: '◇',
     earnedAt: '2024-01-15T10:30:00Z',
     unlocked: true
   },
   {
     id: 'first_sale',
-    name: 'Vendedor',
-    description: 'Primeira venda aprovada',
-    icon: '💰',
+    name: 'Conexão',
+    description: 'Primeira indicação aprovada',
+    icon: '◆',
     earnedAt: '2024-01-15T14:00:00Z',
     unlocked: true
   },
   {
     id: 'streak_7',
-    name: 'Dedicado',
-    description: '7 dias seguidos de acesso',
-    icon: '🔥',
+    name: 'Consistência',
+    description: '7 dias consecutivos',
+    icon: '○',
     earnedAt: '2024-01-22T10:00:00Z',
     unlocked: true
   },
   {
-    id: 'level_elite',
-    name: 'Elite',
-    description: 'Alcançou o nível Elite',
-    icon: '⭐',
+    id: 'level_business',
+    name: 'Executiva',
+    description: 'Alcançou Classe Executiva',
+    icon: '✦',
     earnedAt: '2024-01-28T10:00:00Z',
     unlocked: true
   },
   {
     id: 'top_10',
-    name: 'Top 10',
-    description: 'Entrou no top 10 do ranking',
-    icon: '🏆',
+    name: 'Destaque',
+    description: 'Top 10 do clube',
+    icon: '▲',
     earnedAt: '2024-01-25T16:00:00Z',
     unlocked: true
   },
   {
     id: 'referrals_10',
-    name: 'Influenciador',
+    name: 'Influência',
     description: '10 indicações totais',
-    icon: '📣',
+    icon: '◈',
     unlocked: false,
     progress: 6,
     target: 10
   },
   {
     id: 'streak_30',
-    name: 'Fanático',
-    description: '30 dias seguidos de acesso',
-    icon: '💎',
+    name: 'Dedicação',
+    description: '30 dias consecutivos',
+    icon: '❖',
     unlocked: false,
     progress: 7,
     target: 30
   },
   {
-    id: 'level_aristocrat',
-    name: 'Aristocrata',
-    description: 'Alcançou o nível máximo',
-    icon: '👑',
+    id: 'level_exclusive',
+    name: 'Exclusive',
+    description: 'Meup Exclusive',
+    icon: '◆',
     unlocked: false
   }
 ]
 
-// Histórico de atividades recentes
+// Histórico de atividades recentes (Timeline da jornada)
 export const mockActivityHistory = [
-  { type: 'task', description: 'Check-in diário', points: 10, date: new Date().toISOString() },
-  { type: 'referral', description: 'Nova indicação: Fernanda L.', points: 20, date: '2024-01-30T08:30:00Z' },
-  { type: 'sale', description: 'Venda aprovada: Carlos M.', points: 3600, date: '2024-01-28T11:00:00Z' },
-  { type: 'level', description: 'Subiu para Elite', points: 0, date: '2024-01-28T10:00:00Z' },
-  { type: 'achievement', description: 'Conquistou "Top 10"', points: 0, date: '2024-01-25T16:00:00Z' },
-  { type: 'task', description: 'Completou 5 indicações', points: 250, date: '2024-01-25T16:00:00Z' },
-  { type: 'sale', description: 'Venda aprovada: Ana O.', points: 2210, date: '2024-01-25T16:45:00Z' },
+  { type: 'mission', description: 'Acesso ao clube', points: 10, date: new Date().toISOString() },
+  { type: 'referral', description: 'Indicação: Fernanda L.', points: 20, date: '2024-01-30T08:30:00Z' },
+  { type: 'approved', description: 'Aprovada: Carlos M.', points: 3600, date: '2024-01-28T11:00:00Z' },
+  { type: 'levelUp', description: 'Classe Executiva', points: 0, date: '2024-01-28T10:00:00Z' },
+  { type: 'achievement', description: 'Marco: Destaque', points: 0, date: '2024-01-25T16:00:00Z' },
+  { type: 'mission', description: '5 indicações concluídas', points: 250, date: '2024-01-25T16:00:00Z' },
+  { type: 'approved', description: 'Aprovada: Ana O.', points: 2210, date: '2024-01-25T16:45:00Z' },
 ]

@@ -34,48 +34,64 @@ export const multipliers = {
 }
 
 // ============================================
-// SISTEMA DE NÍVEIS
+// SISTEMA DE CLASSES (NÍVEIS)
+// Inspirado nas classes de voo para experiência premium
 // ============================================
 export const levels = [
   {
     id: 1,
-    name: 'Iniciante',
+    name: 'Classe Econômica',
+    shortName: 'Economy',
     minPoints: 0,
     maxPoints: 599,
     bonusMultiplier: 1,
-    perks: ['Acesso ao programa', 'Código de indicação']
+    icon: '✈️',
+    color: 'slate',
+    perks: ['Acesso ao clube', 'Código de indicação exclusivo', 'Catálogo de experiências']
   },
   {
     id: 2,
-    name: 'Explorador',
+    name: 'Premium Economy',
+    shortName: 'Premium',
     minPoints: 600,
     maxPoints: 1799,
     bonusMultiplier: 1.05,
-    perks: ['5% bônus nos pontos', 'Prioridade no atendimento']
+    icon: '🌟',
+    color: 'blue',
+    perks: ['5% bônus em benefícios', 'Atendimento prioritário', 'Experiências exclusivas']
   },
   {
     id: 3,
-    name: 'Navegador',
+    name: 'Classe Executiva',
+    shortName: 'Business',
     minPoints: 1800,
     maxPoints: 3999,
     bonusMultiplier: 1.1,
-    perks: ['10% bônus nos pontos', 'Acesso a ofertas exclusivas']
+    icon: '💼',
+    color: 'violet',
+    perks: ['10% bônus em benefícios', 'Ofertas antecipadas', 'Concierge de viagem']
   },
   {
     id: 4,
-    name: 'Elite',
+    name: 'Primeira Classe',
+    shortName: 'First',
     minPoints: 4000,
     maxPoints: 7999,
     bonusMultiplier: 1.15,
-    perks: ['15% bônus nos pontos', 'Suporte VIP', 'Crédito extra para viagem']
+    icon: '👑',
+    color: 'amber',
+    perks: ['15% bônus em benefícios', 'Suporte VIP dedicado', 'Upgrades preferenciais']
   },
   {
     id: 5,
-    name: 'Aristocrata',
+    name: 'Meup Exclusive',
+    shortName: 'Exclusive',
     minPoints: 8000,
     maxPoints: Infinity,
     bonusMultiplier: 1.25,
-    perks: ['25% bônus nos pontos', 'Gerente dedicado', 'Eventos exclusivos']
+    icon: '💎',
+    color: 'slate-900',
+    perks: ['25% bônus em benefícios', 'Gerente pessoal', 'Experiências sob medida', 'Eventos privados']
   }
 ]
 
@@ -91,16 +107,17 @@ export const tierToLevelRequirement = {
 }
 
 // ============================================
-// TABELA DE RECOMPENSAS (Com requisito de nível)
+// CATÁLOGO DE EXPERIÊNCIAS (Com requisito de classe)
 // ============================================
 export const rewardsTable = [
-  // NÍVEL 1 — ENTRADA (Iniciante - todos têm acesso)
+  // CLASSE ECONÔMICA — Primeiras conquistas
   {
     id: '1',
     tier: 1,
-    requiredLevel: 1, // Iniciante
-    name: 'Crédito Inicial',
-    description: 'Seu primeiro resgate - R$30 em crédito para usar como quiser',
+    requiredLevel: 1,
+    name: 'Crédito de Boas-Vindas',
+    subtitle: 'Sua primeira conquista',
+    description: 'R$30 em créditos para iniciar sua jornada no clube',
     points_required: 600,
     category: 'cash',
     realCost: 30,
@@ -111,9 +128,10 @@ export const rewardsTable = [
   {
     id: '2',
     tier: 1,
-    requiredLevel: 1, // Iniciante
-    name: 'Crédito Bronze',
-    description: 'R$45 em crédito para sua próxima aventura',
+    requiredLevel: 1,
+    name: 'Crédito Viajante',
+    subtitle: 'Para sua próxima aventura',
+    description: 'R$45 em créditos para sua próxima experiência',
     points_required: 900,
     category: 'cash',
     realCost: 45,
@@ -122,13 +140,14 @@ export const rewardsTable = [
     available: true
   },
 
-  // NÍVEL 2 — CONSOLIDAÇÃO (Explorador)
+  // PREMIUM ECONOMY — Conforto elevado
   {
     id: '3',
     tier: 2,
-    requiredLevel: 2, // Explorador
-    name: 'Crédito Prata',
-    description: 'R$90 em crédito - valor significativo para sua viagem',
+    requiredLevel: 2,
+    name: 'Crédito Explorador',
+    subtitle: 'Destinos mais distantes',
+    description: 'R$90 em créditos para experiências memoráveis',
     points_required: 1800,
     category: 'cash',
     realCost: 90,
@@ -139,9 +158,10 @@ export const rewardsTable = [
   {
     id: '4',
     tier: 2,
-    requiredLevel: 2, // Explorador
-    name: 'Upgrade de Assento',
-    description: 'Upgrade para assento com mais espaço em voos selecionados',
+    requiredLevel: 2,
+    name: 'Upgrade de Conforto',
+    subtitle: 'Mais espaço, mais conforto',
+    description: 'Assento com espaço extra em voos selecionados',
     points_required: 2500,
     category: 'travel',
     realCost: 80,
@@ -150,13 +170,14 @@ export const rewardsTable = [
     available: true
   },
 
-  // NÍVEL 3 — DESEJO (Navegador)
+  // CLASSE EXECUTIVA — Experiência refinada
   {
     id: '5',
     tier: 3,
-    requiredLevel: 3, // Navegador
-    name: 'Crédito Ouro',
-    description: 'R$180 em crédito premium para experiências incríveis',
+    requiredLevel: 3,
+    name: 'Crédito Premium',
+    subtitle: 'Experiências extraordinárias',
+    description: 'R$180 em créditos para momentos especiais',
     points_required: 4000,
     category: 'cash',
     realCost: 180,
@@ -167,9 +188,10 @@ export const rewardsTable = [
   {
     id: '6',
     tier: 3,
-    requiredLevel: 3, // Navegador
-    name: 'Jantar Premium',
-    description: 'Experiência gastronômica para 2 em restaurante estrelado',
+    requiredLevel: 3,
+    name: 'Experiência Gastronômica',
+    subtitle: 'Mesa para dois',
+    description: 'Jantar exclusivo em restaurante estrelado',
     points_required: 5500,
     category: 'experience',
     realCost: 200,
@@ -178,13 +200,14 @@ export const rewardsTable = [
     available: true
   },
 
-  // NÍVEL 4 — ELITE
+  // PRIMEIRA CLASSE — Exclusividade absoluta
   {
     id: '7',
     tier: 4,
-    requiredLevel: 4, // Elite
-    name: 'Upgrade Classe Executiva',
-    description: 'Voe com todo conforto em sua próxima viagem internacional',
+    requiredLevel: 4,
+    name: 'Upgrade Executivo',
+    subtitle: 'Voe como merece',
+    description: 'Upgrade para Classe Executiva em voo internacional',
     points_required: 8000,
     category: 'travel',
     realCost: 350,
@@ -196,24 +219,26 @@ export const rewardsTable = [
   {
     id: '8',
     tier: 4,
-    requiredLevel: 4, // Elite
-    name: 'Acesso VIP Lounge Anual',
-    description: 'Acesso ilimitado a lounges premium por 1 ano',
+    requiredLevel: 4,
+    name: 'Acesso Lounge Anual',
+    subtitle: 'Seu refúgio nos aeroportos',
+    description: 'Acesso ilimitado a lounges premium por 12 meses',
     points_required: 10000,
-    category: 'travel',
+    category: 'lounge',
     realCost: 400,
     perceivedValue: 1500,
     badge: 'exclusive',
     available: true
   },
 
-  // NÍVEL 5 — ARISTOCRATA
+  // MEUP EXCLUSIVE — O ápice do privilégio
   {
     id: '9',
     tier: 5,
-    requiredLevel: 5, // Aristocrata
-    name: 'Weekend Exclusivo',
-    description: 'Final de semana com aéreo e hotel 5 estrelas incluso',
+    requiredLevel: 5,
+    name: 'Escapada Exclusiva',
+    subtitle: 'Final de semana inesquecível',
+    description: 'Aéreo + hotel 5 estrelas para um fim de semana perfeito',
     points_required: 15000,
     category: 'premium',
     realCost: 800,
@@ -225,9 +250,10 @@ export const rewardsTable = [
   {
     id: '10',
     tier: 5,
-    requiredLevel: 5, // Aristocrata
-    name: 'Experiência Máxima',
-    description: 'Pacote completo: voo executivo + resort all-inclusive 5 noites',
+    requiredLevel: 5,
+    name: 'A Grande Experiência',
+    subtitle: 'O melhor que oferecemos',
+    description: 'Voo executivo + resort all-inclusive por 5 noites',
     points_required: 20000,
     category: 'premium',
     realCost: 1500,
@@ -239,28 +265,80 @@ export const rewardsTable = [
 ]
 
 // ============================================
-// SISTEMA DE PONTOS EXTRAS
+// SISTEMA DE BENEFÍCIOS EXTRAS
 // ============================================
 export const extraPointsConfig = {
-  // CPA - Pontos por indicação criada (pendente até conversão)
+  // CPA - Benefícios por indicação criada (pendente até conversão)
   cpa: {
     points: 20,
-    status: 'pending', // Fica pendente até a venda ser confirmada
+    status: 'pending',
     description: 'Bônus por indicação registrada'
   },
 
-  // Tasks - Engajamento
-  tasks: [
-    { id: 'complete_profile', points: 50, name: 'Completar perfil', oneTime: true },
-    { id: 'first_referral', points: 100, name: 'Primeira indicação', oneTime: true },
-    { id: 'share_social', points: 30, name: 'Compartilhar nas redes', cooldown: 7 }, // dias
-    { id: 'invite_5', points: 150, name: 'Convidar 5 amigos', oneTime: true },
-    { id: 'monthly_active', points: 50, name: 'Ativo no mês', cooldown: 30 },
-    { id: 'review_trip', points: 75, name: 'Avaliar viagem', perTrip: true },
-    { id: 'anniversary', points: 200, name: 'Aniversário no programa', yearly: true }
+  // Missões - Engajamento
+  missions: [
+    {
+      id: 'complete_profile',
+      points: 50,
+      name: 'Complete seu perfil',
+      description: 'Adicione suas informações para uma experiência personalizada',
+      category: 'onboarding',
+      oneTime: true
+    },
+    {
+      id: 'first_referral',
+      points: 100,
+      name: 'Primeira indicação',
+      description: 'Convide seu primeiro viajante para o clube',
+      category: 'referral',
+      oneTime: true
+    },
+    {
+      id: 'share_social',
+      points: 30,
+      name: 'Compartilhe o clube',
+      description: 'Divulgue o Meup Club nas suas redes',
+      category: 'social',
+      cooldown: 7
+    },
+    {
+      id: 'invite_5',
+      points: 150,
+      name: 'Convide 5 viajantes',
+      description: 'Traga mais membros para o clube',
+      category: 'referral',
+      oneTime: true
+    },
+    {
+      id: 'monthly_active',
+      points: 50,
+      name: 'Mantenha-se ativo',
+      description: 'Acesse o clube regularmente',
+      category: 'engagement',
+      cooldown: 30
+    },
+    {
+      id: 'review_trip',
+      points: 75,
+      name: 'Avalie sua experiência',
+      description: 'Compartilhe como foi sua viagem',
+      category: 'feedback',
+      perTrip: true
+    },
+    {
+      id: 'anniversary',
+      points: 200,
+      name: 'Aniversário no clube',
+      description: 'Celebre mais um ano como membro',
+      category: 'milestone',
+      yearly: true
+    }
   ],
 
-  // Limite de segurança: pontos extras máximo 20% do total (alinhado com creditsConfig)
+  // Alias para compatibilidade
+  get tasks() { return this.missions },
+
+  // Limite de segurança: benefícios extras máximo 20% do total
   maxExtraPointsRatio: creditsConfig.maxExtraBonusPercentage
 }
 
@@ -572,17 +650,25 @@ export function getNextLevelRewards(userLevelId) {
 }
 
 /**
- * Agrupa recompensas por tier
- * @param {array} rewards - Lista de recompensas com progresso
- * @returns {object} - Recompensas agrupadas por tier
+ * Agrupa experiências por classe
+ * @param {array} rewards - Lista de experiências com progresso
+ * @returns {object} - Experiências agrupadas por classe
  */
 export function groupRewardsByTier(rewards) {
   const tierNames = {
-    1: 'Entrada',
-    2: 'Consolidação',
-    3: 'Desejo',
-    4: 'Elite',
-    5: 'Aristocrata'
+    1: 'Classe Econômica',
+    2: 'Premium Economy',
+    3: 'Classe Executiva',
+    4: 'Primeira Classe',
+    5: 'Meup Exclusive'
+  }
+
+  const tierIcons = {
+    1: '✈️',
+    2: '🌟',
+    3: '💼',
+    4: '👑',
+    5: '💎'
   }
 
   return rewards.reduce((acc, reward) => {
@@ -591,6 +677,7 @@ export function groupRewardsByTier(rewards) {
       acc[tierKey] = {
         id: reward.tier,
         name: tierNames[reward.tier],
+        icon: tierIcons[reward.tier],
         rewards: []
       }
     }

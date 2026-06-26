@@ -30,11 +30,11 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-dark-900">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-2 border-accent-gold border-t-transparent rounded-full"
+          className="w-6 h-6 border border-neutral-600 border-t-neutral-300 rounded-full"
         />
       </div>
     )
@@ -50,7 +50,7 @@ export function Dashboard() {
       <DashboardHeader />
 
       {/* Main content */}
-      <main className="container-premium py-8">
+      <main className="container-premium py-12">
         {/* Social Proof Banner */}
         <SocialProofBanner />
 
@@ -92,18 +92,6 @@ export function Dashboard() {
           </div>
         </div>
       </main>
-
-      {/* Background effects */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div
-          className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full blur-[200px] opacity-20"
-          style={{ background: 'radial-gradient(circle, rgba(201, 169, 98, 0.08) 0%, transparent 60%)' }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full blur-[180px] opacity-15"
-          style={{ background: 'radial-gradient(circle, rgba(139, 112, 66, 0.06) 0%, transparent 60%)' }}
-        />
-      </div>
     </div>
   )
 }
