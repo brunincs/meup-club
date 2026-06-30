@@ -107,7 +107,41 @@ export const tierToLevelRequirement = {
 }
 
 // ============================================
-// CATÁLOGO DE EXPERIÊNCIAS (Com requisito de classe)
+// SISTEMA DE RARIDADE
+// ============================================
+export const rarityConfig = {
+  common: {
+    id: 'common',
+    label: 'Comum',
+    color: '#9ca3af',
+    glowClass: '',
+    borderClass: 'border-neutral-500/30'
+  },
+  rare: {
+    id: 'rare',
+    label: 'Raro',
+    color: '#3b82f6',
+    glowClass: 'animate-glow-blue',
+    borderClass: 'border-blue-500/40'
+  },
+  epic: {
+    id: 'epic',
+    label: 'Épico',
+    color: '#a855f7',
+    glowClass: 'animate-glow-purple',
+    borderClass: 'border-purple-500/40'
+  },
+  legendary: {
+    id: 'legendary',
+    label: 'Lendário',
+    color: '#f59e0b',
+    glowClass: 'animate-glow-gold',
+    borderClass: 'border-amber-500/50'
+  }
+}
+
+// ============================================
+// CATÁLOGO DE EXPERIÊNCIAS (Com requisito de classe e raridade)
 // ============================================
 export const rewardsTable = [
   // CLASSE ECONÔMICA — Primeiras conquistas
@@ -123,6 +157,7 @@ export const rewardsTable = [
     realCost: 30,
     perceivedValue: 30,
     badge: 'hot',
+    rarity: 'common',
     available: true
   },
   {
@@ -137,6 +172,7 @@ export const rewardsTable = [
     realCost: 45,
     perceivedValue: 45,
     badge: null,
+    rarity: 'common',
     available: true
   },
 
@@ -153,6 +189,7 @@ export const rewardsTable = [
     realCost: 90,
     perceivedValue: 90,
     badge: null,
+    rarity: 'common',
     available: true
   },
   {
@@ -167,6 +204,7 @@ export const rewardsTable = [
     realCost: 80,
     perceivedValue: 150,
     badge: 'recommended',
+    rarity: 'rare',
     available: true
   },
 
@@ -183,6 +221,7 @@ export const rewardsTable = [
     realCost: 180,
     perceivedValue: 180,
     badge: null,
+    rarity: 'rare',
     available: true
   },
   {
@@ -197,6 +236,7 @@ export const rewardsTable = [
     realCost: 200,
     perceivedValue: 400,
     badge: 'limited',
+    rarity: 'epic',
     available: true
   },
 
@@ -213,6 +253,7 @@ export const rewardsTable = [
     realCost: 350,
     perceivedValue: 1200,
     badge: 'recommended',
+    rarity: 'epic',
     featured: true,
     available: true
   },
@@ -228,6 +269,7 @@ export const rewardsTable = [
     realCost: 400,
     perceivedValue: 1500,
     badge: 'exclusive',
+    rarity: 'epic',
     available: true
   },
 
@@ -244,6 +286,7 @@ export const rewardsTable = [
     realCost: 800,
     perceivedValue: 3000,
     badge: 'exclusive',
+    rarity: 'legendary',
     featured: true,
     available: true
   },
@@ -259,10 +302,20 @@ export const rewardsTable = [
     realCost: 1500,
     perceivedValue: 8000,
     badge: 'exclusive',
+    rarity: 'legendary',
     featured: true,
     available: true
   }
 ]
+
+/**
+ * Obtém configuração de raridade de uma recompensa
+ * @param {string} rarity - ID da raridade
+ * @returns {object} - Configuração da raridade
+ */
+export function getRarityConfig(rarity) {
+  return rarityConfig[rarity] || rarityConfig.common
+}
 
 // ============================================
 // SISTEMA DE BENEFÍCIOS EXTRAS

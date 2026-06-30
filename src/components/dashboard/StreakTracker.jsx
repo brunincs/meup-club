@@ -5,6 +5,7 @@ import {
   mockUserEngagement
 } from '@/services/engagementData'
 import { consistency, format } from '@/services/copy'
+import { ProgressBar } from '@/components/effects/ProgressRing'
 
 export function StreakTracker() {
   const currentStreak = mockUserEngagement.streak.current
@@ -25,13 +26,14 @@ export function StreakTracker() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="rounded-2xl border border-dark-700/30 bg-dark-800/20 overflow-hidden"
+      className="card-streak rounded-2xl overflow-hidden"
     >
-      {/* Header */}
-      <div className="p-5 border-b border-dark-700/30">
+      {/* Header with orange theme */}
+      <div className="p-5 border-b border-game-orange/20">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">
+            <h3 className="text-[10px] uppercase tracking-wider text-game-orange mb-1 flex items-center gap-2">
+              <span>🔥</span>
               {consistency.title}
             </h3>
             <p className="text-xs text-neutral-500">
@@ -39,14 +41,18 @@ export function StreakTracker() {
             </p>
           </div>
 
-          <div className="text-center">
-            <p className="text-2xl font-light text-neutral-100">
+          <motion.div
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="text-center px-4 py-2 rounded-xl bg-game-orange/10 border border-game-orange/20"
+          >
+            <p className="text-3xl font-bold text-game-orange">
               {currentStreak}
             </p>
-            <p className="text-[10px] text-neutral-600">
+            <p className="text-[10px] text-game-orange/70">
               dias
             </p>
-          </div>
+          </motion.div>
         </div>
       </div>
 
@@ -70,19 +76,19 @@ export function StreakTracker() {
                 transition={{ delay: 0.05 * index }}
                 className={`relative p-3 rounded-xl border transition-all ${
                   isAchieved
-                    ? 'bg-neutral-100/5 border-neutral-100/10'
+                    ? 'bg-game-orange/10 border-game-orange/20'
                     : isNext
-                    ? 'bg-dark-700/20 border-dark-600/50'
+                    ? 'bg-dark-700/20 border-game-orange/30'
                     : 'bg-dark-700/10 border-dark-700/20 opacity-50'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
                     isAchieved
-                      ? 'bg-neutral-100/10 text-neutral-300'
+                      ? 'bg-game-orange/20 text-game-orange'
                       : 'bg-dark-700/30 text-neutral-600'
                   }`}>
-                    {isAchieved ? '✓' : '○'}
+                    {isAchieved ? '✓' : bonus.icon}
                   </div>
 
                   <div className="flex-1">
@@ -93,34 +99,36 @@ export function StreakTracker() {
                         {milestoneLabels[bonus.days] || `${bonus.days} dias`}
                       </span>
                       {isNext && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-dark-700/30 text-neutral-600">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-game-orange/20 text-game-orange border border-game-orange/30">
                           Próximo
                         </span>
                       )}
                     </div>
 
                     {isNext && (
-                      <div className="mt-2 h-0.5 bg-dark-700/50 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${progress}%` }}
-                          className="h-full bg-neutral-500 rounded-full"
+                      <div className="mt-2">
+                        <ProgressBar
+                          progress={progress}
+                          height={4}
+                          color="#f97316"
+                          bgColor="rgba(255, 255, 255, 0.05)"
                         />
                       </div>
                     )}
                   </div>
 
                   <div className="text-right">
-                    <span className={`text-sm font-light ${
-                      isAchieved ? 'text-neutral-300' : 'text-neutral-600'
+                    <span className={`text-sm font-semibold ${
+                      isAchieved ? 'text-game-green' : 'text-neutral-600'
                     }`}>
                       +{format.pointsShort(bonus.points)}
                     </span>
+                    <span className="text-[10px] text-neutral-600 block">pontos</span>
                   </div>
                 </div>
 
                 {isNext && (
-                  <p className="text-[10px] text-neutral-600 mt-2 pl-11">
+                  <p className="text-[10px] text-game-orange mt-2 pl-11">
                     Faltam {bonus.days - currentStreak} dias
                   </p>
                 )}
@@ -131,16 +139,20 @@ export function StreakTracker() {
 
         {/* Bonus multiplier */}
         {streakInfo.multiplier > 1 && (
-          <div className="mt-4 p-3 rounded-xl bg-neutral-100/5 border border-neutral-100/10">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-4 p-3 rounded-xl bg-game-green/10 border border-game-green/20"
+          >
             <div className="flex items-center justify-between">
               <span className="text-sm text-neutral-400">
                 {consistency.bonus}
               </span>
-              <span className="text-sm font-light text-neutral-200">
-                +{Math.round((streakInfo.multiplier - 1) * 100)}%
+              <span className="text-sm font-bold text-game-green">
+                +{Math.round((streakInfo.multiplier - 1) * 100)}% em todos os pontos
               </span>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Record */}
@@ -148,8 +160,8 @@ export function StreakTracker() {
           <span className="text-[10px] text-neutral-600">
             {consistency.record}
           </span>
-          <span className="text-sm text-neutral-500">
-            {bestStreak} dias
+          <span className="text-sm text-game-orange">
+            🏆 {bestStreak} dias
           </span>
         </div>
       </div>

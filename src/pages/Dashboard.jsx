@@ -8,10 +8,10 @@ import {
   ReferralCode,
   LevelProgress,
   ReferralHistory,
-  RankingWidget,
   RewardsSection,
   TasksWidget,
-  EngagementHeader,
+  HeroSection,
+  MissionsSection,
   StreakTracker,
   SocialProofBanner,
   CompetitionWidget
@@ -54,8 +54,13 @@ export function Dashboard() {
         {/* Social Proof Banner */}
         <SocialProofBanner />
 
-        {/* Engagement Header - Main CTA */}
-        <EngagementHeader />
+        {/* Hero Section - Protagonista com pontos */}
+        <HeroSection />
+
+        {/* Missões Gamificadas */}
+        <div className="mb-8">
+          <MissionsSection />
+        </div>
 
         {/* Stats cards */}
         <div className="mb-8">
@@ -72,7 +77,7 @@ export function Dashboard() {
             {/* History */}
             <ReferralHistory />
 
-            {/* Rewards */}
+            {/* Rewards with rarity */}
             <RewardsSection />
           </div>
 
@@ -81,10 +86,10 @@ export function Dashboard() {
             {/* Level progress */}
             <LevelProgress />
 
-            {/* Competition Widget */}
+            {/* Competition Widget - Ranking */}
             <CompetitionWidget />
 
-            {/* Streak Tracker */}
+            {/* Streak Tracker - Orange theme */}
             <StreakTracker />
 
             {/* Tasks */}

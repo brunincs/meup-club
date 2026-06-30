@@ -45,7 +45,7 @@ export const levels = {
 // ============================================
 export const variations = {
   benefits: ['experiências', 'privilégios', 'vantagens', 'acessos'],
-  points: ['benefícios', 'progressos', 'conquistas'],
+  points: ['pontos', 'PONTOS', 'pontos acumulados'],
 
   get: (type, index = null) => {
     const options = variations[type] || variations.benefits
@@ -54,9 +54,9 @@ export const variations = {
   },
 
   forContext: {
-    dashboard: 'privilégios',
+    dashboard: 'pontos',
     rewards: 'experiências',
-    ranking: 'conquistas',
+    ranking: 'pontos',
     tasks: 'missões',
     profile: 'jornada'
   }
@@ -66,13 +66,16 @@ export const variations = {
 // TERMOS BASE
 // ============================================
 export const terms = {
-  points: 'benefícios acumulados',
-  pointsShort: 'benefícios',
+  points: 'pontos acumulados',
+  pointsShort: 'pontos',
+  pointsLabel: 'PONTOS',
   rewards: 'experiências',
   ranking: 'posição no clube',
   missions: 'missões disponíveis',
-  earn: 'acumular',
-  redeem: 'ativar',
+  earn: 'ganhar',
+  earnMore: 'Ganhar mais pontos',
+  redeem: 'trocar',
+  redeemPoints: 'Troque seus pontos',
   tasks: 'missões',
   streak: 'dias consecutivos',
   level: 'classe',
@@ -120,15 +123,20 @@ export const progress = {
   },
 
   closeToUnlock: 'Próximo de novas experiências',
-  toNextLevel: (points) => `${points.toLocaleString('pt-BR')} benefícios para a próxima classe`,
-  toNextPosition: (name) => `Supere ${name} para avançar`,
-  almostThere: 'Quase lá',
-  keepGoing: 'Continue sua jornada',
+  toNextLevel: (points) => `Faltam ${points.toLocaleString('pt-BR')} pontos`,
+  toNextPosition: (name) => `Faltam X pontos para ultrapassar ${name}`,
+  almostThere: 'Quase lá!',
+  keepGoing: 'Continue ganhando pontos',
 
   // Indicadores de conquista
   unlockedCount: (n) => `${n} ${n === 1 ? 'experiência disponível' : 'experiências disponíveis'}`,
   usedCount: (n) => `${n} ${n === 1 ? 'experiência ativada' : 'experiências ativadas'}`,
-  activeFor: (n) => `${n} dias consecutivos`
+  activeFor: (n) => `${n} dias consecutivos`,
+
+  // Pontos
+  pointsToday: (pts) => `+${pts.toLocaleString('pt-BR')} pontos hoje`,
+  pointsWeek: (pts) => `+${pts.toLocaleString('pt-BR')} pontos esta semana`,
+  pointsRemaining: (pts) => `Faltam ${pts.toLocaleString('pt-BR')} pontos`
 }
 
 // ============================================
@@ -199,15 +207,17 @@ export const benefits = {
 // ============================================
 export const missions = {
   title: 'Missões',
-  subtitle: 'Acumule benefícios completando missões',
-  daily: 'Missões do Dia',
-  weekly: 'Missões da Semana',
-  special: 'Missões Especiais',
+  subtitle: 'Ganhe pontos completando missões',
+  daily: 'Missão do Dia',
+  weekly: 'Missão da Semana',
+  special: 'Missão Especial',
   completed: 'Concluída',
   pending: 'Disponível',
   inProgress: 'Em andamento',
-  benefitsFormat: (pts) => `+${pts} benefícios`,
-  startMission: 'Iniciar missão'
+  pointsFormat: (pts) => `+${pts} pontos`,
+  benefitsFormat: (pts) => `+${pts} pontos`,
+  startMission: 'Iniciar missão',
+  resetIn: (time) => `Reset em ${time}`
 }
 
 // Alias para compatibilidade
@@ -225,11 +235,13 @@ export const position = {
   general: 'Geral',
   weekly: 'Semanal',
   membersSuffix: 'membros',
-  toAdvance: 'benefícios para o próximo',
+  toAdvance: (pts) => `Faltam ${pts.toLocaleString('pt-BR')} pontos para ultrapassar`,
+  toAdvanceSimple: 'pontos para o próximo',
   climbing: 'Subindo',
   stable: 'Estável',
   topPerformer: 'Destaque',
-  rewardAtGoal: 'Ao alcançar:'
+  rewardAtGoal: 'Ao alcançar:',
+  pointsToday: (pts) => `+${pts.toLocaleString('pt-BR')} hoje`
 }
 
 // ============================================
@@ -353,8 +365,11 @@ export const motivation = {
 // FORMATADORES
 // ============================================
 export const format = {
-  points: (n) => `${n.toLocaleString('pt-BR')} benefícios`,
+  points: (n) => `${n.toLocaleString('pt-BR')} pontos`,
   pointsShort: (n) => n.toLocaleString('pt-BR'),
+  pointsWithLabel: (n) => `${n.toLocaleString('pt-BR')} PONTOS`,
+  pointsGain: (n) => `+${n.toLocaleString('pt-BR')} pontos`,
+  pointsRemaining: (n) => `Faltam ${n.toLocaleString('pt-BR')} pontos`,
   currency: (n) => `R$ ${n.toLocaleString('pt-BR')}`,
   percentage: (n) => `${Math.round(n)}%`,
   time: {

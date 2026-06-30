@@ -110,7 +110,18 @@ export const mockUserEngagement = {
   dailyTasksCompleted: ['daily_access'],
   weeklyPoints: 450,
   weeklyPosition: 8,
-  totalDaysActive: 23
+  totalDaysActive: 23,
+  // Dados de pontos para gamificação
+  today: {
+    pointsEarned: 980,
+    tasksCompleted: 3,
+    referrals: 1
+  },
+  thisWeek: {
+    pointsEarned: 3240,
+    tasksCompleted: 12,
+    referrals: 4
+  }
 }
 
 // ============================================
