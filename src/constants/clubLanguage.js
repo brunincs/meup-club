@@ -6,17 +6,17 @@
 // Terminologia do Clube
 export const CLUB_TERMS = {
   // Substituições principais
-  points: 'benefícios',
+  points: 'pontos',
   rewards: 'experiências',
   store: 'Catálogo de Experiências',
-  balance: 'benefícios disponíveis',
-  redeem: 'ativar',
+  balance: 'pontos disponíveis',
+  redeem: 'trocar',
   tasks: 'missões',
   level: 'classe',
 
   // Ações
-  earnPoints: 'acumular benefícios',
-  redeemReward: 'ativar experiência',
+  earnPoints: 'ganhar pontos',
+  redeemReward: 'trocar pontos',
   levelUp: 'evoluir de classe',
 
   // Status
@@ -39,7 +39,7 @@ export const DASHBOARD_MESSAGES = {
   memberSince: 'Membro desde',
   currentClass: 'Sua classe atual',
   nextClass: 'Próxima classe',
-  benefitsAvailable: 'benefícios disponíveis',
+  benefitsAvailable: 'pontos disponíveis',
   experiencesUnlocked: 'experiências desbloqueadas',
   consecutiveDays: 'dias consecutivos',
   nextExperience: 'Próxima experiência',
@@ -204,7 +204,7 @@ export const EXPERIENCE_BADGES = {
 // Mensagens de Progressão
 export const PROGRESSION_MESSAGES = {
   levelUp: (className) => `Parabéns! Você alcançou ${className}`,
-  almostThere: (points) => `Apenas ${points} benefícios para a próxima classe`,
+  almostThere: (points) => `Apenas ${points} pontos para a próxima classe`,
   nextExperience: (name) => `Próxima experiência: ${name}`,
   unlocked: (name) => `${name} está disponível para ativação`,
   milestone: (count) => `${count} experiências ativadas`
@@ -217,7 +217,7 @@ export const PROFILE_SECTIONS = {
   class: 'Classe Atual',
   memberSince: 'Membro desde',
   journeys: 'Jornadas Realizadas',
-  benefits: 'Benefícios Acumulados',
+  benefits: 'Pontos Acumulados',
   experiences: 'Experiências Ativadas',
   ranking: 'Posição no Clube',
   streak: 'Maior Sequência',
@@ -247,7 +247,7 @@ export const RANKING_LABELS = {
   title: 'Ranking do Clube',
   yourPosition: 'Sua posição',
   topTravelers: 'Principais viajantes',
-  benefitsToNext: 'benefícios para o próximo',
+  benefitsToNext: 'pontos para o próximo',
   rewardAtGoal: 'Ao alcançar:',
   weeklyProgress: 'Progresso semanal'
 }
@@ -266,7 +266,7 @@ export const HISTORY_LABELS = {
   experienceActivated: 'Experiência ativada',
   referralApproved: 'Indicação aprovada',
   levelUp: 'Nova classe alcançada',
-  benefitsEarned: 'Benefícios recebidos'
+  benefitsEarned: 'Pontos recebidos'
 }
 
 // Botões e CTAs
@@ -275,7 +275,7 @@ export const CTA_LABELS = {
   viewCatalog: 'Ver Catálogo',
   shareCode: 'Compartilhar Código',
   inviteFriend: 'Convidar Viajante',
-  viewBenefits: 'Ver Benefícios',
+  viewBenefits: 'Ver Pontos',
   startMission: 'Iniciar Missão',
   seeAll: 'Ver todos',
   continue: 'Continuar',

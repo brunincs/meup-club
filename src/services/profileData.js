@@ -28,7 +28,7 @@ export const mockProfileData = {
 export function getPointsBreakdown(userPoints = 10940) {
   const tasksPoints = calculateTasksPoints()
 
-  // Distribuição de benefícios
+  // Distribuição de pontos
   const referralPoints = Math.floor(userPoints * 0.75) // 75% indicações
   const missionsPoints = tasksPoints.earned
   const classBonus = Math.floor(userPoints * 0.10) // 10% bônus de classe

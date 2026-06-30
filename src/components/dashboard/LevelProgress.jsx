@@ -32,7 +32,7 @@ export function LevelProgress() {
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">Benefícios</div>
+            <div className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">Pontos</div>
             <div className="text-lg font-light text-neutral-200">
               {format.pointsShort(points)}
             </div>
@@ -62,7 +62,7 @@ export function LevelProgress() {
               />
             </div>
             <div className="text-xs text-neutral-600">
-              <span className="text-neutral-300">{format.pointsShort(pointsToNext)}</span> benefícios restantes
+              <span className="text-neutral-300">{format.pointsShort(pointsToNext)}</span> pontos restantes
             </div>
           </div>
         )}

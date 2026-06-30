@@ -58,7 +58,7 @@ export const levels = [
     bonusMultiplier: 1.05,
     icon: '🌟',
     color: 'blue',
-    perks: ['5% bônus em benefícios', 'Atendimento prioritário', 'Experiências exclusivas']
+    perks: ['5% bônus em pontos', 'Atendimento prioritário', 'Experiências exclusivas']
   },
   {
     id: 3,
@@ -69,7 +69,7 @@ export const levels = [
     bonusMultiplier: 1.1,
     icon: '💼',
     color: 'violet',
-    perks: ['10% bônus em benefícios', 'Ofertas antecipadas', 'Concierge de viagem']
+    perks: ['10% bônus em pontos', 'Ofertas antecipadas', 'Concierge de viagem']
   },
   {
     id: 4,
@@ -80,7 +80,7 @@ export const levels = [
     bonusMultiplier: 1.15,
     icon: '👑',
     color: 'amber',
-    perks: ['15% bônus em benefícios', 'Suporte VIP dedicado', 'Upgrades preferenciais']
+    perks: ['15% bônus em pontos', 'Suporte VIP dedicado', 'Upgrades preferenciais']
   },
   {
     id: 5,
@@ -91,7 +91,7 @@ export const levels = [
     bonusMultiplier: 1.25,
     icon: '💎',
     color: 'slate-900',
-    perks: ['25% bônus em benefícios', 'Gerente pessoal', 'Experiências sob medida', 'Eventos privados']
+    perks: ['25% bônus em pontos', 'Gerente pessoal', 'Experiências sob medida', 'Eventos privados']
   }
 ]
 
@@ -318,10 +318,10 @@ export function getRarityConfig(rarity) {
 }
 
 // ============================================
-// SISTEMA DE BENEFÍCIOS EXTRAS
+// SISTEMA DE PONTOS EXTRAS
 // ============================================
 export const extraPointsConfig = {
-  // CPA - Benefícios por indicação criada (pendente até conversão)
+  // CPA - Pontos por indicação criada (pendente até conversão)
   cpa: {
     points: 20,
     status: 'pending',
@@ -391,7 +391,7 @@ export const extraPointsConfig = {
   // Alias para compatibilidade
   get tasks() { return this.missions },
 
-  // Limite de segurança: benefícios extras máximo 20% do total
+  // Limite de segurança: pontos extras máximo 20% do total
   maxExtraPointsRatio: creditsConfig.maxExtraBonusPercentage
 }
 

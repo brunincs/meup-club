@@ -27,7 +27,7 @@ export function StatsCards({ stats }) {
       icon: '◇'
     },
     {
-      label: 'Benefícios',
+      label: 'Pontos',
       value: format.pointsShort(profile?.points || 0),
       suffix: 'acumulados',
       icon: '✦'

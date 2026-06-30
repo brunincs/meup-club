@@ -79,7 +79,7 @@ function MissionCard({ task, onComplete }) {
             <span className={`text-sm font-light ${
               isCompleted ? 'text-neutral-600' : 'text-neutral-300'
             }`}>
-              +{task.points} benefícios
+              +{task.points} pontos
             </span>
 
             {!isCompleted && (
@@ -141,7 +141,7 @@ export function Tasks() {
       return
     }
 
-    toast.success(`Missão concluída: +${task.points} benefícios`, { duration: 3000 })
+    toast.success(`Missão concluída: +${task.points} pontos`, { duration: 3000 })
   }
 
   return (
@@ -173,7 +173,7 @@ export function Tasks() {
             Missões
           </h1>
           <p className="text-lg text-neutral-500 max-w-2xl">
-            Complete missões para acumular benefícios adicionais no clube.
+            Complete missões para ganhar pontos adicionais no clube.
           </p>
         </motion.div>
 
@@ -195,7 +195,7 @@ export function Tasks() {
           <div className="w-px h-10 bg-dark-700/50" />
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">Benefícios Acumulados</p>
+            <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">Pontos Acumulados</p>
             <p className="text-2xl font-light text-neutral-100">+{format.pointsShort(tasksPoints.earned)}</p>
           </div>
 

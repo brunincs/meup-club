@@ -166,7 +166,7 @@ export function Hero() {
             <div className="w-px h-8 bg-dark-600 hidden md:block" />
             <div className="text-center">
               <div className="text-xl md:text-2xl font-display font-bold text-accent-gold">R$ 1.2M+</div>
-              <div className="text-neutral-600 text-xs md:text-sm">em benefícios</div>
+              <div className="text-neutral-600 text-xs md:text-sm">em pontos</div>
             </div>
             <div className="w-px h-8 bg-dark-600 hidden md:block" />
             <div className="text-center">

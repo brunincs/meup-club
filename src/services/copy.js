@@ -274,7 +274,7 @@ export const history = {
   experienceActivated: 'Experiência ativada',
   referralApproved: 'Indicação aprovada',
   levelUp: 'Nova classe alcançada',
-  benefitsEarned: 'Benefícios recebidos'
+  benefitsEarned: 'Pontos recebidos'
 }
 
 // ============================================
@@ -315,7 +315,7 @@ export const profile = {
   status: 'Sua classe',
   evolution: 'Sua jornada',
   history: 'Histórico',
-  benefitsOrigin: 'Origem dos benefícios',
+  benefitsOrigin: 'Origem dos pontos',
   statistics: 'Estatísticas',
   achievements: 'Conquistas',
   memberSince: 'Membro desde',
@@ -338,7 +338,7 @@ export const invites = {
   history: 'Histórico de indicações',
   pending: 'Aguardando',
   converted: 'Aprovada',
-  benefits: 'Benefícios gerados'
+  benefits: 'Pontos gerados'
 }
 
 // ============================================

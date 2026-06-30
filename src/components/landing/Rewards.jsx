@@ -76,7 +76,7 @@ const rewards = [
   },
   {
     id: 'exclusive',
-    title: 'Benefícios elite',
+    title: 'Pontos elite',
     description: 'Vantagens secretas para o topo.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">

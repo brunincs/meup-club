@@ -250,7 +250,7 @@ export function Leaderboard() {
                   </p>
                   <p className="text-xl font-light text-neutral-300">
                     +{format.pointsShort(stats.pointsToNextRank)}
-                    <span className="text-neutral-600 text-sm ml-1">benefícios</span>
+                    <span className="text-neutral-600 text-sm ml-1">pontos</span>
                   </p>
                 </>
               ) : (

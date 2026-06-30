@@ -71,10 +71,10 @@ export function EngagementHeader() {
 
           {/* Grid de informações */}
           <div className="px-8 pb-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {/* Benefícios Disponíveis */}
+            {/* Pontos Disponíveis */}
             <div className="p-4 rounded-xl bg-dark-700/20 border border-dark-600/10">
               <div className="text-[10px] uppercase tracking-wider text-neutral-600 mb-2">
-                Benefícios
+                Pontos
               </div>
               <div className="text-2xl font-light text-neutral-100">
                 {format.pointsShort(userPoints)}
@@ -154,7 +154,7 @@ export function EngagementHeader() {
                   <div className="text-sm font-medium text-neutral-300">
                     {format.pointsShort(nextExperience.pointsNeeded)}
                   </div>
-                  <div className="text-[10px] text-neutral-600">benefícios restantes</div>
+                  <div className="text-[10px] text-neutral-600">pontos restantes</div>
                 </div>
               </div>
             </div>

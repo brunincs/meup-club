@@ -115,7 +115,7 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
             <span className={`text-xl font-light ${canRedeem ? 'text-neutral-100' : 'text-neutral-500'}`}>
               {format.pointsShort(reward.points_required)}
             </span>
-            <span className="text-xs text-neutral-600 ml-1">benefícios</span>
+            <span className="text-xs text-neutral-600 ml-1">pontos</span>
           </div>
 
           {isUnlockedByLevel && (
@@ -222,7 +222,7 @@ export function Rewards() {
       return
     }
     if (userPoints < reward.points_required) {
-      toast.error(`Faltam ${format.pointsShort(reward.pointsNeeded)} benefícios`)
+      toast.error(`Faltam ${format.pointsShort(reward.pointsNeeded)} pontos`)
       return
     }
     toast.success(`Experiência ativada: ${reward.name}`, { duration: 4000 })
@@ -283,7 +283,7 @@ export function Rewards() {
           <div className="w-px h-10 bg-dark-700/50" />
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">Benefícios</p>
+            <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">Pontos</p>
             <p className="text-2xl font-light text-neutral-100">{format.pointsShort(userPoints)}</p>
           </div>
 
@@ -369,7 +369,7 @@ export function Rewards() {
                 </div>
                 <h3 className="text-lg text-neutral-300 mb-2">Nenhuma experiência disponível</h3>
                 <p className="text-sm text-neutral-600 mb-6">
-                  Continue acumulando benefícios para desbloquear experiências.
+                  Continue ganhando pontos para desbloquear experiências.
                 </p>
                 <Link to="/dashboard">
                   <button className="px-6 py-3 rounded-xl bg-neutral-100 text-dark-900 font-medium text-sm">
@@ -407,7 +407,7 @@ export function Rewards() {
                   />
                 </div>
                 <p className="text-sm text-neutral-500 mt-3">
-                  {format.pointsShort(levelData.pointsToNext)} benefícios para desbloquear novas experiências
+                  {format.pointsShort(levelData.pointsToNext)} pontos para desbloquear novas experiências
                 </p>
               </div>
 

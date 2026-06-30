@@ -64,7 +64,7 @@ export function TasksWidget() {
         <div className="flex items-center justify-between mt-2">
           <span className="text-[10px] text-neutral-600">Progresso</span>
           <span className="text-[10px] text-neutral-500">
-            +{format.pointsShort(tasksPoints.earned)} benefícios
+            +{format.pointsShort(tasksPoints.earned)} pontos
           </span>
         </div>
       </div>

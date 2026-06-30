@@ -75,7 +75,7 @@ function PassportHeader({ profile, levelData, userPoints }) {
           {/* Points */}
           <div className="md:text-right">
             <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-2">
-              Benefícios acumulados
+              Pontos acumulados
             </p>
             <p className="text-4xl md:text-5xl font-display font-light text-neutral-100">
               {format.pointsShort(userPoints)}
@@ -474,7 +474,7 @@ export function Profile() {
                   />
                 </div>
                 <p className="text-xs text-neutral-600 mt-2 text-right">
-                  {format.pointsShort(levelData.pointsToNext)} benefícios restantes
+                  {format.pointsShort(levelData.pointsToNext)} pontos restantes
                 </p>
               </div>
 

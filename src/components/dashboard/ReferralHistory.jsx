@@ -203,7 +203,7 @@ export function ReferralHistory() {
       <div className="px-6 py-4 border-t border-dark-700/30">
         <p className="text-[10px] text-neutral-700 flex items-center gap-2">
           <span className="text-neutral-600">○</span>
-          Benefícios são creditados quando a indicação é confirmada
+          Pontos são creditados quando a indicação é confirmada
         </p>
       </div>
     </motion.div>

@@ -68,7 +68,7 @@ export function DashboardHeader() {
               </Link>
               <div className="w-px h-6 bg-dark-700/50" />
               <div className="text-right">
-                <div className="text-[10px] uppercase tracking-wider text-neutral-600">Benefícios</div>
+                <div className="text-[10px] uppercase tracking-wider text-neutral-600">Pontos</div>
                 <div className="text-sm font-medium text-neutral-200">
                   {(profile?.points || 0).toLocaleString('pt-BR')}
                 </div>
