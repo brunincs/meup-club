@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
+import { GoldLine } from '@/components/ui/GoldLine'
 
 const steps = [
   {
@@ -27,7 +28,7 @@ const steps = [
   {
     number: '03',
     title: 'Pontos entram',
-    description: 'Calculados sobre o lucro. Mais valor = mais pontos.',
+    description: 'Proporcionais ao valor da operação. Mais valor = mais pontos.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -62,14 +63,15 @@ export function HowItWorks() {
           className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 md:mb-16"
         >
           <div className="max-w-xl">
-            <span className="inline-block text-xs uppercase tracking-[0.3em] text-accent-gold mb-4">
+            <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-ouro-antigo mb-4">
               Mecânica
             </span>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-neutral-100">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-branco-gelo mb-3">
               Simples assim.
             </h2>
+            <GoldLine width="60px" className="mt-3" />
           </div>
-          <p className="text-neutral-500 max-w-sm text-base md:text-right">
+          <p className="text-cinza-rosado max-w-sm text-base md:text-right">
             Você indica, a gente rastreia, você ganha.
           </p>
         </motion.div>
@@ -89,7 +91,7 @@ export function HowItWorks() {
               whileInView={{ scaleX: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-              className="h-full bg-gradient-to-r from-transparent via-dark-500 to-transparent origin-left"
+              className="h-full bg-gradient-to-r from-transparent via-cinza-rosado/30 to-transparent origin-left"
             />
           </div>
 
@@ -105,32 +107,32 @@ export function HowItWorks() {
                     y: -4,
                     transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
                   }}
-                  className="relative p-6 rounded-2xl border border-dark-700/50 bg-dark-800/30 backdrop-blur-sm transition-all duration-500 hover:border-dark-500 hover:bg-dark-700/40 h-full"
+                  className="relative p-6 rounded-2xl border border-cinza-rosado/20 bg-roxo-profundo/30 backdrop-blur-sm transition-all duration-500 hover:border-ouro-antigo/30 hover:bg-dark-700/40 h-full"
                 >
                   {/* Número pequeno */}
-                  <span className="inline-block text-[10px] font-mono text-dark-400 mb-5 px-2 py-0.5 rounded bg-dark-700/50">
+                  <span className="inline-block text-[10px] font-mono text-cinza-rosado mb-5 px-2 py-0.5 rounded bg-roxo-profundo/50 border border-cinza-rosado/20">
                     Passo {step.number}
                   </span>
 
                   {/* Ícone */}
                   <motion.div
                     whileHover={{ scale: 1.1 }}
-                    className="w-11 h-11 rounded-xl bg-dark-700/50 border border-dark-500/50 flex items-center justify-center mb-5 text-neutral-400 transition-all duration-300 group-hover:border-accent-gold/30 group-hover:bg-accent-gold/5 group-hover:text-accent-gold"
+                    className="w-11 h-11 rounded-xl bg-roxo-profundo/50 border border-cinza-rosado/30 flex items-center justify-center mb-5 text-cinza-rosado transition-all duration-300 group-hover:border-ouro-antigo/30 group-hover:bg-ouro-antigo/5 group-hover:text-ouro-antigo"
                   >
                     {step.icon}
                   </motion.div>
 
                   {/* Conteúdo */}
-                  <h3 className="text-base font-semibold text-neutral-100 mb-2 group-hover:text-white transition-colors">
+                  <h3 className="text-base font-heading font-semibold text-branco-gelo mb-2 group-hover:text-white transition-colors">
                     {step.title}
                   </h3>
-                  <p className="text-sm text-neutral-500 leading-relaxed">
+                  <p className="text-sm text-cinza-rosado leading-relaxed">
                     {step.description}
                   </p>
 
                   {/* Indicador de próximo (desktop) */}
                   {index < steps.length - 1 && (
-                    <div className="hidden lg:block absolute -right-2.5 top-20 text-dark-500 group-hover:text-accent-gold transition-colors">
+                    <div className="hidden lg:block absolute -right-2.5 top-20 text-cinza-rosado/50 group-hover:text-ouro-antigo transition-colors">
                       <motion.span
                         animate={{ x: [0, 3, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity }}

@@ -53,12 +53,12 @@ export function SocialProofBanner() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          className="flex items-center gap-3 text-xs text-neutral-600"
+          className="flex items-center gap-3 text-xs text-cinza-rosado"
         >
-          <span className="w-1 h-1 rounded-full bg-neutral-600" />
+          <span className="w-1 h-1 rounded-full bg-cinza-rosado" />
           <span>{getMessage()}</span>
-          <span className="text-neutral-700">·</span>
-          <span className="text-neutral-700">{currentNotif.time}</span>
+          <span className="text-cinza-rosado/60">·</span>
+          <span className="text-cinza-rosado/60">{currentNotif.time}</span>
         </motion.div>
       </AnimatePresence>
     </motion.div>

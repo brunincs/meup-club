@@ -1,6 +1,7 @@
 import {
   Hero,
   HowItWorks,
+  PointsExplanation,
   Ranking,
   Rewards,
   Statement,
@@ -13,6 +14,7 @@ export function Home() {
     <>
       <Hero />
       <HowItWorks />
+      <PointsExplanation />
       <Ranking />
       <Rewards />
       <Statement />

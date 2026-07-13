@@ -1,5 +1,6 @@
 export { Hero } from './Hero'
 export { HowItWorks } from './HowItWorks'
+export { PointsExplanation } from './PointsExplanation'
 export { Ranking } from './Ranking'
 export { Rewards } from './Rewards'
 export { Statement } from './Statement'

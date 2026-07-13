@@ -5,23 +5,23 @@ import { GlowBorder } from '@/components/effects/GlowEffect'
 const missionTypeConfig = {
   daily: {
     label: 'MISSÃO DO DIA',
-    color: '#a855f7',
-    bgGradient: 'from-purple-500/10 to-purple-600/5',
-    borderColor: 'border-purple-500/30',
-    pulseClass: 'animate-pulse-border'
+    color: '#a27937',
+    bgGradient: 'from-ouro-antigo/10 to-ouro-antigo/5',
+    borderColor: 'border-ouro-antigo/30',
+    pulseClass: ''
   },
   weekly: {
     label: 'MISSÃO DA SEMANA',
     color: '#3b82f6',
-    bgGradient: 'from-blue-500/10 to-blue-600/5',
-    borderColor: 'border-blue-500/20',
+    bgGradient: 'from-game-blue/10 to-game-blue/5',
+    borderColor: 'border-game-blue/20',
     pulseClass: ''
   },
   special: {
     label: 'MISSÃO ESPECIAL',
-    color: '#f59e0b',
-    bgGradient: 'from-amber-500/10 to-amber-600/5',
-    borderColor: 'border-amber-500/30',
+    color: '#f97316',
+    bgGradient: 'from-game-orange/10 to-game-orange/5',
+    borderColor: 'border-game-orange/30',
     pulseClass: ''
   }
 }
@@ -65,10 +65,10 @@ export function MissionCard({
                 </span>
               )}
             </div>
-            <h3 className="text-base font-medium text-neutral-100">
+            <h3 className="text-base font-heading font-medium text-branco-gelo">
               {mission.name}
             </h3>
-            <p className="text-xs text-neutral-500 mt-1">
+            <p className="text-xs text-cinza-rosado mt-1">
               {mission.description}
             </p>
           </div>
@@ -79,9 +79,9 @@ export function MissionCard({
             size={56}
             strokeWidth={4}
             color={config.color}
-            bgColor="rgba(255, 255, 255, 0.05)"
+            bgColor="rgba(163, 150, 149, 0.1)"
           >
-            <span className="text-xs font-semibold text-neutral-200">
+            <span className="text-xs font-heading font-semibold text-branco-gelo">
               {Math.round(mission.progress)}%
             </span>
           </ProgressRing>
@@ -93,13 +93,13 @@ export function MissionCard({
             <span className="text-lg font-bold text-game-green">
               +{mission.points.toLocaleString('pt-BR')}
             </span>
-            <span className="text-xs text-neutral-500 ml-1">pontos</span>
+            <span className="text-xs text-cinza-rosado ml-1">pontos</span>
           </div>
 
           {/* Timer / Action */}
           <div className="flex items-center gap-3">
             {mission.resetIn && !isCompleted && (
-              <span className="text-[10px] text-neutral-600">
+              <span className="text-[10px] text-cinza-rosado/60">
                 Reset em {mission.resetIn}
               </span>
             )}
@@ -109,18 +109,18 @@ export function MissionCard({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onClaim?.(mission)}
-                className="px-4 py-2 rounded-lg text-xs font-semibold bg-game-green text-dark-900 shadow-lg shadow-game-green/20"
+                className="px-4 py-2 rounded-lg text-xs font-heading font-semibold bg-game-green text-roxo-profundo shadow-lg shadow-game-green/20"
               >
                 Resgatar
               </motion.button>
             ) : isInProgress ? (
-              <span className="text-xs text-neutral-400">Em progresso...</span>
+              <span className="text-xs text-cinza-rosado">Em progresso...</span>
             ) : (
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onStart?.(mission)}
-                className="px-4 py-2 rounded-lg text-xs font-medium bg-dark-600 text-neutral-200 border border-dark-500 hover:bg-dark-500 transition-colors"
+                className="px-4 py-2 rounded-lg text-xs font-heading font-medium bg-roxo-profundo/50 text-branco-gelo border border-cinza-rosado/20 hover:bg-roxo-profundo/70 transition-colors"
               >
                 Iniciar
               </motion.button>
@@ -144,7 +144,7 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
       className={`p-4 rounded-xl cursor-pointer transition-all ${
         isCompleted
           ? 'bg-game-green/10 border border-game-green/20'
-          : `bg-gradient-to-br ${config.bgGradient} border ${config.borderColor}`
+          : 'bg-roxo-profundo/30 border border-cinza-rosado/20 hover:border-cinza-rosado/30'
       }`}
     >
       <div className="flex items-center gap-4">
@@ -154,13 +154,13 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
           size={40}
           strokeWidth={3}
           color={isCompleted ? '#22c55e' : config.color}
-          bgColor="rgba(255, 255, 255, 0.05)"
+          bgColor="rgba(163, 150, 149, 0.1)"
         />
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-medium text-neutral-200 truncate">
+            <h4 className="text-sm font-heading font-medium text-branco-gelo truncate">
               {mission.name}
             </h4>
             {mission.rarity === 'rare' && (
@@ -169,15 +169,15 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
               </span>
             )}
           </div>
-          <p className="text-xs text-neutral-500 truncate">{mission.description}</p>
+          <p className="text-xs text-cinza-rosado truncate">{mission.description}</p>
         </div>
 
         {/* Points */}
         <div className="text-right">
-          <span className="text-sm font-semibold text-game-green">
+          <span className="text-sm font-heading font-semibold text-game-green">
             +{mission.points}
           </span>
-          <span className="text-[10px] text-neutral-600 block">pontos</span>
+          <span className="text-[10px] text-cinza-rosado/60 block">pontos</span>
         </div>
       </div>
     </motion.div>

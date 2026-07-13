@@ -30,11 +30,11 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-900">
+      <div className="min-h-screen flex items-center justify-center bg-roxo-profundo">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-6 h-6 border border-neutral-600 border-t-neutral-300 rounded-full"
+          className="w-6 h-6 border border-cinza-rosado/30 border-t-ouro-antigo rounded-full"
         />
       </div>
     )
@@ -45,7 +45,7 @@ export function Dashboard() {
   const stats = getStats(mockReferrals)
 
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div className="min-h-screen bg-roxo-profundo">
       {/* Header */}
       <DashboardHeader />
 

@@ -1,24 +1,39 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
+import { GoldLine } from '@/components/ui/GoldLine'
+import { PlaneIcon, StarIcon, BriefcaseIcon, CrownIcon, DiamondIcon } from '@/components/ui/Icons'
 
+// Sistema de classes baseado em cabines de voo
 const rankingData = [
-  { position: 1, name: 'Marina S.', points: 48750, level: 'Diamante', avatar: 'M', isLeader: true },
-  { position: 2, name: 'Ricardo L.', points: 42300, level: 'Diamante', avatar: 'R' },
-  { position: 3, name: 'Fernanda C.', points: 38920, level: 'Platina', avatar: 'F' },
-  { position: 4, name: 'Bruno M.', points: 31450, level: 'Platina', avatar: 'B' },
-  { position: 5, name: 'Carolina T.', points: 28100, level: 'Ouro', avatar: 'C' },
+  { position: 1, name: 'Marina S.', points: 48750, level: 'Meup Exclusive', levelId: 5, avatar: 'M', isLeader: true },
+  { position: 2, name: 'Ricardo L.', points: 42300, level: 'Meup Exclusive', levelId: 5, avatar: 'R' },
+  { position: 3, name: 'Fernanda C.', points: 38920, level: 'Primeira Classe', levelId: 4, avatar: 'F' },
+  { position: 4, name: 'Bruno M.', points: 31450, level: 'Primeira Classe', levelId: 4, avatar: 'B' },
+  { position: 5, name: 'Carolina T.', points: 28100, level: 'Executiva', levelId: 3, avatar: 'C' },
 ]
 
 const levelColors = {
-  Diamante: 'from-cyan-400 to-blue-500',
-  Platina: 'from-neutral-300 to-neutral-500',
-  Ouro: 'from-amber-400 to-yellow-600',
+  5: 'from-slate-200 to-slate-400', // Meup Exclusive (platina/diamante)
+  4: 'from-amber-400 to-yellow-600', // Primeira Classe
+  3: 'from-violet-400 to-purple-600', // Executiva
+  2: 'from-blue-400 to-blue-600', // Premium Economy
+  1: 'from-slate-400 to-slate-600', // Econômica
 }
 
 const levelBgColors = {
-  Diamante: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400',
-  Platina: 'bg-neutral-400/10 border-neutral-400/20 text-neutral-300',
-  Ouro: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
+  5: 'bg-slate-200/10 border-slate-300/20 text-slate-200',
+  4: 'bg-amber-500/10 border-amber-400/20 text-amber-400',
+  3: 'bg-violet-500/10 border-violet-400/20 text-violet-400',
+  2: 'bg-blue-500/10 border-blue-400/20 text-blue-400',
+  1: 'bg-slate-500/10 border-slate-400/20 text-slate-400',
+}
+
+const levelIcons = {
+  5: DiamondIcon,
+  4: CrownIcon,
+  3: BriefcaseIcon,
+  2: StarIcon,
+  1: PlaneIcon,
 }
 
 function formatPoints(points) {
@@ -30,6 +45,11 @@ function getPointsDiff(currentPoints, leaderPoints) {
   return diff > 0 ? `-${formatPoints(diff)}` : '—'
 }
 
+function getLevelIcon(levelId, className = '') {
+  const IconComponent = levelIcons[levelId] || PlaneIcon
+  return <IconComponent size={16} className={className} />
+}
+
 export function Ranking() {
   const leaderPoints = rankingData[0].points
 
@@ -39,7 +59,7 @@ export function Ranking() {
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[180px] opacity-20"
-          style={{ background: 'radial-gradient(circle, rgba(201, 169, 98, 0.12) 0%, transparent 60%)' }}
+          style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.12) 0%, transparent 60%)' }}
         />
       </div>
 
@@ -52,13 +72,14 @@ export function Ranking() {
           variants={fadeUp}
           className="text-center mb-12 md:mb-16"
         >
-          <span className="inline-block text-xs uppercase tracking-[0.3em] text-accent-gold mb-4">
+          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-ouro-antigo mb-4">
             Competição ativa
           </span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-neutral-100 mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-branco-gelo mb-4">
             Quem está na frente?
           </h2>
-          <p className="text-neutral-500 max-w-lg mx-auto text-base">
+          <GoldLine width="80px" centered className="mb-4" />
+          <p className="text-cinza-rosado max-w-lg mx-auto text-base">
             O ranking atualiza a cada indicação. Sua posição depende de você.
           </p>
         </motion.div>
@@ -76,36 +97,26 @@ export function Ranking() {
             variants={staggerItem}
             className="mb-4"
           >
-            <div className="relative p-5 md:p-6 rounded-2xl bg-gradient-to-r from-accent-gold/10 via-accent-gold/5 to-transparent border border-accent-gold/20 overflow-hidden">
+            <div className="relative p-5 md:p-6 rounded-2xl bg-gradient-to-r from-ouro-antigo/10 via-ouro-antigo/5 to-transparent border border-ouro-antigo/20 overflow-hidden">
               {/* Brilho de fundo */}
-              <motion.div
-                animate={{ opacity: [0.3, 0.5, 0.3] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute top-0 right-0 w-48 h-48 rounded-full blur-[60px]"
-                style={{ background: 'radial-gradient(circle, rgba(201, 169, 98, 0.15) 0%, transparent 70%)' }}
+              <div
+                className="absolute top-0 right-0 w-48 h-48 rounded-full blur-[60px] opacity-30"
+                style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.15) 0%, transparent 70%)' }}
               />
 
               <div className="relative flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 md:gap-5">
-                  {/* Coroa animada */}
-                  <motion.div
-                    animate={{ rotate: [-5, 5, -5], scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="text-2xl md:text-3xl"
-                  >
-                    👑
-                  </motion.div>
+                  {/* Ícone de coroa */}
+                  <div className="text-ouro-antigo">
+                    <CrownIcon size={28} filled />
+                  </div>
 
                   {/* Avatar do líder */}
                   <div className="relative">
-                    <motion.div
-                      animate={{ scale: [1, 1.03, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className={`w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${levelColors.Diamante} flex items-center justify-center text-dark-900 font-bold text-lg shadow-lg shadow-cyan-500/20`}
-                    >
+                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${levelColors[rankingData[0].levelId]} flex items-center justify-center text-roxo-profundo font-bold text-lg shadow-lg`}>
                       {rankingData[0].avatar}
-                    </motion.div>
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-accent-gold flex items-center justify-center text-dark-900 text-xs font-bold">
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-ouro-antigo flex items-center justify-center text-roxo-profundo text-xs font-bold">
                       1
                     </div>
                   </div>
@@ -113,12 +124,13 @@ export function Ranking() {
                   {/* Info do líder */}
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="text-base md:text-lg font-semibold text-white">{rankingData[0].name}</span>
-                      <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-accent-gold/20 text-accent-gold border border-accent-gold/30">
+                      <span className="text-base md:text-lg font-heading font-semibold text-white">{rankingData[0].name}</span>
+                      <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-ouro-antigo/20 text-ouro-antigo border border-ouro-antigo/30">
                         Líder
                       </span>
                     </div>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border ${levelBgColors.Diamante}`}>
+                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${levelBgColors[rankingData[0].levelId]}`}>
+                      {getLevelIcon(rankingData[0].levelId)}
                       {rankingData[0].level}
                     </span>
                   </div>
@@ -129,7 +141,7 @@ export function Ranking() {
                   <div className="text-xl md:text-2xl font-display font-bold text-white">
                     {formatPoints(rankingData[0].points)}
                   </div>
-                  <div className="text-xs text-neutral-500 hidden sm:block">pontos</div>
+                  <div className="text-xs text-cinza-rosado hidden sm:block">pontos</div>
                 </div>
               </div>
             </div>
@@ -143,27 +155,28 @@ export function Ranking() {
                 variants={staggerItem}
                 whileHover={{
                   scale: 1.01,
-                  backgroundColor: 'rgba(26, 26, 26, 0.8)',
+                  backgroundColor: 'rgba(58, 24, 73, 0.8)',
                 }}
-                className="group grid grid-cols-12 gap-3 items-center px-4 md:px-5 py-4 rounded-xl border border-dark-700/50 bg-dark-800/30 transition-all duration-300 cursor-pointer"
+                className="group grid grid-cols-12 gap-3 items-center px-4 md:px-5 py-4 rounded-xl border border-cinza-rosado/20 bg-roxo-profundo/30 transition-all duration-300 cursor-pointer"
               >
                 {/* Posição */}
                 <div className="col-span-1">
-                  <span className={`font-mono text-lg font-bold ${index < 2 ? 'text-accent-gold' : 'text-neutral-600'}`}>
+                  <span className={`font-mono text-lg font-bold ${index < 2 ? 'text-ouro-antigo' : 'text-cinza-rosado'}`}>
                     {user.position}
                   </span>
                 </div>
 
                 {/* Avatar + Nome */}
                 <div className="col-span-6 sm:col-span-5 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${levelColors[user.level]} flex items-center justify-center text-dark-900 font-bold text-sm`}>
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${levelColors[user.levelId]} flex items-center justify-center text-roxo-profundo font-bold text-sm`}>
                     {user.avatar}
                   </div>
                   <div className="min-w-0">
-                    <span className="font-medium text-neutral-100 group-hover:text-white transition-colors block truncate text-sm">
+                    <span className="font-heading font-medium text-branco-gelo group-hover:text-white transition-colors block truncate text-sm">
                       {user.name}
                     </span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${levelBgColors[user.level]}`}>
+                    <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border ${levelBgColors[user.levelId]}`}>
+                      {getLevelIcon(user.levelId, 'w-3 h-3')}
                       {user.level}
                     </span>
                   </div>
@@ -171,7 +184,7 @@ export function Ranking() {
 
                 {/* Pontos */}
                 <div className="col-span-3 sm:col-span-3 text-right">
-                  <span className="font-mono text-sm md:text-base text-neutral-100">
+                  <span className="font-mono text-sm md:text-base text-branco-gelo">
                     {formatPoints(user.points)}
                   </span>
                 </div>
@@ -189,15 +202,15 @@ export function Ranking() {
           {/* Seu lugar */}
           <motion.div
             variants={staggerItem}
-            className="mt-4 p-4 rounded-xl border border-dashed border-dark-600 bg-dark-800/20 text-center"
+            className="mt-4 p-4 rounded-xl border border-dashed border-cinza-rosado/30 bg-roxo-profundo/20 text-center"
           >
             <div className="flex items-center justify-center gap-3">
-              <span className="w-8 h-8 rounded-lg bg-dark-700 flex items-center justify-center text-neutral-600 text-sm">
+              <span className="w-8 h-8 rounded-lg bg-cinza-rosado/10 border border-cinza-rosado/20 flex items-center justify-center text-cinza-rosado text-sm">
                 ?
               </span>
               <div className="text-left">
-                <span className="text-neutral-400 text-sm block">Seu lugar está vazio</span>
-                <span className="text-neutral-600 text-xs">Entre e comece a competir</span>
+                <span className="text-cinza-rosado text-sm block">Seu lugar está vazio</span>
+                <span className="text-cinza-rosado/60 text-xs">Entre e comece a competir</span>
               </div>
             </div>
           </motion.div>
@@ -205,14 +218,10 @@ export function Ranking() {
           {/* Status em tempo real */}
           <motion.div
             variants={staggerItem}
-            className="mt-6 flex items-center justify-center gap-6 text-xs text-neutral-600"
+            className="mt-6 flex items-center justify-center gap-6 text-xs text-cinza-rosado"
           >
             <div className="flex items-center gap-2">
-              <motion.div
-                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full bg-green-500"
-              />
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
               <span>Tempo real</span>
             </div>
           </motion.div>

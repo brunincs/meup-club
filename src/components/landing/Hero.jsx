@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { GoldLine } from '@/components/ui/GoldLine'
 
 const lineVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -23,28 +24,18 @@ export function Hero() {
         <div
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201, 169, 98, 0.08) 0%, transparent 50%)'
+            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(162, 121, 55, 0.08) 0%, transparent 50%)'
           }}
         />
 
-        {/* Orbs animados */}
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.5, 0.8, 0.5],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full blur-[150px]"
-          style={{ background: 'radial-gradient(circle, rgba(201, 169, 98, 0.06) 0%, transparent 60%)' }}
+        {/* Orbs sutis */}
+        <div
+          className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full blur-[150px] opacity-60"
+          style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.06) 0%, transparent 60%)' }}
         />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[120px]"
-          style={{ background: 'radial-gradient(circle, rgba(139, 112, 66, 0.05) 0%, transparent 60%)' }}
+        <div
+          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[120px] opacity-40"
+          style={{ background: 'radial-gradient(circle, rgba(92, 0, 90, 0.05) 0%, transparent 60%)' }}
         />
 
         {/* Grid com perspectiva */}
@@ -52,8 +43,8 @@ export function Hero() {
           className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)
+              linear-gradient(rgba(237,240,241,0.15) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(237,240,241,0.15) 1px, transparent 1px)
             `,
             backgroundSize: '80px 80px',
             maskImage: 'radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%)'
@@ -71,12 +62,8 @@ export function Hero() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="mb-8"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium tracking-wider uppercase bg-accent-gold/5 border border-accent-gold/20 text-accent-gold">
-              <motion.span
-                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full bg-accent-gold"
-              />
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-heading font-medium tracking-wider uppercase bg-ouro-antigo/5 border border-ouro-antigo/20 text-ouro-antigo">
+              <span className="w-1.5 h-1.5 rounded-full bg-ouro-antigo" />
               Acesso restrito
             </span>
           </motion.div>
@@ -88,14 +75,14 @@ export function Hero() {
               initial="hidden"
               animate="visible"
               variants={lineVariants}
-              className="text-base md:text-lg text-neutral-500 font-light"
+              className="text-base md:text-lg text-cinza-rosado font-light"
             >
               Indicação comum gera desconto.
             </motion.p>
           </div>
 
           {/* Headline principal - linha 2 */}
-          <div className="overflow-hidden mb-8">
+          <div className="overflow-hidden mb-4">
             <motion.h1
               custom={1}
               initial="hidden"
@@ -103,21 +90,42 @@ export function Hero() {
               variants={lineVariants}
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold"
             >
-              <span className="text-neutral-100">No Meup Club, gera </span>
+              <span className="text-branco-gelo">No Meup Club, gera </span>
               <span className="text-gradient">privilégio.</span>
             </motion.h1>
           </div>
 
-          {/* Subheadline */}
+          {/* Linha dourada decorativa */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="flex justify-center mb-6"
+          >
+            <GoldLine width="80px" centered animated={false} />
+          </motion.div>
+
+          {/* Subtítulo - Me Up Viagens */}
           <motion.p
             custom={2}
             initial="hidden"
             animate="visible"
             variants={lineVariants}
-            className="text-base md:text-lg text-neutral-400 max-w-xl mx-auto mb-10 leading-relaxed"
+            className="text-sm md:text-base text-cinza-rosado max-w-lg mx-auto mb-6"
+          >
+            O clube de indicações da Me Up Viagens — assessoria premium de passagens aéreas.
+          </motion.p>
+
+          {/* Subheadline */}
+          <motion.p
+            custom={3}
+            initial="hidden"
+            animate="visible"
+            variants={lineVariants}
+            className="text-base md:text-lg text-cinza-rosado max-w-xl mx-auto mb-10 leading-relaxed"
           >
             Suba no ranking.
-            <span className="text-neutral-200 font-medium"> Ultrapasse outros. </span>
+            <span className="text-branco-gelo font-medium"> Ultrapasse outros. </span>
             Viaje melhor.
           </motion.p>
 
@@ -129,9 +137,9 @@ export function Hero() {
           >
             <Link to="/login">
               <motion.button
-                whileHover={{ scale: 1.02, boxShadow: '0 0 40px rgba(201, 169, 98, 0.3)' }}
+                whileHover={{ scale: 1.02, boxShadow: '0 0 40px rgba(162, 121, 55, 0.3)' }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-xl text-base font-semibold bg-accent-gold text-dark-900 overflow-hidden transition-all duration-300"
+                className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-xl text-base font-heading font-semibold bg-ouro-antigo text-roxo-profundo overflow-hidden transition-all duration-300"
               >
                 {/* Shine effect */}
                 <motion.div
@@ -160,18 +168,18 @@ export function Hero() {
             className="mt-14 flex flex-wrap items-center justify-center gap-8 md:gap-12 text-sm"
           >
             <div className="text-center">
-              <div className="text-xl md:text-2xl font-display font-bold text-neutral-100">2.847</div>
-              <div className="text-neutral-600 text-xs md:text-sm">membros ativos</div>
+              <div className="text-xl md:text-2xl font-display font-bold text-branco-gelo">2.847</div>
+              <div className="text-cinza-rosado text-xs md:text-sm">membros ativos</div>
             </div>
-            <div className="w-px h-8 bg-dark-600 hidden md:block" />
+            <div className="w-px h-8 bg-cinza-rosado/30 hidden md:block" />
             <div className="text-center">
-              <div className="text-xl md:text-2xl font-display font-bold text-accent-gold">R$ 1.2M+</div>
-              <div className="text-neutral-600 text-xs md:text-sm">em pontos</div>
+              <div className="text-xl md:text-2xl font-display font-bold text-ouro-antigo">R$ 1.2M+</div>
+              <div className="text-cinza-rosado text-xs md:text-sm">em pontos</div>
             </div>
-            <div className="w-px h-8 bg-dark-600 hidden md:block" />
+            <div className="w-px h-8 bg-cinza-rosado/30 hidden md:block" />
             <div className="text-center">
-              <div className="text-xl md:text-2xl font-display font-bold text-neutral-100">48h</div>
-              <div className="text-neutral-600 text-xs md:text-sm">tempo de saque</div>
+              <div className="text-xl md:text-2xl font-display font-bold text-branco-gelo">48h</div>
+              <div className="text-cinza-rosado text-xs md:text-sm">tempo de saque</div>
             </div>
           </motion.div>
         </div>

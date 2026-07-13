@@ -2,25 +2,26 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ProgressBar, ProgressRing } from '@/components/effects/ProgressRing'
 import { GlowBorder } from '@/components/effects/GlowEffect'
+import { GiftIcon, TrendingUpIcon, TrophyIcon } from '@/components/ui/Icons'
 
 const typeConfig = {
   reward: {
     color: 'gold',
-    icon: '🎁',
+    icon: <GiftIcon size={18} color="#a27937" />,
     label: 'Próxima Recompensa',
     cta: 'Ver recompensas',
     link: '/recompensas'
   },
   level: {
     color: 'purple',
-    icon: '⬆️',
+    icon: <TrendingUpIcon size={18} color="#a855f7" />,
     label: 'Próxima Classe',
     cta: 'Ver progresso',
     link: '/perfil'
   },
   ranking: {
     color: 'blue',
-    icon: '🏆',
+    icon: <TrophyIcon size={18} color="#3b82f6" />,
     label: 'Próxima Posição',
     cta: 'Ver ranking',
     link: '/ranking'
@@ -58,30 +59,30 @@ export function AlmostThereCard({
             progress={progress}
             size={56}
             strokeWidth={4}
-            color={config.color === 'gold' ? '#fbbf24' : config.color === 'purple' ? '#a855f7' : '#3b82f6'}
-            bgColor="rgba(255, 255, 255, 0.05)"
+            color={config.color === 'gold' ? '#a27937' : config.color === 'purple' ? '#a855f7' : '#3b82f6'}
+            bgColor="rgba(163, 150, 149, 0.1)"
           >
-            <span className={`text-lg ${urgencyClass}`}>{config.icon}</span>
+            <span className={urgencyClass}>{config.icon}</span>
           </ProgressRing>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-[10px] uppercase tracking-wider font-semibold ${
-                config.color === 'gold' ? 'text-game-gold' :
+              <span className={`text-[10px] uppercase tracking-wider font-heading font-semibold ${
+                config.color === 'gold' ? 'text-ouro-antigo' :
                 config.color === 'purple' ? 'text-purple-400' : 'text-blue-400'
               }`}>
-                {isVeryClose ? '🔥 Quase lá!' : config.label}
+                {isVeryClose ? 'Quase lá!' : config.label}
               </span>
-              <span className="text-xs text-neutral-500">{progress}%</span>
+              <span className="text-xs text-cinza-rosado">{progress}%</span>
             </div>
 
-            <h4 className="text-sm font-medium text-neutral-100 truncate">
+            <h4 className="text-sm font-heading font-medium text-branco-gelo truncate">
               {title}
             </h4>
 
             {subtitle && (
-              <p className="text-xs text-neutral-500 truncate">
+              <p className="text-xs text-cinza-rosado truncate">
                 {subtitle}
               </p>
             )}
@@ -89,13 +90,13 @@ export function AlmostThereCard({
 
           {/* Points needed */}
           <div className="text-right">
-            <div className={`text-lg font-bold ${
-              config.color === 'gold' ? 'text-game-gold' :
+            <div className={`text-lg font-display font-bold ${
+              config.color === 'gold' ? 'text-ouro-antigo' :
               config.color === 'purple' ? 'text-purple-400' : 'text-blue-400'
             }`}>
               {pointsNeeded.toLocaleString('pt-BR')}
             </div>
-            <div className="text-[10px] text-neutral-500">
+            <div className="text-[10px] text-cinza-rosado">
               pontos
             </div>
           </div>
@@ -106,9 +107,9 @@ export function AlmostThereCard({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className={`w-full mt-4 py-2 rounded-lg text-xs font-medium transition-all ${
+            className={`w-full mt-4 py-2 rounded-lg text-xs font-heading font-medium transition-all ${
               config.color === 'gold'
-                ? 'bg-game-gold/20 text-game-gold border border-game-gold/30 hover:bg-game-gold/30'
+                ? 'bg-ouro-antigo/20 text-ouro-antigo border border-ouro-antigo/30 hover:bg-ouro-antigo/30'
                 : config.color === 'purple'
                   ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30'
                   : 'bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30'
@@ -140,24 +141,24 @@ export function AlmostThereMini({
       onClick={onClick}
       className={`p-3 rounded-xl cursor-pointer transition-all border ${
         type === 'reward'
-          ? 'bg-game-gold/5 border-game-gold/20 hover:border-game-gold/40'
+          ? 'bg-ouro-antigo/5 border-ouro-antigo/20 hover:border-ouro-antigo/40'
           : type === 'level'
             ? 'bg-purple-500/5 border-purple-500/20 hover:border-purple-500/40'
             : 'bg-blue-500/5 border-blue-500/20 hover:border-blue-500/40'
       }`}
     >
       <div className="flex items-center gap-3">
-        <span className="text-lg">{config.icon}</span>
+        {config.icon}
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-neutral-200 truncate">{title}</p>
+          <p className="text-xs font-heading font-medium text-branco-gelo truncate">{title}</p>
           <p className={`text-[10px] ${
-            type === 'reward' ? 'text-game-gold' :
+            type === 'reward' ? 'text-ouro-antigo' :
             type === 'level' ? 'text-purple-400' : 'text-blue-400'
           }`}>
             {pointsNeeded.toLocaleString('pt-BR')} pontos restantes
           </p>
         </div>
-        <div className="text-xs text-neutral-500">{progress}%</div>
+        <div className="text-xs text-cinza-rosado">{progress}%</div>
       </div>
     </motion.div>
   )
@@ -173,15 +174,15 @@ export function AlmostThereWidget({ items = [] }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-game-gold/20 bg-game-gold/5 overflow-hidden"
+      className="rounded-2xl border border-ouro-antigo/20 bg-ouro-antigo/5 overflow-hidden"
     >
       {/* Header */}
-      <div className="px-5 py-4 border-b border-game-gold/10">
+      <div className="px-5 py-4 border-b border-ouro-antigo/10">
         <div className="flex items-center gap-2">
-          <span className="text-lg">🔥</span>
+          <span className="text-ouro-antigo">✦</span>
           <div>
-            <h3 className="text-sm font-medium text-neutral-100">Quase Lá!</h3>
-            <p className="text-xs text-neutral-500">{validItems.length} objetivos próximos</p>
+            <h3 className="text-sm font-heading font-medium text-branco-gelo">Quase Lá!</h3>
+            <p className="text-xs text-cinza-rosado">{validItems.length} objetivos próximos</p>
           </div>
         </div>
       </div>

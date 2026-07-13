@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { calculateLevel } from '@/services/pointsSystem'
+import { demoUser } from '@/services/mockData'
 import {
   mockUserEngagement,
   mockNearbyRanking,
@@ -9,19 +10,21 @@ import {
   getTimeToWeeklyReset
 } from '@/services/engagementData'
 import { position, format, buttons, levels as levelCopy } from '@/services/copy'
+import { TrophyIcon, TrendingUpIcon } from '@/components/ui/Icons'
 
 export function CompetitionWidget() {
   const { profile } = useAuth()
-  const userPoints = profile?.points || 0
+  // Usar demoUser como fonte única
+  const userPoints = demoUser.points
   const levelData = calculateLevel(userPoints)
   const userPosition = mockUserEngagement.weeklyPosition
   const weeklyReset = getTimeToWeeklyReset()
   const weeklyPrize = getWeeklyPrize(userPosition)
-  const todayPoints = 450 // Mock: pontos ganhos hoje
+  const todayPoints = mockUserEngagement.today.pointsEarned
 
   const userEntry = {
     position: userPosition,
-    name: profile?.name || 'Você',
+    name: profile?.name || demoUser.name,
     points: userPoints,
     levelId: levelData.current.id,
     isUser: true,
@@ -43,17 +46,17 @@ export function CompetitionWidget() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
-      className="card-ranking rounded-2xl overflow-hidden"
+      className="rounded-2xl border border-game-blue/20 bg-gradient-to-br from-game-blue/10 to-game-blue/5 overflow-hidden"
     >
-      {/* Header with blue theme */}
+      {/* Header */}
       <div className="p-5 border-b border-game-blue/20">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-[10px] uppercase tracking-wider text-game-blue mb-1 flex items-center gap-2">
-              <span>🏆</span>
+              <TrophyIcon size={14} color="#3b82f6" />
               {position.weekly}
             </h3>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-cinza-rosado">
               {position.subtitle}
             </p>
           </div>
@@ -70,35 +73,29 @@ export function CompetitionWidget() {
       {aboveUser && pointsToOvertake > 0 && (
         <div className="px-5 py-3 bg-game-blue/10 border-b border-game-blue/20">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-neutral-300">
-              Faltam <span className="font-semibold text-game-blue">{pointsToOvertake.toLocaleString('pt-BR')} pontos</span> para ultrapassar {aboveUser.name.split(' ')[0]}
+            <p className="text-xs text-branco-gelo">
+              Faltam <span className="font-heading font-semibold text-game-blue">{pointsToOvertake.toLocaleString('pt-BR')} pontos</span> para ultrapassar {aboveUser.name.split(' ')[0]}
             </p>
-            <motion.div
-              animate={{ y: [-2, 2, -2] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="text-game-blue"
-            >
-              ↑
-            </motion.div>
+            <TrendingUpIcon size={16} color="#3b82f6" />
           </div>
         </div>
       )}
 
       {/* Weekly prize info */}
       {weeklyPrize && (
-        <div className="px-5 py-3 bg-dark-800/50 border-b border-dark-700/30">
+        <div className="px-5 py-3 bg-roxo-profundo/30 border-b border-cinza-rosado/10">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-neutral-400">
-                {weeklyPrize.badge} {weeklyPrize.title || `Top ${userPosition}`}
+              <p className="text-xs text-cinza-rosado">
+                {weeklyPrize.title || `Top ${userPosition}`}
               </p>
               <p className="text-[10px] text-game-green">
                 +{format.pointsShort(weeklyPrize.points)} pontos
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-neutral-600">{position.weeklyReset}</p>
-              <p className="text-xs font-light text-neutral-400">
+              <p className="text-[10px] text-cinza-rosado/60">{position.weeklyReset}</p>
+              <p className="text-xs font-heading font-light text-cinza-rosado">
                 {format.time.daysHours(weeklyReset.days, weeklyReset.hours)}
               </p>
             </div>
@@ -107,11 +104,10 @@ export function CompetitionWidget() {
       )}
 
       {/* Ranking list */}
-      <div className="divide-y divide-dark-700/20">
+      <div className="divide-y divide-cinza-rosado/10">
         {fullRanking.map((player, index) => {
           const pointsDiff = player.points - userPoints
           const isAboveUser = player.position < userPosition
-          const isBelowUser = player.position > userPosition
 
           return (
             <motion.div
@@ -127,45 +123,41 @@ export function CompetitionWidget() {
             >
               {/* Position with trend arrow */}
               <div className="flex items-center gap-1">
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold ${
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-heading font-semibold ${
                   player.isUser
                     ? 'bg-game-blue/20 text-game-blue'
                     : player.position <= 3
-                      ? 'bg-game-gold/10 text-game-gold'
-                      : 'bg-dark-700/30 text-neutral-600'
+                      ? 'bg-ouro-antigo/10 text-ouro-antigo'
+                      : 'bg-cinza-rosado/10 text-cinza-rosado'
                 }`}>
                   {player.position}
                 </div>
                 {player.trend && (
-                  <motion.span
-                    animate={player.trend === 'up' ? { y: [-1, 1, -1] } : {}}
-                    transition={{ duration: 1, repeat: Infinity }}
-                    className={`text-[10px] ${
-                      player.trend === 'up' ? 'text-game-green' :
-                      player.trend === 'down' ? 'text-red-400' : 'text-neutral-600'
-                    }`}
-                  >
+                  <span className={`text-[10px] ${
+                    player.trend === 'up' ? 'text-game-green' :
+                    player.trend === 'down' ? 'text-red-400' : 'text-cinza-rosado/60'
+                  }`}>
                     {player.trend === 'up' ? '↑' : player.trend === 'down' ? '↓' : '–'}
-                  </motion.span>
+                  </span>
                 )}
               </div>
 
               {/* Avatar and name */}
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-medium ${
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-heading font-medium ${
                   player.isUser
                     ? 'bg-game-blue/20 text-game-blue'
-                    : 'bg-dark-700/30 text-neutral-500'
+                    : 'bg-cinza-rosado/10 text-cinza-rosado'
                 }`}>
                   {player.isUser ? '◆' : player.avatar}
                 </div>
                 <div className="min-w-0">
                   <p className={`text-sm truncate ${
-                    player.isUser ? 'text-neutral-100 font-medium' : 'text-neutral-400'
+                    player.isUser ? 'text-branco-gelo font-heading font-medium' : 'text-cinza-rosado'
                   }`}>
                     {player.isUser ? 'Você' : player.name}
                   </p>
-                  <p className="text-[10px] text-neutral-700">
+                  <p className="text-[10px] text-cinza-rosado/60">
                     {levelCopy.shortNames[player.levelId]}
                   </p>
                 </div>
@@ -173,8 +165,8 @@ export function CompetitionWidget() {
 
               {/* Points and today's gains */}
               <div className="text-right">
-                <p className={`text-sm font-light ${
-                  player.isUser ? 'text-neutral-100' : 'text-neutral-400'
+                <p className={`text-sm font-display font-light ${
+                  player.isUser ? 'text-branco-gelo' : 'text-cinza-rosado'
                 }`}>
                   {format.pointsShort(player.points)}
                 </p>
@@ -184,7 +176,7 @@ export function CompetitionWidget() {
                   </p>
                 )}
                 {!player.isUser && isAboveUser && (
-                  <p className="text-[10px] text-neutral-600">
+                  <p className="text-[10px] text-cinza-rosado/60">
                     +{format.pointsShort(Math.abs(pointsDiff))}
                   </p>
                 )}

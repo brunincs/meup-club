@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
+import { GoldLine } from '@/components/ui/GoldLine'
 
 const rewards = [
   {
     id: 'pix',
-    title: 'Saque imediato via Pix',
+    title: 'Saque via Pix',
     description: 'Pontos viram dinheiro real na sua conta.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
@@ -21,6 +22,24 @@ const rewards = [
     color: 'emerald',
   },
   {
+    id: 'dinner',
+    title: 'Jantar pago pela casa',
+    description: 'Restaurantes premium. Conta zerada.',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
+        <path
+          d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+    points: '8.000',
+    color: 'purple',
+  },
+  {
     id: 'upgrade',
     title: 'Upgrade prioritário de voo',
     description: 'Saia da econômica. Entre na executiva.',
@@ -35,7 +54,7 @@ const rewards = [
         />
       </svg>
     ),
-    points: '15.000',
+    points: '12.000',
     featured: true,
     color: 'gold',
   },
@@ -53,26 +72,8 @@ const rewards = [
         />
       </svg>
     ),
-    points: '20.000',
+    points: '15.000',
     color: 'blue',
-  },
-  {
-    id: 'dinner',
-    title: 'Jantar pago pela casa',
-    description: 'Restaurantes premium. Conta zerada.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-        <path
-          d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-    points: '12.000',
-    color: 'purple',
   },
   {
     id: 'exclusive',
@@ -90,7 +91,7 @@ const rewards = [
         <path d="M12 8l2 2-2 2-2-2 2-2z" fill="currentColor" />
       </svg>
     ),
-    points: '30.000',
+    points: '20.000',
     locked: true,
     color: 'gold',
   },
@@ -102,8 +103,8 @@ const colorStyles = {
     iconColor: 'group-hover:text-emerald-400',
   },
   gold: {
-    iconBg: 'group-hover:bg-accent-gold/10',
-    iconColor: 'group-hover:text-accent-gold',
+    iconBg: 'group-hover:bg-ouro-antigo/10',
+    iconColor: 'group-hover:text-ouro-antigo',
   },
   blue: {
     iconBg: 'group-hover:bg-blue-500/10',
@@ -130,13 +131,14 @@ export function Rewards() {
           variants={fadeUp}
           className="text-center mb-12 md:mb-16"
         >
-          <span className="inline-block text-xs uppercase tracking-[0.3em] text-accent-gold mb-4">
+          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-ouro-antigo mb-4">
             Catálogo
           </span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-neutral-100 mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-branco-gelo mb-4">
             O que seus pontos podem virar
           </h2>
-          <p className="text-neutral-500 max-w-lg mx-auto text-base">
+          <GoldLine width="80px" centered className="mb-4" />
+          <p className="text-cinza-rosado max-w-lg mx-auto text-base">
             Cada ponto é uma fração de algo real. Escolha como usar.
           </p>
         </motion.div>
@@ -162,17 +164,17 @@ export function Rewards() {
                 }}
                 className={`group relative p-6 rounded-2xl border transition-all duration-500 cursor-pointer ${
                   reward.featured
-                    ? 'border-accent-gold/30 bg-gradient-to-b from-accent-gold/5 to-dark-800/50'
+                    ? 'border-ouro-antigo/30 bg-gradient-to-b from-ouro-antigo/5 to-roxo-profundo/50'
                     : reward.locked
-                    ? 'border-dark-700/30 bg-dark-800/20'
-                    : 'border-dark-700/50 bg-dark-800/30 hover:border-dark-500 hover:bg-dark-700/40'
+                    ? 'border-cinza-rosado/10 bg-roxo-profundo/20'
+                    : 'border-cinza-rosado/20 bg-roxo-profundo/30 hover:border-ouro-antigo/30'
                 }`}
               >
                 {/* Featured badge */}
                 {reward.featured && (
                   <div className="absolute -top-2.5 left-6">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-accent-gold text-dark-900 font-semibold">
-                      <span className="w-1 h-1 rounded-full bg-dark-900 animate-pulse" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-ouro-antigo text-roxo-profundo font-heading font-semibold">
+                      <span className="w-1 h-1 rounded-full bg-roxo-profundo" />
                       Popular
                     </span>
                   </div>
@@ -181,7 +183,7 @@ export function Rewards() {
                 {/* Locked icon */}
                 {reward.locked && (
                   <div className="absolute top-5 right-5">
-                    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-neutral-700">
+                    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-cinza-rosado/50">
                       <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="1.5" />
                     </svg>
@@ -193,37 +195,37 @@ export function Rewards() {
                   whileHover={{ scale: 1.1 }}
                   className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 ${
                     reward.featured
-                      ? 'bg-accent-gold/10 text-accent-gold'
-                      : `bg-dark-700/50 text-neutral-500 ${styles.iconBg} ${styles.iconColor}`
+                      ? 'bg-ouro-antigo/10 text-ouro-antigo'
+                      : `bg-cinza-rosado/10 text-cinza-rosado ${styles.iconBg} ${styles.iconColor}`
                   } ${reward.locked ? 'opacity-40' : ''}`}
                 >
                   {reward.icon}
                 </motion.div>
 
                 {/* Content */}
-                <h3 className={`text-base font-semibold mb-2 transition-colors duration-300 ${
-                  reward.locked ? 'text-neutral-600' : 'text-neutral-100 group-hover:text-white'
+                <h3 className={`text-base font-heading font-semibold mb-2 transition-colors duration-300 ${
+                  reward.locked ? 'text-cinza-rosado/50' : 'text-branco-gelo group-hover:text-white'
                 }`}>
                   {reward.title}
                 </h3>
                 <p className={`text-sm leading-relaxed mb-5 ${
-                  reward.locked ? 'text-neutral-700' : 'text-neutral-500'
+                  reward.locked ? 'text-cinza-rosado/30' : 'text-cinza-rosado'
                 }`}>
                   {reward.description}
                 </p>
 
                 {/* Points footer */}
-                <div className="flex items-center justify-between pt-4 border-t border-dark-600/30">
-                  <span className="text-[10px] uppercase tracking-wider text-neutral-600">
+                <div className="flex items-center justify-between pt-4 border-t border-cinza-rosado/10">
+                  <span className="text-[10px] uppercase tracking-wider text-cinza-rosado/60">
                     {reward.locked ? 'Bloqueado' : 'A partir de'}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <span className={`font-mono text-sm font-semibold ${
-                      reward.locked ? 'text-neutral-700' : 'text-accent-gold'
+                      reward.locked ? 'text-cinza-rosado/40' : 'text-ouro-antigo'
                     }`}>
                       {reward.points}
                     </span>
-                    <span className="text-neutral-600 text-xs">pts</span>
+                    <span className="text-cinza-rosado/60 text-xs">pts</span>
                   </div>
                 </div>
               </motion.div>

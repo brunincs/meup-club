@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { MissionCard, MissionCardMini } from './MissionCard'
 import { ProgressRing } from '@/components/effects/ProgressRing'
 import { useConfetti } from '@/components/effects/ConfettiEffect'
+import { TargetIcon } from '@/components/ui/Icons'
 import toast from 'react-hot-toast'
 
 // Mock missions data
@@ -60,16 +61,21 @@ export function MissionsSection() {
   const earnedDailyPoints = tasks.filter(t => t.progress >= 100).reduce((sum, t) => sum + t.points, 0)
 
   const handleStartMission = (mission) => {
-    toast.success(`Missão "${mission.name}" iniciada!`)
+    toast.success(`Missão "${mission.name}" iniciada!`, {
+      style: {
+        background: '#32113f',
+        color: '#edf0f1',
+        border: '1px solid rgba(162, 121, 55, 0.3)'
+      }
+    })
   }
 
   const handleClaimMission = (mission) => {
     fireConfetti({ x: '50%', y: '50%' })
     toast.success(`+${mission.points} pontos resgatados!`, {
-      icon: '🎉',
       style: {
-        background: '#0f0f0f',
-        color: '#fff',
+        background: '#32113f',
+        color: '#edf0f1',
         border: '1px solid rgba(34, 197, 94, 0.3)'
       }
     })
@@ -91,7 +97,11 @@ export function MissionsSection() {
         )
       )
       toast.success(`+${task.points} pontos!`, {
-        icon: '✅'
+        style: {
+          background: '#32113f',
+          color: '#edf0f1',
+          border: '1px solid rgba(34, 197, 94, 0.3)'
+        }
       })
     }
   }
@@ -108,10 +118,11 @@ export function MissionsSection() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-display font-semibold text-neutral-100">
+          <h2 className="text-lg font-display font-semibold text-branco-gelo flex items-center gap-2">
+            <TargetIcon size={20} color="#a27937" />
             Missões
           </h2>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-cinza-rosado">
             Ganhe pontos completando desafios
           </p>
         </div>
@@ -119,8 +130,8 @@ export function MissionsSection() {
         {/* Daily Progress Ring */}
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-xs text-neutral-500">Hoje</p>
-            <p className="text-sm font-semibold text-game-green">
+            <p className="text-xs text-cinza-rosado">Hoje</p>
+            <p className="text-sm font-heading font-semibold text-game-green">
               +{earnedDailyPoints}/{totalDailyPoints}
             </p>
           </div>
@@ -129,9 +140,9 @@ export function MissionsSection() {
             size={48}
             strokeWidth={4}
             color="#22c55e"
-            bgColor="rgba(255, 255, 255, 0.05)"
+            bgColor="rgba(163, 150, 149, 0.1)"
           >
-            <span className="text-[10px] font-semibold text-neutral-300">
+            <span className="text-[10px] font-heading font-semibold text-branco-gelo">
               {completedTasks}/{totalTasks}
             </span>
           </ProgressRing>
@@ -172,12 +183,12 @@ export function MissionsSection() {
       </div>
 
       {/* Quick Tasks */}
-      <div className="p-5 rounded-xl bg-dark-800/30 border border-dark-700/30">
+      <div className="p-5 rounded-xl bg-roxo-profundo/30 border border-cinza-rosado/20">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-neutral-300">
+          <h3 className="text-sm font-heading font-medium text-branco-gelo">
             Tarefas Rápidas
           </h3>
-          <span className="text-xs text-neutral-500">
+          <span className="text-xs text-cinza-rosado">
             +{tasks.reduce((sum, t) => sum + t.points, 0)} pontos disponíveis
           </span>
         </div>

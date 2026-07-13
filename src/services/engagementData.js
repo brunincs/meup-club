@@ -1,7 +1,8 @@
 // Sistema de Engajamento - Meup Club
-// Loop viciante de retorno diário e competição
+// Loop de retorno diário e competição
 
 import { levels, calculateLevel } from './pointsSystem'
+import { demoUser } from './mockData'
 
 // ============================================
 // CONFIGURAÇÃO DE STREAK
@@ -9,12 +10,12 @@ import { levels, calculateLevel } from './pointsSystem'
 export const streakConfig = {
   // Bônus por dias consecutivos
   bonuses: [
-    { days: 3, points: 50, label: '3 dias', icon: '🔥' },
-    { days: 7, points: 150, label: '1 semana', icon: '⚡' },
-    { days: 14, points: 350, label: '2 semanas', icon: '💫' },
-    { days: 30, points: 1000, label: '1 mês', icon: '👑' },
-    { days: 60, points: 2500, label: '2 meses', icon: '💎' },
-    { days: 90, points: 5000, label: '3 meses', icon: '🏆' }
+    { days: 3, points: 50, label: '3 dias' },
+    { days: 7, points: 150, label: '1 semana' },
+    { days: 14, points: 350, label: '2 semanas' },
+    { days: 30, points: 1000, label: '1 mês' },
+    { days: 60, points: 2500, label: '2 meses' },
+    { days: 90, points: 5000, label: '3 meses' }
   ],
   // Pontos diários por acesso
   dailyAccessPoints: 10,
@@ -31,15 +32,13 @@ export const dailyEngagementTasks = [
     name: 'Acesso diário',
     description: 'Entre no dashboard todos os dias',
     points: 10,
-    icon: '📱',
-    autoComplete: true // Completa automaticamente ao acessar
+    autoComplete: true
   },
   {
     id: 'share_code',
     name: 'Compartilhar código',
     description: 'Compartilhe seu código de indicação',
     points: 20,
-    icon: '📤',
     autoComplete: false
   },
   {
@@ -47,7 +46,6 @@ export const dailyEngagementTasks = [
     name: 'Ver recompensas',
     description: 'Confira a vitrine de recompensas',
     points: 5,
-    icon: '🎁',
     autoComplete: false
   },
   {
@@ -55,7 +53,6 @@ export const dailyEngagementTasks = [
     name: 'Ver ranking',
     description: 'Confira sua posição no ranking',
     points: 5,
-    icon: '🏆',
     autoComplete: false
   }
 ]
@@ -64,41 +61,41 @@ export const dailyEngagementTasks = [
 // PRÊMIOS DO RANKING SEMANAL
 // ============================================
 export const weeklyRankingPrizes = [
-  { position: 1, points: 500, badge: '🥇', title: 'Campeão da Semana' },
-  { position: 2, points: 300, badge: '🥈', title: 'Vice-Campeão' },
-  { position: 3, points: 150, badge: '🥉', title: 'Terceiro Lugar' },
+  { position: 1, points: 500, title: 'Campeão da Semana' },
+  { position: 2, points: 300, title: 'Vice-Campeão' },
+  { position: 3, points: 150, title: 'Terceiro Lugar' },
   { position: 4, points: 75, title: 'Top 5' },
   { position: 5, points: 75, title: 'Top 5' },
-  { position: 10, points: 50, title: 'Top 10' } // posições 6-10
+  { position: 10, points: 50, title: 'Top 10' }
 ]
 
 // ============================================
 // NOTIFICAÇÕES DE PROVA SOCIAL
 // ============================================
 export const socialProofTypes = [
-  { type: 'redeem', template: '{name} resgatou {reward}', icon: '🎁' },
-  { type: 'level_up', template: '{name} subiu para {level}', icon: '⬆️' },
-  { type: 'streak', template: '{name} completou {days} dias de streak', icon: '🔥' },
-  { type: 'ranking', template: '{name} entrou no Top 10', icon: '🏆' },
-  { type: 'referral', template: '{name} fez uma nova indicação', icon: '👥' }
+  { type: 'redeem', template: '{name} resgatou {reward}' },
+  { type: 'level_up', template: '{name} subiu para {level}' },
+  { type: 'streak', template: '{name} completou {days} dias de streak' },
+  { type: 'ranking', template: '{name} entrou no Top 10' },
+  { type: 'referral', template: '{name} fez uma nova indicação' }
 ]
 
 // Mock de notificações sociais recentes
 export const recentSocialProof = [
   { type: 'redeem', name: 'Marina S.', reward: 'Crédito Prata', time: '2 min' },
-  { type: 'level_up', name: 'Pedro L.', level: 'Explorador', time: '5 min' },
+  { type: 'level_up', name: 'Pedro L.', level: 'Premium Economy', time: '5 min' },
   { type: 'streak', name: 'Ana C.', days: 7, time: '10 min' },
   { type: 'ranking', name: 'Lucas M.', time: '15 min' },
   { type: 'referral', name: 'Julia R.', time: '20 min' },
   { type: 'redeem', name: 'Carlos B.', reward: 'Upgrade de Assento', time: '25 min' },
-  { type: 'level_up', name: 'Fernanda P.', level: 'Navegador', time: '30 min' },
+  { type: 'level_up', name: 'Fernanda P.', level: 'Executiva', time: '30 min' },
   { type: 'streak', name: 'Ricardo S.', days: 14, time: '35 min' },
   { type: 'redeem', name: 'Beatriz M.', reward: 'Jantar Premium', time: '40 min' },
   { type: 'ranking', name: 'Gabriel O.', time: '45 min' }
 ]
 
 // ============================================
-// MOCK DE DADOS DO USUÁRIO
+// MOCK DE DADOS DO USUÁRIO - SINCRONIZADO
 // ============================================
 export const mockUserEngagement = {
   streak: {
@@ -108,19 +105,19 @@ export const mockUserEngagement = {
     todayAccessed: true
   },
   dailyTasksCompleted: ['daily_access'],
-  weeklyPoints: 450,
+  weeklyPoints: 320,
   weeklyPosition: 8,
   totalDaysActive: 23,
-  // Dados de pontos para gamificação
+  // Dados de pontos - SINCRONIZADOS com demoUser
   today: {
-    pointsEarned: 980,
+    pointsEarned: 320,
     tasksCompleted: 3,
     referrals: 1
   },
   thisWeek: {
-    pointsEarned: 3240,
+    pointsEarned: 820,
     tasksCompleted: 12,
-    referrals: 4
+    referrals: 2
   }
 }
 
@@ -128,12 +125,12 @@ export const mockUserEngagement = {
 // MOCK DO RANKING (posições próximas)
 // ============================================
 export const mockNearbyRanking = [
-  { position: 5, name: 'Marina Silva', points: 2850, levelId: 3, trend: 'up', avatar: 'M' },
-  { position: 6, name: 'Pedro Lima', points: 2720, levelId: 3, trend: 'same', avatar: 'P' },
-  { position: 7, name: 'Ana Costa', points: 2650, levelId: 2, trend: 'down', avatar: 'A' },
-  // Usuário atual seria aqui (posição 8)
-  { position: 9, name: 'Lucas Martins', points: 2480, levelId: 2, trend: 'up', avatar: 'L' },
-  { position: 10, name: 'Julia Rocha', points: 2350, levelId: 2, trend: 'same', avatar: 'J' }
+  { position: 5, name: 'Carolina T.', points: 18100, levelId: 4, trend: 'up', avatar: 'C' },
+  { position: 6, name: 'Lucas P.', points: 14500, levelId: 3, trend: 'same', avatar: 'L' },
+  { position: 7, name: 'Juliana R.', points: 9800, levelId: 3, trend: 'down', avatar: 'J' },
+  // Usuário atual (posição 8)
+  { position: 9, name: 'André F.', points: 2200, levelId: 3, trend: 'up', avatar: 'A' },
+  { position: 10, name: 'Patrícia G.', points: 1900, levelId: 2, trend: 'same', avatar: 'P' }
 ]
 
 // ============================================
@@ -300,8 +297,7 @@ export function getRandomSocialProof() {
 
   return {
     ...proof,
-    message,
-    icon: type.icon
+    message
   }
 }
 
@@ -311,8 +307,8 @@ export function getRandomSocialProof() {
 export function getMotivationalMessage(context) {
   const messages = {
     closeToLevel: [
-      'Você está quase lá! 💪',
-      'Só mais um pouco para o próximo nível!',
+      'Você está quase lá!',
+      'Só mais um pouco para a próxima classe!',
       'Continue assim, você consegue!'
     ],
     closeToOvertake: [
@@ -321,7 +317,7 @@ export function getMotivationalMessage(context) {
       'Está muito próximo do próximo lugar!'
     ],
     streak: [
-      'Mantenha sua sequência! 🔥',
+      'Mantenha sua sequência!',
       'Não quebre seu streak!',
       'Você está arrasando!'
     ],

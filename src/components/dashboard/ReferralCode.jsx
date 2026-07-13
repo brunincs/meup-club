@@ -33,21 +33,21 @@ export function ReferralCode() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="rounded-2xl border border-dark-700/30 bg-dark-800/20 overflow-hidden"
+      className="rounded-2xl border border-ouro-antigo/20 bg-gradient-to-br from-ouro-antigo/10 to-ouro-antigo/5 overflow-hidden"
     >
       {/* Header */}
-      <div className="p-6 border-b border-dark-700/30">
+      <div className="p-6 border-b border-ouro-antigo/20">
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">
+            <h3 className="text-[10px] uppercase tracking-wider text-ouro-antigo mb-1">
               {invites.code}
             </h3>
-            <p className="text-sm text-neutral-400">
+            <p className="text-sm text-cinza-rosado">
               {invites.subtitle}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-neutral-100/5 border border-neutral-100/10 flex items-center justify-center">
-            <span className="text-neutral-400 text-lg">◇</span>
+          <div className="w-10 h-10 rounded-xl bg-ouro-antigo/10 border border-ouro-antigo/20 flex items-center justify-center">
+            <span className="text-ouro-antigo text-lg">◇</span>
           </div>
         </div>
       </div>
@@ -55,7 +55,7 @@ export function ReferralCode() {
       {/* Code */}
       <div className="p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 px-5 py-4 rounded-xl bg-dark-700/30 border border-dark-600/50 font-mono text-2xl text-center text-neutral-100 tracking-[0.2em]">
+          <div className="flex-1 px-5 py-4 rounded-xl bg-roxo-profundo/50 border border-ouro-antigo/30 font-mono text-2xl text-center text-branco-gelo tracking-[0.2em]">
             {referralCode}
           </div>
           <motion.button
@@ -64,8 +64,8 @@ export function ReferralCode() {
             onClick={copyCode}
             className={`px-5 py-4 rounded-xl transition-all ${
               copied
-                ? 'bg-neutral-100/10 text-neutral-300 border border-neutral-100/20'
-                : 'bg-dark-700/30 text-neutral-400 border border-dark-600/50 hover:text-neutral-200 hover:bg-dark-700/50'
+                ? 'bg-game-green/20 text-game-green border border-game-green/30'
+                : 'bg-roxo-profundo/50 text-ouro-antigo border border-ouro-antigo/30 hover:bg-roxo-profundo/70'
             }`}
           >
             {copied ? (
@@ -84,7 +84,7 @@ export function ReferralCode() {
             rel="noopener noreferrer"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-neutral-100 text-dark-900 font-medium text-sm"
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-ouro-antigo text-roxo-profundo font-heading font-semibold text-sm"
           >
             {invites.shareInvite}
           </motion.a>
@@ -93,7 +93,7 @@ export function ReferralCode() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={copyLink}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-dark-700/30 text-neutral-300 border border-dark-600/50 font-medium text-sm hover:bg-dark-700/50 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-roxo-profundo/50 text-branco-gelo border border-cinza-rosado/20 font-heading font-medium text-sm hover:bg-roxo-profundo/70 transition-colors"
           >
             {invites.copyCode}
           </motion.button>
@@ -101,9 +101,9 @@ export function ReferralCode() {
       </div>
 
       {/* Footer info */}
-      <div className="px-6 py-4 border-t border-dark-700/30">
-        <p className="text-[10px] text-neutral-700 flex items-center gap-2">
-          <span className="text-neutral-600">○</span>
+      <div className="px-6 py-4 border-t border-ouro-antigo/20">
+        <p className="text-[10px] text-cinza-rosado/60 flex items-center gap-2">
+          <span className="text-cinza-rosado/40">○</span>
           Pontos creditados quando a indicação é confirmada
         </p>
       </div>
