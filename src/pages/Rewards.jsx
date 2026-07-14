@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardHeader } from '@/components/dashboard'
+import { demoUser } from '@/services/mockData'
 import {
   rewardsTable,
   calculateRewardsProgress,
@@ -12,6 +13,7 @@ import {
   getNextLevelRewards
 } from '@/services/pointsSystem'
 import { format, levels as levelCopy } from '@/services/copy'
+import { getClassIcon, GiftIcon } from '@/components/ui/Icons'
 
 const categoryIcons = {
   cash: '◇',
@@ -22,10 +24,10 @@ const categoryIcons = {
 }
 
 const badgeConfig = {
-  hot: { label: 'Popular', color: 'text-neutral-400 bg-neutral-100/5 border-neutral-100/10' },
-  limited: { label: 'Limitado', color: 'text-amber-400/80 bg-amber-500/5 border-amber-500/10' },
-  recommended: { label: 'Recomendado', color: 'text-neutral-300 bg-neutral-100/5 border-neutral-100/10' },
-  exclusive: { label: 'Exclusivo', color: 'text-violet-400/80 bg-violet-500/5 border-violet-500/10' }
+  hot: { label: 'Popular', color: 'text-ouro-antigo bg-ouro-antigo/10 border-ouro-antigo/20' },
+  limited: { label: 'Limitado', color: 'text-game-orange bg-game-orange/10 border-game-orange/20' },
+  recommended: { label: 'Recomendado', color: 'text-branco-gelo bg-branco-gelo/5 border-branco-gelo/10' },
+  exclusive: { label: 'Exclusivo', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' }
 }
 
 function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
@@ -41,17 +43,17 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
       exit={{ opacity: 0 }}
       className={`group relative rounded-2xl border transition-all duration-300 ${
         !isUnlockedByLevel
-          ? 'border-dark-700/20 bg-dark-800/10 opacity-50'
+          ? 'border-cinza-rosado/10 bg-roxo-profundo/20 opacity-50'
           : canRedeem
-          ? 'border-neutral-100/10 bg-neutral-100/5 hover:bg-neutral-100/10'
-          : 'border-dark-700/30 bg-dark-800/20 hover:bg-dark-800/30'
+          ? 'border-ouro-antigo/20 bg-ouro-antigo/5 hover:bg-ouro-antigo/10'
+          : 'border-cinza-rosado/20 bg-roxo-profundo/30 hover:bg-roxo-profundo/50'
       }`}
     >
       {/* Locked Overlay */}
       {!isUnlockedByLevel && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-dark-900/60 backdrop-blur-sm z-10">
-          <span className="text-xs text-neutral-500 mb-1">Disponível em</span>
-          <span className="text-sm text-neutral-400">{levelCopy.names[reward.requiredLevelId]}</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-roxo-profundo/80 backdrop-blur-sm z-10">
+          <span className="text-xs text-cinza-rosado mb-1">Disponível em</span>
+          <span className="text-sm text-branco-gelo">{levelCopy.names[reward.requiredLevelId]}</span>
         </div>
       )}
 
@@ -59,9 +61,9 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-            canRedeem ? 'bg-neutral-100/10' : 'bg-dark-700/30'
+            canRedeem ? 'bg-ouro-antigo/10' : 'bg-cinza-rosado/10'
           }`}>
-            <span className={`text-xl ${canRedeem ? 'text-neutral-200' : 'text-neutral-600'}`}>
+            <span className={`text-xl ${canRedeem ? 'text-ouro-antigo' : 'text-cinza-rosado'}`}>
               {categoryIcons[reward.category] || '◇'}
             </span>
           </div>
@@ -72,37 +74,37 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
                 {badgeConfig[reward.badge].label}
               </span>
             )}
-            <span className="text-[10px] uppercase tracking-wider text-neutral-600">
+            <span className="text-[10px] uppercase tracking-wider text-cinza-rosado">
               {levelCopy.shortNames[reward.requiredLevelId]}
             </span>
           </div>
         </div>
 
         {/* Content */}
-        <h3 className={`text-lg font-medium mb-1 ${canRedeem ? 'text-neutral-100' : 'text-neutral-400'}`}>
+        <h3 className={`text-lg font-heading font-medium mb-1 ${canRedeem ? 'text-branco-gelo' : 'text-cinza-rosado'}`}>
           {reward.name}
         </h3>
         {reward.subtitle && (
-          <p className="text-sm text-neutral-500 mb-2">{reward.subtitle}</p>
+          <p className="text-sm text-cinza-rosado/80 mb-2">{reward.subtitle}</p>
         )}
-        <p className="text-sm text-neutral-600 mb-6 leading-relaxed line-clamp-2">
+        <p className="text-sm text-cinza-rosado/60 mb-6 leading-relaxed line-clamp-2">
           {reward.description}
         </p>
 
         {/* Progress */}
         {isUnlockedByLevel && !canRedeem && (
           <div className="mb-6">
-            <div className="h-0.5 bg-dark-700/50 rounded-full overflow-hidden">
+            <div className="h-1 bg-cinza-rosado/10 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="h-full bg-neutral-500 rounded-full"
+                className="h-full bg-ouro-antigo rounded-full"
               />
             </div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-[10px] text-neutral-600">{progress}% concluído</span>
-              <span className="text-[10px] text-neutral-500">
+              <span className="text-[10px] text-cinza-rosado/60">{progress}% concluído</span>
+              <span className="text-[10px] text-ouro-antigo">
                 {format.pointsShort(reward.pointsNeeded)} restantes
               </span>
             </div>
@@ -112,10 +114,10 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
         {/* Footer */}
         <div className="flex items-center justify-between">
           <div>
-            <span className={`text-xl font-light ${canRedeem ? 'text-neutral-100' : 'text-neutral-500'}`}>
+            <span className={`text-xl font-display font-light ${canRedeem ? 'text-ouro-antigo' : 'text-cinza-rosado'}`}>
               {format.pointsShort(reward.points_required)}
             </span>
-            <span className="text-xs text-neutral-600 ml-1">pontos</span>
+            <span className="text-xs text-cinza-rosado/60 ml-1">pontos</span>
           </div>
 
           {isUnlockedByLevel && (
@@ -124,10 +126,10 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
               whileTap={canRedeem ? { scale: 0.98 } : {}}
               onClick={() => onActivate(reward)}
               disabled={!canRedeem}
-              className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
                 canRedeem
-                  ? 'bg-neutral-100 text-dark-900 hover:bg-neutral-200'
-                  : 'bg-dark-700/30 text-neutral-600 cursor-not-allowed'
+                  ? 'bg-ouro-antigo text-roxo-profundo hover:bg-accent-light'
+                  : 'bg-cinza-rosado/10 text-cinza-rosado/60 cursor-not-allowed'
               }`}
             >
               {canRedeem ? 'Ativar' : `${progress}%`}
@@ -144,23 +146,22 @@ function ClassSection({ classId, rewards, userPoints, userLevelId, onActivate })
   if (classRewards.length === 0) return null
 
   const isUnlocked = userLevelId >= classId
+  const ClassIcon = getClassIcon(classId)
 
   return (
     <div className="mb-16">
       {/* Class Header */}
       <div className="flex items-center gap-4 mb-8">
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-          isUnlocked ? 'bg-neutral-100/10' : 'bg-dark-700/30'
+          isUnlocked ? 'bg-ouro-antigo/10' : 'bg-cinza-rosado/10'
         }`}>
-          <span className={`text-xl ${isUnlocked ? 'text-neutral-200' : 'text-neutral-600'}`}>
-            {levelCopy.icons[classId]}
-          </span>
+          <ClassIcon size={24} color={isUnlocked ? '#a27937' : '#a39695'} />
         </div>
         <div>
-          <h2 className={`text-xl font-medium ${isUnlocked ? 'text-neutral-100' : 'text-neutral-500'}`}>
+          <h2 className={`text-xl font-heading font-medium ${isUnlocked ? 'text-branco-gelo' : 'text-cinza-rosado'}`}>
             {levelCopy.names[classId]}
           </h2>
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-cinza-rosado">
             {classRewards.length} {classRewards.length === 1 ? 'experiência' : 'experiências'}
             {!isUnlocked && ' • Bloqueado'}
           </p>
@@ -188,13 +189,15 @@ export function Rewards() {
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState('all') // 'all' or 'available'
 
-  const userPoints = profile?.points || 0
+  // Usar demoUser como fonte única
+  const userPoints = demoUser.points
   const levelData = calculateLevel(userPoints)
   const userLevelId = levelData.current.id
   const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
 
   const availableCount = rewardsWithProgress.filter(r => r.canRedeem).length
   const unlockedCount = rewardsWithProgress.filter(r => r.isUnlockedByLevel).length
+  const ClassIcon = getClassIcon(userLevelId)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -204,11 +207,11 @@ export function Rewards() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-900">
+      <div className="min-h-screen flex items-center justify-center bg-roxo-profundo">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-6 h-6 border border-neutral-600 border-t-neutral-300 rounded-full"
+          className="w-6 h-6 border border-cinza-rosado/30 border-t-ouro-antigo rounded-full"
         />
       </div>
     )
@@ -218,14 +221,21 @@ export function Rewards() {
 
   function handleActivate(reward) {
     if (!reward.isUnlockedByLevel) {
-      toast.error(`Disponível a partir de ${levelCopy.names[reward.requiredLevelId]}`)
+      toast.error(`Disponível a partir de ${levelCopy.names[reward.requiredLevelId]}`, {
+        style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(163, 150, 149, 0.3)' }
+      })
       return
     }
     if (userPoints < reward.points_required) {
-      toast.error(`Faltam ${format.pointsShort(reward.pointsNeeded)} pontos`)
+      toast.error(`Faltam ${format.pointsShort(reward.pointsNeeded)} pontos`, {
+        style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(163, 150, 149, 0.3)' }
+      })
       return
     }
-    toast.success(`Experiência ativada: ${reward.name}`, { duration: 4000 })
+    toast.success(`Experiência ativada: ${reward.name}`, {
+      duration: 4000,
+      style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(162, 121, 55, 0.3)' }
+    })
   }
 
   const displayRewards = viewMode === 'available'
@@ -233,7 +243,7 @@ export function Rewards() {
     : rewardsWithProgress
 
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div className="min-h-screen bg-roxo-profundo">
       <DashboardHeader />
 
       <main className="container-premium py-12">
@@ -245,7 +255,7 @@ export function Rewards() {
         >
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-400 transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-cinza-rosado hover:text-ouro-antigo transition-colors"
           >
             ← Voltar ao clube
           </Link>
@@ -257,10 +267,10 @@ export function Rewards() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-16"
         >
-          <h1 className="text-4xl md:text-5xl font-display font-light text-neutral-100 mb-4">
+          <h1 className="text-4xl md:text-5xl font-display font-light text-branco-gelo mb-4">
             Catálogo de Experiências
           </h1>
-          <p className="text-lg text-neutral-500 max-w-2xl">
+          <p className="text-lg text-cinza-rosado max-w-2xl">
             Privilégios exclusivos selecionados para membros do clube.
           </p>
         </motion.div>
@@ -270,51 +280,51 @@ export function Rewards() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex flex-wrap items-center gap-8 mb-12 pb-12 border-b border-dark-700/30"
+          className="flex flex-wrap items-center gap-8 mb-12 pb-12 border-b border-cinza-rosado/20"
         >
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">Sua Classe</p>
+            <p className="text-[10px] uppercase tracking-wider text-cinza-rosado mb-1">Sua Classe</p>
             <div className="flex items-center gap-2">
-              <span className="text-lg">{levelCopy.icons[userLevelId]}</span>
-              <span className="text-lg text-neutral-200">{levelCopy.names[userLevelId]}</span>
+              <ClassIcon size={20} color="#a27937" />
+              <span className="text-lg text-branco-gelo">{levelCopy.names[userLevelId]}</span>
             </div>
           </div>
 
-          <div className="w-px h-10 bg-dark-700/50" />
+          <div className="w-px h-10 bg-cinza-rosado/20" />
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">Pontos</p>
-            <p className="text-2xl font-light text-neutral-100">{format.pointsShort(userPoints)}</p>
+            <p className="text-[10px] uppercase tracking-wider text-cinza-rosado mb-1">Pontos</p>
+            <p className="text-2xl font-display font-light text-ouro-antigo">{format.pointsShort(userPoints)}</p>
           </div>
 
-          <div className="w-px h-10 bg-dark-700/50" />
+          <div className="w-px h-10 bg-cinza-rosado/20" />
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-1">Disponíveis</p>
-            <p className="text-2xl font-light text-neutral-100">
+            <p className="text-[10px] uppercase tracking-wider text-cinza-rosado mb-1">Disponíveis</p>
+            <p className="text-2xl font-display font-light text-branco-gelo">
               {availableCount}
-              <span className="text-neutral-600 text-lg ml-1">/ {rewardsTable.length}</span>
+              <span className="text-cinza-rosado text-lg ml-1">/ {rewardsTable.length}</span>
             </p>
           </div>
 
           {/* View Toggle */}
-          <div className="ml-auto flex items-center gap-1 p-1 rounded-xl bg-dark-800/30 border border-dark-700/30">
+          <div className="ml-auto flex items-center gap-1 p-1 rounded-xl bg-roxo-profundo/50 border border-cinza-rosado/20">
             <button
               onClick={() => setViewMode('all')}
-              className={`px-4 py-2 rounded-lg text-sm transition-all ${
+              className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${
                 viewMode === 'all'
-                  ? 'bg-neutral-100/10 text-neutral-200'
-                  : 'text-neutral-500 hover:text-neutral-300'
+                  ? 'bg-ouro-antigo/20 text-ouro-antigo'
+                  : 'text-cinza-rosado hover:text-branco-gelo'
               }`}
             >
               Todas
             </button>
             <button
               onClick={() => setViewMode('available')}
-              className={`px-4 py-2 rounded-lg text-sm transition-all ${
+              className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${
                 viewMode === 'available'
-                  ? 'bg-neutral-100/10 text-neutral-200'
-                  : 'text-neutral-500 hover:text-neutral-300'
+                  ? 'bg-ouro-antigo/20 text-ouro-antigo'
+                  : 'text-cinza-rosado hover:text-branco-gelo'
               }`}
             >
               Disponíveis ({availableCount})
@@ -364,15 +374,15 @@ export function Rewards() {
               </div>
             ) : (
               <div className="text-center py-20">
-                <div className="w-16 h-16 rounded-2xl bg-dark-800/30 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl text-neutral-600">◇</span>
+                <div className="w-16 h-16 rounded-2xl bg-cinza-rosado/10 flex items-center justify-center mx-auto mb-4">
+                  <GiftIcon size={32} color="#a39695" />
                 </div>
-                <h3 className="text-lg text-neutral-300 mb-2">Nenhuma experiência disponível</h3>
-                <p className="text-sm text-neutral-600 mb-6">
+                <h3 className="text-lg font-heading text-branco-gelo mb-2">Nenhuma experiência disponível</h3>
+                <p className="text-sm text-cinza-rosado mb-6">
                   Continue ganhando pontos para desbloquear experiências.
                 </p>
                 <Link to="/dashboard">
-                  <button className="px-6 py-3 rounded-xl bg-neutral-100 text-dark-900 font-medium text-sm">
+                  <button className="px-6 py-3 rounded-xl bg-ouro-antigo text-roxo-profundo font-heading font-medium text-sm">
                     Voltar ao clube
                   </button>
                 </Link>
@@ -387,27 +397,30 @@ export function Rewards() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mt-16 p-8 rounded-2xl bg-dark-800/20 border border-dark-700/30"
+            className="mt-16 p-8 rounded-2xl bg-roxo-profundo/50 border border-cinza-rosado/20"
           >
             <div className="flex flex-col lg:flex-row lg:items-center gap-6">
               <div className="flex-1">
-                <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-2">
+                <p className="text-[10px] uppercase tracking-wider text-cinza-rosado mb-2">
                   Próxima classe
                 </p>
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="text-2xl">{levelCopy.icons[levelData.next.id]}</span>
-                  <span className="text-xl text-neutral-200">{levelCopy.names[levelData.next.id]}</span>
+                  {(() => {
+                    const NextIcon = getClassIcon(levelData.next.id)
+                    return <NextIcon size={24} color="#a27937" />
+                  })()}
+                  <span className="text-xl font-heading text-branco-gelo">{levelCopy.names[levelData.next.id]}</span>
                 </div>
-                <div className="h-1 bg-dark-700/50 rounded-full overflow-hidden max-w-md">
+                <div className="h-1 bg-cinza-rosado/10 rounded-full overflow-hidden max-w-md">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${levelData.progress}%` }}
                     transition={{ duration: 1 }}
-                    className="h-full bg-neutral-400 rounded-full"
+                    className="h-full bg-ouro-antigo rounded-full"
                   />
                 </div>
-                <p className="text-sm text-neutral-500 mt-3">
-                  {format.pointsShort(levelData.pointsToNext)} pontos para desbloquear novas experiências
+                <p className="text-sm text-cinza-rosado mt-3">
+                  <span className="text-ouro-antigo">{format.pointsShort(levelData.pointsToNext)}</span> pontos para desbloquear novas experiências
                 </p>
               </div>
 
@@ -416,7 +429,7 @@ export function Rewards() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="px-6 py-3 rounded-xl bg-neutral-100 text-dark-900 font-medium text-sm"
+                    className="px-6 py-3 rounded-xl bg-ouro-antigo text-roxo-profundo font-heading font-medium text-sm"
                   >
                     Continuar jornada
                   </motion.button>
