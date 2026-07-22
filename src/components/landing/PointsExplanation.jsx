@@ -52,15 +52,15 @@ export function PointsExplanation() {
           variants={fadeUp}
           className="text-center mb-12 md:mb-16"
         >
-          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-ouro-antigo mb-4">
+          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold mb-4">
             OS PONTOS
           </span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-branco-gelo mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-ice-white mb-4">
             Ponto aqui não é enfeite. É dinheiro.
           </h2>
           <GoldLine width="80px" centered className="mb-6" />
-          <p className="text-lg md:text-xl text-cinza-rosado max-w-2xl mx-auto">
-            <span className="text-ouro-antigo font-semibold">1.000 pontos = R$ 10</span> direto no Pix.
+          <p className="text-lg md:text-xl text-dusty-rose max-w-2xl mx-auto">
+            <span className="text-antique-gold font-semibold">1.000 pontos = R$ 10</span> direto no Pix.
             <br className="hidden sm:block" />
             Sem letra miúda, sem pegadinha.
           </p>
@@ -85,23 +85,23 @@ export function PointsExplanation() {
                   y: -4,
                   transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
                 }}
-                className="relative p-6 rounded-2xl border border-cinza-rosado/20 bg-roxo-profundo/30 backdrop-blur-sm transition-all duration-500 hover:border-ouro-antigo/30 h-full"
+                className="relative p-6 rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 backdrop-blur-sm transition-all duration-500 hover:border-antique-gold/30 h-full"
               >
                 {/* Número */}
-                <span className="inline-block text-[10px] font-mono text-cinza-rosado mb-4 px-2 py-0.5 rounded bg-roxo-profundo/50 border border-cinza-rosado/20">
+                <span className="inline-block text-[10px] font-mono text-dusty-rose mb-4 px-2 py-0.5 rounded bg-deep-purple/50 border border-dusty-rose/20">
                   {card.number}
                 </span>
 
                 {/* Ícone */}
-                <div className="w-12 h-12 rounded-xl bg-ouro-antigo/10 border border-ouro-antigo/30 flex items-center justify-center mb-5 text-ouro-antigo">
+                <div className="w-12 h-12 rounded-xl bg-antique-gold/10 border border-antique-gold/30 flex items-center justify-center mb-5 text-antique-gold">
                   {card.icon}
                 </div>
 
                 {/* Conteúdo */}
-                <h3 className="text-lg font-heading font-semibold text-branco-gelo mb-2">
+                <h3 className="text-lg font-heading font-semibold text-ice-white mb-2">
                   {card.title}
                 </h3>
-                <p className="text-sm text-cinza-rosado leading-relaxed">
+                <p className="text-sm text-dusty-rose leading-relaxed">
                   {card.description}
                 </p>
               </motion.div>
@@ -115,7 +115,7 @@ export function PointsExplanation() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="relative rounded-2xl border-2 border-ouro-antigo/40 bg-gradient-to-r from-ouro-antigo/10 via-ouro-antigo/5 to-transparent p-6 md:p-8 mb-10 overflow-hidden"
+          className="relative rounded-2xl border-2 border-antique-gold/40 bg-gradient-to-r from-antique-gold/10 via-antique-gold/5 to-transparent p-6 md:p-8 mb-10 overflow-hidden"
         >
           {/* Brilho de fundo */}
           <div
@@ -125,22 +125,22 @@ export function PointsExplanation() {
 
           <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
-              <h3 className="text-xl md:text-2xl font-display font-bold text-branco-gelo mb-2">
+              <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-2">
                 Pontos não expiram.
               </h3>
-              <p className="text-cinza-rosado">
+              <p className="text-dusty-rose">
                 Acumule no seu ritmo. Troque quando quiser. Sem pressa, sem pressão.
               </p>
             </div>
 
             <div className="flex items-center gap-4 text-center">
-              <div className="px-6 py-3 rounded-xl bg-ouro-antigo/10 border border-ouro-antigo/30">
-                <div className="text-2xl font-display font-bold text-ouro-antigo">∞</div>
-                <div className="text-xs text-cinza-rosado">Validade</div>
+              <div className="px-6 py-3 rounded-xl bg-antique-gold/10 border border-antique-gold/30">
+                <div className="text-2xl font-display font-bold text-antique-gold">∞</div>
+                <div className="text-xs text-dusty-rose">Validade</div>
               </div>
-              <div className="px-6 py-3 rounded-xl bg-ouro-antigo/10 border border-ouro-antigo/30">
-                <div className="text-2xl font-display font-bold text-ouro-antigo">48h</div>
-                <div className="text-xs text-cinza-rosado">Tempo de saque</div>
+              <div className="px-6 py-3 rounded-xl bg-antique-gold/10 border border-antique-gold/30">
+                <div className="text-2xl font-display font-bold text-antique-gold">48h</div>
+                <div className="text-xs text-dusty-rose">Tempo de saque</div>
               </div>
             </div>
           </div>
@@ -158,13 +158,13 @@ export function PointsExplanation() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl text-base font-heading font-semibold bg-ouro-antigo text-roxo-profundo transition-all duration-300 hover:shadow-lg hover:shadow-ouro-antigo/20"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl text-base font-heading font-semibold bg-antique-gold text-deep-purple transition-all duration-300 hover:shadow-lg hover:shadow-antique-gold/20"
             >
               <span>Começar a acumular</span>
               <span>→</span>
             </motion.button>
           </Link>
-          <p className="mt-4 text-sm text-cinza-rosado">
+          <p className="mt-4 text-sm text-dusty-rose">
             Cadastro grátis. Primeiros pontos em minutos.
           </p>
         </motion.div>

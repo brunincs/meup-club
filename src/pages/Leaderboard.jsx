@@ -21,9 +21,9 @@ import {
 import { CrownIcon, DiamondIcon, StarIcon, getClassIcon } from '@/components/ui/Icons'
 
 const positionBadges = {
-  1: <DiamondIcon size={20} color="var(--ouro-antigo)" />,
-  2: <CrownIcon size={18} color="var(--branco-gelo)" />,
-  3: <StarIcon size={16} color="var(--cinza-rosado)" />
+  1: <DiamondIcon size={20} color="var(--antique-gold)" />,
+  2: <CrownIcon size={18} color="var(--ice-white)" />,
+  3: <StarIcon size={16} color="var(--dusty-rose)" />
 }
 
 function TopMember({ user, positionNum }) {
@@ -47,13 +47,13 @@ function TopMember({ user, positionNum }) {
         whileHover={{ y: -2 }}
         className={`relative w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-xl md:text-2xl font-medium mb-3 ${
           isFirst
-            ? 'bg-ouro-antigo/20 text-branco-gelo ring-1 ring-ouro-antigo/30'
-            : 'bg-cinza-rosado/10 text-cinza-rosado'
+            ? 'bg-antique-gold/20 text-ice-white ring-1 ring-antique-gold/30'
+            : 'bg-dusty-rose/10 text-dusty-rose'
         }`}
       >
         {user.avatar}
         <span className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-lg flex items-center justify-center text-xs font-medium ${
-          isFirst ? 'bg-ouro-antigo text-roxo-profundo' : 'bg-cinza-rosado/30 text-branco-gelo'
+          isFirst ? 'bg-antique-gold text-deep-purple' : 'bg-dusty-rose/30 text-ice-white'
         }`}>
           {positionNum}
         </span>
@@ -61,18 +61,18 @@ function TopMember({ user, positionNum }) {
 
       {/* Name */}
       <p className={`text-sm font-medium mb-1 text-center ${
-        isFirst ? 'text-branco-gelo' : 'text-cinza-rosado'
+        isFirst ? 'text-ice-white' : 'text-dusty-rose'
       }`}>
         {user.name}
       </p>
 
       {/* Points */}
-      <p className={`text-xs font-light ${isFirst ? 'text-ouro-antigo' : 'text-cinza-rosado/70'}`}>
+      <p className={`text-xs font-light ${isFirst ? 'text-antique-gold' : 'text-dusty-rose/70'}`}>
         {format.pointsShort(user.points)}
       </p>
 
       {/* Level */}
-      <p className="text-[10px] text-cinza-rosado/50 mt-1">
+      <p className="text-[10px] text-dusty-rose/50 mt-1">
         {levelCopy.shortNames[user.levelId]}
       </p>
     </motion.div>
@@ -89,13 +89,13 @@ function RankingRow({ user, index }) {
       transition={{ delay: 0.4 + index * 0.03 }}
       className={`flex items-center gap-4 px-5 py-4 transition-all ${
         isCurrentUser
-          ? 'bg-ouro-antigo/10 border-l-2 border-ouro-antigo/50'
-          : 'hover:bg-cinza-rosado/5'
+          ? 'bg-antique-gold/10 border-l-2 border-antique-gold/50'
+          : 'hover:bg-dusty-rose/5'
       }`}
     >
       {/* Position */}
       <div className="w-8 text-center">
-        <span className={`text-sm font-light ${isCurrentUser ? 'text-ouro-antigo' : 'text-cinza-rosado/60'}`}>
+        <span className={`text-sm font-light ${isCurrentUser ? 'text-antique-gold' : 'text-dusty-rose/60'}`}>
           {user.position}
         </span>
       </div>
@@ -103,8 +103,8 @@ function RankingRow({ user, index }) {
       {/* Trend */}
       <div className="w-6 text-center">
         <span className={`text-xs ${
-          user.trend === 'up' ? 'text-ouro-antigo' :
-          user.trend === 'down' ? 'text-cinza-rosado/50' : 'text-cinza-rosado/30'
+          user.trend === 'up' ? 'text-antique-gold' :
+          user.trend === 'down' ? 'text-dusty-rose/50' : 'text-dusty-rose/30'
         }`}>
           {user.trend === 'up' ? '↑' : user.trend === 'down' ? '↓' : '·'}
         </span>
@@ -114,17 +114,17 @@ function RankingRow({ user, index }) {
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-medium ${
           isCurrentUser
-            ? 'bg-ouro-antigo/20 text-branco-gelo'
-            : 'bg-cinza-rosado/10 text-cinza-rosado'
+            ? 'bg-antique-gold/20 text-ice-white'
+            : 'bg-dusty-rose/10 text-dusty-rose'
         }`}>
           {user.avatar}
         </div>
         <div className="min-w-0">
-          <p className={`text-sm truncate ${isCurrentUser ? 'text-branco-gelo' : 'text-branco-gelo/80'}`}>
+          <p className={`text-sm truncate ${isCurrentUser ? 'text-ice-white' : 'text-ice-white/80'}`}>
             {user.name}
-            {isCurrentUser && <span className="text-xs ml-1 text-ouro-antigo">(você)</span>}
+            {isCurrentUser && <span className="text-xs ml-1 text-antique-gold">(você)</span>}
           </p>
-          <p className="text-[10px] text-cinza-rosado/60">
+          <p className="text-[10px] text-dusty-rose/60">
             {levelCopy.shortNames[user.levelId]}
           </p>
         </div>
@@ -132,13 +132,13 @@ function RankingRow({ user, index }) {
 
       {/* Referrals */}
       <div className="hidden sm:block text-center w-16">
-        <p className="text-xs text-branco-gelo/70">{user.referrals}</p>
-        <p className="text-[10px] text-cinza-rosado/50">indicações</p>
+        <p className="text-xs text-ice-white/70">{user.referrals}</p>
+        <p className="text-[10px] text-dusty-rose/50">indicações</p>
       </div>
 
       {/* Points */}
       <div className="text-right w-20">
-        <p className={`text-sm font-light ${isCurrentUser ? 'text-ouro-antigo' : 'text-branco-gelo/70'}`}>
+        <p className={`text-sm font-light ${isCurrentUser ? 'text-antique-gold' : 'text-ice-white/70'}`}>
           {format.pointsShort(user.points)}
         </p>
       </div>
@@ -146,7 +146,7 @@ function RankingRow({ user, index }) {
       {/* Weekly change */}
       {user.weeklyChange !== 0 && (
         <div className={`w-10 text-right text-[10px] ${
-          user.weeklyChange > 0 ? 'text-ouro-antigo' : 'text-cinza-rosado/50'
+          user.weeklyChange > 0 ? 'text-antique-gold' : 'text-dusty-rose/50'
         }`}>
           {user.weeklyChange > 0 ? '+' : ''}{user.weeklyChange}
         </div>
@@ -168,11 +168,11 @@ export function Leaderboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-roxo-profundo">
+      <div className="min-h-screen flex items-center justify-center bg-deep-purple">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-6 h-6 border border-cinza-rosado/30 border-t-ouro-antigo rounded-full"
+          className="w-6 h-6 border border-dusty-rose/30 border-t-antique-gold rounded-full"
         />
       </div>
     )
@@ -186,7 +186,7 @@ export function Leaderboard() {
   const weeklyReset = getTimeToWeeklyReset()
 
   return (
-    <div className="min-h-screen bg-roxo-profundo">
+    <div className="min-h-screen bg-deep-purple">
       <DashboardHeader />
 
       <main className="container-premium py-12">
@@ -198,7 +198,7 @@ export function Leaderboard() {
         >
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-cinza-rosado/60 hover:text-ouro-antigo transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-dusty-rose/60 hover:text-antique-gold transition-colors"
           >
             ← Voltar ao clube
           </Link>
@@ -210,10 +210,10 @@ export function Leaderboard() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-display font-light text-branco-gelo mb-4">
+          <h1 className="text-4xl md:text-5xl font-display font-light text-ice-white mb-4">
             {position.title}
           </h1>
-          <p className="text-lg text-cinza-rosado max-w-2xl">
+          <p className="text-lg text-dusty-rose max-w-2xl">
             {position.subtitle}
           </p>
         </motion.div>
@@ -223,20 +223,20 @@ export function Leaderboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-12 p-8 rounded-2xl bg-roxo-profundo/60 border border-ouro-antigo/20"
+          className="mb-12 p-8 rounded-2xl bg-deep-purple/60 border border-antique-gold/20"
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-ouro-antigo/20 flex items-center justify-center text-branco-gelo text-xl font-medium">
+              <div className="w-14 h-14 rounded-2xl bg-antique-gold/20 flex items-center justify-center text-ice-white text-xl font-medium">
                 V
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-cinza-rosado/60 mb-1">
+                <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-1">
                   {position.yourPosition}
                 </p>
-                <p className="text-3xl font-light text-branco-gelo">
+                <p className="text-3xl font-light text-ice-white">
                   #{stats.currentPosition}
-                  <span className="text-cinza-rosado text-lg ml-2">
+                  <span className="text-dusty-rose text-lg ml-2">
                     de {format.pointsShort(stats.totalUsers)}
                   </span>
                 </p>
@@ -246,16 +246,16 @@ export function Leaderboard() {
             <div className="md:text-right">
               {stats.pointsToNextRank > 0 ? (
                 <>
-                  <p className="text-[10px] uppercase tracking-wider text-cinza-rosado/60 mb-1">
+                  <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-1">
                     Para avançar
                   </p>
-                  <p className="text-xl font-light text-ouro-antigo">
+                  <p className="text-xl font-light text-antique-gold">
                     +{format.pointsShort(stats.pointsToNextRank)}
-                    <span className="text-cinza-rosado text-sm ml-1">pontos</span>
+                    <span className="text-dusty-rose text-sm ml-1">pontos</span>
                   </p>
                 </>
               ) : (
-                <p className="text-lg text-ouro-antigo">Você está no topo</p>
+                <p className="text-lg text-antique-gold">Você está no topo</p>
               )}
             </div>
           </div>
@@ -266,14 +266,14 @@ export function Leaderboard() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="flex items-center gap-1 mb-8 p-1 rounded-xl bg-roxo-profundo/60 border border-cinza-rosado/20 w-fit"
+          className="flex items-center gap-1 mb-8 p-1 rounded-xl bg-deep-purple/60 border border-dusty-rose/20 w-fit"
         >
           <button
             onClick={() => setActiveTab('allTime')}
             className={`px-5 py-2.5 rounded-lg text-sm transition-all ${
               activeTab === 'allTime'
-                ? 'bg-ouro-antigo/20 text-ouro-antigo'
-                : 'text-cinza-rosado hover:text-branco-gelo'
+                ? 'bg-antique-gold/20 text-antique-gold'
+                : 'text-dusty-rose hover:text-ice-white'
             }`}
           >
             {position.general}
@@ -282,8 +282,8 @@ export function Leaderboard() {
             onClick={() => setActiveTab('weekly')}
             className={`px-5 py-2.5 rounded-lg text-sm transition-all ${
               activeTab === 'weekly'
-                ? 'bg-ouro-antigo/20 text-ouro-antigo'
-                : 'text-cinza-rosado hover:text-branco-gelo'
+                ? 'bg-antique-gold/20 text-antique-gold'
+                : 'text-dusty-rose hover:text-ice-white'
             }`}
           >
             {position.weekly}
@@ -298,12 +298,12 @@ export function Leaderboard() {
             className="mb-10"
           >
             {/* Timer */}
-            <div className="flex items-center gap-6 mb-8 pb-8 border-b border-cinza-rosado/20">
+            <div className="flex items-center gap-6 mb-8 pb-8 border-b border-dusty-rose/20">
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-cinza-rosado/60 mb-1">
+                <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-1">
                   {position.weeklyReset}
                 </p>
-                <p className="text-2xl font-light text-branco-gelo">
+                <p className="text-2xl font-light text-ice-white">
                   {format.time.daysHours(weeklyReset.days, weeklyReset.hours)}
                 </p>
               </div>
@@ -319,17 +319,17 @@ export function Leaderboard() {
                   transition={{ delay: 0.05 * index }}
                   className={`p-4 rounded-xl border text-center ${
                     prize.position <= 3
-                      ? 'bg-ouro-antigo/10 border-ouro-antigo/20'
-                      : 'bg-roxo-profundo/40 border-cinza-rosado/20'
+                      ? 'bg-antique-gold/10 border-antique-gold/20'
+                      : 'bg-deep-purple/40 border-dusty-rose/20'
                   }`}
                 >
                   <p className={`text-[10px] uppercase tracking-wider mb-2 ${
-                    prize.position <= 3 ? 'text-ouro-antigo' : 'text-cinza-rosado/60'
+                    prize.position <= 3 ? 'text-antique-gold' : 'text-dusty-rose/60'
                   }`}>
                     {prize.title}
                   </p>
                   <p className={`text-lg font-light ${
-                    prize.position <= 3 ? 'text-branco-gelo' : 'text-branco-gelo/70'
+                    prize.position <= 3 ? 'text-ice-white' : 'text-ice-white/70'
                   }`}>
                     +{format.pointsShort(prize.points)}
                   </p>
@@ -346,10 +346,10 @@ export function Leaderboard() {
           transition={{ delay: 0.25 }}
           className="mb-12"
         >
-          <p className="text-[10px] uppercase tracking-wider text-cinza-rosado/60 mb-6">
+          <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-6">
             Destaques do clube
           </p>
-          <div className="flex items-end justify-center gap-8 md:gap-16 py-8 px-4 rounded-2xl bg-roxo-profundo/40 border border-cinza-rosado/20">
+          <div className="flex items-end justify-center gap-8 md:gap-16 py-8 px-4 rounded-2xl bg-deep-purple/40 border border-dusty-rose/20">
             <AnimatePresence mode="wait">
               {topThree.map((user, index) => (
                 <TopMember
@@ -367,25 +367,25 @@ export function Leaderboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="rounded-2xl border border-cinza-rosado/20 bg-roxo-profundo/40 overflow-hidden"
+          className="rounded-2xl border border-dusty-rose/20 bg-deep-purple/40 overflow-hidden"
         >
           {/* Header */}
-          <div className="px-5 py-4 border-b border-cinza-rosado/20 flex items-center justify-between">
-            <p className="text-[10px] uppercase tracking-wider text-cinza-rosado/60">
+          <div className="px-5 py-4 border-b border-dusty-rose/20 flex items-center justify-between">
+            <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">
               Todos os membros
             </p>
-            <div className="flex items-center gap-4 text-[10px] text-cinza-rosado/50">
+            <div className="flex items-center gap-4 text-[10px] text-dusty-rose/50">
               <span className="flex items-center gap-1">
-                <span className="text-ouro-antigo">↑</span> Avançando
+                <span className="text-antique-gold">↑</span> Avançando
               </span>
               <span className="flex items-center gap-1">
-                <span className="text-cinza-rosado/50">↓</span> Recuando
+                <span className="text-dusty-rose/50">↓</span> Recuando
               </span>
             </div>
           </div>
 
           {/* List */}
-          <div className="divide-y divide-cinza-rosado/10">
+          <div className="divide-y divide-dusty-rose/10">
             <AnimatePresence mode="wait">
               {rankingList.map((user, index) => (
                 <RankingRow
@@ -405,14 +405,14 @@ export function Leaderboard() {
           transition={{ delay: 0.4 }}
           className="mt-12 text-center"
         >
-          <p className="text-cinza-rosado mb-4">
+          <p className="text-dusty-rose mb-4">
             Quer avançar na sua posição?
           </p>
           <div className="flex justify-center gap-3">
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Link
                 to="/dashboard"
-                className="inline-block px-6 py-3 rounded-xl bg-ouro-antigo text-roxo-profundo font-medium text-sm"
+                className="inline-block px-6 py-3 rounded-xl bg-antique-gold text-deep-purple font-medium text-sm"
               >
                 Fazer indicações
               </Link>
@@ -420,7 +420,7 @@ export function Leaderboard() {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Link
                 to="/tarefas"
-                className="inline-block px-6 py-3 rounded-xl bg-cinza-rosado/10 text-branco-gelo border border-cinza-rosado/20 text-sm"
+                className="inline-block px-6 py-3 rounded-xl bg-dusty-rose/10 text-ice-white border border-dusty-rose/20 text-sm"
               >
                 Ver missões
               </Link>

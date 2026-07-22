@@ -29,7 +29,7 @@ export function StatsCards({ stats }) {
       label: 'Indicações',
       value: stats.approvedReferrals,
       suffix: stats.pendingReferrals > 0 ? `+${stats.pendingReferrals} em análise` : 'aprovadas',
-      icon: <span className="text-ouro-antigo">◇</span>
+      icon: <span className="text-antique-gold">◇</span>
     },
     {
       label: 'Pontos',
@@ -60,19 +60,19 @@ export function StatsCards({ stats }) {
           initial="hidden"
           animate="visible"
           variants={cardVariants}
-          className="p-5 rounded-xl border border-cinza-rosado/20 bg-roxo-profundo/30 hover:bg-roxo-profundo/50 transition-colors"
+          className="p-5 rounded-xl border border-dusty-rose/20 bg-deep-purple/30 hover:bg-deep-purple/50 transition-colors"
         >
           <div className="flex items-start justify-between mb-4">
-            <span className="text-[10px] uppercase tracking-wider text-cinza-rosado">
+            <span className="text-[10px] uppercase tracking-wider text-dusty-rose">
               {card.label}
             </span>
             {card.icon}
           </div>
-          <div className="text-2xl font-display font-light text-branco-gelo mb-1">
+          <div className="text-2xl font-display font-light text-ice-white mb-1">
             {card.value}
           </div>
           {card.suffix && (
-            <div className="text-xs text-cinza-rosado">{card.suffix}</div>
+            <div className="text-xs text-dusty-rose">{card.suffix}</div>
           )}
         </motion.div>
       ))}

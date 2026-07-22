@@ -2,14 +2,14 @@
 @import "tailwindcss";
 
 @theme {
-  /* Nova Paleta Me Up Viagens - Brand Book */
-  --color-roxo-profundo: #32113f;
-  --color-ouro-antigo: #a27937;
-  --color-branco-gelo: #edf0f1;
-  --color-nude-rosado: #ddd1d0;
-  --color-grafite: #1f1f1f;
-  --color-roxo-brilhante: #5c005a;
-  --color-cinza-rosado: #a39695;
+  /* Me Up Viagens Palette - Brand Book */
+  --color-deep-purple: #32113f;
+  --color-antique-gold: #a27937;
+  --color-ice-white: #edf0f1;
+  --color-nude-rose: #ddd1d0;
+  --color-graphite: #1f1f1f;
+  --color-bright-purple: #5c005a;
+  --color-dusty-rose: #a39695;
 
   /* Paleta escura (compatibilidade) */
   --color-dark-900: #32113f;
@@ -153,8 +153,8 @@
   }
 
   body {
-    background-color: var(--color-roxo-profundo);
-    color: var(--color-branco-gelo);
+    background-color: var(--color-deep-purple);
+    color: var(--color-ice-white);
     font-family: var(--font-sans);
     min-height: 100vh;
     overflow-x: hidden;
@@ -173,16 +173,16 @@
   }
 
   ::-webkit-scrollbar-track {
-    background-color: var(--color-roxo-profundo);
+    background-color: var(--color-deep-purple);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--color-cinza-rosado);
+    background-color: var(--color-dusty-rose);
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-ouro-antigo);
+    background-color: var(--color-antique-gold);
   }
 
   /* Tipografia - Títulos */
@@ -231,8 +231,8 @@
     font-weight: 500;
     font-size: 0.875rem;
     font-family: var(--font-heading);
-    background-color: var(--color-ouro-antigo);
-    color: var(--color-roxo-profundo);
+    background-color: var(--color-antique-gold);
+    color: var(--color-deep-purple);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -261,13 +261,13 @@
     font-weight: 500;
     font-size: 0.875rem;
     font-family: var(--font-heading);
-    background-color: var(--color-roxo-brilhante);
-    color: var(--color-branco-gelo);
+    background-color: var(--color-bright-purple);
+    color: var(--color-ice-white);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .btn-primary-light:hover {
-    background-color: var(--color-roxo-profundo);
+    background-color: var(--color-deep-purple);
     box-shadow: 0 10px 15px -3px rgba(92, 0, 90, 0.2);
   }
 
@@ -282,14 +282,14 @@
     font-size: 0.875rem;
     font-family: var(--font-heading);
     background-color: rgba(255, 255, 255, 0.05);
-    color: var(--color-branco-gelo);
-    border: 1px solid var(--color-cinza-rosado);
+    color: var(--color-ice-white);
+    border: 1px solid var(--color-dusty-rose);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .btn-secondary:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    border-color: var(--color-ouro-antigo);
+    border-color: var(--color-antique-gold);
   }
 
   .btn-secondary:active {
@@ -306,13 +306,13 @@
     font-weight: 500;
     font-size: 0.875rem;
     background-color: transparent;
-    color: var(--color-cinza-rosado);
+    color: var(--color-dusty-rose);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .btn-ghost:hover {
     background-color: rgba(255, 255, 255, 0.05);
-    color: var(--color-branco-gelo);
+    color: var(--color-ice-white);
   }
 
   .btn-ghost:active {
@@ -352,30 +352,30 @@
     padding: 0.75rem 1rem;
     border-radius: 0.75rem;
     background-color: rgba(50, 17, 63, 0.5);
-    border: 1px solid var(--color-cinza-rosado);
-    color: var(--color-branco-gelo);
+    border: 1px solid var(--color-dusty-rose);
+    color: var(--color-ice-white);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .input-premium::placeholder {
-    color: var(--color-cinza-rosado);
+    color: var(--color-dusty-rose);
   }
 
   .input-premium:focus {
     outline: none;
-    border-color: var(--color-ouro-antigo);
+    border-color: var(--color-antique-gold);
     box-shadow: 0 0 0 3px rgba(162, 121, 55, 0.1);
   }
 
   .text-gradient {
-    background: linear-gradient(to right, var(--color-accent-light), var(--color-ouro-antigo), var(--color-accent-dark));
+    background: linear-gradient(to right, var(--color-accent-light), var(--color-antique-gold), var(--color-accent-dark));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .text-gradient-subtle {
-    background: linear-gradient(to right, var(--color-branco-gelo), var(--color-cinza-rosado));
+    background: linear-gradient(to right, var(--color-ice-white), var(--color-dusty-rose));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -384,18 +384,18 @@
   /* Linha dourada decorativa */
   .gold-line {
     height: 2px;
-    background: linear-gradient(to right, transparent, var(--color-ouro-antigo), transparent);
+    background: linear-gradient(to right, transparent, var(--color-antique-gold), transparent);
   }
 
   .gold-line-solid {
     height: 1px;
-    background-color: var(--color-ouro-antigo);
+    background-color: var(--color-antique-gold);
   }
 
   .divider-premium {
     height: 1px;
     width: 100%;
-    background: linear-gradient(to right, transparent, var(--color-cinza-rosado), transparent);
+    background: linear-gradient(to right, transparent, var(--color-dusty-rose), transparent);
   }
 
   .badge {
@@ -407,7 +407,7 @@
     font-size: 0.75rem;
     font-weight: 500;
     background-color: rgba(163, 150, 149, 0.1);
-    color: var(--color-cinza-rosado);
+    color: var(--color-dusty-rose);
     border: 1px solid rgba(163, 150, 149, 0.3);
   }
 
@@ -420,7 +420,7 @@
     font-size: 0.75rem;
     font-weight: 500;
     background-color: rgba(162, 121, 55, 0.1);
-    color: var(--color-ouro-antigo);
+    color: var(--color-antique-gold);
     border: 1px solid rgba(162, 121, 55, 0.3);
   }
 
@@ -521,7 +521,7 @@
   }
 
   .text-gradient-gold {
-    background: linear-gradient(135deg, var(--color-ouro-antigo), var(--color-accent-light));
+    background: linear-gradient(135deg, var(--color-antique-gold), var(--color-accent-light));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -549,7 +549,7 @@
 
   .badge-legendary {
     background: linear-gradient(135deg, rgba(162, 121, 55, 0.2), rgba(162, 121, 55, 0.1));
-    color: var(--color-ouro-antigo);
+    color: var(--color-antique-gold);
     border: 1px solid rgba(162, 121, 55, 0.3);
   }
 
@@ -564,8 +564,8 @@
     font-weight: 600;
     font-size: 0.875rem;
     font-family: var(--font-heading);
-    background: linear-gradient(135deg, var(--color-ouro-antigo), var(--color-accent-light));
-    color: var(--color-roxo-profundo);
+    background: linear-gradient(135deg, var(--color-antique-gold), var(--color-accent-light));
+    color: var(--color-deep-purple);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 4px 15px rgba(162, 121, 55, 0.3);
   }
@@ -581,12 +581,12 @@
 
   /* Seção de fundo alternado (nude rosado) */
   .bg-respiro {
-    background-color: var(--color-nude-rosado);
-    color: var(--color-roxo-profundo);
+    background-color: var(--color-nude-rose);
+    color: var(--color-deep-purple);
   }
 
-  .bg-grafite {
-    background-color: var(--color-grafite);
+  .bg-graphite {
+    background-color: var(--color-graphite);
   }
 }
 
@@ -607,7 +607,7 @@
 
   /* Accent colors */
   .text-accent-gold {
-    color: var(--color-ouro-antigo);
+    color: var(--color-antique-gold);
   }
 
   .text-accent-light {
@@ -619,75 +619,75 @@
   }
 
   .bg-accent-gold {
-    background-color: var(--color-ouro-antigo);
+    background-color: var(--color-antique-gold);
   }
 
   .border-accent-gold {
-    border-color: var(--color-ouro-antigo);
+    border-color: var(--color-antique-gold);
   }
 
   /* Novas cores da marca */
-  .text-roxo-profundo {
-    color: var(--color-roxo-profundo);
+  .text-deep-purple {
+    color: var(--color-deep-purple);
   }
 
-  .text-roxo-brilhante {
-    color: var(--color-roxo-brilhante);
+  .text-bright-purple {
+    color: var(--color-bright-purple);
   }
 
-  .text-ouro-antigo {
-    color: var(--color-ouro-antigo);
+  .text-antique-gold {
+    color: var(--color-antique-gold);
   }
 
-  .text-branco-gelo {
-    color: var(--color-branco-gelo);
+  .text-ice-white {
+    color: var(--color-ice-white);
   }
 
-  .text-nude-rosado {
-    color: var(--color-nude-rosado);
+  .text-nude-rose {
+    color: var(--color-nude-rose);
   }
 
-  .text-cinza-rosado {
-    color: var(--color-cinza-rosado);
+  .text-dusty-rose {
+    color: var(--color-dusty-rose);
   }
 
-  .bg-roxo-profundo {
-    background-color: var(--color-roxo-profundo);
+  .bg-deep-purple {
+    background-color: var(--color-deep-purple);
   }
 
-  .bg-roxo-brilhante {
-    background-color: var(--color-roxo-brilhante);
+  .bg-bright-purple {
+    background-color: var(--color-bright-purple);
   }
 
-  .bg-ouro-antigo {
-    background-color: var(--color-ouro-antigo);
+  .bg-antique-gold {
+    background-color: var(--color-antique-gold);
   }
 
-  .bg-nude-rosado {
-    background-color: var(--color-nude-rosado);
+  .bg-nude-rose {
+    background-color: var(--color-nude-rose);
   }
 
-  .bg-grafite {
-    background-color: var(--color-grafite);
+  .bg-graphite {
+    background-color: var(--color-graphite);
   }
 
-  .border-ouro-antigo {
-    border-color: var(--color-ouro-antigo);
+  .border-antique-gold {
+    border-color: var(--color-antique-gold);
   }
 
-  .border-cinza-rosado {
-    border-color: var(--color-cinza-rosado);
+  .border-dusty-rose {
+    border-color: var(--color-dusty-rose);
   }
 
   /* Dark scale colors (mantidos para compatibilidade) */
-  .bg-dark-900 { background-color: var(--color-roxo-profundo); }
+  .bg-dark-900 { background-color: var(--color-deep-purple); }
   .bg-dark-800 { background-color: var(--color-dark-800); }
   .bg-dark-700 { background-color: var(--color-dark-700); }
   .bg-dark-600 { background-color: var(--color-dark-600); }
   .bg-dark-500 { background-color: var(--color-dark-500); }
   .bg-dark-400 { background-color: var(--color-dark-400); }
 
-  .text-dark-900 { color: var(--color-roxo-profundo); }
+  .text-dark-900 { color: var(--color-deep-purple); }
   .text-dark-500 { color: var(--color-dark-500); }
   .text-dark-400 { color: var(--color-dark-400); }
 

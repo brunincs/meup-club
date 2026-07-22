@@ -103,8 +103,8 @@ const colorStyles = {
     iconColor: 'group-hover:text-emerald-400',
   },
   gold: {
-    iconBg: 'group-hover:bg-ouro-antigo/10',
-    iconColor: 'group-hover:text-ouro-antigo',
+    iconBg: 'group-hover:bg-antique-gold/10',
+    iconColor: 'group-hover:text-antique-gold',
   },
   blue: {
     iconBg: 'group-hover:bg-blue-500/10',
@@ -131,14 +131,14 @@ export function Rewards() {
           variants={fadeUp}
           className="text-center mb-12 md:mb-16"
         >
-          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-ouro-antigo mb-4">
+          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold mb-4">
             Catálogo
           </span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-branco-gelo mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-ice-white mb-4">
             O que seus pontos podem virar
           </h2>
           <GoldLine width="80px" centered className="mb-4" />
-          <p className="text-cinza-rosado max-w-lg mx-auto text-base">
+          <p className="text-dusty-rose max-w-lg mx-auto text-base">
             Cada ponto é uma fração de algo real. Escolha como usar.
           </p>
         </motion.div>
@@ -164,17 +164,17 @@ export function Rewards() {
                 }}
                 className={`group relative p-6 rounded-2xl border transition-all duration-500 cursor-pointer ${
                   reward.featured
-                    ? 'border-ouro-antigo/30 bg-gradient-to-b from-ouro-antigo/5 to-roxo-profundo/50'
+                    ? 'border-antique-gold/30 bg-gradient-to-b from-antique-gold/5 to-deep-purple/50'
                     : reward.locked
-                    ? 'border-cinza-rosado/10 bg-roxo-profundo/20'
-                    : 'border-cinza-rosado/20 bg-roxo-profundo/30 hover:border-ouro-antigo/30'
+                    ? 'border-dusty-rose/10 bg-deep-purple/20'
+                    : 'border-dusty-rose/20 bg-deep-purple/30 hover:border-antique-gold/30'
                 }`}
               >
                 {/* Featured badge */}
                 {reward.featured && (
                   <div className="absolute -top-2.5 left-6">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-ouro-antigo text-roxo-profundo font-heading font-semibold">
-                      <span className="w-1 h-1 rounded-full bg-roxo-profundo" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-antique-gold text-deep-purple font-heading font-semibold">
+                      <span className="w-1 h-1 rounded-full bg-deep-purple" />
                       Popular
                     </span>
                   </div>
@@ -183,7 +183,7 @@ export function Rewards() {
                 {/* Locked icon */}
                 {reward.locked && (
                   <div className="absolute top-5 right-5">
-                    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-cinza-rosado/50">
+                    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-dusty-rose/50">
                       <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="1.5" />
                     </svg>
@@ -195,8 +195,8 @@ export function Rewards() {
                   whileHover={{ scale: 1.1 }}
                   className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 ${
                     reward.featured
-                      ? 'bg-ouro-antigo/10 text-ouro-antigo'
-                      : `bg-cinza-rosado/10 text-cinza-rosado ${styles.iconBg} ${styles.iconColor}`
+                      ? 'bg-antique-gold/10 text-antique-gold'
+                      : `bg-dusty-rose/10 text-dusty-rose ${styles.iconBg} ${styles.iconColor}`
                   } ${reward.locked ? 'opacity-40' : ''}`}
                 >
                   {reward.icon}
@@ -204,28 +204,28 @@ export function Rewards() {
 
                 {/* Content */}
                 <h3 className={`text-base font-heading font-semibold mb-2 transition-colors duration-300 ${
-                  reward.locked ? 'text-cinza-rosado/50' : 'text-branco-gelo group-hover:text-white'
+                  reward.locked ? 'text-dusty-rose/50' : 'text-ice-white group-hover:text-white'
                 }`}>
                   {reward.title}
                 </h3>
                 <p className={`text-sm leading-relaxed mb-5 ${
-                  reward.locked ? 'text-cinza-rosado/30' : 'text-cinza-rosado'
+                  reward.locked ? 'text-dusty-rose/30' : 'text-dusty-rose'
                 }`}>
                   {reward.description}
                 </p>
 
                 {/* Points footer */}
-                <div className="flex items-center justify-between pt-4 border-t border-cinza-rosado/10">
-                  <span className="text-[10px] uppercase tracking-wider text-cinza-rosado/60">
+                <div className="flex items-center justify-between pt-4 border-t border-dusty-rose/10">
+                  <span className="text-[10px] uppercase tracking-wider text-dusty-rose/60">
                     {reward.locked ? 'Bloqueado' : 'A partir de'}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <span className={`font-mono text-sm font-semibold ${
-                      reward.locked ? 'text-cinza-rosado/40' : 'text-ouro-antigo'
+                      reward.locked ? 'text-dusty-rose/40' : 'text-antique-gold'
                     }`}>
                       {reward.points}
                     </span>
-                    <span className="text-cinza-rosado/60 text-xs">pts</span>
+                    <span className="text-dusty-rose/60 text-xs">pts</span>
                   </div>
                 </div>
               </motion.div>

@@ -40,30 +40,30 @@ function MissionCard({ task, onComplete, isLoading }) {
       exit={{ opacity: 0 }}
       className={`relative p-6 rounded-2xl border transition-all ${
         isCompleted
-          ? 'border-cinza-rosado/10 bg-cinza-rosado/5 opacity-60'
-          : 'border-cinza-rosado/20 bg-roxo-profundo/40 hover:bg-roxo-profundo/60'
+          ? 'border-dusty-rose/10 bg-dusty-rose/5 opacity-60'
+          : 'border-dusty-rose/20 bg-deep-purple/40 hover:bg-deep-purple/60'
       }`}
     >
       <div className="flex items-start gap-4">
         {/* Status Icon */}
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-          isCompleted ? 'bg-cinza-rosado/10' : 'bg-ouro-antigo/10'
+          isCompleted ? 'bg-dusty-rose/10' : 'bg-antique-gold/10'
         }`}>
           {isCompleted ? (
-            <CheckIcon size={18} color="var(--cinza-rosado)" />
+            <CheckIcon size={18} color="var(--dusty-rose)" />
           ) : (
-            <SparkleIcon size={18} color="var(--ouro-antigo)" />
+            <SparkleIcon size={18} color="var(--antique-gold)" />
           )}
         </div>
 
         {/* Content */}
         <div className="flex-1">
           <h3 className={`font-medium mb-1 ${
-            isCompleted ? 'text-cinza-rosado' : 'text-branco-gelo'
+            isCompleted ? 'text-dusty-rose' : 'text-ice-white'
           }`}>
             {task.name}
           </h3>
-          <p className="text-sm text-cinza-rosado/70 mb-4">
+          <p className="text-sm text-dusty-rose/70 mb-4">
             {task.description}
           </p>
 
@@ -71,14 +71,14 @@ function MissionCard({ task, onComplete, isLoading }) {
           {hasProgress && !isCompleted && (
             <div className="mb-4">
               <div className="flex items-center justify-between text-xs mb-2">
-                <span className="text-cinza-rosado/70">Progresso</span>
-                <span className="text-branco-gelo/80">{task.progress}/{task.target}</span>
+                <span className="text-dusty-rose/70">Progresso</span>
+                <span className="text-ice-white/80">{task.progress}/{task.target}</span>
               </div>
-              <div className="h-1 bg-cinza-rosado/20 rounded-full overflow-hidden">
+              <div className="h-1 bg-dusty-rose/20 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPercent}%` }}
-                  className="h-full bg-ouro-antigo rounded-full"
+                  className="h-full bg-antique-gold rounded-full"
                 />
               </div>
             </div>
@@ -87,7 +87,7 @@ function MissionCard({ task, onComplete, isLoading }) {
           {/* Footer */}
           <div className="flex items-center justify-between">
             <span className={`text-sm font-light ${
-              isCompleted ? 'text-cinza-rosado/60' : 'text-ouro-antigo'
+              isCompleted ? 'text-dusty-rose/60' : 'text-antique-gold'
             }`}>
               +{task.points} pontos
             </span>
@@ -100,8 +100,8 @@ function MissionCard({ task, onComplete, isLoading }) {
                 disabled={isLoading}
                 className={`px-4 py-2 rounded-lg text-sm transition-all ${
                   isLoading
-                    ? 'bg-cinza-rosado/20 text-cinza-rosado cursor-wait'
-                    : 'bg-ouro-antigo/20 text-ouro-antigo hover:bg-ouro-antigo hover:text-roxo-profundo'
+                    ? 'bg-dusty-rose/20 text-dusty-rose cursor-wait'
+                    : 'bg-antique-gold/20 text-antique-gold hover:bg-antique-gold hover:text-deep-purple'
                 }`}
               >
                 {isLoading ? (
@@ -122,7 +122,7 @@ function MissionCard({ task, onComplete, isLoading }) {
             )}
 
             {isCompleted && (
-              <span className="text-xs text-cinza-rosado/60">Concluída</span>
+              <span className="text-xs text-dusty-rose/60">Concluída</span>
             )}
           </div>
         </div>
@@ -340,11 +340,11 @@ export function Tasks() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-roxo-profundo">
+      <div className="min-h-screen flex items-center justify-center bg-deep-purple">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-6 h-6 border border-cinza-rosado/30 border-t-ouro-antigo rounded-full"
+          className="w-6 h-6 border border-dusty-rose/30 border-t-antique-gold rounded-full"
         />
       </div>
     )
@@ -353,11 +353,11 @@ export function Tasks() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-roxo-profundo">
+    <div className="min-h-screen bg-deep-purple">
       {/* Skip Link (Bug 5) */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-ouro-antigo focus:text-roxo-profundo focus:rounded-lg focus:font-medium"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-antique-gold focus:text-deep-purple focus:rounded-lg focus:font-medium"
       >
         Pular para o conteúdo principal
       </a>
@@ -373,7 +373,7 @@ export function Tasks() {
         >
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-cinza-rosado/60 hover:text-ouro-antigo transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-dusty-rose/60 hover:text-antique-gold transition-colors"
           >
             ← Voltar ao clube
           </Link>
@@ -385,10 +385,10 @@ export function Tasks() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-display font-light text-branco-gelo mb-4">
+          <h1 className="text-4xl md:text-5xl font-display font-light text-ice-white mb-4">
             Missões
           </h1>
-          <p className="text-lg text-cinza-rosado max-w-2xl">
+          <p className="text-lg text-dusty-rose max-w-2xl">
             Complete missões para ganhar pontos adicionais no clube.
           </p>
         </motion.div>
@@ -398,28 +398,28 @@ export function Tasks() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex flex-wrap items-center gap-8 mb-12 pb-12 border-b border-cinza-rosado/20"
+          className="flex flex-wrap items-center gap-8 mb-12 pb-12 border-b border-dusty-rose/20"
         >
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-cinza-rosado/60 mb-1">Concluídas</p>
-            <p className="text-2xl font-light text-branco-gelo">
+            <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-1">Concluídas</p>
+            <p className="text-2xl font-light text-ice-white">
               {totalCompleted}
-              <span className="text-cinza-rosado text-lg ml-1">/ {totalTasks}</span>
+              <span className="text-dusty-rose text-lg ml-1">/ {totalTasks}</span>
             </p>
           </div>
 
-          <div className="w-px h-10 bg-cinza-rosado/20" aria-hidden="true" />
+          <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-cinza-rosado/60 mb-1">Pontos Acumulados</p>
-            <p className="text-2xl font-light text-ouro-antigo">+{format.pointsShort(tasksPoints.earned)}</p>
+            <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-1">Pontos Acumulados</p>
+            <p className="text-2xl font-light text-antique-gold">+{format.pointsShort(tasksPoints.earned)}</p>
           </div>
 
-          <div className="w-px h-10 bg-cinza-rosado/20" aria-hidden="true" />
+          <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-cinza-rosado/60 mb-1">Disponíveis</p>
-            <p className="text-2xl font-light text-branco-gelo">+{format.pointsShort(tasksPoints.available)}</p>
+            <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-1">Disponíveis</p>
+            <p className="text-2xl font-light text-ice-white">+{format.pointsShort(tasksPoints.available)}</p>
           </div>
         </motion.div>
 
@@ -431,7 +431,7 @@ export function Tasks() {
           ref={tabListRef}
           role="tablist"
           aria-label="Categorias de missões"
-          className="flex items-center gap-1 mb-8 p-1 rounded-xl bg-roxo-profundo/60 border border-cinza-rosado/20 w-fit"
+          className="flex items-center gap-1 mb-8 p-1 rounded-xl bg-deep-purple/60 border border-dusty-rose/20 w-fit"
         >
           {categoryTabs.map((tab, index) => (
             <button
@@ -445,15 +445,15 @@ export function Tasks() {
               onKeyDown={(e) => handleTabKeyDown(e, index)}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all ${
                 activeTab === tab.id
-                  ? 'bg-ouro-antigo/20 text-ouro-antigo'
-                  : 'text-cinza-rosado hover:text-branco-gelo'
+                  ? 'bg-antique-gold/20 text-antique-gold'
+                  : 'text-dusty-rose hover:text-ice-white'
               }`}
             >
               <span className="text-xs opacity-60" aria-hidden="true">{tab.icon}</span>
               <span>{tab.label}</span>
               <span
                 className={`text-xs px-1.5 py-0.5 rounded ${
-                  activeTab === tab.id ? 'bg-ouro-antigo/20' : 'bg-cinza-rosado/10'
+                  activeTab === tab.id ? 'bg-antique-gold/20' : 'bg-dusty-rose/10'
                 }`}
                 aria-label={`${tasksSummary[tab.id].completed} de ${tasksSummary[tab.id].total} concluídas`}
               >
@@ -467,7 +467,7 @@ export function Tasks() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-6 text-xs text-cinza-rosado/60"
+          className="mb-6 text-xs text-dusty-rose/60"
           aria-live="polite"
         >
           {activeTab === 'daily' && 'Missões diárias renovam à meia-noite'}
@@ -498,11 +498,11 @@ export function Tasks() {
           {/* Empty state */}
           {filteredTasks.length === 0 && (
             <div className="text-center py-16">
-              <div className="w-16 h-16 rounded-2xl bg-ouro-antigo/10 flex items-center justify-center mx-auto mb-4">
-                <CheckIcon size={32} color="var(--ouro-antigo)" />
+              <div className="w-16 h-16 rounded-2xl bg-antique-gold/10 flex items-center justify-center mx-auto mb-4">
+                <CheckIcon size={32} color="var(--antique-gold)" />
               </div>
-              <h3 className="text-lg text-branco-gelo mb-2">Nenhuma missão disponível</h3>
-              <p className="text-sm text-cinza-rosado">
+              <h3 className="text-lg text-ice-white mb-2">Nenhuma missão disponível</h3>
+              <p className="text-sm text-dusty-rose">
                 Todas as missões desta categoria foram concluídas.
               </p>
             </div>

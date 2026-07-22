@@ -6,8 +6,8 @@ const missionTypeConfig = {
   daily: {
     label: 'MISSÃO DO DIA',
     color: '#a27937',
-    bgGradient: 'from-ouro-antigo/10 to-ouro-antigo/5',
-    borderColor: 'border-ouro-antigo/30',
+    bgGradient: 'from-antique-gold/10 to-antique-gold/5',
+    borderColor: 'border-antique-gold/30',
     pulseClass: ''
   },
   weekly: {
@@ -65,10 +65,10 @@ export function MissionCard({
                 </span>
               )}
             </div>
-            <h3 className="text-base font-heading font-medium text-branco-gelo">
+            <h3 className="text-base font-heading font-medium text-ice-white">
               {mission.name}
             </h3>
-            <p className="text-xs text-cinza-rosado mt-1">
+            <p className="text-xs text-dusty-rose mt-1">
               {mission.description}
             </p>
           </div>
@@ -81,7 +81,7 @@ export function MissionCard({
             color={config.color}
             bgColor="rgba(163, 150, 149, 0.1)"
           >
-            <span className="text-xs font-heading font-semibold text-branco-gelo">
+            <span className="text-xs font-heading font-semibold text-ice-white">
               {Math.round(mission.progress)}%
             </span>
           </ProgressRing>
@@ -93,13 +93,13 @@ export function MissionCard({
             <span className="text-lg font-bold text-game-green">
               +{mission.points.toLocaleString('pt-BR')}
             </span>
-            <span className="text-xs text-cinza-rosado ml-1">pontos</span>
+            <span className="text-xs text-dusty-rose ml-1">pontos</span>
           </div>
 
           {/* Timer / Action */}
           <div className="flex items-center gap-3">
             {mission.resetIn && !isCompleted && (
-              <span className="text-[10px] text-cinza-rosado/60">
+              <span className="text-[10px] text-dusty-rose/60">
                 Reset em {mission.resetIn}
               </span>
             )}
@@ -109,18 +109,18 @@ export function MissionCard({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onClaim?.(mission)}
-                className="px-4 py-2 rounded-lg text-xs font-heading font-semibold bg-game-green text-roxo-profundo shadow-lg shadow-game-green/20"
+                className="px-4 py-2 rounded-lg text-xs font-heading font-semibold bg-game-green text-deep-purple shadow-lg shadow-game-green/20"
               >
                 Resgatar
               </motion.button>
             ) : isInProgress ? (
-              <span className="text-xs text-cinza-rosado">Em progresso...</span>
+              <span className="text-xs text-dusty-rose">Em progresso...</span>
             ) : (
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onStart?.(mission)}
-                className="px-4 py-2 rounded-lg text-xs font-heading font-medium bg-roxo-profundo/50 text-branco-gelo border border-cinza-rosado/20 hover:bg-roxo-profundo/70 transition-colors"
+                className="px-4 py-2 rounded-lg text-xs font-heading font-medium bg-deep-purple/50 text-ice-white border border-dusty-rose/20 hover:bg-deep-purple/70 transition-colors"
               >
                 Iniciar
               </motion.button>
@@ -144,7 +144,7 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
       className={`p-4 rounded-xl cursor-pointer transition-all ${
         isCompleted
           ? 'bg-game-green/10 border border-game-green/20'
-          : 'bg-roxo-profundo/30 border border-cinza-rosado/20 hover:border-cinza-rosado/30'
+          : 'bg-deep-purple/30 border border-dusty-rose/20 hover:border-dusty-rose/30'
       }`}
     >
       <div className="flex items-center gap-4">
@@ -160,7 +160,7 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-heading font-medium text-branco-gelo truncate">
+            <h4 className="text-sm font-heading font-medium text-ice-white truncate">
               {mission.name}
             </h4>
             {mission.rarity === 'rare' && (
@@ -169,7 +169,7 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
               </span>
             )}
           </div>
-          <p className="text-xs text-cinza-rosado truncate">{mission.description}</p>
+          <p className="text-xs text-dusty-rose truncate">{mission.description}</p>
         </div>
 
         {/* Points */}
@@ -177,7 +177,7 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
           <span className="text-sm font-heading font-semibold text-game-green">
             +{mission.points}
           </span>
-          <span className="text-[10px] text-cinza-rosado/60 block">pontos</span>
+          <span className="text-[10px] text-dusty-rose/60 block">pontos</span>
         </div>
       </div>
     </motion.div>

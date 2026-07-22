@@ -23,8 +23,8 @@ const categoryIcons = {
 
 const rarityStyles = {
   common: {
-    border: 'border-cinza-rosado/20',
-    bg: 'bg-roxo-profundo/30',
+    border: 'border-dusty-rose/20',
+    bg: 'bg-deep-purple/30',
     badge: null,
     glow: ''
   },
@@ -41,10 +41,10 @@ const rarityStyles = {
     glow: 'shadow-lg shadow-purple-500/15'
   },
   legendary: {
-    border: 'border-ouro-antigo/40',
-    bg: 'bg-gradient-to-br from-ouro-antigo/10 to-ouro-antigo/5',
-    badge: 'bg-ouro-antigo/20 text-ouro-antigo border-ouro-antigo/30',
-    glow: 'shadow-lg shadow-ouro-antigo/20'
+    border: 'border-antique-gold/40',
+    bg: 'bg-gradient-to-br from-antique-gold/10 to-antique-gold/5',
+    badge: 'bg-antique-gold/20 text-antique-gold border-antique-gold/30',
+    glow: 'shadow-lg shadow-antique-gold/20'
   }
 }
 
@@ -124,16 +124,16 @@ export function RewardsSection() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.6 }}
-      className="rounded-2xl border border-cinza-rosado/20 bg-roxo-profundo/30 overflow-hidden"
+      className="rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 overflow-hidden"
     >
       {/* Header */}
-      <div className="p-6 border-b border-cinza-rosado/20">
+      <div className="p-6 border-b border-dusty-rose/20">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-[10px] uppercase tracking-wider text-cinza-rosado mb-1">
+            <h3 className="text-[10px] uppercase tracking-wider text-dusty-rose mb-1">
               Troque seus Pontos
             </h3>
-            <p className="text-sm text-cinza-rosado">
+            <p className="text-sm text-dusty-rose">
               {availableCount > 0 ? (
                 <span className="text-game-green font-heading font-medium">{availableCount} experiências disponíveis</span>
               ) : (
@@ -143,7 +143,7 @@ export function RewardsSection() {
           </div>
           <Link
             to="/recompensas"
-            className="text-xs text-cinza-rosado hover:text-ouro-antigo transition-colors"
+            className="text-xs text-dusty-rose hover:text-antique-gold transition-colors"
           >
             Ver catálogo →
           </Link>
@@ -169,7 +169,7 @@ export function RewardsSection() {
               className={`relative p-5 rounded-xl border transition-all overflow-hidden ${
                 canRedeem
                   ? `${rarityStyle.border} ${rarityStyle.bg} ${rarityStyle.glow}`
-                  : 'border-cinza-rosado/20 bg-roxo-profundo/30 hover:bg-dark-700/20'
+                  : 'border-dusty-rose/20 bg-deep-purple/30 hover:bg-dark-700/20'
               }`}
             >
               {/* Shimmer effect for legendary */}
@@ -180,9 +180,9 @@ export function RewardsSection() {
               {/* Header */}
               <div className="flex items-start justify-between mb-4 relative">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  canRedeem ? 'bg-ouro-antigo/10' : 'bg-cinza-rosado/10'
+                  canRedeem ? 'bg-antique-gold/10' : 'bg-dusty-rose/10'
                 }`}>
-                  <span className={`text-lg ${canRedeem ? 'text-ouro-antigo' : 'text-cinza-rosado'}`}>
+                  <span className={`text-lg ${canRedeem ? 'text-antique-gold' : 'text-dusty-rose'}`}>
                     {categoryIcons[reward.category] || '◇'}
                   </span>
                 </div>
@@ -195,7 +195,7 @@ export function RewardsSection() {
                   )}
                   {reward.requiredLevelId && (
                     <span className={`text-[10px] uppercase tracking-wider ${
-                      canRedeem ? 'text-cinza-rosado' : 'text-cinza-rosado/60'
+                      canRedeem ? 'text-dusty-rose' : 'text-dusty-rose/60'
                     }`}>
                       {levelCopy.shortNames[reward.requiredLevelId]}
                     </span>
@@ -205,12 +205,12 @@ export function RewardsSection() {
 
               {/* Content */}
               <h4 className={`text-sm font-heading font-medium mb-1 ${
-                canRedeem ? 'text-branco-gelo' : 'text-cinza-rosado'
+                canRedeem ? 'text-ice-white' : 'text-dusty-rose'
               }`}>
                 {reward.name}
               </h4>
               {reward.subtitle && (
-                <p className="text-xs text-cinza-rosado/80 mb-3">
+                <p className="text-xs text-dusty-rose/80 mb-3">
                   {reward.subtitle}
                 </p>
               )}
@@ -225,10 +225,10 @@ export function RewardsSection() {
                     bgColor="rgba(163, 150, 149, 0.1)"
                   />
                   <div className="flex items-center justify-between mt-2">
-                    <span className="text-[10px] text-cinza-rosado/60">
+                    <span className="text-[10px] text-dusty-rose/60">
                       {Math.round(reward.progress)}%
                     </span>
-                    <span className={`text-[10px] ${isAlmostThere ? 'text-ouro-antigo font-heading font-medium' : 'text-cinza-rosado/60'}`}>
+                    <span className={`text-[10px] ${isAlmostThere ? 'text-antique-gold font-heading font-medium' : 'text-dusty-rose/60'}`}>
                       {format.pointsShort(reward.pointsNeeded)} pontos restantes
                     </span>
                   </div>
@@ -238,10 +238,10 @@ export function RewardsSection() {
               {/* Footer */}
               <div className="flex items-center justify-between relative">
                 <span className={`text-sm font-display font-light ${
-                  canRedeem ? 'text-ouro-antigo' : 'text-cinza-rosado'
+                  canRedeem ? 'text-antique-gold' : 'text-dusty-rose'
                 }`}>
                   {format.pointsShort(reward.points_required)}
-                  <span className="text-xs text-cinza-rosado/60 ml-1">pontos</span>
+                  <span className="text-xs text-dusty-rose/60 ml-1">pontos</span>
                 </span>
 
                 {canRedeem && (
@@ -251,12 +251,12 @@ export function RewardsSection() {
                     onClick={() => handleActivate(reward)}
                     className={`px-4 py-2 rounded-lg text-xs font-heading font-semibold transition-all ${
                       rarity === 'legendary'
-                        ? 'bg-gradient-to-r from-ouro-antigo to-accent-light text-roxo-profundo shadow-lg shadow-ouro-antigo/20'
+                        ? 'bg-gradient-to-r from-antique-gold to-accent-light text-deep-purple shadow-lg shadow-antique-gold/20'
                         : rarity === 'epic'
                           ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
                           : rarity === 'rare'
                             ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
-                            : 'bg-ouro-antigo text-roxo-profundo hover:bg-accent-light'
+                            : 'bg-antique-gold text-deep-purple hover:bg-accent-light'
                     }`}
                   >
                     Trocar
@@ -270,8 +270,8 @@ export function RewardsSection() {
 
       {/* Footer */}
       <Link to="/recompensas">
-        <div className="px-6 py-4 border-t border-cinza-rosado/20 hover:bg-white/5 transition-colors">
-          <p className="text-center text-xs text-cinza-rosado">
+        <div className="px-6 py-4 border-t border-dusty-rose/20 hover:bg-white/5 transition-colors">
+          <p className="text-center text-xs text-dusty-rose">
             Explorar {rewardsTable.length + 1} experiências disponíveis
           </p>
         </div>

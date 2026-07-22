@@ -72,14 +72,14 @@ export function Ranking() {
           variants={fadeUp}
           className="text-center mb-12 md:mb-16"
         >
-          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-ouro-antigo mb-4">
+          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold mb-4">
             Competição ativa
           </span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-branco-gelo mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-ice-white mb-4">
             Quem está na frente?
           </h2>
           <GoldLine width="80px" centered className="mb-4" />
-          <p className="text-cinza-rosado max-w-lg mx-auto text-base">
+          <p className="text-dusty-rose max-w-lg mx-auto text-base">
             O ranking atualiza a cada indicação. Sua posição depende de você.
           </p>
         </motion.div>
@@ -97,7 +97,7 @@ export function Ranking() {
             variants={staggerItem}
             className="mb-4"
           >
-            <div className="relative p-5 md:p-6 rounded-2xl bg-gradient-to-r from-ouro-antigo/10 via-ouro-antigo/5 to-transparent border border-ouro-antigo/20 overflow-hidden">
+            <div className="relative p-5 md:p-6 rounded-2xl bg-gradient-to-r from-antique-gold/10 via-antique-gold/5 to-transparent border border-antique-gold/20 overflow-hidden">
               {/* Brilho de fundo */}
               <div
                 className="absolute top-0 right-0 w-48 h-48 rounded-full blur-[60px] opacity-30"
@@ -107,16 +107,16 @@ export function Ranking() {
               <div className="relative flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 md:gap-5">
                   {/* Ícone de coroa */}
-                  <div className="text-ouro-antigo">
+                  <div className="text-antique-gold">
                     <CrownIcon size={28} filled />
                   </div>
 
                   {/* Avatar do líder */}
                   <div className="relative">
-                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${levelColors[rankingData[0].levelId]} flex items-center justify-center text-roxo-profundo font-bold text-lg shadow-lg`}>
+                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${levelColors[rankingData[0].levelId]} flex items-center justify-center text-deep-purple font-bold text-lg shadow-lg`}>
                       {rankingData[0].avatar}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-ouro-antigo flex items-center justify-center text-roxo-profundo text-xs font-bold">
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-antique-gold flex items-center justify-center text-deep-purple text-xs font-bold">
                       1
                     </div>
                   </div>
@@ -125,7 +125,7 @@ export function Ranking() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       <span className="text-base md:text-lg font-heading font-semibold text-white">{rankingData[0].name}</span>
-                      <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-ouro-antigo/20 text-ouro-antigo border border-ouro-antigo/30">
+                      <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
                         Líder
                       </span>
                     </div>
@@ -141,7 +141,7 @@ export function Ranking() {
                   <div className="text-xl md:text-2xl font-display font-bold text-white">
                     {formatPoints(rankingData[0].points)}
                   </div>
-                  <div className="text-xs text-cinza-rosado hidden sm:block">pontos</div>
+                  <div className="text-xs text-dusty-rose hidden sm:block">pontos</div>
                 </div>
               </div>
             </div>
@@ -157,22 +157,22 @@ export function Ranking() {
                   scale: 1.01,
                   backgroundColor: 'rgba(58, 24, 73, 0.8)',
                 }}
-                className="group grid grid-cols-12 gap-3 items-center px-4 md:px-5 py-4 rounded-xl border border-cinza-rosado/20 bg-roxo-profundo/30 transition-all duration-300 cursor-pointer"
+                className="group grid grid-cols-12 gap-3 items-center px-4 md:px-5 py-4 rounded-xl border border-dusty-rose/20 bg-deep-purple/30 transition-all duration-300 cursor-pointer"
               >
                 {/* Posição */}
                 <div className="col-span-1">
-                  <span className={`font-mono text-lg font-bold ${index < 2 ? 'text-ouro-antigo' : 'text-cinza-rosado'}`}>
+                  <span className={`font-mono text-lg font-bold ${index < 2 ? 'text-antique-gold' : 'text-dusty-rose'}`}>
                     {user.position}
                   </span>
                 </div>
 
                 {/* Avatar + Nome */}
                 <div className="col-span-6 sm:col-span-5 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${levelColors[user.levelId]} flex items-center justify-center text-roxo-profundo font-bold text-sm`}>
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${levelColors[user.levelId]} flex items-center justify-center text-deep-purple font-bold text-sm`}>
                     {user.avatar}
                   </div>
                   <div className="min-w-0">
-                    <span className="font-heading font-medium text-branco-gelo group-hover:text-white transition-colors block truncate text-sm">
+                    <span className="font-heading font-medium text-ice-white group-hover:text-white transition-colors block truncate text-sm">
                       {user.name}
                     </span>
                     <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border ${levelBgColors[user.levelId]}`}>
@@ -184,7 +184,7 @@ export function Ranking() {
 
                 {/* Pontos */}
                 <div className="col-span-3 sm:col-span-3 text-right">
-                  <span className="font-mono text-sm md:text-base text-branco-gelo">
+                  <span className="font-mono text-sm md:text-base text-ice-white">
                     {formatPoints(user.points)}
                   </span>
                 </div>
@@ -202,15 +202,15 @@ export function Ranking() {
           {/* Seu lugar */}
           <motion.div
             variants={staggerItem}
-            className="mt-4 p-4 rounded-xl border border-dashed border-cinza-rosado/30 bg-roxo-profundo/20 text-center"
+            className="mt-4 p-4 rounded-xl border border-dashed border-dusty-rose/30 bg-deep-purple/20 text-center"
           >
             <div className="flex items-center justify-center gap-3">
-              <span className="w-8 h-8 rounded-lg bg-cinza-rosado/10 border border-cinza-rosado/20 flex items-center justify-center text-cinza-rosado text-sm">
+              <span className="w-8 h-8 rounded-lg bg-dusty-rose/10 border border-dusty-rose/20 flex items-center justify-center text-dusty-rose text-sm">
                 ?
               </span>
               <div className="text-left">
-                <span className="text-cinza-rosado text-sm block">Seu lugar está vazio</span>
-                <span className="text-cinza-rosado/60 text-xs">Entre e comece a competir</span>
+                <span className="text-dusty-rose text-sm block">Seu lugar está vazio</span>
+                <span className="text-dusty-rose/60 text-xs">Entre e comece a competir</span>
               </div>
             </div>
           </motion.div>
@@ -218,7 +218,7 @@ export function Ranking() {
           {/* Status em tempo real */}
           <motion.div
             variants={staggerItem}
-            className="mt-6 flex items-center justify-center gap-6 text-xs text-cinza-rosado"
+            className="mt-6 flex items-center justify-center gap-6 text-xs text-dusty-rose"
           >
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500" />

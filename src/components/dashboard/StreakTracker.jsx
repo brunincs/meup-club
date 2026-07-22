@@ -47,7 +47,7 @@ export function StreakTracker() {
               <FlameIcon size={14} color="#f97316" />
               {consistency.title}
             </h3>
-            <p className="text-xs text-cinza-rosado">
+            <p className="text-xs text-dusty-rose">
               {consistency.keepIt}
             </p>
           </div>
@@ -65,7 +65,7 @@ export function StreakTracker() {
 
       {/* Milestones */}
       <div className="p-5">
-        <p className="text-[10px] uppercase tracking-wider text-cinza-rosado/60 mb-4">
+        <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-4">
           {consistency.milestone}
         </p>
 
@@ -86,15 +86,15 @@ export function StreakTracker() {
                   isAchieved
                     ? 'bg-game-orange/10 border-game-orange/20'
                     : isNext
-                    ? 'bg-roxo-profundo/30 border-game-orange/30'
-                    : 'bg-roxo-profundo/20 border-cinza-rosado/10 opacity-50'
+                    ? 'bg-deep-purple/30 border-game-orange/30'
+                    : 'bg-deep-purple/20 border-dusty-rose/10 opacity-50'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                     isAchieved
                       ? 'bg-game-orange/20'
-                      : 'bg-cinza-rosado/10'
+                      : 'bg-dusty-rose/10'
                   }`}>
                     {isAchieved ? (
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round">
@@ -108,7 +108,7 @@ export function StreakTracker() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className={`text-sm ${
-                        isAchieved ? 'text-branco-gelo' : 'text-cinza-rosado'
+                        isAchieved ? 'text-ice-white' : 'text-dusty-rose'
                       }`}>
                         {milestoneLabels[bonus.days] || `${bonus.days} dias`}
                       </span>
@@ -133,11 +133,11 @@ export function StreakTracker() {
 
                   <div className="text-right">
                     <span className={`text-sm font-heading font-semibold ${
-                      isAchieved ? 'text-game-green' : 'text-cinza-rosado/60'
+                      isAchieved ? 'text-game-green' : 'text-dusty-rose/60'
                     }`}>
                       +{format.pointsShort(bonus.points)}
                     </span>
-                    <span className="text-[10px] text-cinza-rosado/60 block">pontos</span>
+                    <span className="text-[10px] text-dusty-rose/60 block">pontos</span>
                   </div>
                 </div>
 
@@ -159,7 +159,7 @@ export function StreakTracker() {
             className="mt-4 p-3 rounded-xl bg-game-green/10 border border-game-green/20"
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm text-cinza-rosado">
+              <span className="text-sm text-dusty-rose">
                 {consistency.bonus}
               </span>
               <span className="text-sm font-heading font-bold text-game-green">
@@ -170,8 +170,8 @@ export function StreakTracker() {
         )}
 
         {/* Record */}
-        <div className="mt-4 pt-4 border-t border-cinza-rosado/10 flex items-center justify-between">
-          <span className="text-[10px] text-cinza-rosado/60">
+        <div className="mt-4 pt-4 border-t border-dusty-rose/10 flex items-center justify-between">
+          <span className="text-[10px] text-dusty-rose/60">
             {consistency.record}
           </span>
           <span className="text-sm text-game-orange flex items-center gap-1">

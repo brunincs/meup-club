@@ -18,13 +18,13 @@ export function Footer() {
           >
             <motion.div
               whileHover={{ scale: 1.05, rotate: 5 }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-ouro-antigo via-ouro-antigo to-accent-dark flex items-center justify-center shadow-lg shadow-ouro-antigo/15"
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-antique-gold via-antique-gold to-accent-dark flex items-center justify-center shadow-lg shadow-antique-gold/15"
             >
-              <span className="font-display font-bold text-roxo-profundo">M</span>
+              <span className="font-display font-bold text-deep-purple">M</span>
             </motion.div>
             <div>
-              <span className="font-display font-semibold text-lg text-branco-gelo">Meup</span>
-              <span className="font-display font-light text-lg text-cinza-rosado ml-1">Club</span>
+              <span className="font-display font-semibold text-lg text-ice-white">Meup</span>
+              <span className="font-display font-light text-lg text-dusty-rose ml-1">Club</span>
             </div>
           </motion.div>
 
@@ -36,8 +36,8 @@ export function Footer() {
             transition={{ delay: 0.05 }}
             className="text-center"
           >
-            <p className="text-sm text-cinza-rosado">
-              Me Up Viagens · <a href="https://instagram.com/meup.viagens" target="_blank" rel="noopener noreferrer" className="text-ouro-antigo hover:underline">@meup.viagens</a> · <a href="tel:+5516988126568" className="text-ouro-antigo hover:underline">(16) 98812-6568</a>
+            <p className="text-sm text-dusty-rose">
+              Me Up Viagens · <a href="https://instagram.com/meup.viagens" target="_blank" rel="noopener noreferrer" className="text-antique-gold hover:underline">@meup.viagens</a> · <a href="tel:+5516988126568" className="text-antique-gold hover:underline">(16) 98812-6568</a>
             </p>
           </motion.div>
 
@@ -53,7 +53,7 @@ export function Footer() {
               <a
                 key={link}
                 href="#"
-                className="text-cinza-rosado hover:text-ouro-antigo transition-colors"
+                className="text-dusty-rose hover:text-antique-gold transition-colors"
               >
                 {link}
               </a>
@@ -66,7 +66,7 @@ export function Footer() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-xs text-cinza-rosado/60"
+            className="text-xs text-dusty-rose/60"
           >
             &copy; {new Date().getFullYear()} Meup Club. Todos os direitos reservados.
           </motion.p>

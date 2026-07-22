@@ -7,14 +7,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Nova Paleta Me Up Viagens - Brand Book
-        'roxo-profundo': '#32113f',
-        'ouro-antigo': '#a27937',
-        'branco-gelo': '#edf0f1',
-        'nude-rosado': '#ddd1d0',
-        'grafite': '#1f1f1f',
-        'roxo-brilhante': '#5c005a',
-        'cinza-rosado': '#a39695',
+        // Me Up Viagens Palette - Brand Book
+        'deep-purple': '#32113f',
+        'antique-gold': '#a27937',
+        'ice-white': '#edf0f1',
+        'nude-rose': '#ddd1d0',
+        'graphite': '#1f1f1f',
+        'bright-purple': '#5c005a',
+        'dusty-rose': '#a39695',
         // Paleta escura (compatibilidade)
         dark: {
           900: '#32113f',

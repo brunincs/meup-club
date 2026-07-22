@@ -47,10 +47,10 @@ export function HeroSection() {
       className="mb-10"
     >
       {/* Hero Card Principal */}
-      <div className="relative overflow-hidden rounded-2xl border border-ouro-antigo/20 bg-gradient-to-br from-roxo-profundo/80 to-roxo-profundo">
+      <div className="relative overflow-hidden rounded-2xl border border-antique-gold/20 bg-gradient-to-br from-deep-purple/80 to-deep-purple">
         {/* Background decorativo */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-ouro-antigo/5 rounded-full blur-3xl" />
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-antique-gold/5 rounded-full blur-3xl" />
           <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-game-green/5 rounded-full blur-3xl" />
         </div>
 
@@ -58,10 +58,10 @@ export function HeroSection() {
           {/* Topo - Saudação e Badge */}
           <div className="px-8 pt-8 pb-4 flex items-start justify-between">
             <div>
-              <p className="text-cinza-rosado text-sm mb-1">
+              <p className="text-dusty-rose text-sm mb-1">
                 Bem-vindo, {userName}
               </p>
-              <h2 className="text-lg font-display font-light text-branco-gelo">
+              <h2 className="text-lg font-display font-light text-ice-white">
                 Sua jornada no clube
               </h2>
             </div>
@@ -71,15 +71,15 @@ export function HeroSection() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="px-4 py-3 rounded-xl bg-ouro-antigo/10 border border-ouro-antigo/30"
+              className="px-4 py-3 rounded-xl bg-antique-gold/10 border border-antique-gold/30"
               style={{
                 boxShadow: currentLevel.id <= 3 ? `0 0 20px rgba(162, 121, 55, 0.2)` : 'none'
               }}
             >
-              <div className="text-[10px] uppercase tracking-wider text-cinza-rosado mb-1">Sua classe</div>
+              <div className="text-[10px] uppercase tracking-wider text-dusty-rose mb-1">Sua classe</div>
               <div className="flex items-center gap-2">
                 <ClassIcon size={20} color="#a27937" />
-                <span className="text-sm font-heading font-semibold text-branco-gelo">
+                <span className="text-sm font-heading font-semibold text-ice-white">
                   {currentLevel.shortName}
                 </span>
               </div>
@@ -96,18 +96,18 @@ export function HeroSection() {
                 className="mb-2"
               >
                 {showCounter ? (
-                  <span className="text-5xl md:text-6xl font-display font-bold text-ouro-antigo">
+                  <span className="text-5xl md:text-6xl font-display font-bold text-antique-gold">
                     <CountUp end={userPoints} duration={1.5} separator="." />
                   </span>
                 ) : (
-                  <span className="text-5xl md:text-6xl font-display font-bold text-ouro-antigo">0</span>
+                  <span className="text-5xl md:text-6xl font-display font-bold text-antique-gold">0</span>
                 )}
               </motion.div>
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="text-lg font-heading font-semibold text-ouro-antigo/80 uppercase tracking-widest"
+                className="text-lg font-heading font-semibold text-antique-gold/80 uppercase tracking-widest"
               >
                 PONTOS
               </motion.p>
@@ -125,13 +125,13 @@ export function HeroSection() {
               {/* Hoje */}
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-game-green/10 border border-game-green/20">
                 <span className="text-game-green text-sm font-heading font-semibold">+{todayPoints.toLocaleString('pt-BR')}</span>
-                <span className="text-cinza-rosado text-xs">hoje</span>
+                <span className="text-dusty-rose text-xs">hoje</span>
               </div>
 
               {/* Esta semana */}
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-roxo-profundo/50 border border-cinza-rosado/20">
-                <span className="text-branco-gelo text-sm font-heading font-medium">+{weekPoints.toLocaleString('pt-BR')}</span>
-                <span className="text-cinza-rosado/60 text-xs">esta semana</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-deep-purple/50 border border-dusty-rose/20">
+                <span className="text-ice-white text-sm font-heading font-medium">+{weekPoints.toLocaleString('pt-BR')}</span>
+                <span className="text-dusty-rose/60 text-xs">esta semana</span>
               </div>
             </motion.div>
           </div>
@@ -144,14 +144,14 @@ export function HeroSection() {
               transition={{ delay: 0.7 }}
               className="px-8 py-4"
             >
-              <div className="p-4 rounded-xl bg-roxo-profundo/50 border border-cinza-rosado/20">
+              <div className="p-4 rounded-xl bg-deep-purple/50 border border-dusty-rose/20">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <ClassIcon size={18} color="#a27937" />
-                    <span className="text-xs text-cinza-rosado">{currentLevel.name}</span>
+                    <span className="text-xs text-dusty-rose">{currentLevel.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-cinza-rosado">{nextLevel.name}</span>
+                    <span className="text-xs text-dusty-rose">{nextLevel.name}</span>
                     {NextClassIcon && <NextClassIcon size={18} color="#a27937" />}
                   </div>
                 </div>
@@ -164,10 +164,10 @@ export function HeroSection() {
                 />
 
                 <div className="flex items-center justify-between mt-3">
-                  <span className="text-xs text-cinza-rosado">
+                  <span className="text-xs text-dusty-rose">
                     {levelData.progress}% completo
                   </span>
-                  <span className="text-xs font-heading font-medium text-ouro-antigo">
+                  <span className="text-xs font-heading font-medium text-antique-gold">
                     Faltam {levelData.pointsToNext.toLocaleString('pt-BR')} pontos
                   </span>
                 </div>
@@ -187,18 +187,18 @@ export function HeroSection() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] uppercase tracking-wider text-ouro-antigo font-heading font-semibold">
+                      <span className="text-[10px] uppercase tracking-wider text-antique-gold font-heading font-semibold">
                         Quase lá!
                       </span>
-                      <span className="text-xs text-cinza-rosado">{nextExperience.progress}%</span>
+                      <span className="text-xs text-dusty-rose">{nextExperience.progress}%</span>
                     </div>
-                    <div className="text-sm text-branco-gelo">{nextExperience.name}</div>
+                    <div className="text-sm text-ice-white">{nextExperience.name}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-heading font-bold text-ouro-antigo">
+                    <div className="text-sm font-heading font-bold text-antique-gold">
                       {nextExperience.pointsNeeded.toLocaleString('pt-BR')}
                     </div>
-                    <div className="text-[10px] text-cinza-rosado">pontos restantes</div>
+                    <div className="text-[10px] text-dusty-rose">pontos restantes</div>
                   </div>
                 </div>
               </GlowBorder>
@@ -211,7 +211,7 @@ export function HeroSection() {
               <motion.button
                 whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(162, 121, 55, 0.3)' }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full py-4 rounded-xl bg-ouro-antigo text-roxo-profundo font-heading font-semibold text-sm flex items-center justify-center gap-3 shadow-lg shadow-ouro-antigo/20 transition-all hover:bg-accent-light group"
+                className="w-full py-4 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold text-sm flex items-center justify-center gap-3 shadow-lg shadow-antique-gold/20 transition-all hover:bg-accent-light group"
               >
                 <span>Ganhar mais pontos</span>
                 <span className="transition-transform duration-300 group-hover:translate-x-1">

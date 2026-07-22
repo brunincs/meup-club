@@ -28,10 +28,10 @@ export function FinalCTA() {
             viewport={{ once: true }}
             className="mb-8"
           >
-            <div className="inline-flex items-center gap-3 text-cinza-rosado/70">
-              <span className="w-8 h-px bg-cinza-rosado/30" />
+            <div className="inline-flex items-center gap-3 text-dusty-rose/70">
+              <span className="w-8 h-px bg-dusty-rose/30" />
               <span className="text-[10px] uppercase tracking-[0.3em]">Decisão</span>
-              <span className="w-8 h-px bg-cinza-rosado/30" />
+              <span className="w-8 h-px bg-dusty-rose/30" />
             </div>
           </motion.div>
 
@@ -43,8 +43,8 @@ export function FinalCTA() {
             transition={{ delay: 0.1, duration: 0.6 }}
           >
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold leading-tight mb-4">
-              <span className="text-cinza-rosado block mb-1">Você vai continuar assistindo...</span>
-              <span className="text-branco-gelo">ou vai entrar pro ranking?</span>
+              <span className="text-dusty-rose block mb-1">Você vai continuar assistindo...</span>
+              <span className="text-ice-white">ou vai entrar pro ranking?</span>
             </h2>
             <GoldLine width="80px" centered className="mb-6" />
           </motion.div>
@@ -55,10 +55,10 @@ export function FinalCTA() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-base md:text-lg text-cinza-rosado mb-10 max-w-xl mx-auto"
+            className="text-base md:text-lg text-dusty-rose mb-10 max-w-xl mx-auto"
           >
             Seu lugar no ranking está esperando.
-            <span className="text-branco-gelo"> Cada indicação te aproxima do topo.</span>
+            <span className="text-ice-white"> Cada indicação te aproxima do topo.</span>
           </motion.p>
 
           {/* CTA Button */}
@@ -76,7 +76,7 @@ export function FinalCTA() {
                   boxShadow: '0 0 50px rgba(162, 121, 55, 0.35)'
                 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-xl text-base font-heading font-semibold bg-ouro-antigo text-roxo-profundo overflow-hidden transition-all duration-300 shadow-lg shadow-ouro-antigo/20"
+                className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-xl text-base font-heading font-semibold bg-antique-gold text-deep-purple overflow-hidden transition-all duration-300 shadow-lg shadow-antique-gold/20"
               >
                 {/* Shine effect */}
                 <motion.div
@@ -104,7 +104,7 @@ export function FinalCTA() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-cinza-rosado"
+            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-dusty-rose"
           >
             <div className="flex items-center gap-1.5">
               <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 text-green-500">
