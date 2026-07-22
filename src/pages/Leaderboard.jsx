@@ -409,24 +409,22 @@ export function Leaderboard() {
             Quer avançar na sua posição?
           </p>
           <div className="flex justify-center gap-3">
-            <Link to="/dashboard">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-6 py-3 rounded-xl bg-ouro-antigo text-roxo-profundo font-medium text-sm"
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link
+                to="/dashboard"
+                className="inline-block px-6 py-3 rounded-xl bg-ouro-antigo text-roxo-profundo font-medium text-sm"
               >
                 Fazer indicações
-              </motion.button>
-            </Link>
-            <Link to="/tarefas">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-6 py-3 rounded-xl bg-cinza-rosado/10 text-branco-gelo border border-cinza-rosado/20 text-sm"
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link
+                to="/tarefas"
+                className="inline-block px-6 py-3 rounded-xl bg-cinza-rosado/10 text-branco-gelo border border-cinza-rosado/20 text-sm"
               >
                 Ver missões
-              </motion.button>
-            </Link>
+              </Link>
+            </motion.div>
           </div>
         </motion.div>
       </main>

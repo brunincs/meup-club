@@ -143,9 +143,25 @@ export const rarityConfig = {
 // ============================================
 // CATÁLOGO DE EXPERIÊNCIAS (Com requisito de classe e raridade)
 // Conversão: 1.000 pontos = R$ 10 (1 pt = R$ 0,01)
+// Regra: preços de cada classe > preços da classe anterior
 // ============================================
 export const rewardsTable = [
-  // SAQUE PIX — Sempre disponível (adicionado primeiro)
+  // CLASSE ECONÔMICA (1) — Primeiras conquistas: 2.000 - 5.000 pts
+  {
+    id: '1',
+    tier: 1,
+    requiredLevel: 1,
+    name: 'Crédito de Boas-Vindas',
+    subtitle: 'Sua primeira conquista',
+    description: 'R$20 em créditos para iniciar sua jornada no clube',
+    points_required: 2000,
+    category: 'cash',
+    realCost: 20,
+    perceivedValue: 20,
+    badge: null,
+    rarity: 'common',
+    available: true
+  },
   {
     id: 'pix',
     tier: 1,
@@ -153,28 +169,11 @@ export const rewardsTable = [
     name: 'Saque via Pix',
     subtitle: 'Dinheiro na sua conta',
     description: 'Resgate seus pontos direto no Pix. 1.000 pts = R$ 10',
-    points_required: 5000,
-    category: 'cash',
-    realCost: 50,
-    perceivedValue: 50,
-    badge: 'hot',
-    rarity: 'common',
-    available: true
-  },
-
-  // CLASSE ECONÔMICA — Primeiras conquistas
-  {
-    id: '1',
-    tier: 1,
-    requiredLevel: 1,
-    name: 'Crédito de Boas-Vindas',
-    subtitle: 'Sua primeira conquista',
-    description: 'R$30 em créditos para iniciar sua jornada no clube',
     points_required: 3000,
     category: 'cash',
     realCost: 30,
     perceivedValue: 30,
-    badge: null,
+    badge: 'hot',
     rarity: 'common',
     available: true
   },
@@ -194,18 +193,18 @@ export const rewardsTable = [
     available: true
   },
 
-  // PREMIUM ECONOMY — Conforto elevado
+  // PREMIUM ECONOMY (2) — Conforto elevado: 6.000 - 8.000 pts
   {
     id: '3',
     tier: 2,
     requiredLevel: 2,
     name: 'Crédito Explorador',
     subtitle: 'Destinos mais distantes',
-    description: 'R$100 em créditos para experiências memoráveis',
-    points_required: 10000,
+    description: 'R$70 em créditos para experiências memoráveis',
+    points_required: 6000,
     category: 'cash',
-    realCost: 100,
-    perceivedValue: 100,
+    realCost: 70,
+    perceivedValue: 70,
     badge: null,
     rarity: 'common',
     available: true
@@ -216,28 +215,28 @@ export const rewardsTable = [
     requiredLevel: 2,
     name: 'Upgrade de Conforto',
     subtitle: 'Mais espaço, mais conforto',
-    description: 'Assento com espaço extra em voos selecionados (valor: R$150)',
-    points_required: 12000,
+    description: 'Assento com espaço extra em voos selecionados (valor: R$100)',
+    points_required: 8000,
     category: 'travel',
     realCost: 80,
-    perceivedValue: 150,
+    perceivedValue: 100,
     badge: 'recommended',
     rarity: 'rare',
     available: true
   },
 
-  // CLASSE EXECUTIVA — Experiência refinada
+  // CLASSE EXECUTIVA (3) — Experiência refinada: 10.000 - 14.000 pts
   {
     id: '5',
     tier: 3,
     requiredLevel: 3,
     name: 'Jantar Exclusivo',
     subtitle: 'Mesa para dois',
-    description: 'Jantar em restaurante premium (valor: R$200)',
-    points_required: 8000,
+    description: 'Jantar em restaurante premium (valor: R$120)',
+    points_required: 10000,
     category: 'experience',
-    realCost: 120,
-    perceivedValue: 200,
+    realCost: 100,
+    perceivedValue: 120,
     badge: 'limited',
     rarity: 'rare',
     available: true
@@ -248,28 +247,28 @@ export const rewardsTable = [
     requiredLevel: 3,
     name: 'Stopover Exclusivo',
     subtitle: 'Transforme a escala em passeio',
-    description: 'Pernoite em cidade intermediária (valor: R$300)',
-    points_required: 15000,
+    description: 'Pernoite em cidade intermediária (valor: R$180)',
+    points_required: 14000,
     category: 'experience',
-    realCost: 180,
-    perceivedValue: 300,
+    realCost: 140,
+    perceivedValue: 180,
     badge: 'exclusive',
     rarity: 'epic',
     available: true
   },
 
-  // PRIMEIRA CLASSE — Exclusividade absoluta
+  // PRIMEIRA CLASSE (4) — Exclusividade absoluta: 16.000 - 20.000 pts
   {
     id: '7',
     tier: 4,
     requiredLevel: 4,
     name: 'Upgrade Prioritário de Voo',
     subtitle: 'Voe como merece',
-    description: 'Upgrade para Classe Executiva em voo internacional',
-    points_required: 12000,
+    description: 'Upgrade para Classe Executiva em voo internacional (valor: R$200)',
+    points_required: 16000,
     category: 'travel',
-    realCost: 350,
-    perceivedValue: 1200,
+    realCost: 160,
+    perceivedValue: 200,
     badge: 'recommended',
     rarity: 'epic',
     featured: true,
@@ -281,28 +280,28 @@ export const rewardsTable = [
     requiredLevel: 4,
     name: 'Acesso Lounge Anual',
     subtitle: 'Seu refúgio nos aeroportos',
-    description: 'Acesso ilimitado a lounges premium por 12 meses',
-    points_required: 15000,
+    description: 'Acesso ilimitado a lounges premium por 12 meses (valor: R$250)',
+    points_required: 20000,
     category: 'lounge',
-    realCost: 400,
-    perceivedValue: 1500,
+    realCost: 200,
+    perceivedValue: 250,
     badge: 'exclusive',
     rarity: 'epic',
     available: true
   },
 
-  // MEUP EXCLUSIVE — O ápice do privilégio
+  // MEUP EXCLUSIVE (5) — O ápice do privilégio: 25.000 - 40.000 pts
   {
     id: '9',
     tier: 5,
     requiredLevel: 5,
     name: 'Benefícios Elite',
     subtitle: 'Tratamento VIP',
-    description: 'Pacote completo de benefícios elite por 12 meses',
-    points_required: 20000,
+    description: 'Pacote completo de benefícios elite por 12 meses (valor: R$300)',
+    points_required: 25000,
     category: 'premium',
-    realCost: 800,
-    perceivedValue: 3000,
+    realCost: 250,
+    perceivedValue: 300,
     badge: 'exclusive',
     rarity: 'legendary',
     featured: true,
@@ -314,11 +313,11 @@ export const rewardsTable = [
     requiredLevel: 5,
     name: 'A Grande Experiência',
     subtitle: 'O melhor que oferecemos',
-    description: 'Voo executivo + resort all-inclusive por 5 noites',
-    points_required: 30000,
+    description: 'Voo executivo + resort all-inclusive por 5 noites (valor: R$500)',
+    points_required: 40000,
     category: 'premium',
-    realCost: 1500,
-    perceivedValue: 8000,
+    realCost: 400,
+    perceivedValue: 500,
     badge: 'exclusive',
     rarity: 'legendary',
     featured: true,

@@ -17,12 +17,12 @@ export { multipliers } from './pointsSystem'
 
 // ============================================
 // USUÁRIO DEMO - AJUSTADO
-// Classe Executiva (~2.500 pts)
+// Classe Executiva (3.500 pts) - permite resgatar experiências básicas
 // ============================================
 export const demoUser = {
   id: 'demo-user',
   name: 'Viajante',
-  points: 2580,
+  points: 3500,
   levelId: 3, // Classe Executiva
   position: 8,
   referralCode: 'VIAJANTE2024',
@@ -102,7 +102,7 @@ export const mockRanking = [
   { position: 5, name: 'Carolina T.', points: 18100, levelId: 4, level: 'Primeira Classe', avatar: 'C' },
   { position: 6, name: 'Lucas P.', points: 14500, levelId: 3, level: 'Executiva', avatar: 'L' },
   { position: 7, name: 'Juliana R.', points: 9800, levelId: 3, level: 'Executiva', avatar: 'J' },
-  { position: 8, name: 'Viajante', points: 2580, levelId: 3, level: 'Executiva', isCurrentUser: true, avatar: 'V' },
+  { position: 8, name: 'Viajante', points: 3500, levelId: 3, level: 'Executiva', isCurrentUser: true, avatar: 'V' },
   { position: 9, name: 'André F.', points: 2200, levelId: 3, level: 'Executiva', avatar: 'A' },
   { position: 10, name: 'Patrícia G.', points: 1900, levelId: 2, level: 'Premium Economy', avatar: 'P' },
 ].sort((a, b) => b.points - a.points).map((item, index) => ({ ...item, position: index + 1 }))

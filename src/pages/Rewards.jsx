@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
@@ -8,9 +8,7 @@ import { demoUser } from '@/services/mockData'
 import {
   rewardsTable,
   calculateRewardsProgress,
-  calculateLevel,
-  levels,
-  getNextLevelRewards
+  calculateLevel
 } from '@/services/pointsSystem'
 import { format, levels as levelCopy } from '@/services/copy'
 import { getClassIcon, GiftIcon } from '@/components/ui/Icons'
@@ -30,10 +28,113 @@ const badgeConfig = {
   exclusive: { label: 'Exclusivo', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' }
 }
 
-function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
-  const canRedeem = reward.canRedeem
+// Modal de confirmação de resgate
+function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
+  const remainingPoints = userPoints - reward.points_required
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={onCancel}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-2xl bg-roxo-profundo border border-cinza-rosado/20 shadow-2xl overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <div className="p-6">
+          <div className="w-14 h-14 rounded-xl bg-ouro-antigo/10 flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl text-ouro-antigo">
+              {categoryIcons[reward.category] || '◇'}
+            </span>
+          </div>
+
+          <h2 id="modal-title" className="text-xl font-heading font-medium text-branco-gelo text-center mb-2">
+            Confirmar Resgate
+          </h2>
+
+          <p className="text-sm text-cinza-rosado text-center mb-6">
+            Você está prestes a resgatar:
+          </p>
+
+          <div className="p-4 rounded-xl bg-cinza-rosado/5 border border-cinza-rosado/10 mb-6">
+            <h3 className="text-lg font-heading font-medium text-branco-gelo mb-1">
+              {reward.name}
+            </h3>
+            {reward.subtitle && (
+              <p className="text-sm text-cinza-rosado/80">{reward.subtitle}</p>
+            )}
+          </div>
+
+          <div className="space-y-3 mb-6">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-cinza-rosado">Custo</span>
+              <span className="text-ouro-antigo font-medium">
+                -{format.pointsShort(reward.points_required)} pontos
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-cinza-rosado">Saldo atual</span>
+              <span className="text-branco-gelo">{format.pointsShort(userPoints)} pontos</span>
+            </div>
+            <div className="border-t border-cinza-rosado/20 pt-3 flex items-center justify-between text-sm">
+              <span className="text-cinza-rosado">Saldo após resgate</span>
+              <span className="text-branco-gelo font-medium">{format.pointsShort(remainingPoints)} pontos</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-3 p-4 border-t border-cinza-rosado/20 bg-cinza-rosado/5">
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium text-cinza-rosado hover:text-branco-gelo hover:bg-cinza-rosado/10 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium bg-ouro-antigo text-roxo-profundo hover:bg-accent-light transition-colors disabled:opacity-50 disabled:cursor-wait"
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <motion.span
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="w-4 h-4 border-2 border-roxo-profundo/30 border-t-roxo-profundo rounded-full inline-block"
+                />
+                Processando...
+              </span>
+            ) : (
+              'Confirmar Resgate'
+            )}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+function ExperienceCard({ reward, userPoints, userLevelId, onActivate, isRedeemed }) {
+  const canRedeem = reward.canRedeem && !isRedeemed
   const isUnlockedByLevel = reward.isUnlockedByLevel
   const progress = reward.progress
+
+  // Determinar texto do botão (Bug 1)
+  const getButtonText = () => {
+    if (isRedeemed) return 'Resgatada'
+    if (canRedeem) return 'Resgatar'
+    return `Faltam ${format.pointsShort(reward.pointsNeeded)}`
+  }
 
   return (
     <motion.div
@@ -42,7 +143,9 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={`group relative rounded-2xl border transition-all duration-300 ${
-        !isUnlockedByLevel
+        isRedeemed
+          ? 'border-game-green/30 bg-game-green/5'
+          : !isUnlockedByLevel
           ? 'border-cinza-rosado/10 bg-roxo-profundo/20 opacity-50'
           : canRedeem
           ? 'border-ouro-antigo/20 bg-ouro-antigo/5 hover:bg-ouro-antigo/10'
@@ -57,31 +160,40 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
         </div>
       )}
 
+      {/* Redeemed Badge */}
+      {isRedeemed && (
+        <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-game-green/20 border border-game-green/30 z-10">
+          <span className="text-xs text-game-green font-medium">Resgatada</span>
+        </div>
+      )}
+
       <div className={`p-6 ${!isUnlockedByLevel ? 'opacity-30' : ''}`}>
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-            canRedeem ? 'bg-ouro-antigo/10' : 'bg-cinza-rosado/10'
+            isRedeemed ? 'bg-game-green/10' : canRedeem ? 'bg-ouro-antigo/10' : 'bg-cinza-rosado/10'
           }`}>
-            <span className={`text-xl ${canRedeem ? 'text-ouro-antigo' : 'text-cinza-rosado'}`}>
+            <span className={`text-xl ${isRedeemed ? 'text-game-green' : canRedeem ? 'text-ouro-antigo' : 'text-cinza-rosado'}`}>
               {categoryIcons[reward.category] || '◇'}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            {reward.badge && (
+            {reward.badge && !isRedeemed && (
               <span className={`text-[10px] px-2 py-1 rounded-lg border ${badgeConfig[reward.badge].color}`}>
                 {badgeConfig[reward.badge].label}
               </span>
             )}
             <span className="text-[10px] uppercase tracking-wider text-cinza-rosado">
-              {levelCopy.shortNames[reward.requiredLevelId]}
+              {levelCopy.names[reward.requiredLevelId]}
             </span>
           </div>
         </div>
 
         {/* Content */}
-        <h3 className={`text-lg font-heading font-medium mb-1 ${canRedeem ? 'text-branco-gelo' : 'text-cinza-rosado'}`}>
+        <h3 className={`text-lg font-heading font-medium mb-1 ${
+          isRedeemed ? 'text-game-green' : canRedeem ? 'text-branco-gelo' : 'text-cinza-rosado'
+        }`}>
           {reward.name}
         </h3>
         {reward.subtitle && (
@@ -91,10 +203,17 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
           {reward.description}
         </p>
 
-        {/* Progress */}
-        {isUnlockedByLevel && !canRedeem && (
+        {/* Progress Bar (Bug 6 - acessibilidade) */}
+        {isUnlockedByLevel && !canRedeem && !isRedeemed && (
           <div className="mb-6">
-            <div className="h-1 bg-cinza-rosado/10 rounded-full overflow-hidden">
+            <div
+              className="h-1 bg-cinza-rosado/10 rounded-full overflow-hidden"
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Progresso para ${reward.name}: ${progress}%`}
+            >
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
@@ -114,26 +233,49 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
         {/* Footer */}
         <div className="flex items-center justify-between">
           <div>
-            <span className={`text-xl font-display font-light ${canRedeem ? 'text-ouro-antigo' : 'text-cinza-rosado'}`}>
+            <span className={`text-xl font-display font-light ${
+              isRedeemed ? 'text-game-green' : canRedeem ? 'text-ouro-antigo' : 'text-cinza-rosado'
+            }`}>
               {format.pointsShort(reward.points_required)}
             </span>
             <span className="text-xs text-cinza-rosado/60 ml-1">pontos</span>
           </div>
 
+          {/* Botão sempre presente para consistência (Bug 1 e 6) */}
           {isUnlockedByLevel && (
             <motion.button
               whileHover={canRedeem ? { scale: 1.02 } : {}}
               whileTap={canRedeem ? { scale: 0.98 } : {}}
-              onClick={() => onActivate(reward)}
+              onClick={() => canRedeem && onActivate(reward)}
               disabled={!canRedeem}
+              aria-label={
+                isRedeemed
+                  ? `${reward.name} já resgatada`
+                  : canRedeem
+                  ? `Resgatar ${reward.name} por ${format.pointsShort(reward.points_required)} pontos`
+                  : `Faltam ${format.pointsShort(reward.pointsNeeded)} pontos para ${reward.name}`
+              }
               className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
-                canRedeem
+                isRedeemed
+                  ? 'bg-game-green/10 text-game-green cursor-default'
+                  : canRedeem
                   ? 'bg-ouro-antigo text-roxo-profundo hover:bg-accent-light'
                   : 'bg-cinza-rosado/10 text-cinza-rosado/60 cursor-not-allowed'
               }`}
             >
-              {canRedeem ? 'Ativar' : `${progress}%`}
+              {getButtonText()}
             </motion.button>
+          )}
+
+          {/* Botão para cards bloqueados por nível (Bug 6) */}
+          {!isUnlockedByLevel && (
+            <button
+              disabled
+              aria-label={`Disponível na ${levelCopy.names[reward.requiredLevelId]}`}
+              className="px-5 py-2.5 rounded-xl text-sm font-heading font-medium bg-cinza-rosado/10 text-cinza-rosado/60 cursor-not-allowed"
+            >
+              {levelCopy.names[reward.requiredLevelId]}
+            </button>
           )}
         </div>
       </div>
@@ -141,7 +283,7 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate }) {
   )
 }
 
-function ClassSection({ classId, rewards, userPoints, userLevelId, onActivate }) {
+function ClassSection({ classId, rewards, userPoints, userLevelId, onActivate, redeemedIds }) {
   const classRewards = rewards.filter(r => r.requiredLevelId === classId)
   if (classRewards.length === 0) return null
 
@@ -149,7 +291,7 @@ function ClassSection({ classId, rewards, userPoints, userLevelId, onActivate })
   const ClassIcon = getClassIcon(classId)
 
   return (
-    <div className="mb-16">
+    <section className="mb-16" aria-labelledby={`class-heading-${classId}`}>
       {/* Class Header */}
       <div className="flex items-center gap-4 mb-8">
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
@@ -158,7 +300,10 @@ function ClassSection({ classId, rewards, userPoints, userLevelId, onActivate })
           <ClassIcon size={24} color={isUnlocked ? '#a27937' : '#a39695'} />
         </div>
         <div>
-          <h2 className={`text-xl font-heading font-medium ${isUnlocked ? 'text-branco-gelo' : 'text-cinza-rosado'}`}>
+          <h2
+            id={`class-heading-${classId}`}
+            className={`text-xl font-heading font-medium ${isUnlocked ? 'text-branco-gelo' : 'text-cinza-rosado'}`}
+          >
             {levelCopy.names[classId]}
           </h2>
           <p className="text-sm text-cinza-rosado">
@@ -177,26 +322,30 @@ function ClassSection({ classId, rewards, userPoints, userLevelId, onActivate })
             userPoints={userPoints}
             userLevelId={userLevelId}
             onActivate={onActivate}
+            isRedeemed={redeemedIds.includes(reward.id)}
           />
         ))}
       </div>
-    </div>
+    </section>
   )
 }
 
 export function Rewards() {
-  const { user, profile, loading } = useAuth()
+  const { user, loading } = useAuth()
   const navigate = useNavigate()
-  const [viewMode, setViewMode] = useState('all') // 'all' or 'available'
+  const [viewMode, setViewMode] = useState('all')
+  const [selectedReward, setSelectedReward] = useState(null)
+  const [isRedeeming, setIsRedeeming] = useState(false)
+  const [redeemedIds, setRedeemedIds] = useState([])
 
-  // Usar demoUser como fonte única
-  const userPoints = demoUser.points
+  // Estado local para pontos (permite atualização após resgate)
+  const [userPoints, setUserPoints] = useState(demoUser.points)
+
   const levelData = calculateLevel(userPoints)
   const userLevelId = levelData.current.id
   const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
 
-  const availableCount = rewardsWithProgress.filter(r => r.canRedeem).length
-  const unlockedCount = rewardsWithProgress.filter(r => r.isUnlockedByLevel).length
+  const availableCount = rewardsWithProgress.filter(r => r.canRedeem && !redeemedIds.includes(r.id)).length
   const ClassIcon = getClassIcon(userLevelId)
 
   useEffect(() => {
@@ -204,6 +353,63 @@ export function Rewards() {
       navigate('/login')
     }
   }, [user, loading, navigate])
+
+  // Handler para iniciar resgate (abre modal)
+  const handleActivate = useCallback((reward) => {
+    if (!reward.isUnlockedByLevel) {
+      toast.error(`Disponível a partir de ${levelCopy.names[reward.requiredLevelId]}`, {
+        style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(163, 150, 149, 0.3)' }
+      })
+      return
+    }
+    if (userPoints < reward.points_required) {
+      toast.error(`Faltam ${format.pointsShort(reward.pointsNeeded)} pontos`, {
+        style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(163, 150, 149, 0.3)' }
+      })
+      return
+    }
+    // Abre modal de confirmação
+    setSelectedReward(reward)
+  }, [userPoints])
+
+  // Handler para confirmar resgate
+  const handleConfirmRedeem = useCallback(async () => {
+    if (!selectedReward) return
+
+    setIsRedeeming(true)
+
+    try {
+      // Simular chamada de API
+      // TODO: Substituir por chamada real ao backend quando disponível
+      // await api.redeemReward(selectedReward.id)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Atualizar estado local
+      setUserPoints(prev => prev - selectedReward.points_required)
+      setRedeemedIds(prev => [...prev, selectedReward.id])
+
+      // Fechar modal
+      setSelectedReward(null)
+
+      // Mostrar toast de sucesso
+      toast.success(
+        <div>
+          <strong>Experiência resgatada!</strong>
+          <div className="text-sm opacity-80">{selectedReward.name}</div>
+        </div>,
+        {
+          duration: 4000,
+          style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(34, 197, 94, 0.3)' }
+        }
+      )
+    } catch (error) {
+      toast.error('Erro ao resgatar experiência. Tente novamente.', {
+        style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' }
+      })
+    } finally {
+      setIsRedeeming(false)
+    }
+  }, [selectedReward])
 
   if (loading) {
     return (
@@ -219,34 +425,36 @@ export function Rewards() {
 
   if (!user) return null
 
-  function handleActivate(reward) {
-    if (!reward.isUnlockedByLevel) {
-      toast.error(`Disponível a partir de ${levelCopy.names[reward.requiredLevelId]}`, {
-        style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(163, 150, 149, 0.3)' }
-      })
-      return
-    }
-    if (userPoints < reward.points_required) {
-      toast.error(`Faltam ${format.pointsShort(reward.pointsNeeded)} pontos`, {
-        style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(163, 150, 149, 0.3)' }
-      })
-      return
-    }
-    toast.success(`Experiência ativada: ${reward.name}`, {
-      duration: 4000,
-      style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(162, 121, 55, 0.3)' }
-    })
-  }
-
   const displayRewards = viewMode === 'available'
-    ? rewardsWithProgress.filter(r => r.canRedeem)
+    ? rewardsWithProgress.filter(r => r.canRedeem && !redeemedIds.includes(r.id))
     : rewardsWithProgress
 
   return (
     <div className="min-h-screen bg-roxo-profundo">
+      {/* Skip Link (Bug 6) */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-ouro-antigo focus:text-roxo-profundo focus:rounded-lg focus:font-medium"
+      >
+        Pular para o conteúdo principal
+      </a>
+
       <DashboardHeader />
 
-      <main className="container-premium py-12">
+      {/* Modal de confirmação */}
+      <AnimatePresence>
+        {selectedReward && (
+          <RedeemModal
+            reward={selectedReward}
+            userPoints={userPoints}
+            onConfirm={handleConfirmRedeem}
+            onCancel={() => setSelectedReward(null)}
+            isLoading={isRedeeming}
+          />
+        )}
+      </AnimatePresence>
+
+      <main id="main-content" className="container-premium py-12">
         {/* Back Link */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -290,14 +498,14 @@ export function Rewards() {
             </div>
           </div>
 
-          <div className="w-px h-10 bg-cinza-rosado/20" />
+          <div className="w-px h-10 bg-cinza-rosado/20" aria-hidden="true" />
 
           <div>
             <p className="text-[10px] uppercase tracking-wider text-cinza-rosado mb-1">Pontos</p>
             <p className="text-2xl font-display font-light text-ouro-antigo">{format.pointsShort(userPoints)}</p>
           </div>
 
-          <div className="w-px h-10 bg-cinza-rosado/20" />
+          <div className="w-px h-10 bg-cinza-rosado/20" aria-hidden="true" />
 
           <div>
             <p className="text-[10px] uppercase tracking-wider text-cinza-rosado mb-1">Disponíveis</p>
@@ -307,10 +515,15 @@ export function Rewards() {
             </p>
           </div>
 
-          {/* View Toggle */}
-          <div className="ml-auto flex items-center gap-1 p-1 rounded-xl bg-roxo-profundo/50 border border-cinza-rosado/20">
+          {/* View Toggle (Bug 6 - aria-pressed) */}
+          <div
+            className="ml-auto flex items-center gap-1 p-1 rounded-xl bg-roxo-profundo/50 border border-cinza-rosado/20"
+            role="group"
+            aria-label="Filtrar experiências"
+          >
             <button
               onClick={() => setViewMode('all')}
+              aria-pressed={viewMode === 'all'}
               className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${
                 viewMode === 'all'
                   ? 'bg-ouro-antigo/20 text-ouro-antigo'
@@ -321,6 +534,7 @@ export function Rewards() {
             </button>
             <button
               onClick={() => setViewMode('available')}
+              aria-pressed={viewMode === 'available'}
               className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${
                 viewMode === 'available'
                   ? 'bg-ouro-antigo/20 text-ouro-antigo'
@@ -348,6 +562,7 @@ export function Rewards() {
                 userPoints={userPoints}
                 userLevelId={userLevelId}
                 onActivate={handleActivate}
+                redeemedIds={redeemedIds}
               />
             ))}
           </motion.div>
@@ -368,6 +583,7 @@ export function Rewards() {
                       userPoints={userPoints}
                       userLevelId={userLevelId}
                       onActivate={handleActivate}
+                      isRedeemed={redeemedIds.includes(reward.id)}
                     />
                   ))}
                 </AnimatePresence>
@@ -381,10 +597,12 @@ export function Rewards() {
                 <p className="text-sm text-cinza-rosado mb-6">
                   Continue ganhando pontos para desbloquear experiências.
                 </p>
-                <Link to="/dashboard">
-                  <button className="px-6 py-3 rounded-xl bg-ouro-antigo text-roxo-profundo font-heading font-medium text-sm">
-                    Voltar ao clube
-                  </button>
+                {/* Bug 3 corrigido: removido button dentro de Link */}
+                <Link
+                  to="/dashboard"
+                  className="inline-block px-6 py-3 rounded-xl bg-ouro-antigo text-roxo-profundo font-heading font-medium text-sm hover:bg-accent-light transition-colors"
+                >
+                  Voltar ao clube
                 </Link>
               </div>
             )}
@@ -411,7 +629,14 @@ export function Rewards() {
                   })()}
                   <span className="text-xl font-heading text-branco-gelo">{levelCopy.names[levelData.next.id]}</span>
                 </div>
-                <div className="h-1 bg-cinza-rosado/10 rounded-full overflow-hidden max-w-md">
+                <div
+                  className="h-1 bg-cinza-rosado/10 rounded-full overflow-hidden max-w-md"
+                  role="progressbar"
+                  aria-valuenow={levelData.progress}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`Progresso para ${levelCopy.names[levelData.next.id]}: ${levelData.progress}%`}
+                >
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${levelData.progress}%` }}
@@ -425,14 +650,12 @@ export function Rewards() {
               </div>
 
               <div className="lg:text-right">
-                <Link to="/dashboard">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="px-6 py-3 rounded-xl bg-ouro-antigo text-roxo-profundo font-heading font-medium text-sm"
-                  >
-                    Continuar jornada
-                  </motion.button>
+                {/* Bug 3 corrigido: removido button dentro de Link */}
+                <Link
+                  to="/dashboard"
+                  className="inline-block px-6 py-3 rounded-xl bg-ouro-antigo text-roxo-profundo font-heading font-medium text-sm hover:bg-accent-light transition-colors"
+                >
+                  Continuar jornada
                 </Link>
               </div>
             </div>
