@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { PointsProvider } from '@/contexts/PointsContext'
 import { RootLayout } from '@/layouts'
 import { Home, Login, Cadastro, Dashboard, Rewards, Tasks, Profile, Leaderboard } from '@/pages'
 import {
@@ -17,6 +18,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <PointsProvider>
         {/* Toast notifications */}
         <Toaster
           position="top-center"
@@ -97,6 +99,7 @@ function App() {
           <Route path="/admin/recompensas" element={<AdminRewards />} />
           <Route path="/admin/historico" element={<AdminHistory />} />
         </Routes>
+        </PointsProvider>
       </AuthProvider>
     </BrowserRouter>
   )

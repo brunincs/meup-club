@@ -8,16 +8,16 @@
 export const levels = {
   names: {
     1: 'Classe Econômica',
-    2: 'Premium Economy',
+    2: 'Econômica Premium',
     3: 'Classe Executiva',
     4: 'Primeira Classe',
-    5: 'Meup Exclusive'
+    5: 'Meup Exclusive'  // Nome de marca - mantido em inglês propositalmente
   },
   shortNames: {
-    1: 'Economy',
+    1: 'Econômica',
     2: 'Premium',
-    3: 'Business',
-    4: 'First',
+    3: 'Executiva',
+    4: 'Primeira',
     5: 'Exclusive'
   },
   icons: {

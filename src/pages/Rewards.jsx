@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePoints } from '@/contexts/PointsContext'
 import { DashboardHeader } from '@/components/dashboard'
-import { demoUser } from '@/services/mockData'
 import {
   rewardsTable,
   calculateRewardsProgress,
@@ -28,9 +28,81 @@ const badgeConfig = {
   exclusive: { label: 'Exclusivo', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' }
 }
 
-// Modal de confirmação de resgate
+/**
+ * Modal de confirmação de resgate
+ *
+ * Correções aplicadas:
+ * - Bug 1: Modal fecha corretamente após confirmar
+ * - Bug 3: Botão desabilitado durante loading com spinner
+ * - Bug 4: Tecla Escape fecha o modal
+ * - Bug 5: Focus trap - foco fica preso dentro do modal
+ */
 function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
+  const modalRef = useRef(null)
+  const confirmButtonRef = useRef(null)
+  const cancelButtonRef = useRef(null)
   const remainingPoints = userPoints - reward.points_required
+
+  // Bug 4: Fechar com Escape (mas não durante loading)
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape' && !isLoading) {
+        onCancel()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onCancel, isLoading])
+
+  // Bug 5: Mover foco para o modal ao abrir
+  useEffect(() => {
+    // Salvar elemento que tinha foco antes
+    const previouslyFocused = document.activeElement
+
+    // Focar no botão de cancelar (mais seguro) ao abrir
+    cancelButtonRef.current?.focus()
+
+    // Devolver foco ao fechar
+    return () => {
+      previouslyFocused?.focus?.()
+    }
+  }, [])
+
+  // Bug 5: Focus trap - Tab circula só dentro do modal
+  useEffect(() => {
+    function handleTab(e) {
+      if (e.key !== 'Tab') return
+
+      const focusableElements = modalRef.current?.querySelectorAll(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      if (!focusableElements || focusableElements.length === 0) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+
+      // Shift+Tab no primeiro elemento vai para o último
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault()
+        lastElement.focus()
+      }
+      // Tab no último elemento vai para o primeiro
+      else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault()
+        firstElement.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleTab)
+    return () => document.removeEventListener('keydown', handleTab)
+  }, [])
+
+  // Bug 4: Clicar no backdrop fecha (mas não durante loading)
+  const handleBackdropClick = useCallback(() => {
+    if (!isLoading) {
+      onCancel()
+    }
+  }, [isLoading, onCancel])
 
   return (
     <motion.div
@@ -38,9 +110,11 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-      onClick={onCancel}
+      onClick={handleBackdropClick}
+      aria-hidden="true"
     >
       <motion.div
+        ref={modalRef}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
@@ -49,6 +123,7 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
+        aria-describedby="modal-description"
       >
         <div className="p-6">
           <div className="w-14 h-14 rounded-xl bg-antique-gold/10 flex items-center justify-center mx-auto mb-4">
@@ -61,7 +136,7 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
             Confirmar Resgate
           </h2>
 
-          <p className="text-sm text-dusty-rose text-center mb-6">
+          <p id="modal-description" className="text-sm text-dusty-rose text-center mb-6">
             Você está prestes a resgatar:
           </p>
 
@@ -94,13 +169,15 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
 
         <div className="flex gap-3 p-4 border-t border-dusty-rose/20 bg-dusty-rose/5">
           <button
+            ref={cancelButtonRef}
             onClick={onCancel}
             disabled={isLoading}
-            className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium text-dusty-rose hover:text-ice-white hover:bg-dusty-rose/10 transition-colors"
+            className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium text-dusty-rose hover:text-ice-white hover:bg-dusty-rose/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>
           <button
+            ref={confirmButtonRef}
             onClick={onConfirm}
             disabled={isLoading}
             className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium bg-antique-gold text-deep-purple hover:bg-accent-light transition-colors disabled:opacity-50 disabled:cursor-wait"
@@ -112,7 +189,7 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   className="w-4 h-4 border-2 border-deep-purple/30 border-t-deep-purple rounded-full inline-block"
                 />
-                Processando...
+                Resgatando...
               </span>
             ) : (
               'Confirmar Resgate'
@@ -124,16 +201,21 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
   )
 }
 
-function ExperienceCard({ reward, userPoints, userLevelId, onActivate, isRedeemed }) {
+function ExperienceCard({ reward, userPoints, userLevelId, onActivate, isRedeemed, triggerRef }) {
   const canRedeem = reward.canRedeem && !isRedeemed
   const isUnlockedByLevel = reward.isUnlockedByLevel
   const progress = reward.progress
 
-  // Determinar texto do botão (Bug 1)
   const getButtonText = () => {
     if (isRedeemed) return 'Resgatada'
     if (canRedeem) return 'Resgatar'
     return `Faltam ${format.pointsShort(reward.pointsNeeded)}`
+  }
+
+  // Bug 8: Corrigir gramática do aria-label
+  // "Disponível na X" só funciona para feminino. Usar "Requer classe X" é neutro.
+  const getLockedAriaLabel = () => {
+    return `Requer a classe ${levelCopy.names[reward.requiredLevelId]}`
   }
 
   return (
@@ -203,7 +285,7 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate, isRedeeme
           {reward.description}
         </p>
 
-        {/* Progress Bar (Bug 6 - acessibilidade) */}
+        {/* Progress Bar */}
         {isUnlockedByLevel && !canRedeem && !isRedeemed && (
           <div className="mb-6">
             <div
@@ -241,9 +323,10 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate, isRedeeme
             <span className="text-xs text-dusty-rose/60 ml-1">pontos</span>
           </div>
 
-          {/* Botão sempre presente para consistência (Bug 1 e 6) */}
+          {/* Botão para cards desbloqueados */}
           {isUnlockedByLevel && (
             <motion.button
+              ref={canRedeem ? triggerRef : undefined}
               whileHover={canRedeem ? { scale: 1.02 } : {}}
               whileTap={canRedeem ? { scale: 0.98 } : {}}
               onClick={() => canRedeem && onActivate(reward)}
@@ -267,11 +350,11 @@ function ExperienceCard({ reward, userPoints, userLevelId, onActivate, isRedeeme
             </motion.button>
           )}
 
-          {/* Botão para cards bloqueados por nível (Bug 6) */}
+          {/* Botão para cards bloqueados por nível (Bug 8 corrigido) */}
           {!isUnlockedByLevel && (
             <button
               disabled
-              aria-label={`Disponível na ${levelCopy.names[reward.requiredLevelId]}`}
+              aria-label={getLockedAriaLabel()}
               className="px-5 py-2.5 rounded-xl text-sm font-heading font-medium bg-dusty-rose/10 text-dusty-rose/60 cursor-not-allowed"
             >
               {levelCopy.names[reward.requiredLevelId]}
@@ -332,14 +415,14 @@ function ClassSection({ classId, rewards, userPoints, userLevelId, onActivate, r
 
 export function Rewards() {
   const { user, loading } = useAuth()
+  const { points: userPoints, deductPoints, markAsRedeemed, redeemedIds } = usePoints()
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState('all')
   const [selectedReward, setSelectedReward] = useState(null)
   const [isRedeeming, setIsRedeeming] = useState(false)
-  const [redeemedIds, setRedeemedIds] = useState([])
 
-  // Estado local para pontos (permite atualização após resgate)
-  const [userPoints, setUserPoints] = useState(demoUser.points)
+  // Ref para devolver foco após fechar modal (Bug 5)
+  const triggerButtonRef = useRef(null)
 
   const levelData = calculateLevel(userPoints)
   const userLevelId = levelData.current.id
@@ -357,7 +440,7 @@ export function Rewards() {
   // Handler para iniciar resgate (abre modal)
   const handleActivate = useCallback((reward) => {
     if (!reward.isUnlockedByLevel) {
-      toast.error(`Disponível a partir de ${levelCopy.names[reward.requiredLevelId]}`, {
+      toast.error(`Disponível a partir da ${levelCopy.names[reward.requiredLevelId]}`, {
         style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(163, 150, 149, 0.3)' }
       })
       return
@@ -372,30 +455,46 @@ export function Rewards() {
     setSelectedReward(reward)
   }, [userPoints])
 
+  // Handler para fechar modal
+  const handleCloseModal = useCallback(() => {
+    setSelectedReward(null)
+    // Bug 5: Devolver foco para o botão que abriu o modal
+    setTimeout(() => {
+      triggerButtonRef.current?.focus()
+    }, 0)
+  }, [])
+
   // Handler para confirmar resgate
   const handleConfirmRedeem = useCallback(async () => {
-    if (!selectedReward) return
+    // Bug 3: Prevenir duplo clique
+    if (!selectedReward || isRedeeming) return
 
     setIsRedeeming(true)
 
     try {
       // Simular chamada de API
-      // TODO: Substituir por chamada real ao backend quando disponível
-      // await api.redeemReward(selectedReward.id)
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Atualizar estado local
-      setUserPoints(prev => prev - selectedReward.points_required)
-      setRedeemedIds(prev => [...prev, selectedReward.id])
+      // Atualizar contexto compartilhado (resolve Bug 2)
+      const success = deductPoints(selectedReward.points_required)
+      if (!success) {
+        throw new Error('Saldo insuficiente')
+      }
 
-      // Fechar modal
+      markAsRedeemed(selectedReward.id)
+
+      // Guardar nome antes de limpar
+      const rewardName = selectedReward.name
+
+      // Bug 1: Fechar modal ANTES de mostrar toast
       setSelectedReward(null)
+      setIsRedeeming(false)
 
       // Mostrar toast de sucesso
       toast.success(
         <div>
           <strong>Experiência resgatada!</strong>
-          <div className="text-sm opacity-80">{selectedReward.name}</div>
+          <div className="text-sm opacity-80">{rewardName}</div>
         </div>,
         {
           duration: 4000,
@@ -403,13 +502,14 @@ export function Rewards() {
         }
       )
     } catch (error) {
+      // Em caso de erro, NÃO debita pontos e mostra mensagem
+      setIsRedeeming(false)
       toast.error('Erro ao resgatar experiência. Tente novamente.', {
         style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' }
       })
-    } finally {
-      setIsRedeeming(false)
+      // Modal continua aberto para usuário tentar novamente
     }
-  }, [selectedReward])
+  }, [selectedReward, isRedeeming, deductPoints, markAsRedeemed])
 
   if (loading) {
     return (
@@ -431,7 +531,7 @@ export function Rewards() {
 
   return (
     <div className="min-h-screen bg-deep-purple">
-      {/* Skip Link (Bug 6) */}
+      {/* Skip Link */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-antique-gold focus:text-deep-purple focus:rounded-lg focus:font-medium"
@@ -448,7 +548,7 @@ export function Rewards() {
             reward={selectedReward}
             userPoints={userPoints}
             onConfirm={handleConfirmRedeem}
-            onCancel={() => setSelectedReward(null)}
+            onCancel={handleCloseModal}
             isLoading={isRedeeming}
           />
         )}
@@ -515,7 +615,7 @@ export function Rewards() {
             </p>
           </div>
 
-          {/* View Toggle (Bug 6 - aria-pressed) */}
+          {/* View Toggle */}
           <div
             className="ml-auto flex items-center gap-1 p-1 rounded-xl bg-deep-purple/50 border border-dusty-rose/20"
             role="group"
@@ -584,6 +684,7 @@ export function Rewards() {
                       userLevelId={userLevelId}
                       onActivate={handleActivate}
                       isRedeemed={redeemedIds.includes(reward.id)}
+                      triggerRef={triggerButtonRef}
                     />
                   ))}
                 </AnimatePresence>
@@ -597,7 +698,6 @@ export function Rewards() {
                 <p className="text-sm text-dusty-rose mb-6">
                   Continue ganhando pontos para desbloquear experiências.
                 </p>
-                {/* Bug 3 corrigido: removido button dentro de Link */}
                 <Link
                   to="/dashboard"
                   className="inline-block px-6 py-3 rounded-xl bg-antique-gold text-deep-purple font-heading font-medium text-sm hover:bg-accent-light transition-colors"
@@ -650,7 +750,6 @@ export function Rewards() {
               </div>
 
               <div className="lg:text-right">
-                {/* Bug 3 corrigido: removido button dentro de Link */}
                 <Link
                   to="/dashboard"
                   className="inline-block px-6 py-3 rounded-xl bg-antique-gold text-deep-purple font-heading font-medium text-sm hover:bg-accent-light transition-colors"

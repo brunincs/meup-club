@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePoints } from '@/contexts/PointsContext'
 import { calculateLevel } from '@/services/pointsSystem'
 import { getUserPosition, demoUser } from '@/services/mockData'
 import { levels as levelCopy } from '@/services/copy'
@@ -16,12 +17,12 @@ const navItems = [
 
 export function DashboardHeader() {
   const { profile, signOut } = useAuth()
+  const { points: userPoints } = usePoints()
   const location = useLocation()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
 
-  // Usar demoUser como fonte única de pontos
-  const userPoints = demoUser.points
+  // Agora lê do contexto compartilhado (antes lia de demoUser.points)
   const levelData = calculateLevel(userPoints)
   const level = levelData.current
   const position = getUserPosition(profile?.id)
@@ -91,7 +92,7 @@ export function DashboardHeader() {
                 <div className="text-right hidden sm:block">
                   <div className="text-sm font-heading font-medium text-ice-white">{profile?.name || demoUser.name}</div>
                   <div className="text-[10px] uppercase tracking-wider text-dusty-rose">
-                    {levelCopy.shortNames[level.id] || level.shortName}
+                    {levelCopy.names[level.id]}
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-antique-gold/20 to-antique-gold/10 flex items-center justify-center text-antique-gold font-heading font-medium text-sm border border-antique-gold/30">
