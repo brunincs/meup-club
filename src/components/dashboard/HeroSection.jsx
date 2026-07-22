@@ -211,15 +211,12 @@ export function HeroSection() {
               <motion.button
                 whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(162, 121, 55, 0.3)' }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full py-4 rounded-xl bg-ouro-antigo text-roxo-profundo font-heading font-semibold text-sm flex items-center justify-center gap-3 shadow-lg shadow-ouro-antigo/20 transition-all hover:bg-accent-light"
+                className="w-full py-4 rounded-xl bg-ouro-antigo text-roxo-profundo font-heading font-semibold text-sm flex items-center justify-center gap-3 shadow-lg shadow-ouro-antigo/20 transition-all hover:bg-accent-light group"
               >
                 <span>Ganhar mais pontos</span>
-                <motion.span
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
+                <span className="transition-transform duration-300 group-hover:translate-x-1">
                   →
-                </motion.span>
+                </span>
               </motion.button>
             </Link>
           </div>

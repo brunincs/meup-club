@@ -43,7 +43,7 @@ export function AlmostThereCard({
   if (progress < 60) return null
 
   const isVeryClose = progress >= 85
-  const urgencyClass = isVeryClose ? 'animate-pulse' : ''
+  // Removido animate-pulse - animação infinita causa problemas de performance
 
   return (
     <motion.div
@@ -62,7 +62,7 @@ export function AlmostThereCard({
             color={config.color === 'gold' ? '#a27937' : config.color === 'purple' ? '#a855f7' : '#3b82f6'}
             bgColor="rgba(163, 150, 149, 0.1)"
           >
-            <span className={urgencyClass}>{config.icon}</span>
+            <span>{config.icon}</span>
           </ProgressRing>
 
           {/* Content */}

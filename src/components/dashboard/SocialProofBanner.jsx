@@ -1,23 +1,55 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getRandomSocialProof } from '@/services/engagementData'
 
 export function SocialProofBanner() {
   const [notifications, setNotifications] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isVisible, setIsVisible] = useState(false)
+  const containerRef = useRef(null)
+  const intervalRef = useRef(null)
 
+  // Carregar notificações uma vez
   useEffect(() => {
     const initial = Array.from({ length: 5 }, () => getRandomSocialProof())
     setNotifications(initial)
   }, [])
 
+  // Detectar visibilidade para pausar quando fora da tela
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % Math.max(notifications.length, 1))
+    if (!containerRef.current) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.1 }
+    )
+
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
+
+  // Interval controlado pela visibilidade
+  useEffect(() => {
+    // Só rodar interval se visível e tem notificações
+    if (!isVisible || notifications.length === 0) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      return
+    }
+
+    intervalRef.current = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % notifications.length)
     }, 8000)
 
-    return () => clearInterval(interval)
-  }, [notifications.length])
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [isVisible, notifications.length])
 
   const currentNotif = notifications[currentIndex]
 
@@ -42,6 +74,7 @@ export function SocialProofBanner() {
 
   return (
     <motion.div
+      ref={containerRef}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="mb-6"
