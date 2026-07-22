@@ -114,31 +114,37 @@ export const tasksConfig = {
       points: 500,
       icon: '💎'
     },
+    // Missões de nível - nomes correspondem aos níveis reais do sistema
     {
-      id: 'onetime_level_explorer',
-      name: 'Nível Explorador',
-      description: 'Alcance o nível Explorador',
+      id: 'onetime_level_premium',
+      name: 'Classe Premium Economy',
+      description: 'Alcance a classe Premium Economy (600 pts)',
       points: 100,
-      icon: '🧭'
+      icon: '🌟',
+      requiredLevelId: 2
     },
     {
-      id: 'onetime_level_navigator',
-      name: 'Nível Navegador',
-      description: 'Alcance o nível Navegador',
+      id: 'onetime_level_business',
+      name: 'Classe Executiva',
+      description: 'Alcance a classe Executiva (1.800 pts)',
       points: 200,
-      icon: '🚀'
+      icon: '💼',
+      requiredLevelId: 3
     },
     {
-      id: 'onetime_level_elite',
-      name: 'Nível Elite',
-      description: 'Alcance o nível Elite',
+      id: 'onetime_level_first',
+      name: 'Primeira Classe',
+      description: 'Alcance a Primeira Classe (4.000 pts)',
       points: 500,
-      icon: '⭐'
+      icon: '👑',
+      requiredLevelId: 4
     }
   ]
 }
 
 // Mock do progresso do usuário nas tasks
+// Usuário demo: 2.580 pts = Classe Executiva (Business, id 3)
+// Missões de nível devem refletir isso: Premium e Business concluídas, First pendente
 export const mockUserTasksProgress = {
   // Diárias
   daily_login: { completed: true, completedAt: new Date().toISOString() },
@@ -151,16 +157,17 @@ export const mockUserTasksProgress = {
   weekly_streak: { completed: false, progress: 3 },
   weekly_share_3: { completed: false, progress: 2 },
 
-  // Únicas
+  // Únicas - Coerente com usuário Business (2.580 pts)
   onetime_complete_profile: { completed: true, completedAt: '2024-01-10T10:00:00Z' },
   onetime_google_review: { completed: false },
   onetime_first_referral: { completed: true, completedAt: '2024-01-15T10:30:00Z' },
   onetime_first_sale: { completed: true, completedAt: '2024-01-15T14:00:00Z' },
   onetime_5_referrals: { completed: true, completedAt: '2024-01-25T16:00:00Z' },
   onetime_10_referrals: { completed: false, progress: 6 },
-  onetime_level_explorer: { completed: true, completedAt: '2024-01-12T10:00:00Z' },
-  onetime_level_navigator: { completed: true, completedAt: '2024-01-20T10:00:00Z' },
-  onetime_level_elite: { completed: true, completedAt: '2024-01-28T10:00:00Z' }
+  // Missões de nível - coerente com 2.580 pts (Business)
+  onetime_level_premium: { completed: true, completedAt: '2024-01-12T10:00:00Z' },   // 600 pts - ✓ alcançado
+  onetime_level_business: { completed: true, completedAt: '2024-01-20T10:00:00Z' },  // 1.800 pts - ✓ alcançado
+  onetime_level_first: { completed: false }  // 4.000 pts - pendente (usuário tem 2.580)
 }
 
 // Calcular tasks com status

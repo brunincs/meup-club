@@ -84,6 +84,9 @@ export function DashboardHeader() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-white/5 transition-colors"
+                aria-label="Menu do usuário"
+                aria-expanded={showUserMenu}
+                aria-haspopup="menu"
               >
                 <div className="text-right hidden sm:block">
                   <div className="text-sm font-heading font-medium text-branco-gelo">{profile?.name || demoUser.name}</div>
@@ -174,8 +177,11 @@ export function DashboardHeader() {
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
               className="md:hidden p-2 rounded-lg hover:bg-white/5 text-cinza-rosado"
+              aria-label={showMobileMenu ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+              aria-expanded={showMobileMenu}
+              aria-controls="mobile-navigation"
             >
-              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden="true">
                 {showMobileMenu ? (
                   <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 ) : (
@@ -190,10 +196,12 @@ export function DashboardHeader() {
         <AnimatePresence>
           {showMobileMenu && (
             <motion.nav
+              id="mobile-navigation"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden border-t border-cinza-rosado/20 overflow-hidden"
+              aria-label="Navegação mobile"
             >
               <div className="py-4 space-y-1">
                 {navItems.map((item) => {
