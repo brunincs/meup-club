@@ -455,19 +455,24 @@ export function Rewards() {
     setSelectedReward(reward)
   }, [userPoints])
 
-  // Handler para fechar modal
-  const handleCloseModal = useCallback(() => {
+  // Handler para fechar modal - função simples e direta
+  function closeModal() {
     setSelectedReward(null)
-    // Bug 5: Devolver foco para o botão que abriu o modal
-    setTimeout(() => {
-      triggerButtonRef.current?.focus()
-    }, 0)
-  }, [])
+    setIsRedeeming(false)
+  }
 
   // Handler para confirmar resgate
-  const handleConfirmRedeem = useCallback(async () => {
-    // Bug 3: Prevenir duplo clique
+  async function handleConfirmRedeem() {
+    // Prevenir duplo clique
     if (!selectedReward || isRedeeming) return
+
+    // Verificar saldo ANTES de processar (validação extra de segurança)
+    if (userPoints < selectedReward.points_required) {
+      toast.error('Saldo insuficiente para este resgate.', {
+        style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' }
+      })
+      return
+    }
 
     setIsRedeeming(true)
 
@@ -475,22 +480,28 @@ export function Rewards() {
       // Simular chamada de API
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Atualizar contexto compartilhado (resolve Bug 2)
+      // Tentar debitar pontos
       const success = deductPoints(selectedReward.points_required)
+
       if (!success) {
-        throw new Error('Saldo insuficiente')
+        // Saldo insuficiente - mostrar erro e FECHAR modal
+        toast.error('Saldo insuficiente para este resgate.', {
+          style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' }
+        })
+        closeModal()
+        return
       }
 
+      // Sucesso - marcar como resgatada
       markAsRedeemed(selectedReward.id)
 
-      // Guardar nome antes de limpar
+      // Guardar nome antes de fechar
       const rewardName = selectedReward.name
 
-      // Bug 1: Fechar modal ANTES de mostrar toast
-      setSelectedReward(null)
-      setIsRedeeming(false)
+      // FECHAR MODAL PRIMEIRO
+      closeModal()
 
-      // Mostrar toast de sucesso
+      // Depois mostrar toast de sucesso
       toast.success(
         <div>
           <strong>Experiência resgatada!</strong>
@@ -502,14 +513,13 @@ export function Rewards() {
         }
       )
     } catch (error) {
-      // Em caso de erro, NÃO debita pontos e mostra mensagem
-      setIsRedeeming(false)
-      toast.error('Erro ao resgatar experiência. Tente novamente.', {
+      // Em caso de erro de rede/API, mostrar mensagem e FECHAR modal
+      toast.error('Erro ao resgatar. Tente novamente.', {
         style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' }
       })
-      // Modal continua aberto para usuário tentar novamente
+      closeModal()
     }
-  }, [selectedReward, isRedeeming, deductPoints, markAsRedeemed])
+  }
 
   if (loading) {
     return (
@@ -548,7 +558,7 @@ export function Rewards() {
             reward={selectedReward}
             userPoints={userPoints}
             onConfirm={handleConfirmRedeem}
-            onCancel={handleCloseModal}
+            onCancel={closeModal}
             isLoading={isRedeeming}
           />
         )}

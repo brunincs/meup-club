@@ -26,14 +26,23 @@ export function PointsProvider({ children }) {
    * Debita pontos do saldo
    * @param {number} amount - Quantidade a debitar
    * @returns {boolean} - true se teve sucesso, false se saldo insuficiente
+   *
+   * IMPORTANTE: Usa uma variável de controle para garantir que a verificação
+   * seja feita com o valor ATUAL dos pontos, não um valor "congelado".
    */
   const deductPoints = useCallback((amount) => {
-    if (points < amount) {
-      return false
-    }
-    setPoints(prev => prev - amount)
-    return true
-  }, [points])
+    let success = false
+    setPoints(prev => {
+      // Verificar saldo DENTRO do setState garante que usamos o valor atual
+      if (prev >= amount) {
+        success = true
+        return prev - amount
+      }
+      // Saldo insuficiente - não altera nada
+      return prev
+    })
+    return success
+  }, []) // Sem dependências - a verificação acontece dentro do setState
 
   /**
    * Adiciona pontos ao saldo (para missões, indicações, etc)
