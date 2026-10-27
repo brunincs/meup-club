@@ -45,10 +45,13 @@ const extraTasks = [
   { id: 'rewards', name: 'Ver experiências', description: 'Confira as recompensas', points: 5, progress: 0 }
 ]
 
-export function MissionsSection() {
+export function MissionsSection({ variant = 'dark' }) {
   const [missions, setMissions] = useState(mockMissions)
   const [tasks, setTasks] = useState(extraTasks)
   const { fire: fireConfetti, ConfettiComponent } = useConfetti()
+
+  // Color scheme based on variant
+  const isLight = variant === 'light'
 
   // Calculate total progress
   const completedTasks = tasks.filter(t => t.progress >= 100).length
@@ -117,11 +120,11 @@ export function MissionsSection() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-display font-semibold text-ice-white flex items-center gap-2">
+          <h2 className={`text-lg font-display font-semibold flex items-center gap-2 ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
             <TargetIcon size={20} color="#a27937" />
             Missões
           </h2>
-          <p className="text-sm text-dusty-rose">
+          <p className={`text-sm ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
             Ganhe pontos completando desafios
           </p>
         </div>
@@ -129,7 +132,7 @@ export function MissionsSection() {
         {/* Daily Progress Ring */}
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-xs text-dusty-rose">Hoje</p>
+            <p className={`text-xs ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>Hoje</p>
             <p className="text-sm font-heading font-semibold text-game-green">
               +{earnedDailyPoints}/{totalDailyPoints}
             </p>
@@ -139,9 +142,9 @@ export function MissionsSection() {
             size={48}
             strokeWidth={4}
             color="#22c55e"
-            bgColor="rgba(163, 150, 149, 0.1)"
+            bgColor={isLight ? "rgba(50, 17, 63, 0.1)" : "rgba(163, 150, 149, 0.1)"}
           >
-            <span className="text-[10px] font-heading font-semibold text-ice-white">
+            <span className={`text-[10px] font-heading font-semibold ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
               {completedTasks}/{totalTasks}
             </span>
           </ProgressRing>
@@ -155,6 +158,7 @@ export function MissionsSection() {
           <MissionCard
             mission={missions.daily}
             type="daily"
+            variant={variant}
             onStart={handleStartMission}
             onClaim={handleClaimMission}
           />
@@ -165,6 +169,7 @@ export function MissionsSection() {
           <MissionCard
             mission={missions.weekly}
             type="weekly"
+            variant={variant}
             onStart={handleStartMission}
             onClaim={handleClaimMission}
           />
@@ -175,6 +180,7 @@ export function MissionsSection() {
           <MissionCard
             mission={missions.special}
             type="special"
+            variant={variant}
             onStart={handleStartMission}
             onClaim={handleClaimMission}
           />
@@ -182,12 +188,12 @@ export function MissionsSection() {
       </div>
 
       {/* Quick Tasks */}
-      <div className="p-5 rounded-xl bg-deep-purple/30 border border-dusty-rose/20">
+      <div className={`p-5 rounded-xl border ${isLight ? 'bg-white border-graphite/10 shadow-sm' : 'bg-deep-purple/30 border-dusty-rose/20'}`}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-heading font-medium text-ice-white">
+          <h3 className={`text-sm font-heading font-medium ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
             Tarefas Rápidas
           </h3>
-          <span className="text-xs text-dusty-rose">
+          <span className={`text-xs ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>
             +{tasks.reduce((sum, t) => sum + t.points, 0)} pontos disponíveis
           </span>
         </div>
@@ -202,6 +208,7 @@ export function MissionsSection() {
             >
               <MissionCardMini
                 mission={task}
+                variant={variant}
                 onClick={() => handleTaskClick(task)}
               />
             </motion.div>

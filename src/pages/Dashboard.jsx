@@ -43,52 +43,66 @@ export function Dashboard() {
   const stats = getStats(mockReferrals)
 
   return (
-    <div className="min-h-screen bg-deep-purple">
+    <div className="min-h-screen">
       {/* Header */}
       <DashboardHeader />
 
-      {/* Main content */}
-      <main className="container-premium py-12">
-        {/* Hero Section - Protagonista com pontos */}
-        <HeroSection />
-
-        {/* Missões Gamificadas */}
-        <div className="mb-8">
-          <MissionsSection />
+      {/* ══════════════════════════════════════════════════════════════
+          SEÇÃO ESCURA - Hero com pontos e classe (destaque visual)
+          ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-deep-purple pt-12 pb-8">
+        <div className="container-premium">
+          <HeroSection />
         </div>
+      </section>
 
-        {/* Stats cards */}
-        <div className="mb-8">
-          <StatsCards stats={stats} />
+      {/* ══════════════════════════════════════════════════════════════
+          SEÇÃO CLARA - Missões e tarefas (área de leitura)
+          ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-ice-white py-10">
+        <div className="container-premium">
+          <MissionsSection variant="light" />
         </div>
+      </section>
 
-        {/* Main grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column - 2/3 */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Referral code */}
-            <ReferralCode />
-
-            {/* History */}
-            <ReferralHistory />
-
-            {/* Rewards with rarity */}
-            <RewardsSection />
+      {/* ══════════════════════════════════════════════════════════════
+          SEÇÃO ESCURA - Stats e conteúdo visual
+          ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-deep-purple py-10">
+        <div className="container-premium">
+          {/* Stats cards */}
+          <div className="mb-8">
+            <StatsCards stats={stats} />
           </div>
 
-          {/* Right column - 1/3 */}
-          <div className="space-y-6">
-            {/* Level progress */}
-            <LevelProgress />
+          {/* Main grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left column - 2/3 */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Referral code */}
+              <ReferralCode />
 
-            {/* Streak Tracker */}
-            <StreakTracker />
+              {/* History */}
+              <ReferralHistory />
 
-            {/* Tasks */}
-            <TasksWidget />
+              {/* Rewards with rarity */}
+              <RewardsSection />
+            </div>
+
+            {/* Right column - 1/3 */}
+            <div className="space-y-6">
+              {/* Level progress */}
+              <LevelProgress />
+
+              {/* Streak Tracker */}
+              <StreakTracker />
+
+              {/* Tasks */}
+              <TasksWidget />
+            </div>
           </div>
         </div>
-      </main>
+      </section>
     </div>
   )
 }

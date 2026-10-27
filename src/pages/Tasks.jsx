@@ -150,6 +150,123 @@ function MissionCard({ task, onComplete, isLoading }) {
   )
 }
 
+// Versão para fundo claro
+function MissionCardLight({ task, onComplete, isLoading }) {
+  const isCompleted = task.completed
+  const hasProgress = task.target > 1
+  const progressPercent = hasProgress ? (task.progress / task.target) * 100 : 0
+  const isInProgress = hasProgress && task.progress > 0 && task.progress < task.target
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className={`relative overflow-hidden rounded-2xl border transition-all ${
+        isCompleted
+          ? 'border-game-green/30 bg-game-green/5'
+          : 'border-graphite/10 bg-white hover:border-antique-gold/40 shadow-sm hover:shadow-md'
+      }`}
+    >
+      {/* Completed badge */}
+      {isCompleted && (
+        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-game-green/20 border border-game-green/30">
+          <span className="text-[10px] uppercase tracking-wider text-game-green font-medium">Concluída</span>
+        </div>
+      )}
+
+      <div className="p-6">
+        <div className="flex items-start gap-4">
+          {/* Status Icon */}
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+            isCompleted
+              ? 'bg-game-green/10'
+              : 'bg-gradient-to-br from-antique-gold/20 to-antique-gold/5'
+          }`}>
+            {isCompleted ? (
+              <CheckIcon size={20} color="#22c55e" />
+            ) : (
+              <SparkleIcon size={20} color="#a27937" />
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <h3 className={`font-heading font-medium mb-1 ${
+              isCompleted ? 'text-game-green' : 'text-deep-purple'
+            }`}>
+              {task.name}
+            </h3>
+            <p className="text-sm text-graphite/70 mb-4 line-clamp-2">
+              {task.description}
+            </p>
+
+            {/* Progress */}
+            {hasProgress && !isCompleted && (
+              <div className="mb-4">
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="text-graphite/60">Progresso</span>
+                  <span className="text-deep-purple font-medium">{task.progress}/{task.target}</span>
+                </div>
+                <div className="h-1.5 bg-graphite/10 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-full bg-gradient-to-r from-antique-gold/80 to-antique-gold rounded-full"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Footer */}
+            <div className="flex items-center justify-between">
+              <div>
+                <span className={`text-lg font-display font-bold ${
+                  isCompleted ? 'text-game-green/60' : 'text-antique-gold'
+                }`}>
+                  +{task.points}
+                </span>
+                <span className="text-xs text-graphite/60 ml-1">pontos</span>
+              </div>
+
+              {!isCompleted && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => onComplete(task)}
+                  disabled={isLoading}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
+                    isLoading
+                      ? 'bg-graphite/10 text-graphite/60 cursor-wait'
+                      : 'bg-deep-purple text-ice-white hover:bg-bright-purple shadow-lg shadow-deep-purple/20'
+                  }`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        className="w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block"
+                      />
+                      Processando...
+                    </span>
+                  ) : isInProgress ? (
+                    'Continuar →'
+                  ) : (
+                    'Concluir'
+                  )}
+                </motion.button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 export function Tasks() {
   const { user, loading } = useAuth()
   const navigate = useNavigate()
@@ -372,7 +489,7 @@ export function Tasks() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-deep-purple">
+    <div className="min-h-screen">
       {/* Skip Link (Bug 5) */}
       <a
         href="#main-content"
@@ -383,169 +500,181 @@ export function Tasks() {
 
       <DashboardHeader />
 
-      <main id="main-content" className="container-premium py-8">
-        {/* Back */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mb-6"
-        >
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-dusty-rose/60 hover:text-antique-gold transition-colors"
+      {/* ══════════════════════════════════════════════════════════════
+          SEÇÃO ESCURA - Hero com imagem (destaque visual)
+          ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-deep-purple pt-8 pb-10">
+        <div className="container-premium">
+          {/* Back */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-6"
           >
-            ← Voltar ao clube
-          </Link>
-        </motion.div>
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 text-sm text-dusty-rose/60 hover:text-antique-gold transition-colors"
+            >
+              ← Voltar ao clube
+            </Link>
+          </motion.div>
 
-        {/* Hero Banner com imagem */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl border border-antique-gold/20 mb-10"
-        >
-          <div className="flex flex-col lg:flex-row">
-            {/* Conteúdo */}
-            <div className="relative flex-1 bg-gradient-to-br from-deep-purple to-deep-purple/90 p-6 lg:p-8">
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-24 -left-24 w-48 h-48 bg-antique-gold/5 rounded-full blur-3xl" />
-              </div>
+          {/* Hero Banner com imagem */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative overflow-hidden rounded-2xl border border-antique-gold/20"
+          >
+            <div className="flex flex-col lg:flex-row">
+              {/* Conteúdo */}
+              <div className="relative flex-1 bg-gradient-to-br from-deep-purple to-deep-purple/90 p-6 lg:p-8">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <div className="absolute -top-24 -left-24 w-48 h-48 bg-antique-gold/5 rounded-full blur-3xl" />
+                </div>
 
-              <div className="relative">
-                <span className="inline-block text-xs font-heading uppercase tracking-[0.2em] text-antique-gold mb-2">
-                  Desafios
-                </span>
-                <h1 className="text-3xl lg:text-4xl font-display font-semibold text-ice-white mb-3">
-                  Missões do Clube
-                </h1>
-                <p className="text-dusty-rose max-w-md mb-6">
-                  Complete missões para acelerar sua jornada e ganhar pontos extras.
-                </p>
+                <div className="relative">
+                  <span className="inline-block text-xs font-heading uppercase tracking-[0.2em] text-antique-gold mb-2">
+                    Desafios
+                  </span>
+                  <h1 className="text-3xl lg:text-4xl font-display font-semibold text-ice-white mb-3">
+                    Missões do Clube
+                  </h1>
+                  <p className="text-dusty-rose max-w-md mb-6">
+                    Complete missões para acelerar sua jornada e ganhar pontos extras.
+                  </p>
 
-                {/* Stats inline */}
-                <div className="flex flex-wrap items-center gap-6">
-                  <div>
-                    <p className="text-2xl font-display font-bold text-antique-gold">
-                      {totalCompleted}<span className="text-dusty-rose text-lg font-normal">/{totalTasks}</span>
-                    </p>
-                    <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">concluídas</p>
-                  </div>
+                  {/* Stats inline */}
+                  <div className="flex flex-wrap items-center gap-6">
+                    <div>
+                      <p className="text-2xl font-display font-bold text-antique-gold">
+                        {totalCompleted}<span className="text-dusty-rose text-lg font-normal">/{totalTasks}</span>
+                      </p>
+                      <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">concluídas</p>
+                    </div>
 
-                  <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
+                    <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
 
-                  <div>
-                    <p className="text-2xl font-display font-bold text-game-green">+{format.pointsShort(tasksPoints.earned)}</p>
-                    <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">pontos ganhos</p>
-                  </div>
+                    <div>
+                      <p className="text-2xl font-display font-bold text-game-green">+{format.pointsShort(tasksPoints.earned)}</p>
+                      <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">pontos ganhos</p>
+                    </div>
 
-                  <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
+                    <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
 
-                  <div>
-                    <p className="text-2xl font-display font-bold text-ice-white">+{format.pointsShort(tasksPoints.available)}</p>
-                    <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">disponíveis</p>
+                    <div>
+                      <p className="text-2xl font-display font-bold text-ice-white">+{format.pointsShort(tasksPoints.available)}</p>
+                      <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">disponíveis</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Imagem (desktop only) */}
-            <div className="hidden lg:block relative w-[35%] min-h-[220px]">
-              <img
-                src={HERO_IMAGE}
-                alt="Planejamento de viagem"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-deep-purple via-deep-purple/50 to-transparent" />
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Tabs (Bug 4 - Acessibilidade) */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          ref={tabListRef}
-          role="tablist"
-          aria-label="Categorias de missões"
-          className="flex items-center gap-1 mb-8 p-1 rounded-xl bg-deep-purple/60 border border-dusty-rose/20 w-fit"
-        >
-          {categoryTabs.map((tab, index) => (
-            <button
-              key={tab.id}
-              id={`tab-${tab.id}`}
-              role="tab"
-              aria-selected={activeTab === tab.id}
-              aria-controls={`tabpanel-${tab.id}`}
-              tabIndex={activeTab === tab.id ? 0 : -1}
-              onClick={() => setActiveTab(tab.id)}
-              onKeyDown={(e) => handleTabKeyDown(e, index)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all ${
-                activeTab === tab.id
-                  ? 'bg-antique-gold/20 text-antique-gold'
-                  : 'text-dusty-rose hover:text-ice-white'
-              }`}
-            >
-              <span className="text-xs opacity-60" aria-hidden="true">{tab.icon}</span>
-              <span>{tab.label}</span>
-              <span
-                className={`text-xs px-1.5 py-0.5 rounded ${
-                  activeTab === tab.id ? 'bg-antique-gold/20' : 'bg-dusty-rose/10'
-                }`}
-                aria-label={`${tasksSummary[tab.id].completed} de ${tasksSummary[tab.id].total} concluídas`}
-              >
-                {tasksSummary[tab.id].completed}/{tasksSummary[tab.id].total}
-              </span>
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Reset info */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mb-6 text-xs text-dusty-rose/60"
-          aria-live="polite"
-        >
-          {activeTab === 'daily' && 'Missões diárias renovam à meia-noite'}
-          {activeTab === 'weekly' && 'Missões semanais renovam toda segunda-feira'}
-          {activeTab === 'oneTime' && 'Missões especiais podem ser concluídas uma única vez'}
-        </motion.div>
-
-        {/* Missions Grid (Bug 4 - tabpanel) */}
-        <div
-          id={`tabpanel-${activeTab}`}
-          role="tabpanel"
-          aria-labelledby={`tab-${activeTab}`}
-          tabIndex={0}
-        >
-          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AnimatePresence mode="popLayout">
-              {filteredTasks.map(task => (
-                <MissionCard
-                  key={task.id}
-                  task={task}
-                  onComplete={handleCompleteTask}
-                  isLoading={loadingTaskId === task.id}
+              {/* Imagem (desktop only) */}
+              <div className="hidden lg:block relative w-[35%] min-h-[220px]">
+                <img
+                  src={HERO_IMAGE}
+                  alt="Planejamento de viagem"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
-              ))}
-            </AnimatePresence>
+                <div className="absolute inset-0 bg-gradient-to-r from-deep-purple via-deep-purple/50 to-transparent" />
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          SEÇÃO CLARA - Lista de missões (área de leitura)
+          ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-ice-white py-10">
+        <main id="main-content" className="container-premium">
+          {/* Tabs (Bug 4 - Acessibilidade) */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            ref={tabListRef}
+            role="tablist"
+            aria-label="Categorias de missões"
+            className="flex items-center gap-1 mb-8 p-1 rounded-xl bg-white border border-graphite/10 shadow-sm w-fit"
+          >
+            {categoryTabs.map((tab, index) => (
+              <button
+                key={tab.id}
+                id={`tab-${tab.id}`}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`tabpanel-${tab.id}`}
+                tabIndex={activeTab === tab.id ? 0 : -1}
+                onClick={() => setActiveTab(tab.id)}
+                onKeyDown={(e) => handleTabKeyDown(e, index)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-deep-purple text-ice-white'
+                    : 'text-graphite/70 hover:text-deep-purple'
+                }`}
+              >
+                <span className="text-xs opacity-60" aria-hidden="true">{tab.icon}</span>
+                <span>{tab.label}</span>
+                <span
+                  className={`text-xs px-1.5 py-0.5 rounded ${
+                    activeTab === tab.id ? 'bg-ice-white/20' : 'bg-graphite/10'
+                  }`}
+                  aria-label={`${tasksSummary[tab.id].completed} de ${tasksSummary[tab.id].total} concluídas`}
+                >
+                  {tasksSummary[tab.id].completed}/{tasksSummary[tab.id].total}
+                </span>
+              </button>
+            ))}
           </motion.div>
 
-          {/* Empty state */}
-          {filteredTasks.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 rounded-2xl bg-antique-gold/10 flex items-center justify-center mx-auto mb-4">
-                <CheckIcon size={32} color="var(--antique-gold)" />
+          {/* Reset info */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-6 text-xs text-graphite/60"
+            aria-live="polite"
+          >
+            {activeTab === 'daily' && 'Missões diárias renovam à meia-noite'}
+            {activeTab === 'weekly' && 'Missões semanais renovam toda segunda-feira'}
+            {activeTab === 'oneTime' && 'Missões especiais podem ser concluídas uma única vez'}
+          </motion.div>
+
+          {/* Missions Grid (Bug 4 - tabpanel) */}
+          <div
+            id={`tabpanel-${activeTab}`}
+            role="tabpanel"
+            aria-labelledby={`tab-${activeTab}`}
+            tabIndex={0}
+          >
+            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AnimatePresence mode="popLayout">
+                {filteredTasks.map(task => (
+                  <MissionCardLight
+                    key={task.id}
+                    task={task}
+                    onComplete={handleCompleteTask}
+                    isLoading={loadingTaskId === task.id}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Empty state */}
+            {filteredTasks.length === 0 && (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 rounded-2xl bg-deep-purple/10 flex items-center justify-center mx-auto mb-4">
+                  <CheckIcon size={32} color="var(--antique-gold)" />
+                </div>
+                <h3 className="text-lg text-deep-purple mb-2">Nenhuma missão disponível</h3>
+                <p className="text-sm text-graphite/70">
+                  Todas as missões desta categoria foram concluídas.
+                </p>
               </div>
-              <h3 className="text-lg text-ice-white mb-2">Nenhuma missão disponível</h3>
-              <p className="text-sm text-dusty-rose">
-                Todas as missões desta categoria foram concluídas.
-              </p>
-            </div>
-          )}
-        </div>
-      </main>
+            )}
+          </div>
+        </main>
+      </section>
     </div>
   )
 }

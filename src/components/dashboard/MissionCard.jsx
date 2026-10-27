@@ -7,6 +7,7 @@ const missionTypeConfig = {
     label: 'MISSÃO DO DIA',
     color: '#a27937',
     bgGradient: 'from-antique-gold/10 to-antique-gold/5',
+    bgGradientLight: 'from-antique-gold/15 to-antique-gold/5',
     borderColor: 'border-antique-gold/30',
     pulseClass: ''
   },
@@ -14,6 +15,7 @@ const missionTypeConfig = {
     label: 'MISSÃO DA SEMANA',
     color: '#3b82f6',
     bgGradient: 'from-game-blue/10 to-game-blue/5',
+    bgGradientLight: 'from-game-blue/15 to-game-blue/5',
     borderColor: 'border-game-blue/20',
     pulseClass: ''
   },
@@ -21,6 +23,7 @@ const missionTypeConfig = {
     label: 'MISSÃO ESPECIAL',
     color: '#f97316',
     bgGradient: 'from-game-orange/10 to-game-orange/5',
+    bgGradientLight: 'from-game-orange/15 to-game-orange/5',
     borderColor: 'border-game-orange/30',
     pulseClass: ''
   }
@@ -29,26 +32,30 @@ const missionTypeConfig = {
 export function MissionCard({
   mission,
   type = 'daily',
+  variant = 'dark',
   onStart,
   onClaim
 }) {
   const config = missionTypeConfig[type] || missionTypeConfig.daily
   const isCompleted = mission.progress >= 100
   const isInProgress = mission.progress > 0 && mission.progress < 100
+  const isLight = variant === 'light'
 
   const CardWrapper = type === 'daily' ? GlowBorder : motion.div
+
+  const bgGradient = isLight ? config.bgGradientLight : config.bgGradient
 
   const wrapperProps = type === 'daily'
     ? { color: 'purple', className: 'h-full' }
     : {
-        className: `h-full rounded-xl bg-gradient-to-br ${config.bgGradient} border ${config.borderColor}`,
+        className: `h-full rounded-xl bg-gradient-to-br ${bgGradient} border ${config.borderColor} ${isLight ? 'bg-white shadow-sm' : ''}`,
         whileHover: { scale: 1.01 },
         transition: { type: 'spring', stiffness: 300 }
       }
 
   return (
     <CardWrapper {...wrapperProps}>
-      <div className={`p-5 h-full flex flex-col ${type === 'daily' ? '' : ''}`}>
+      <div className={`p-5 h-full flex flex-col ${type === 'daily' ? '' : ''} ${isLight && type !== 'daily' ? 'bg-white rounded-xl' : ''}`}>
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -65,10 +72,10 @@ export function MissionCard({
                 </span>
               )}
             </div>
-            <h3 className="text-base font-heading font-medium text-ice-white">
+            <h3 className={`text-base font-heading font-medium ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
               {mission.name}
             </h3>
-            <p className="text-xs text-dusty-rose mt-1">
+            <p className={`text-xs mt-1 ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
               {mission.description}
             </p>
           </div>
@@ -79,9 +86,9 @@ export function MissionCard({
             size={56}
             strokeWidth={4}
             color={config.color}
-            bgColor="rgba(163, 150, 149, 0.1)"
+            bgColor={isLight ? "rgba(50, 17, 63, 0.1)" : "rgba(163, 150, 149, 0.1)"}
           >
-            <span className="text-xs font-heading font-semibold text-ice-white">
+            <span className={`text-xs font-heading font-semibold ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
               {Math.round(mission.progress)}%
             </span>
           </ProgressRing>
@@ -93,13 +100,13 @@ export function MissionCard({
             <span className="text-lg font-bold text-game-green">
               +{mission.points.toLocaleString('pt-BR')}
             </span>
-            <span className="text-xs text-dusty-rose ml-1">pontos</span>
+            <span className={`text-xs ml-1 ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>pontos</span>
           </div>
 
           {/* Timer / Action */}
           <div className="flex items-center gap-3">
             {mission.resetIn && !isCompleted && (
-              <span className="text-[10px] text-dusty-rose/60">
+              <span className={`text-[10px] ${isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>
                 Reset em {mission.resetIn}
               </span>
             )}
@@ -114,13 +121,17 @@ export function MissionCard({
                 Resgatar
               </motion.button>
             ) : isInProgress ? (
-              <span className="text-xs text-dusty-rose">Em progresso...</span>
+              <span className={`text-xs ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>Em progresso...</span>
             ) : (
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onStart?.(mission)}
-                className="px-4 py-2 rounded-lg text-xs font-heading font-medium bg-deep-purple/50 text-ice-white border border-dusty-rose/20 hover:bg-deep-purple/70 transition-colors"
+                className={`px-4 py-2 rounded-lg text-xs font-heading font-medium transition-colors ${
+                  isLight
+                    ? 'bg-deep-purple text-ice-white hover:bg-bright-purple'
+                    : 'bg-deep-purple/50 text-ice-white border border-dusty-rose/20 hover:bg-deep-purple/70'
+                }`}
               >
                 Iniciar
               </motion.button>
@@ -133,9 +144,10 @@ export function MissionCard({
 }
 
 // Mini version para lista compacta
-export function MissionCardMini({ mission, type = 'daily', onClick }) {
+export function MissionCardMini({ mission, type = 'daily', variant = 'dark', onClick }) {
   const config = missionTypeConfig[type] || missionTypeConfig.daily
   const isCompleted = mission.progress >= 100
+  const isLight = variant === 'light'
 
   return (
     <motion.div
@@ -144,7 +156,9 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
       className={`p-4 rounded-xl cursor-pointer transition-all ${
         isCompleted
           ? 'bg-game-green/10 border border-game-green/20'
-          : 'bg-deep-purple/30 border border-dusty-rose/20 hover:border-dusty-rose/30'
+          : isLight
+            ? 'bg-ice-white border border-graphite/10 hover:border-graphite/20'
+            : 'bg-deep-purple/30 border border-dusty-rose/20 hover:border-dusty-rose/30'
       }`}
     >
       <div className="flex items-center gap-4">
@@ -154,13 +168,13 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
           size={40}
           strokeWidth={3}
           color={isCompleted ? '#22c55e' : config.color}
-          bgColor="rgba(163, 150, 149, 0.1)"
+          bgColor={isLight ? "rgba(50, 17, 63, 0.1)" : "rgba(163, 150, 149, 0.1)"}
         />
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-heading font-medium text-ice-white truncate">
+            <h4 className={`text-sm font-heading font-medium truncate ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
               {mission.name}
             </h4>
             {mission.rarity === 'rare' && (
@@ -169,7 +183,7 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
               </span>
             )}
           </div>
-          <p className="text-xs text-dusty-rose truncate">{mission.description}</p>
+          <p className={`text-xs truncate ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>{mission.description}</p>
         </div>
 
         {/* Points */}
@@ -177,7 +191,7 @@ export function MissionCardMini({ mission, type = 'daily', onClick }) {
           <span className="text-sm font-heading font-semibold text-game-green">
             +{mission.points}
           </span>
-          <span className="text-[10px] text-dusty-rose/60 block">pontos</span>
+          <span className={`text-[10px] block ${isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>pontos</span>
         </div>
       </div>
     </motion.div>
