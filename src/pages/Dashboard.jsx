@@ -15,7 +15,7 @@ import {
 } from '@/components/dashboard'
 import { EvolutionCard } from '@/components/dashboard/EvolutionCard'
 import { mockReferrals, getStats } from '@/services/mockData'
-import { PointsSimulatorCompact } from '@/components/dashboard/PointsSimulatorCompact'
+import { PointsSimulatorTabs } from '@/components/shared/PointsSimulator'
 import { ExperiencesCarousel } from '@/components/dashboard/ExperiencesCarousel'
 import { ClassExplorer } from '@/components/dashboard/ClassExplorer'
 
@@ -109,7 +109,17 @@ export function Dashboard() {
           ══════════════════════════════════════════════════════════════ */}
       <section className="bg-ice-white py-10">
         <div className="container-premium">
-          <PointsSimulatorCompact />
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-display font-semibold text-deep-purple mb-2">
+              Simule seus ganhos
+            </h3>
+            <p className="text-sm text-deep-purple/70">
+              Veja quanto você pode acumular viajando ou indicando
+            </p>
+          </div>
+          <div className="max-w-xl mx-auto">
+            <PointsSimulatorTabs variant="light" compact={true} />
+          </div>
         </div>
       </section>
 
