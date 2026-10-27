@@ -22,7 +22,6 @@ import { getClassIcon, GiftIcon } from '@/components/ui/Icons'
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&h=400&fit=crop&crop=center&q=80'
 
 const categoryIcons = {
-  cash: '◇',
   travel: '✦',
   experience: '◆',
   premium: '❖',

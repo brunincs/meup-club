@@ -146,34 +146,19 @@ export const rarityConfig = {
 // Regra: preços de cada classe > preços da classe anterior
 // ============================================
 export const rewardsTable = [
-  // CLASSE ECONÔMICA (1) — Primeiras conquistas: 2.000 - 5.000 pts
+  // CLASSE ECONÔMICA (1) — Primeiras conquistas
   {
     id: '1',
     tier: 1,
     requiredLevel: 1,
-    name: 'Crédito de Boas-Vindas',
+    name: 'Desconto em Passagem',
     subtitle: 'Sua primeira conquista',
-    description: 'R$20 em créditos para iniciar sua jornada no clube',
+    description: 'Desconto de R$50 na sua próxima passagem aérea',
     points_required: 2000,
-    category: 'cash',
-    realCost: 20,
-    perceivedValue: 20,
+    category: 'travel',
+    realCost: 50,
+    perceivedValue: 50,
     badge: null,
-    rarity: 'common',
-    available: true
-  },
-  {
-    id: 'pix',
-    tier: 1,
-    requiredLevel: 1,
-    name: 'Saque via Pix',
-    subtitle: 'Dinheiro na sua conta',
-    description: 'Resgate seus pontos direto no Pix. 1.000 pts = R$ 10',
-    points_required: 3000,
-    category: 'cash',
-    realCost: 30,
-    perceivedValue: 30,
-    badge: 'hot',
     rarity: 'common',
     available: true
   },
@@ -181,13 +166,28 @@ export const rewardsTable = [
     id: '2',
     tier: 1,
     requiredLevel: 1,
-    name: 'Crédito Viajante',
-    subtitle: 'Para sua próxima aventura',
-    description: 'R$50 em créditos para sua próxima experiência',
+    name: 'Kit Viajante',
+    subtitle: 'Conforto na viagem',
+    description: 'Kit com travesseiro de pescoço, máscara e fones premium',
+    points_required: 3500,
+    category: 'experience',
+    realCost: 40,
+    perceivedValue: 60,
+    badge: 'hot',
+    rarity: 'common',
+    available: true
+  },
+  {
+    id: '3',
+    tier: 1,
+    requiredLevel: 1,
+    name: 'Seguro Viagem Básico',
+    subtitle: 'Viaje tranquilo',
+    description: 'Cobertura básica para viagens nacionais (7 dias)',
     points_required: 5000,
-    category: 'cash',
+    category: 'travel',
     realCost: 50,
-    perceivedValue: 50,
+    perceivedValue: 80,
     badge: null,
     rarity: 'common',
     available: true
@@ -195,28 +195,13 @@ export const rewardsTable = [
 
   // PREMIUM ECONOMY (2) — Conforto elevado: 6.000 - 8.000 pts
   {
-    id: '3',
-    tier: 2,
-    requiredLevel: 2,
-    name: 'Crédito Explorador',
-    subtitle: 'Destinos mais distantes',
-    description: 'R$70 em créditos para experiências memoráveis',
-    points_required: 6000,
-    category: 'cash',
-    realCost: 70,
-    perceivedValue: 70,
-    badge: null,
-    rarity: 'common',
-    available: true
-  },
-  {
     id: '4',
     tier: 2,
     requiredLevel: 2,
     name: 'Upgrade de Conforto',
     subtitle: 'Mais espaço, mais conforto',
     description: 'Assento com espaço extra em voos selecionados (valor: R$100)',
-    points_required: 8000,
+    points_required: 6000,
     category: 'travel',
     realCost: 80,
     perceivedValue: 100,
@@ -224,10 +209,25 @@ export const rewardsTable = [
     rarity: 'rare',
     available: true
   },
+  {
+    id: '5',
+    tier: 2,
+    requiredLevel: 2,
+    name: 'Day Use em Spa',
+    subtitle: 'Relaxe antes de voar',
+    description: 'Acesso a spa premium em São Paulo ou Rio (valor: R$120)',
+    points_required: 8000,
+    category: 'experience',
+    realCost: 100,
+    perceivedValue: 120,
+    badge: null,
+    rarity: 'rare',
+    available: true
+  },
 
   // CLASSE EXECUTIVA (3) — Experiência refinada: 10.000 - 14.000 pts
   {
-    id: '5',
+    id: '6',
     tier: 3,
     requiredLevel: 3,
     name: 'Jantar Exclusivo',
@@ -242,7 +242,7 @@ export const rewardsTable = [
     available: true
   },
   {
-    id: '6',
+    id: '7',
     tier: 3,
     requiredLevel: 3,
     name: 'Stopover Exclusivo',
@@ -259,7 +259,7 @@ export const rewardsTable = [
 
   // PRIMEIRA CLASSE (4) — Exclusividade absoluta: 16.000 - 20.000 pts
   {
-    id: '7',
+    id: '8',
     tier: 4,
     requiredLevel: 4,
     name: 'Upgrade Prioritário de Voo',
@@ -275,7 +275,7 @@ export const rewardsTable = [
     available: true
   },
   {
-    id: '8',
+    id: '9',
     tier: 4,
     requiredLevel: 4,
     name: 'Acesso Lounge Anual',
@@ -292,7 +292,7 @@ export const rewardsTable = [
 
   // MEUP EXCLUSIVE (5) — O ápice do privilégio: 25.000 - 40.000 pts
   {
-    id: '9',
+    id: '10',
     tier: 5,
     requiredLevel: 5,
     name: 'Benefícios Elite',
@@ -308,7 +308,7 @@ export const rewardsTable = [
     available: true
   },
   {
-    id: '10',
+    id: '11',
     tier: 5,
     requiredLevel: 5,
     name: 'A Grande Experiência',

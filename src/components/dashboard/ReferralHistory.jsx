@@ -48,7 +48,7 @@ function groupByDate(referrals) {
   return groups
 }
 
-function TimelineEvent({ referral, index, isLast }) {
+function TimelineEvent({ referral, index, isLast, isLight = false }) {
   const status = statusConfig[referral.status]
 
   // Formato completo: "12 jul · 07:30"
@@ -90,7 +90,7 @@ function TimelineEvent({ referral, index, isLast }) {
           <span className={`text-sm ${status.color}`}>{status.icon}</span>
         </div>
         {!isLast && (
-          <div className="w-px flex-1 bg-dusty-rose/20 my-2" />
+          <div className={`w-px flex-1 my-2 ${isLight ? 'bg-deep-purple/10' : 'bg-dusty-rose/20'}`} />
         )}
       </div>
 
@@ -98,10 +98,10 @@ function TimelineEvent({ referral, index, isLast }) {
       <div className={`flex-1 pb-6 ${isLast ? '' : ''}`}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm text-ice-white mb-1">
+            <p className={`text-sm mb-1 ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
               {maskName(referral.client_name)}
             </p>
-            <p className="text-xs text-dusty-rose">
+            <p className={`text-xs ${isLight ? 'text-deep-purple/60' : 'text-dusty-rose'}`}>
               {referral.status === 'approved' ? historyCopy.referralApproved : status.label}
             </p>
           </div>
@@ -113,13 +113,13 @@ function TimelineEvent({ referral, index, isLast }) {
                   +{format.pointsShort(referral.points_earned)}
                 </p>
                 {referral.multiplier > 1 && (
-                  <span className="text-[10px] text-dusty-rose" title={getMultiplierLabel(referral.multiplier)}>
+                  <span className={`text-[10px] ${isLight ? 'text-deep-purple/50' : 'text-dusty-rose'}`} title={getMultiplierLabel(referral.multiplier)}>
                     {referral.multiplier}x bônus
                   </span>
                 )}
               </div>
             ) : (
-              <span className="text-xs text-dusty-rose">
+              <span className={`text-xs ${isLight ? 'text-deep-purple/60' : 'text-dusty-rose'}`}>
                 {referral.statusLabel || status.label}
               </span>
             )}
@@ -127,7 +127,7 @@ function TimelineEvent({ referral, index, isLast }) {
         </div>
 
         {/* Data completa */}
-        <p className="text-[10px] text-dusty-rose/60 mt-2">
+        <p className={`text-[10px] mt-2 ${isLight ? 'text-deep-purple/40' : 'text-dusty-rose/60'}`}>
           {formatDateTime(referral.created_at)}
         </p>
       </div>
@@ -135,10 +135,11 @@ function TimelineEvent({ referral, index, isLast }) {
   )
 }
 
-export function ReferralHistory() {
+export function ReferralHistory({ variant = 'dark' }) {
   const referrals = mockReferrals
   const groupedReferrals = groupByDate(referrals)
   const groups = Object.entries(groupedReferrals)
+  const isLight = variant === 'light'
 
   const totalApproved = referrals.filter(r => r.status === 'approved').length
   const totalPending = referrals.filter(r => r.status === 'pending').length
@@ -151,24 +152,28 @@ export function ReferralHistory() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
-      className="rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 overflow-hidden"
+      className={`rounded-2xl border overflow-hidden ${
+        isLight
+          ? 'border-deep-purple/10 bg-white shadow-lg'
+          : 'border-dusty-rose/20 bg-deep-purple/30'
+      }`}
     >
       {/* Header */}
-      <div className="p-6 border-b border-dusty-rose/20">
+      <div className={`p-6 border-b ${isLight ? 'border-deep-purple/10' : 'border-dusty-rose/20'}`}>
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-[10px] uppercase tracking-wider text-dusty-rose mb-1">
+            <h3 className={`text-[10px] uppercase tracking-wider mb-1 ${isLight ? 'text-deep-purple/60' : 'text-dusty-rose'}`}>
               {invites.history}
             </h3>
-            <p className="text-sm text-dusty-rose">
+            <p className={`text-sm ${isLight ? 'text-deep-purple' : 'text-dusty-rose'}`}>
               {totalApproved} {totalApproved === 1 ? 'indicação aprovada' : 'indicações aprovadas'}
               {totalPending > 0 && (
-                <span className="text-dusty-rose/60"> · {totalPending} em análise</span>
+                <span className={isLight ? 'text-deep-purple/50' : 'text-dusty-rose/60'}> · {totalPending} em análise</span>
               )}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] uppercase tracking-wider text-dusty-rose mb-1">
+            <p className={`text-[10px] uppercase tracking-wider mb-1 ${isLight ? 'text-deep-purple/60' : 'text-dusty-rose'}`}>
               Pontos gerados
             </p>
             <p className="text-lg font-display font-light text-antique-gold">
@@ -183,7 +188,7 @@ export function ReferralHistory() {
         {groups.map(([period, items], groupIndex) => (
           <div key={period} className={groupIndex > 0 ? 'mt-6' : ''}>
             {/* Period Header */}
-            <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-4">
+            <p className={`text-[10px] uppercase tracking-wider mb-4 ${isLight ? 'text-deep-purple/40' : 'text-dusty-rose/60'}`}>
               {period}
             </p>
 
@@ -194,6 +199,7 @@ export function ReferralHistory() {
                 referral={referral}
                 index={index}
                 isLast={index === items.length - 1 && groupIndex === groups.length - 1}
+                isLight={isLight}
               />
             ))}
           </div>
@@ -202,11 +208,13 @@ export function ReferralHistory() {
         {/* Empty state */}
         {referrals.length === 0 && (
           <div className="text-center py-8">
-            <div className="w-12 h-12 rounded-xl bg-dusty-rose/10 flex items-center justify-center mx-auto mb-3">
-              <span className="text-dusty-rose">○</span>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 ${
+              isLight ? 'bg-deep-purple/10' : 'bg-dusty-rose/10'
+            }`}>
+              <span className={isLight ? 'text-deep-purple/40' : 'text-dusty-rose'}>○</span>
             </div>
-            <p className="text-sm text-dusty-rose">Nenhuma indicação ainda</p>
-            <p className="text-xs text-dusty-rose/60 mt-1">
+            <p className={`text-sm ${isLight ? 'text-deep-purple' : 'text-dusty-rose'}`}>Nenhuma indicação ainda</p>
+            <p className={`text-xs mt-1 ${isLight ? 'text-deep-purple/50' : 'text-dusty-rose/60'}`}>
               Compartilhe seu código para começar
             </p>
           </div>
@@ -214,12 +222,12 @@ export function ReferralHistory() {
       </div>
 
       {/* Footer com legenda de multiplicadores */}
-      <div className="px-6 py-4 border-t border-dusty-rose/20 space-y-2">
-        <p className="text-[10px] text-dusty-rose/60 flex items-center gap-2">
-          <span className="text-dusty-rose/40">○</span>
+      <div className={`px-6 py-4 border-t space-y-2 ${isLight ? 'border-deep-purple/10' : 'border-dusty-rose/20'}`}>
+        <p className={`text-[10px] flex items-center gap-2 ${isLight ? 'text-deep-purple/50' : 'text-dusty-rose/60'}`}>
+          <span className={isLight ? 'text-deep-purple/30' : 'text-dusty-rose/40'}>○</span>
           Pontos são creditados quando a indicação é confirmada
         </p>
-        <div className="text-[10px] text-dusty-rose/40 flex items-center gap-4">
+        <div className={`text-[10px] flex items-center gap-4 ${isLight ? 'text-deep-purple/30' : 'text-dusty-rose/40'}`}>
           <span>1.5x = bônus de classe</span>
           <span>2x = campanha ativa</span>
         </div>

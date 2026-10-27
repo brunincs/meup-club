@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
@@ -15,6 +15,9 @@ import {
   StreakTracker
 } from '@/components/dashboard'
 import { mockReferrals, getStats } from '@/services/mockData'
+import { PointsSimulatorCompact } from '@/components/dashboard/PointsSimulatorCompact'
+import { ExperiencesCarousel } from '@/components/dashboard/ExperiencesCarousel'
+import { ClassExplorer } from '@/components/dashboard/ClassExplorer'
 
 export function Dashboard() {
   const { user, profile, loading } = useAuth()
@@ -48,7 +51,7 @@ export function Dashboard() {
       <DashboardHeader />
 
       {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO ESCURA - Hero com pontos e classe (destaque visual)
+          SEÇÃO 1 - ESCURA: Hero com pontos e classe (destaque visual)
           ══════════════════════════════════════════════════════════════ */}
       <section className="bg-deep-purple pt-12 pb-8">
         <div className="container-premium">
@@ -57,7 +60,7 @@ export function Dashboard() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO CLARA - Missões e tarefas (área de leitura)
+          SEÇÃO 2 - CLARA: Missões e tarefas (área de leitura)
           ══════════════════════════════════════════════════════════════ */}
       <section className="bg-ice-white py-10">
         <div className="container-premium">
@@ -66,7 +69,7 @@ export function Dashboard() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO ESCURA - Stats e conteúdo visual
+          SEÇÃO 3 - ESCURA: Stats e Carrossel de Experiências (visual)
           ══════════════════════════════════════════════════════════════ */}
       <section className="bg-deep-purple py-10">
         <div className="container-premium">
@@ -75,31 +78,55 @@ export function Dashboard() {
             <StatsCards stats={stats} />
           </div>
 
-          {/* Main grid */}
+          {/* Carrossel de experiências */}
+          <ExperiencesCarousel />
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          SEÇÃO 4 - CLARA: Código de indicação e histórico (leitura)
+          ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-ice-white py-10">
+        <div className="container-premium">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ReferralCode variant="light" />
+            <ReferralHistory variant="light" />
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          SEÇÃO 5 - ESCURA: Explorador de classes (visual interativo)
+          ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-deep-purple py-10">
+        <div className="container-premium">
+          <ClassExplorer />
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          SEÇÃO 6 - CLARA: Simulador de pontos (interativo)
+          ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-ice-white py-10">
+        <div className="container-premium">
+          <PointsSimulatorCompact />
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          SEÇÃO 7 - ESCURA: Progresso e widgets (visual)
+          ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-deep-purple py-10">
+        <div className="container-premium">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left column - 2/3 */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Referral code */}
-              <ReferralCode />
+            {/* Progresso de nível */}
+            <LevelProgress />
 
-              {/* History */}
-              <ReferralHistory />
+            {/* Streak Tracker */}
+            <StreakTracker />
 
-              {/* Rewards with rarity */}
-              <RewardsSection />
-            </div>
-
-            {/* Right column - 1/3 */}
-            <div className="space-y-6">
-              {/* Level progress */}
-              <LevelProgress />
-
-              {/* Streak Tracker */}
-              <StreakTracker />
-
-              {/* Tasks */}
-              <TasksWidget />
-            </div>
+            {/* Tasks */}
+            <TasksWidget />
           </div>
         </div>
       </section>

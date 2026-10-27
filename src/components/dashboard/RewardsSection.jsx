@@ -14,7 +14,6 @@ import { ShimmerEffect } from '@/components/effects/GlowEffect'
 import { ProgressBar } from '@/components/effects/ProgressRing'
 
 const categoryIcons = {
-  cash: '◇',
   travel: '✦',
   experience: '◆',
   premium: '❖',
@@ -48,23 +47,6 @@ const rarityStyles = {
   }
 }
 
-// Adicionar Pix como primeira recompensa visível
-const pixReward = {
-  id: 'pix-instant',
-  tier: 1,
-  requiredLevel: 1,
-  name: 'Saque via Pix',
-  subtitle: 'Dinheiro na sua conta',
-  description: 'A partir de 5.000 pts = R$ 50',
-  points_required: 5000,
-  category: 'cash',
-  realCost: 50,
-  perceivedValue: 50,
-  badge: 'hot',
-  rarity: 'common',
-  available: true
-}
-
 export function RewardsSection() {
   const { profile } = useAuth()
   // Usar demoUser como fonte única
@@ -73,17 +55,7 @@ export function RewardsSection() {
   const userLevelId = levelData.current.id
 
   const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
-
-  // Adicionar Pix com progresso calculado
-  const pixWithProgress = {
-    ...pixReward,
-    progress: Math.min((userPoints / pixReward.points_required) * 100, 100),
-    pointsNeeded: Math.max(pixReward.points_required - userPoints, 0),
-    hasEnoughPoints: userPoints >= pixReward.points_required,
-    isUnlockedByLevel: true,
-    canRedeem: userPoints >= pixReward.points_required,
-    status: userPoints >= pixReward.points_required ? 'available' : 'progress'
-  }
+    .filter(r => r.category !== 'cash') // Filtrar recompensas em dinheiro
 
   // Selecionar experiências para exibição
   const availableRewards = rewardsWithProgress.filter(r => r.canRedeem)
@@ -91,8 +63,7 @@ export function RewardsSection() {
   const nextRewards = rewardsWithProgress.filter(r => r.isUnlockedByLevel && !r.canRedeem && r.progress < 50)
 
   const displayRewards = [
-    pixWithProgress, // Pix sempre primeiro
-    ...availableRewards.slice(0, 1),
+    ...availableRewards.slice(0, 2),
     ...almostRewards.slice(0, 1),
     ...nextRewards.slice(0, 1)
   ].slice(0, 4)
@@ -117,7 +88,7 @@ export function RewardsSection() {
     })
   }
 
-  const availableCount = availableRewards.length + (pixWithProgress.canRedeem ? 1 : 0)
+  const availableCount = availableRewards.length
 
   return (
     <motion.div
@@ -272,7 +243,7 @@ export function RewardsSection() {
       <Link to="/recompensas">
         <div className="px-6 py-4 border-t border-dusty-rose/20 hover:bg-white/5 transition-colors">
           <p className="text-center text-xs text-dusty-rose">
-            Explorar {rewardsTable.length + 1} experiências disponíveis
+            Explorar todas as experiências
           </p>
         </div>
       </Link>
