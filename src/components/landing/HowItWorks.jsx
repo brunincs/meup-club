@@ -1,12 +1,40 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
+import { PONTOS_POR_INDICACAO, formatPoints } from '@/config/experiences'
 
-const steps = [
+/**
+ * ╔════════════════════════════════════════════════════════════════════════════╗
+ * ║  REGRAS DE PONTOS                                                          ║
+ * ║                                                                            ║
+ * ║  1. Viagem própria: 1 ponto por R$ 1 gasto (PONTOS_POR_REAL)               ║
+ * ║  2. Indicação: 3.000 pontos fixos por indicação convertida                 ║
+ * ║     (PONTOS_POR_INDICACAO em config/experiences.js)                        ║
+ * ║  3. Bônus de primeira viagem: a definir                                    ║
+ * ║  4. Multiplicador por classe: a definir                                    ║
+ * ╚════════════════════════════════════════════════════════════════════════════╝
+ */
+
+const waysToEarn = [
   {
-    number: '01',
-    title: 'Indique alguém',
-    description: 'Compartilhe seu código. Não precisa vender — só conectar.',
+    id: 'travel',
+    badge: 'Viajando',
+    title: 'Cada viagem sua gera pontos',
+    // REGRA A DEFINIR POR BRUNO: quantos pontos por viagem?
+    description: 'Comprou passagem com a Me,up? Os pontos entram automaticamente na sua conta.',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
+        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    color: 'gold',
+  },
+  {
+    id: 'referral',
+    badge: 'Indicando',
+    title: 'Cada indicação que fecha, você ganha',
+    // Valor fixo de 3.000 pontos por indicação convertida (definido em PONTOS_POR_INDICACAO)
+    description: `Indicou alguém e a pessoa viajou? Você ganha ${formatPoints(PONTOS_POR_INDICACAO)} pontos.`,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -14,44 +42,15 @@ const steps = [
         <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
-  },
-  {
-    number: '02',
-    title: 'O cliente fecha',
-    description: 'Quando a compra é feita, você é creditado automaticamente.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    number: '03',
-    title: 'Pontos entram',
-    description: 'Proporcionais ao valor da operação. Mais valor = mais pontos.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-      </svg>
-    ),
-  },
-  {
-    number: '04',
-    title: 'Você decide',
-    description: 'Troque por Pix, upgrades ou acumule para subir.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-      </svg>
-    ),
+    color: 'rose',
   },
 ]
 
 export function HowItWorks() {
   return (
-    <section className="relative py-16 md:py-24 overflow-hidden">
+    <section className="relative py-10 md:py-12">
       {/* Linha decorativa superior */}
-      <div className="divider-premium mb-16 md:mb-20" />
+      <div className="divider-premium mb-6" />
 
       <div className="container-premium">
         {/* Header da seção */}
@@ -60,92 +59,72 @@ export function HowItWorks() {
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
           variants={fadeUp}
-          className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 md:mb-16"
+          className="text-center mb-6"
         >
-          <div className="max-w-xl">
-            <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold mb-4">
-              Mecânica
-            </span>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-ice-white mb-3">
-              Simples assim.
-            </h2>
-            <GoldLine width="60px" className="mt-3" />
-          </div>
-          <p className="text-dusty-rose max-w-sm text-base md:text-right">
-            Você indica, a gente rastreia, você ganha.
+          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold mb-3">
+            Como funciona
+          </span>
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-ice-white mb-2">
+            Duas formas de ganhar pontos
+          </h2>
+          <GoldLine width="60px" centered className="mb-3" />
+          <p className="text-dusty-rose max-w-md mx-auto text-sm">
+            Viaje com a Me,up ou indique amigos. Nos dois casos, você acumula.
           </p>
         </motion.div>
 
-        {/* Steps */}
+        {/* Duas formas de ganhar - lado a lado - EQUILIBRADOS */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          className="relative"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
         >
-          {/* Linha conectora horizontal (desktop) */}
-          <div className="hidden lg:block absolute top-20 left-0 right-0 h-px">
+          {waysToEarn.map((way) => (
             <motion.div
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-              className="h-full bg-gradient-to-r from-transparent via-dusty-rose/30 to-transparent origin-left"
-            />
-          </div>
+              key={way.id}
+              variants={staggerItem}
+              whileHover={{
+                y: -4,
+                transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+              }}
+              className={`group relative p-5 md:p-6 rounded-2xl border transition-all duration-500 ${
+                way.color === 'gold'
+                  ? 'border-antique-gold/40 bg-gradient-to-br from-antique-gold/10 via-antique-gold/5 to-deep-purple/30 hover:border-antique-gold/60'
+                  : 'border-dusty-rose/40 bg-gradient-to-br from-dusty-rose/10 via-dusty-rose/5 to-deep-purple/30 hover:border-dusty-rose/60'
+              }`}
+            >
+              {/* Badge */}
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-heading font-semibold mb-4 ${
+                way.color === 'gold'
+                  ? 'bg-antique-gold/20 text-antique-gold border border-antique-gold/40'
+                  : 'bg-dusty-rose/20 text-dusty-rose border border-dusty-rose/40'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${way.color === 'gold' ? 'bg-antique-gold' : 'bg-dusty-rose'}`} />
+                {way.badge}
+              </span>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.number}
-                variants={staggerItem}
-                className="group relative"
-              >
-                <motion.div
-                  whileHover={{
-                    y: -4,
-                    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
-                  }}
-                  className="relative p-6 rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 backdrop-blur-sm transition-all duration-500 hover:border-antique-gold/30 hover:bg-dark-700/40 h-full"
-                >
-                  {/* Número pequeno */}
-                  <span className="inline-block text-[10px] font-mono text-dusty-rose mb-5 px-2 py-0.5 rounded bg-deep-purple/50 border border-dusty-rose/20">
-                    Passo {step.number}
-                  </span>
+              {/* Ícone */}
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 ${
+                way.color === 'gold'
+                  ? 'bg-antique-gold/15 text-antique-gold border border-antique-gold/30'
+                  : 'bg-dusty-rose/15 text-dusty-rose border border-dusty-rose/30'
+              }`}>
+                {way.icon}
+              </div>
 
-                  {/* Ícone */}
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    className="w-11 h-11 rounded-xl bg-deep-purple/50 border border-dusty-rose/30 flex items-center justify-center mb-5 text-dusty-rose transition-all duration-300 group-hover:border-antique-gold/30 group-hover:bg-antique-gold/5 group-hover:text-antique-gold"
-                  >
-                    {step.icon}
-                  </motion.div>
-
-                  {/* Conteúdo */}
-                  <h3 className="text-base font-heading font-semibold text-ice-white mb-2 group-hover:text-white transition-colors">
-                    {step.title}
-                  </h3>
-                  <p className="text-sm text-dusty-rose leading-relaxed">
-                    {step.description}
-                  </p>
-
-                  {/* Indicador de próximo (desktop) */}
-                  {index < steps.length - 1 && (
-                    <div className="hidden lg:block absolute -right-2.5 top-20 text-dusty-rose/50 group-hover:text-antique-gold transition-colors">
-                      <motion.span
-                        animate={{ x: [0, 3, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      >
-                        →
-                      </motion.span>
-                    </div>
-                  )}
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
+              {/* Conteúdo */}
+              <h3 className="text-base md:text-lg font-heading font-semibold text-ice-white mb-1.5">
+                {way.title}
+              </h3>
+              <p className="text-sm text-dusty-rose leading-relaxed">
+                {way.description}
+              </p>
+            </motion.div>
+          ))}
         </motion.div>
+
       </div>
     </section>
   )
