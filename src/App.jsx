@@ -3,7 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PointsProvider } from '@/contexts/PointsContext'
 import { RootLayout } from '@/layouts'
-import { Home, Login, Cadastro, Dashboard, Rewards, Tasks, Profile, Leaderboard } from '@/pages'
+import { Home, Login, Cadastro, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade } from '@/pages'
 import {
   AdminDashboard,
   AdminReferrals,
@@ -72,13 +72,35 @@ function App() {
               </RootLayout>
             }
           />
-
-          {/* Protected routes */}
+          <Route
+            path="/faq"
+            element={
+              <RootLayout>
+                <FAQ />
+              </RootLayout>
+            }
+          />
+          <Route
+            path="/termos"
+            element={
+              <RootLayout>
+                <Termos />
+              </RootLayout>
+            }
+          />
+          <Route
+            path="/privacidade"
+            element={
+              <RootLayout>
+                <Privacidade />
+              </RootLayout>
+            }
+          />
+                    {/* Protected routes */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/recompensas" element={<Rewards />} />
           <Route path="/tarefas" element={<Tasks />} />
           <Route path="/perfil" element={<Profile />} />
-          <Route path="/ranking" element={<Leaderboard />} />
 
           {/* Referral redirect */}
           <Route
