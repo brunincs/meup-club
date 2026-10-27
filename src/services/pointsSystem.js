@@ -41,7 +41,7 @@ export const levels = [
   {
     id: 1,
     name: 'Classe Econômica',
-    shortName: 'Economy',
+    shortName: 'Econômica',
     minPoints: 0,
     maxPoints: 599,
     bonusMultiplier: 1,
@@ -51,7 +51,7 @@ export const levels = [
   },
   {
     id: 2,
-    name: 'Premium Economy',
+    name: 'Econômica Premium',
     shortName: 'Premium',
     minPoints: 600,
     maxPoints: 1799,
@@ -63,7 +63,7 @@ export const levels = [
   {
     id: 3,
     name: 'Classe Executiva',
-    shortName: 'Business',
+    shortName: 'Executiva',
     minPoints: 1800,
     maxPoints: 3999,
     bonusMultiplier: 1.1,
@@ -74,7 +74,7 @@ export const levels = [
   {
     id: 4,
     name: 'Primeira Classe',
-    shortName: 'First',
+    shortName: 'Primeira',
     minPoints: 4000,
     maxPoints: 7999,
     bonusMultiplier: 1.15,

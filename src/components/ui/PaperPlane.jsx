@@ -1,7 +1,7 @@
 /**
  * Ícone de aviãozinho de papel decorativo
  * Versão dourada (fundo escuro) e roxo (fundo claro)
- * Seguindo o brand book da Me Up Viagens
+ * Seguindo o brand book da Me,up Viagens
  */
 export function PaperPlane({
   variant = 'gold', // 'gold' | 'purple'

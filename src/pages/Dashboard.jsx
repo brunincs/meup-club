@@ -12,9 +12,7 @@ import {
   TasksWidget,
   HeroSection,
   MissionsSection,
-  StreakTracker,
-  SocialProofBanner,
-  CompetitionWidget
+  StreakTracker
 } from '@/components/dashboard'
 import { mockReferrals, getStats } from '@/services/mockData'
 
@@ -51,9 +49,6 @@ export function Dashboard() {
 
       {/* Main content */}
       <main className="container-premium py-12">
-        {/* Social Proof Banner */}
-        <SocialProofBanner />
-
         {/* Hero Section - Protagonista com pontos */}
         <HeroSection />
 
@@ -86,10 +81,7 @@ export function Dashboard() {
             {/* Level progress */}
             <LevelProgress />
 
-            {/* Competition Widget - Ranking */}
-            <CompetitionWidget />
-
-            {/* Streak Tracker - Orange theme */}
+            {/* Streak Tracker */}
             <StreakTracker />
 
             {/* Tasks */}

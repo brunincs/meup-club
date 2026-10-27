@@ -14,7 +14,7 @@ export function Statement() {
   return (
     <section
       ref={containerRef}
-      className="relative py-20 md:py-28 overflow-hidden"
+      className="relative py-10 md:py-12 overflow-hidden bg-ice-white"
     >
       {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
@@ -22,7 +22,7 @@ export function Statement() {
           <div
             className="absolute inset-0"
             style={{
-              background: 'radial-gradient(ellipse 80% 50% at 50% 50%, rgba(201, 169, 98, 0.04) 0%, transparent 60%)'
+              background: 'radial-gradient(ellipse 80% 50% at 50% 50%, rgba(162, 121, 55, 0.06) 0%, transparent 60%)'
             }}
           />
         </motion.div>
@@ -51,7 +51,7 @@ export function Statement() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.8 }}
-              className="text-xl md:text-2xl lg:text-3xl font-display font-medium text-neutral-500 leading-relaxed mb-4"
+              className="text-xl md:text-2xl lg:text-3xl font-display font-medium text-deep-purple/50 leading-relaxed mb-4"
             >
               Clientes comuns compram passagens.
             </motion.p>
@@ -63,8 +63,8 @@ export function Statement() {
               transition={{ duration: 0.8, delay: 0.15 }}
               className="text-xl md:text-2xl lg:text-3xl font-display font-bold leading-relaxed"
             >
-              <span className="text-neutral-100">Os membros do Meup Club </span>
-              <span className="text-gradient">constroem vantagem.</span>
+              <span className="text-deep-purple">Membros do Meup Club </span>
+              <span className="text-antique-gold">acumulam privilégios a cada viagem.</span>
             </motion.p>
           </div>
 

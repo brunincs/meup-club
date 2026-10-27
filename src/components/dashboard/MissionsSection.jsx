@@ -42,8 +42,7 @@ const mockMissions = {
 // Extra daily tasks
 const extraTasks = [
   { id: 'access', name: 'Acesso diário', description: 'Entre no app hoje', points: 10, progress: 100 },
-  { id: 'rewards', name: 'Ver experiências', description: 'Confira as recompensas', points: 5, progress: 0 },
-  { id: 'ranking', name: 'Confira o ranking', description: 'Veja sua posição', points: 5, progress: 0 }
+  { id: 'rewards', name: 'Ver experiências', description: 'Confira as recompensas', points: 5, progress: 0 }
 ]
 
 export function MissionsSection() {

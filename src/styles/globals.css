@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Me Up Viagens Palette - Brand Book */
+  /* Me,up Viagens Palette - Brand Book */
   --color-deep-purple: #32113f;
   --color-antique-gold: #a27937;
   --color-ice-white: #edf0f1;
@@ -27,11 +27,11 @@
   --color-accent-light: #c49b5a;
   --color-accent-dark: #7a5a28;
 
-  /* Fontes - Brand Book Me Up */
+  /* Fontes - Brand Book Me,up */
   --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
   --font-display: 'Playfair Display', Georgia, serif;
   --font-heading: 'Montserrat', 'Roboto', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-mono: 'Montserrat', 'Roboto', sans-serif;
 
   /* Font sizes customizados */
   --text-2xs: 0.625rem;
@@ -161,6 +161,12 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Imagens responsivas por padrão */
+  img {
+    max-width: 100%;
+    height: auto;
   }
 
   ::selection {

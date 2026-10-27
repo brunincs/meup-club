@@ -17,34 +17,34 @@ const lineVariants = {
 
 export function Hero() {
   return (
-    <section className="relative pt-24 pb-20 md:pt-32 md:pb-28 overflow-hidden">
-      {/* Background com múltiplas camadas */}
-      <div className="absolute inset-0">
-        {/* Gradiente base */}
+    <section className="relative py-10 md:py-12 mt-16 md:mt-[72px] bg-ice-white">
+      {/* Background com múltiplas camadas - versão clara */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Gradiente base sutil */}
         <div
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(162, 121, 55, 0.08) 0%, transparent 50%)'
+            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(162, 121, 55, 0.06) 0%, transparent 50%)'
           }}
         />
 
-        {/* Orbs sutis */}
+        {/* Orbs sutis em tons claros */}
         <div
-          className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full blur-[150px] opacity-60"
-          style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.06) 0%, transparent 60%)' }}
+          className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full blur-[150px] opacity-40"
+          style={{ background: 'radial-gradient(circle, rgba(221, 209, 208, 0.5) 0%, transparent 60%)' }}
         />
         <div
-          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[120px] opacity-40"
-          style={{ background: 'radial-gradient(circle, rgba(92, 0, 90, 0.05) 0%, transparent 60%)' }}
+          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[120px] opacity-30"
+          style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.08) 0%, transparent 60%)' }}
         />
 
-        {/* Grid com perspectiva */}
+        {/* Grid com perspectiva - roxo sutil */}
         <div
-          className="absolute inset-0 opacity-[0.02]"
+          className="absolute inset-0 opacity-[0.015]"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(237,240,241,0.15) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(237,240,241,0.15) 1px, transparent 1px)
+              linear-gradient(rgba(50,17,63,0.3) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(50,17,63,0.3) 1px, transparent 1px)
             `,
             backgroundSize: '80px 80px',
             maskImage: 'radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%)'
@@ -53,45 +53,45 @@ export function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container-premium">
-        <div className="max-w-5xl mx-auto text-center">
+      <div className="relative z-10 container-premium px-6 md:px-8">
+        <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-8"
+            className="mb-4"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-heading font-medium tracking-wider uppercase bg-antique-gold/5 border border-antique-gold/20 text-antique-gold">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-heading font-medium tracking-wider uppercase bg-deep-purple/5 border border-deep-purple/20 text-deep-purple">
               <span className="w-1.5 h-1.5 rounded-full bg-antique-gold" />
-              Acesso restrito
+              Clube de fidelidade
             </span>
           </motion.div>
 
-          {/* Headline principal - linha 1 */}
-          <div className="overflow-hidden mb-2">
-            <motion.p
+          {/*
+            ╔════════════════════════════════════════════════════════════════╗
+            ║  TÍTULO PRINCIPAL - ALTERNATIVAS PARA BRUNO ESCOLHER           ║
+            ║                                                                ║
+            ║  Alternativa 1: "Viaje mais. Seja tratado melhor."             ║
+            ║  Alternativa 2: "Cada viagem vale mais."                       ║
+            ║                                                                ║
+            ║  Título atual: "Indique, viaje, suba de classe."               ║
+            ╚════════════════════════════════════════════════════════════════╝
+          */}
+          <div className="mb-3">
+            <motion.h1
               custom={0}
               initial="hidden"
               animate="visible"
               variants={lineVariants}
-              className="text-base md:text-lg text-dusty-rose font-light"
+              className="font-display font-bold text-deep-purple leading-tight"
+              style={{
+                // Fonte responsiva com clamp: mínimo 1.75rem (28px), ideal 5vw, máximo 3.5rem (56px)
+                fontSize: 'clamp(1.75rem, 5vw, 3.5rem)',
+              }}
             >
-              Indicação comum gera desconto.
-            </motion.p>
-          </div>
-
-          {/* Headline principal - linha 2 */}
-          <div className="overflow-hidden mb-4">
-            <motion.h1
-              custom={1}
-              initial="hidden"
-              animate="visible"
-              variants={lineVariants}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold"
-            >
-              <span className="text-ice-white">No Meup Club, gera </span>
-              <span className="text-gradient">privilégio.</span>
+              Indique, viaje,{' '}
+              <span className="text-antique-gold">suba de classe.</span>
             </motion.h1>
           </div>
 
@@ -99,47 +99,49 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="flex justify-center mb-6"
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="flex justify-center mb-4"
           >
-            <GoldLine width="80px" centered animated={false} />
+            <GoldLine width="60px" centered animated={false} />
           </motion.div>
 
-          {/* Subtítulo - Me Up Viagens */}
+          {/* Subtítulo - Me,up Viagens */}
+          <motion.p
+            custom={1}
+            initial="hidden"
+            animate="visible"
+            variants={lineVariants}
+            className="text-sm md:text-base text-deep-purple/80 max-w-xl mx-auto mb-4 leading-relaxed px-2"
+          >
+            O clube da Me,up Viagens: você ganha pontos
+            <span className="text-deep-purple font-medium"> indicando amigos </span>
+            e
+            <span className="text-deep-purple font-medium"> viajando com a gente</span>.
+            Troque por upgrades, lounges e experiências.
+          </motion.p>
+
+          {/* Subheadline - Tom acolhedor */}
           <motion.p
             custom={2}
             initial="hidden"
             animate="visible"
             variants={lineVariants}
-            className="text-sm md:text-base text-dusty-rose max-w-lg mx-auto mb-6"
+            className="text-xs md:text-sm text-deep-purple/80 max-w-md mx-auto mb-6"
           >
-            O clube de indicações da Me Up Viagens — assessoria premium de passagens aéreas.
-          </motion.p>
-
-          {/* Subheadline */}
-          <motion.p
-            custom={3}
-            initial="hidden"
-            animate="visible"
-            variants={lineVariants}
-            className="text-base md:text-lg text-dusty-rose max-w-xl mx-auto mb-10 leading-relaxed"
-          >
-            Suba no ranking.
-            <span className="text-ice-white font-medium"> Ultrapasse outros. </span>
-            Viaje melhor.
+            Acumule pontos. Suba de classe. Viaje com mais conforto.
           </motion.p>
 
           {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ delay: 0.7, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <Link to="/login">
               <motion.button
                 whileHover={{ scale: 1.02, boxShadow: '0 0 40px rgba(162, 121, 55, 0.3)' }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-xl text-base font-heading font-semibold bg-antique-gold text-deep-purple overflow-hidden transition-all duration-300"
+                className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-xl text-sm font-heading font-semibold bg-antique-gold text-deep-purple overflow-hidden transition-all duration-300"
               >
                 {/* Shine effect */}
                 <motion.div
@@ -160,26 +162,35 @@ export function Hero() {
             </Link>
           </motion.div>
 
-          {/* Stats rápidos */}
+          {/* Provas reais - sem números inventados */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.2, duration: 0.8 }}
-            className="mt-14 flex flex-wrap items-center justify-center gap-8 md:gap-12 text-sm"
+            transition={{ delay: 1, duration: 0.8 }}
+            className="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-4 md:gap-8 text-xs md:text-sm"
           >
-            <div className="text-center">
-              <div className="text-xl md:text-2xl font-display font-bold text-ice-white">2.847</div>
-              <div className="text-dusty-rose text-xs md:text-sm">membros ativos</div>
+            <div className="flex items-center gap-2 text-deep-purple/80">
+              <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 text-antique-gold flex-shrink-0">
+                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+              <span>Registro Cadastur</span>
             </div>
-            <div className="w-px h-8 bg-dusty-rose/30 hidden md:block" />
-            <div className="text-center">
-              <div className="text-xl md:text-2xl font-display font-bold text-antique-gold">R$ 1.2M+</div>
-              <div className="text-dusty-rose text-xs md:text-sm">em pontos</div>
+            <div className="w-px h-3 bg-deep-purple/20 hidden sm:block" />
+            <div className="flex items-center gap-2 text-deep-purple/80">
+              <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 text-antique-gold flex-shrink-0">
+                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+              <span>Suporte no WhatsApp</span>
             </div>
-            <div className="w-px h-8 bg-dusty-rose/30 hidden md:block" />
-            <div className="text-center">
-              <div className="text-xl md:text-2xl font-display font-bold text-ice-white">48h</div>
-              <div className="text-dusty-rose text-xs md:text-sm">tempo de saque</div>
+            <div className="w-px h-3 bg-deep-purple/20 hidden sm:block" />
+            <div className="flex items-center gap-2 text-deep-purple/80">
+              <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 text-antique-gold flex-shrink-0">
+                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+              <span>Pontos não expiram</span>
             </div>
           </motion.div>
         </div>

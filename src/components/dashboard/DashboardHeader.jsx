@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
 import { calculateLevel } from '@/services/pointsSystem'
-import { getUserPosition, demoUser } from '@/services/mockData'
+import { demoUser } from '@/services/mockData'
 import { levels as levelCopy } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
 
@@ -12,20 +12,26 @@ const navItems = [
   { path: '/dashboard', label: 'Clube', icon: '◆' },
   { path: '/tarefas', label: 'Missões', icon: '◇' },
   { path: '/recompensas', label: 'Experiências', icon: '✦' },
-  { path: '/ranking', label: 'Ranking', icon: '▲' },
 ]
 
 export function DashboardHeader() {
   const { profile, signOut } = useAuth()
   const { points: userPoints } = usePoints()
   const location = useLocation()
+  const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+
+  // Função para sair e redirecionar
+  async function handleSignOut() {
+    setShowUserMenu(false)
+    await signOut()
+    navigate('/login')
+  }
 
   // Agora lê do contexto compartilhado (antes lia de demoUser.points)
   const levelData = calculateLevel(userPoints)
   const level = levelData.current
-  const position = getUserPosition(profile?.id)
 
   return (
     <header className="border-b border-dusty-rose/20 bg-deep-purple/95 backdrop-blur-xl sticky top-0 z-50">
@@ -66,11 +72,6 @@ export function DashboardHeader() {
           <div className="flex items-center gap-5">
             {/* Stats rápidos */}
             <div className="hidden lg:flex items-center gap-5">
-              <Link to="/ranking" className="text-right hover:opacity-80 transition-opacity group">
-                <div className="text-[10px] uppercase tracking-wider text-dusty-rose/60">Posição</div>
-                <div className="text-sm font-heading font-medium text-dusty-rose group-hover:text-ice-white">#{position}</div>
-              </Link>
-              <div className="w-px h-6 bg-dusty-rose/20" />
               <div className="text-right">
                 <div className="text-[10px] uppercase tracking-wider text-dusty-rose/60">Pontos</div>
                 <div className="text-sm font-heading font-medium text-antique-gold">
@@ -158,14 +159,11 @@ export function DashboardHeader() {
                       {/* Logout */}
                       <div className="p-2 border-t border-dusty-rose/20">
                         <button
-                          onClick={() => {
-                            setShowUserMenu(false)
-                            signOut()
-                          }}
+                          onClick={handleSignOut}
                           className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-dusty-rose hover:text-red-400 hover:bg-red-500/5 transition-all w-full"
                         >
                           <span>→</span>
-                          <span>Sair</span>
+                          <span>Sair do clube</span>
                         </button>
                       </div>
                     </motion.div>

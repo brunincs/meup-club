@@ -99,12 +99,6 @@ function StatsGrid({ stats }) {
       icon: '◇'
     },
     {
-      label: profileCopy.ranking,
-      value: `#${stats.ranking.currentPosition}`,
-      subvalue: 'no clube',
-      icon: '▲'
-    },
-    {
       label: profileCopy.streak,
       value: `${stats.engagement.longestStreak}`,
       subvalue: 'dias',
@@ -337,8 +331,6 @@ function PerformanceStats({ stats }) {
     { label: 'Taxa de conversão', value: `${stats.referrals.conversionRate}%` },
     { label: 'Média por indicação', value: format.pointsShort(stats.performance.averagePointsPerReferral) },
     { label: 'Viajantes indicados', value: stats.performance.totalClients },
-    { label: 'Posição semanal', value: `#${stats.ranking.weeklyPosition}` },
-    { label: 'Melhor posição', value: `#${stats.ranking.bestPosition}` },
     { label: 'Dias ativos', value: stats.engagement.daysActive }
   ]
 

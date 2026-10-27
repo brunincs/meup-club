@@ -3,12 +3,12 @@ import { GoldLineGradient } from '@/components/ui/GoldLine'
 
 export function Footer() {
   return (
-    <footer className="relative py-12 md:py-16">
+    <footer className="relative py-10 md:py-12 bg-deep-purple">
       {/* Linha dourada no topo */}
-      <GoldLineGradient className="mb-12" />
+      <GoldLineGradient className="mb-6" />
 
       <div className="container-premium">
-        <div className="flex flex-col items-center gap-8">
+        <div className="flex flex-col items-center gap-5">
           {/* Logo */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -28,7 +28,7 @@ export function Footer() {
             </div>
           </motion.div>
 
-          {/* Contato Me Up Viagens */}
+          {/* Contato Me,up Viagens */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -36,8 +36,8 @@ export function Footer() {
             transition={{ delay: 0.05 }}
             className="text-center"
           >
-            <p className="text-sm text-dusty-rose">
-              Me Up Viagens · <a href="https://instagram.com/meup.viagens" target="_blank" rel="noopener noreferrer" className="text-antique-gold hover:underline">@meup.viagens</a> · <a href="tel:+5516988126568" className="text-antique-gold hover:underline">(16) 98812-6568</a>
+            <p className="text-sm text-ice-white/80">
+              Me,up Viagens · <a href="https://instagram.com/meup.viagens" target="_blank" rel="noopener noreferrer" className="text-antique-gold hover:text-antique-gold/80 hover:underline">@meup.viagens</a> · <a href="tel:+5516988126568" className="text-antique-gold hover:text-antique-gold/80 hover:underline">(16) 98812-6568</a>
             </p>
           </motion.div>
 
@@ -49,15 +49,32 @@ export function Footer() {
             transition={{ delay: 0.1 }}
             className="flex items-center gap-6 text-sm"
           >
-            {['Termos', 'Privacidade', 'FAQ', 'Contato'].map((link) => (
-              <a
-                key={link}
-                href="#"
-                className="text-dusty-rose hover:text-antique-gold transition-colors"
-              >
-                {link}
-              </a>
-            ))}
+            <a
+              href="/termos"
+              className="text-ice-white/70 hover:text-antique-gold transition-colors"
+            >
+              Termos
+            </a>
+            <a
+              href="/privacidade"
+              className="text-ice-white/70 hover:text-antique-gold transition-colors"
+            >
+              Privacidade
+            </a>
+            <a
+              href="/faq"
+              className="text-ice-white/70 hover:text-antique-gold transition-colors"
+            >
+              FAQ
+            </a>
+            <a
+              href="https://wa.me/5516988126568"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ice-white/70 hover:text-antique-gold transition-colors"
+            >
+              Contato
+            </a>
           </motion.nav>
 
           {/* Copyright */}
@@ -66,7 +83,7 @@ export function Footer() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-xs text-dusty-rose/60"
+            className="text-sm text-ice-white/60"
           >
             &copy; {new Date().getFullYear()} Meup Club. Todos os direitos reservados.
           </motion.p>

@@ -16,11 +16,11 @@ const cards = [
   },
   {
     number: '02',
-    title: 'Valor na hora',
-    description: 'A partir de 5.000 pontos você já pode trocar por Pix. R$50 reais na sua conta, sem burocracia.',
+    title: 'Troque por experiências',
+    description: 'Upgrades de voo, acesso a lounges, jantares exclusivos. Cada ponto te aproxima da próxima viagem.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -39,9 +39,9 @@ const cards = [
 
 export function PointsExplanation() {
   return (
-    <section className="relative py-16 md:py-24 overflow-hidden">
+    <section className="relative py-10 md:py-12 overflow-hidden bg-ice-white">
       {/* Linha decorativa superior */}
-      <div className="divider-premium mb-16 md:mb-20" />
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-deep-purple/10 to-transparent mb-6" />
 
       <div className="container-premium">
         {/* Header */}
@@ -50,17 +50,17 @@ export function PointsExplanation() {
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
           variants={fadeUp}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-6"
         >
           <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold mb-4">
             OS PONTOS
           </span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-ice-white mb-4">
-            Ponto aqui não é enfeite. É dinheiro.
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-deep-purple mb-4">
+            Ponto aqui não é enfeite. É privilégio.
           </h2>
           <GoldLine width="80px" centered className="mb-6" />
-          <p className="text-lg md:text-xl text-dusty-rose max-w-2xl mx-auto">
-            <span className="text-antique-gold font-semibold">1.000 pontos = R$ 10</span> direto no Pix.
+          <p className="text-lg md:text-xl text-deep-purple/70 max-w-2xl mx-auto">
+            Cada indicação te aproxima de experiências exclusivas.
             <br className="hidden sm:block" />
             Sem letra miúda, sem pegadinha.
           </p>
@@ -72,7 +72,7 @@ export function PointsExplanation() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
         >
           {cards.map((card) => (
             <motion.div
@@ -85,23 +85,23 @@ export function PointsExplanation() {
                   y: -4,
                   transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
                 }}
-                className="relative p-6 rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 backdrop-blur-sm transition-all duration-500 hover:border-antique-gold/30 h-full"
+                className="relative p-6 rounded-2xl border border-deep-purple/10 bg-white/70 backdrop-blur-sm transition-all duration-500 hover:border-antique-gold/30 hover:shadow-md h-full"
               >
                 {/* Número */}
-                <span className="inline-block text-[10px] font-mono text-dusty-rose mb-4 px-2 py-0.5 rounded bg-deep-purple/50 border border-dusty-rose/20">
+                <span className="inline-block text-[10px] font-mono text-deep-purple/60 mb-4 px-2 py-0.5 rounded bg-deep-purple/5 border border-deep-purple/10">
                   {card.number}
                 </span>
 
                 {/* Ícone */}
-                <div className="w-12 h-12 rounded-xl bg-antique-gold/10 border border-antique-gold/30 flex items-center justify-center mb-5 text-antique-gold">
+                <div className="w-12 h-12 rounded-xl bg-deep-purple/5 border border-deep-purple/10 flex items-center justify-center mb-5 text-deep-purple">
                   {card.icon}
                 </div>
 
                 {/* Conteúdo */}
-                <h3 className="text-lg font-heading font-semibold text-ice-white mb-2">
+                <h3 className="text-lg font-heading font-semibold text-deep-purple mb-2">
                   {card.title}
                 </h3>
-                <p className="text-sm text-dusty-rose leading-relaxed">
+                <p className="text-sm text-deep-purple/70 leading-relaxed">
                   {card.description}
                 </p>
               </motion.div>
@@ -115,20 +115,20 @@ export function PointsExplanation() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="relative rounded-2xl border-2 border-antique-gold/40 bg-gradient-to-r from-antique-gold/10 via-antique-gold/5 to-transparent p-6 md:p-8 mb-10 overflow-hidden"
+          className="relative rounded-2xl border-2 border-antique-gold/30 bg-gradient-to-r from-antique-gold/10 via-antique-gold/5 to-white/80 p-5 md:p-6 mb-6 overflow-hidden"
         >
           {/* Brilho de fundo */}
           <div
-            className="absolute top-0 right-0 w-48 h-48 rounded-full blur-[60px] opacity-30"
-            style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.2) 0%, transparent 70%)' }}
+            className="absolute top-0 right-0 w-48 h-48 rounded-full blur-[60px] opacity-20"
+            style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.3) 0%, transparent 70%)' }}
           />
 
           <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
-              <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-2">
+              <h3 className="text-xl md:text-2xl font-display font-bold text-deep-purple mb-2">
                 Pontos não expiram.
               </h3>
-              <p className="text-dusty-rose">
+              <p className="text-deep-purple/70">
                 Acumule no seu ritmo. Troque quando quiser. Sem pressa, sem pressão.
               </p>
             </div>
@@ -136,11 +136,11 @@ export function PointsExplanation() {
             <div className="flex items-center gap-4 text-center">
               <div className="px-6 py-3 rounded-xl bg-antique-gold/10 border border-antique-gold/30">
                 <div className="text-2xl font-display font-bold text-antique-gold">∞</div>
-                <div className="text-xs text-dusty-rose">Validade</div>
+                <div className="text-xs text-deep-purple/60">Validade</div>
               </div>
               <div className="px-6 py-3 rounded-xl bg-antique-gold/10 border border-antique-gold/30">
-                <div className="text-2xl font-display font-bold text-antique-gold">48h</div>
-                <div className="text-xs text-dusty-rose">Tempo de saque</div>
+                <div className="text-2xl font-display font-bold text-antique-gold">100%</div>
+                <div className="text-xs text-deep-purple/60">Em experiências</div>
               </div>
             </div>
           </div>
@@ -164,7 +164,7 @@ export function PointsExplanation() {
               <span>→</span>
             </motion.button>
           </Link>
-          <p className="mt-4 text-sm text-dusty-rose">
+          <p className="mt-4 text-sm text-deep-purple/60">
             Cadastro grátis. Primeiros pontos em minutos.
           </p>
         </motion.div>

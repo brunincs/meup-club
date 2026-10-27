@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { calculateLevel } from '@/services/pointsSystem'
-import { getUserPosition, demoUser } from '@/services/mockData'
+import { demoUser } from '@/services/mockData'
 import { levels as levelCopy, format } from '@/services/copy'
-import { getClassIcon, TrophyIcon, StarIcon } from '@/components/ui/Icons'
+import { getClassIcon, StarIcon } from '@/components/ui/Icons'
 
 const cardVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -20,7 +20,6 @@ export function StatsCards({ stats }) {
   const points = demoUser.points
   const levelData = calculateLevel(points)
   const level = levelData.current
-  const position = demoUser.position
 
   const ClassIcon = getClassIcon(level.id)
 
@@ -42,17 +41,11 @@ export function StatsCards({ stats }) {
       value: levelCopy.shortNames[level.id],
       suffix: levelCopy.names[level.id],
       icon: <ClassIcon size={16} color="#a27937" />
-    },
-    {
-      label: 'Ranking',
-      value: `#${position}`,
-      suffix: 'no clube',
-      icon: <TrophyIcon size={16} color="#a27937" />
     }
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {cards.map((card, index) => (
         <motion.div
           key={card.label}
@@ -60,20 +53,27 @@ export function StatsCards({ stats }) {
           initial="hidden"
           animate="visible"
           variants={cardVariants}
-          className="p-5 rounded-xl border border-dusty-rose/20 bg-deep-purple/30 hover:bg-deep-purple/50 transition-colors"
+          className="relative overflow-hidden p-6 rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 hover:border-antique-gold/20 transition-all"
         >
-          <div className="flex items-start justify-between mb-4">
-            <span className="text-[10px] uppercase tracking-wider text-dusty-rose">
-              {card.label}
-            </span>
-            {card.icon}
+          {/* Decorativo */}
+          <div className="absolute -top-8 -right-8 w-24 h-24 bg-antique-gold/5 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="relative">
+            <div className="flex items-start justify-between mb-4">
+              <span className="text-[10px] uppercase tracking-wider text-dusty-rose">
+                {card.label}
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-antique-gold/10 flex items-center justify-center">
+                {card.icon}
+              </div>
+            </div>
+            <div className="text-2xl font-display font-bold text-ice-white mb-1">
+              {card.value}
+            </div>
+            {card.suffix && (
+              <div className="text-xs text-dusty-rose">{card.suffix}</div>
+            )}
           </div>
-          <div className="text-2xl font-display font-light text-ice-white mb-1">
-            {card.value}
-          </div>
-          {card.suffix && (
-            <div className="text-xs text-dusty-rose">{card.suffix}</div>
-          )}
         </motion.div>
       ))}
     </div>

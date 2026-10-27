@@ -13,6 +13,14 @@ import {
 import { format, levels as levelCopy } from '@/services/copy'
 import { getClassIcon, GiftIcon } from '@/components/ui/Icons'
 
+// ============================================
+// FOTO A VALIDAR - trocar pela oficial da Me,up depois
+// Opções Unsplash de viagem premium:
+// - Resort de luxo: photo-1566073771259-6a8506099945
+// - Lounge de aeroporto: photo-1583416750470-965b2707b355
+// ============================================
+const HERO_IMAGE = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&h=400&fit=crop&crop=center&q=80'
+
 const categoryIcons = {
   cash: '◇',
   travel: '✦',
@@ -38,6 +46,7 @@ const badgeConfig = {
  * - Bug 5: Focus trap - foco fica preso dentro do modal
  */
 function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
+  console.log('=== RedeemModal RENDERIZADO ===', { reward: reward?.name, userPoints, isLoading })
   const modalRef = useRef(null)
   const confirmButtonRef = useRef(null)
   const cancelButtonRef = useRef(null)
@@ -46,8 +55,12 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
   // Bug 4: Fechar com Escape (mas não durante loading)
   useEffect(() => {
     function handleKeyDown(e) {
-      if (e.key === 'Escape' && !isLoading) {
-        onCancel()
+      if (e.key === 'Escape') {
+        console.log('>>> ESCAPE pressionado, isLoading:', isLoading)
+        if (!isLoading) {
+          console.log('>>> Chamando onCancel() do Escape')
+          onCancel()
+        }
       }
     }
     document.addEventListener('keydown', handleKeyDown)
@@ -99,7 +112,9 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
 
   // Bug 4: Clicar no backdrop fecha (mas não durante loading)
   const handleBackdropClick = useCallback(() => {
+    console.log('>>> BACKDROP CLICADO, isLoading:', isLoading)
     if (!isLoading) {
+      console.log('>>> Chamando onCancel() do backdrop')
       onCancel()
     }
   }, [isLoading, onCancel])
@@ -170,7 +185,10 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
         <div className="flex gap-3 p-4 border-t border-dusty-rose/20 bg-dusty-rose/5">
           <button
             ref={cancelButtonRef}
-            onClick={onCancel}
+            onClick={() => {
+              console.log('>>> BOTÃO CANCELAR CLICADO')
+              onCancel()
+            }}
             disabled={isLoading}
             className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium text-dusty-rose hover:text-ice-white hover:bg-dusty-rose/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -178,7 +196,10 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
           </button>
           <button
             ref={confirmButtonRef}
-            onClick={onConfirm}
+            onClick={() => {
+              console.log('>>> BOTÃO CONFIRMAR CLICADO')
+              onConfirm()
+            }}
             disabled={isLoading}
             className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium bg-antique-gold text-deep-purple hover:bg-accent-light transition-colors disabled:opacity-50 disabled:cursor-wait"
           >
@@ -457,8 +478,15 @@ export function Rewards() {
 
   // Handler para fechar modal - função simples e direta
   function closeModal() {
+    console.log('=== closeModal CHAMADA ===')
+    console.log('selectedReward ANTES:', selectedReward)
     setSelectedReward(null)
     setIsRedeeming(false)
+    console.log('setSelectedReward(null) executado')
+    // Log após um tick para ver se o estado mudou
+    setTimeout(() => {
+      console.log('selectedReward DEPOIS (próximo tick):', selectedReward)
+    }, 0)
   }
 
   // Handler para confirmar resgate
@@ -499,6 +527,7 @@ export function Rewards() {
       const rewardName = selectedReward.name
 
       // FECHAR MODAL PRIMEIRO
+      console.log('>>> handleConfirmRedeem: chamando closeModal()')
       closeModal()
 
       // Depois mostrar toast de sucesso
@@ -552,7 +581,9 @@ export function Rewards() {
       <DashboardHeader />
 
       {/* Modal de confirmação */}
+      {console.log('=== RENDER: selectedReward =', selectedReward ? selectedReward.name : null, '===')}
       <AnimatePresence>
+        {selectedReward && console.log('>>> MODAL SERÁ RENDERIZADO')}
         {selectedReward && (
           <RedeemModal
             reward={selectedReward}
@@ -564,12 +595,12 @@ export function Rewards() {
         )}
       </AnimatePresence>
 
-      <main id="main-content" className="container-premium py-12">
+      <main id="main-content" className="container-premium py-8">
         {/* Back Link */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-8"
+          className="mb-6"
         >
           <Link
             to="/dashboard"
@@ -579,55 +610,89 @@ export function Rewards() {
           </Link>
         </motion.div>
 
-        {/* Hero */}
+        {/* Hero Banner com imagem */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-16"
+          className="relative overflow-hidden rounded-2xl border border-antique-gold/20 mb-10"
         >
-          <h1 className="text-4xl md:text-5xl font-display font-light text-ice-white mb-4">
-            Catálogo de Experiências
-          </h1>
-          <p className="text-lg text-dusty-rose max-w-2xl">
-            Privilégios exclusivos selecionados para membros do clube.
-          </p>
-        </motion.div>
+          <div className="flex flex-col lg:flex-row">
+            {/* Conteúdo */}
+            <div className="relative flex-1 bg-gradient-to-br from-deep-purple to-deep-purple/90 p-6 lg:p-8">
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-24 -left-24 w-48 h-48 bg-antique-gold/5 rounded-full blur-3xl" />
+              </div>
 
-        {/* Stats Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-wrap items-center gap-8 mb-12 pb-12 border-b border-dusty-rose/20"
-        >
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-dusty-rose mb-1">Sua Classe</p>
-            <div className="flex items-center gap-2">
-              <ClassIcon size={20} color="#a27937" />
-              <span className="text-lg text-ice-white">{levelCopy.names[userLevelId]}</span>
+              <div className="relative">
+                <span className="inline-block text-xs font-heading uppercase tracking-[0.2em] text-antique-gold mb-2">
+                  Catálogo
+                </span>
+                <h1 className="text-3xl lg:text-4xl font-display font-semibold text-ice-white mb-3">
+                  Experiências do Clube
+                </h1>
+                <p className="text-dusty-rose max-w-md mb-6">
+                  Privilégios exclusivos selecionados para membros. Resgate com seus pontos.
+                </p>
+
+                {/* Stats inline */}
+                <div className="flex flex-wrap items-center gap-6">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <ClassIcon size={18} color="#a27937" />
+                      <span className="text-lg font-heading font-medium text-ice-white">{levelCopy.names[userLevelId]}</span>
+                    </div>
+                    <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">sua classe</p>
+                  </div>
+
+                  <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
+
+                  <div>
+                    <p className="text-2xl font-display font-bold text-antique-gold">{format.pointsShort(userPoints)}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">pontos</p>
+                  </div>
+
+                  <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
+
+                  <div>
+                    <p className="text-2xl font-display font-bold text-game-green">{availableCount}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">disponíveis</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Imagem (desktop only) */}
+            <div className="hidden lg:block relative w-[35%] min-h-[220px]">
+              <img
+                src={HERO_IMAGE}
+                alt="Resort de luxo"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-deep-purple via-deep-purple/50 to-transparent" />
+
+              {/* Frase aspiracional */}
+              <div className="absolute bottom-6 right-6 left-6 text-right">
+                <p className="text-lg font-display font-light text-ice-white/90 leading-tight">
+                  Transforme pontos em{' '}
+                  <span className="text-antique-gold">memórias.</span>
+                </p>
+              </div>
             </div>
           </div>
+        </motion.div>
 
-          <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
-
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-dusty-rose mb-1">Pontos</p>
-            <p className="text-2xl font-display font-light text-antique-gold">{format.pointsShort(userPoints)}</p>
-          </div>
-
-          <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
-
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-dusty-rose mb-1">Disponíveis</p>
-            <p className="text-2xl font-display font-light text-ice-white">
-              {availableCount}
-              <span className="text-dusty-rose text-lg ml-1">/ {rewardsTable.length}</span>
-            </p>
-          </div>
-
-          {/* View Toggle */}
+        {/* View Toggle */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="flex items-center justify-between mb-8"
+        >
+          <p className="text-sm text-dusty-rose">
+            {rewardsTable.length} experiências no catálogo
+          </p>
           <div
-            className="ml-auto flex items-center gap-1 p-1 rounded-xl bg-deep-purple/50 border border-dusty-rose/20"
+            className="flex items-center gap-1 p-1 rounded-xl bg-deep-purple/50 border border-dusty-rose/20"
             role="group"
             aria-label="Filtrar experiências"
           >

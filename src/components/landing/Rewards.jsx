@@ -1,126 +1,24 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
+import { EXPERIENCES, DREAM_EXPERIENCES, formatPoints } from '@/config/experiences'
 
-const rewards = [
-  {
-    id: 'pix',
-    title: 'Saque via Pix',
-    description: 'Pontos viram dinheiro real na sua conta.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-        <path
-          d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-    points: '5.000',
-    color: 'emerald',
-  },
-  {
-    id: 'dinner',
-    title: 'Jantar pago pela casa',
-    description: 'Restaurantes premium. Conta zerada.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-        <path
-          d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-    points: '8.000',
-    color: 'purple',
-  },
-  {
-    id: 'upgrade',
-    title: 'Upgrade prioritário de voo',
-    description: 'Saia da econômica. Entre na executiva.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-        <path
-          d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-    points: '12.000',
-    featured: true,
-    color: 'gold',
-  },
-  {
-    id: 'stopover',
-    title: 'Stopover exclusivo',
-    description: 'Uma viagem, dois destinos.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-        <path
-          d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        />
-      </svg>
-    ),
-    points: '15.000',
-    color: 'blue',
-  },
-  {
-    id: 'exclusive',
-    title: 'Pontos elite',
-    description: 'Vantagens secretas para o topo.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-        <path
-          d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path d="M12 8l2 2-2 2-2-2 2-2z" fill="currentColor" />
-      </svg>
-    ),
-    points: '20.000',
-    locked: true,
-    color: 'gold',
-  },
-]
-
-const colorStyles = {
-  emerald: {
-    iconBg: 'group-hover:bg-emerald-500/10',
-    iconColor: 'group-hover:text-emerald-400',
-  },
-  gold: {
-    iconBg: 'group-hover:bg-antique-gold/10',
-    iconColor: 'group-hover:text-antique-gold',
-  },
-  blue: {
-    iconBg: 'group-hover:bg-blue-500/10',
-    iconColor: 'group-hover:text-blue-400',
-  },
-  purple: {
-    iconBg: 'group-hover:bg-purple-500/10',
-    iconColor: 'group-hover:text-purple-400',
-  },
-}
+/**
+ * ╔════════════════════════════════════════════════════════════════════════════╗
+ * ║  CATÁLOGO DE EXPERIÊNCIAS                                                  ║
+ * ║                                                                            ║
+ * ║  Os preços das experiências vêm do arquivo centralizado:                   ║
+ * ║  src/config/experiences.js                                                 ║
+ * ║                                                                            ║
+ * ║  Para alterar preços, edite APENAS aquele arquivo.                         ║
+ * ╚════════════════════════════════════════════════════════════════════════════╝
+ */
 
 export function Rewards() {
   return (
-    <section className="relative py-16 md:py-24 overflow-hidden">
+    <section className="relative py-10 md:py-12 overflow-hidden bg-dusty-rose/15">
       {/* Divider */}
-      <div className="divider-premium mb-16 md:mb-20" />
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-deep-purple/10 to-transparent mb-6" />
 
       <div className="container-premium">
         {/* Header */}
@@ -129,21 +27,24 @@ export function Rewards() {
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
           variants={fadeUp}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-6"
         >
-          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold mb-4">
-            Catálogo
+          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-deep-purple font-semibold mb-4">
+            Experiências
           </span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-ice-white mb-4">
-            O que seus pontos podem virar
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-deep-purple mb-4">
+            Transforme pontos em viagens melhores
           </h2>
           <GoldLine width="80px" centered className="mb-4" />
-          <p className="text-dusty-rose max-w-lg mx-auto text-base">
-            Cada ponto é uma fração de algo real. Escolha como usar.
+          <p className="text-deep-purple/70 max-w-lg mx-auto text-base">
+            Upgrades, lounges, jantares, stopovers. Escolha sua próxima experiência.
+          </p>
+          <p className="text-deep-purple/60 text-sm mt-2">
+            Novas experiências toda temporada. Algumas por tempo limitado.
           </p>
         </motion.div>
 
-        {/* Rewards grid */}
+        {/* Rewards grid - experiências de viagem */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
@@ -151,86 +52,201 @@ export function Rewards() {
           viewport={{ once: true, margin: "-50px" }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5"
         >
-          {rewards.map((reward) => {
-            const styles = colorStyles[reward.color] || colorStyles.gold
+          {EXPERIENCES.map((reward) => (
+            <motion.div
+              key={reward.id}
+              variants={staggerItem}
+              whileHover={{
+                y: -6,
+                transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+              }}
+              className={`group relative rounded-2xl border overflow-hidden transition-all duration-500 cursor-pointer ${
+                reward.featured
+                  ? 'border-antique-gold/40 ring-1 ring-antique-gold/20'
+                  : 'border-dusty-rose/20 hover:border-antique-gold/30'
+              }`}
+            >
+              {/* Featured badge */}
+              {reward.featured && (
+                <div className="absolute top-3 left-3 z-20 max-w-[calc(100%-1.5rem)]">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] uppercase tracking-wider bg-antique-gold text-deep-purple font-heading font-semibold shadow-lg whitespace-nowrap">
+                    <span className="w-1 h-1 rounded-full bg-deep-purple flex-shrink-0" />
+                    Popular
+                  </span>
+                </div>
+              )}
 
-            return (
-              <motion.div
-                key={reward.id}
-                variants={staggerItem}
-                whileHover={{
-                  y: -6,
-                  transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
-                }}
-                className={`group relative p-6 rounded-2xl border transition-all duration-500 cursor-pointer ${
-                  reward.featured
-                    ? 'border-antique-gold/30 bg-gradient-to-b from-antique-gold/5 to-deep-purple/50'
-                    : reward.locked
-                    ? 'border-dusty-rose/10 bg-deep-purple/20'
-                    : 'border-dusty-rose/20 bg-deep-purple/30 hover:border-antique-gold/30'
-                }`}
-              >
-                {/* Featured badge */}
-                {reward.featured && (
-                  <div className="absolute -top-2.5 left-6">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-antique-gold text-deep-purple font-heading font-semibold">
-                      <span className="w-1 h-1 rounded-full bg-deep-purple" />
-                      Popular
-                    </span>
-                  </div>
-                )}
-
-                {/* Locked icon */}
-                {reward.locked && (
-                  <div className="absolute top-5 right-5">
-                    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-dusty-rose/50">
-                      <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="1.5" />
+              {/* Tempo limitado badge */}
+              {reward.tempoLimitado && (
+                <div className={`absolute ${reward.featured ? 'top-10' : 'top-3'} left-3 z-20 max-w-[calc(100%-1.5rem)]`}>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] uppercase tracking-wider bg-dusty-rose text-deep-purple font-heading font-semibold shadow-lg whitespace-nowrap">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 flex-shrink-0">
+                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"/>
                     </svg>
-                  </div>
-                )}
+                    Limitado
+                  </span>
+                </div>
+              )}
 
-                {/* Icon */}
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 ${
-                    reward.featured
-                      ? 'bg-antique-gold/10 text-antique-gold'
-                      : `bg-dusty-rose/10 text-dusty-rose ${styles.iconBg} ${styles.iconColor}`
-                  } ${reward.locked ? 'opacity-40' : ''}`}
-                >
-                  {reward.icon}
-                </motion.div>
+              {/* Image with overlay */}
+              <div className="relative h-40 md:h-44 overflow-hidden">
+                <img
+                  src={reward.image}
+                  alt={reward.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                {/* Overlay roxo premium */}
+                <div
+                  className="absolute inset-0 transition-opacity duration-500"
+                  style={{
+                    background: 'linear-gradient(to bottom, rgba(50, 17, 63, 0.3) 0%, rgba(50, 17, 63, 0.7) 100%)'
+                  }}
+                />
+                {/* Gradient fade para o conteúdo */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-16"
+                  style={{
+                    background: 'linear-gradient(to top, rgba(50, 17, 63, 1) 0%, transparent 100%)'
+                  }}
+                />
+              </div>
 
-                {/* Content */}
-                <h3 className={`text-base font-heading font-semibold mb-2 transition-colors duration-300 ${
-                  reward.locked ? 'text-dusty-rose/50' : 'text-ice-white group-hover:text-white'
-                }`}>
+              {/* Content */}
+              <div className="relative p-5 pt-2 bg-white/95">
+                <h3 className="text-base font-heading font-semibold text-deep-purple mb-1.5 group-hover:text-deep-purple/80 transition-colors">
                   {reward.title}
                 </h3>
-                <p className={`text-sm leading-relaxed mb-5 ${
-                  reward.locked ? 'text-dusty-rose/30' : 'text-dusty-rose'
-                }`}>
+                <p className="text-sm leading-relaxed text-deep-purple/70 mb-4">
                   {reward.description}
                 </p>
 
                 {/* Points footer */}
-                <div className="flex items-center justify-between pt-4 border-t border-dusty-rose/10">
-                  <span className="text-[10px] uppercase tracking-wider text-dusty-rose/60">
-                    {reward.locked ? 'Bloqueado' : 'A partir de'}
+                <div className="flex items-center justify-between pt-3 border-t border-deep-purple/10">
+                  <span className="text-[10px] uppercase tracking-wider text-deep-purple/50">
+                    A partir de
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <span className={`font-mono text-sm font-semibold ${
-                      reward.locked ? 'text-dusty-rose/40' : 'text-antique-gold'
+                    <span className={`font-heading text-sm font-semibold ${
+                      reward.featured ? 'text-antique-gold' : 'text-deep-purple'
                     }`}>
-                      {reward.points}
+                      {formatPoints(reward.points)}
                     </span>
-                    <span className="text-dusty-rose/60 text-xs">pts</span>
+                    <span className="text-deep-purple/50 text-xs">pts</span>
                   </div>
                 </div>
-              </motion.div>
-            )
-          })}
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Experiências dos Sonhos - Topo do Clube */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
+          className="text-center mt-8 mb-4"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] uppercase tracking-wider bg-gradient-to-r from-antique-gold/20 to-antique-gold/10 border border-antique-gold/40 text-antique-gold font-heading font-semibold">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            Topo do Clube
+          </span>
+          <h3 className="text-xl md:text-2xl font-display font-bold text-deep-purple mt-4 mb-2">
+            Experiências dos Sonhos
+          </h3>
+          <p className="text-deep-purple/70 text-sm max-w-md mx-auto">
+            As recompensas mais exclusivas para quem acumula no longo prazo.
+          </p>
+        </motion.div>
+
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 max-w-2xl mx-auto"
+        >
+          {DREAM_EXPERIENCES.map((reward) => (
+            <motion.div
+              key={reward.id}
+              variants={staggerItem}
+              whileHover={{
+                y: -6,
+                transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+              }}
+              className="group relative rounded-2xl border-2 border-antique-gold/50 ring-2 ring-antique-gold/20 overflow-hidden transition-all duration-500 cursor-pointer hover:ring-antique-gold/40"
+            >
+              {/* Dream badge */}
+              <div className="absolute top-3 left-3 z-20 max-w-[calc(100%-1.5rem)]">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] uppercase tracking-wider bg-gradient-to-r from-antique-gold to-antique-gold/80 text-deep-purple font-heading font-semibold shadow-lg whitespace-nowrap">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 flex-shrink-0">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  Sonhos
+                </span>
+              </div>
+
+              {/* Tempo limitado badge (dream experiences) */}
+              {reward.tempoLimitado && (
+                <div className="absolute top-10 left-3 z-20 max-w-[calc(100%-1.5rem)]">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] uppercase tracking-wider bg-dusty-rose text-deep-purple font-heading font-semibold shadow-lg whitespace-nowrap">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 flex-shrink-0">
+                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"/>
+                    </svg>
+                    Limitado
+                  </span>
+                </div>
+              )}
+
+              {/* Image with overlay */}
+              <div className="relative h-44 md:h-52 overflow-hidden">
+                <img
+                  src={reward.image}
+                  alt={reward.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                {/* Overlay dourado premium */}
+                <div
+                  className="absolute inset-0 transition-opacity duration-500"
+                  style={{
+                    background: 'linear-gradient(to bottom, rgba(162, 121, 55, 0.1) 0%, rgba(50, 17, 63, 0.8) 100%)'
+                  }}
+                />
+                {/* Gradient fade para o conteúdo */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-20"
+                  style={{
+                    background: 'linear-gradient(to top, rgba(50, 17, 63, 1) 0%, transparent 100%)'
+                  }}
+                />
+              </div>
+
+              {/* Content */}
+              <div className="relative p-5 pt-2 bg-white/95">
+                <h3 className="text-lg font-heading font-semibold text-antique-gold mb-1.5 group-hover:text-antique-gold/80 transition-colors">
+                  {reward.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-deep-purple/70 mb-4">
+                  {reward.description}
+                </p>
+
+                {/* Points footer */}
+                <div className="flex items-center justify-between pt-3 border-t border-antique-gold/20">
+                  <span className="text-[10px] uppercase tracking-wider text-deep-purple/50">
+                    A partir de
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-heading text-base font-bold text-antique-gold">
+                      {formatPoints(reward.points)}
+                    </span>
+                    <span className="text-antique-gold/70 text-xs">pts</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
       </div>
     </section>

@@ -46,11 +46,11 @@ export const DASHBOARD_MESSAGES = {
   journeyProgress: 'Sua jornada'
 }
 
-// Níveis como Classes de Voo
+// Níveis como Classes de Voo (nomes em português)
 export const CLASS_NAMES = {
   1: {
     name: 'Classe Econômica',
-    shortName: 'Economy',
+    shortName: 'Econômica',
     icon: '✈️',
     color: 'from-slate-400 to-slate-500',
     bgColor: 'bg-slate-50',
@@ -59,7 +59,7 @@ export const CLASS_NAMES = {
     description: 'Início da sua jornada'
   },
   2: {
-    name: 'Premium Economy',
+    name: 'Econômica Premium',
     shortName: 'Premium',
     icon: '🌟',
     color: 'from-blue-400 to-blue-600',
@@ -70,7 +70,7 @@ export const CLASS_NAMES = {
   },
   3: {
     name: 'Classe Executiva',
-    shortName: 'Business',
+    shortName: 'Executiva',
     icon: '💼',
     color: 'from-violet-500 to-purple-600',
     bgColor: 'bg-violet-50',
@@ -80,7 +80,7 @@ export const CLASS_NAMES = {
   },
   4: {
     name: 'Primeira Classe',
-    shortName: 'First',
+    shortName: 'Primeira',
     icon: '👑',
     color: 'from-amber-400 to-yellow-500',
     bgColor: 'bg-amber-50',

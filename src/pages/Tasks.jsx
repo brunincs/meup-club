@@ -11,6 +11,14 @@ import {
 import { format } from '@/services/copy'
 import { TargetIcon, CheckIcon, CalendarIcon, SparkleIcon } from '@/components/ui/Icons'
 
+// ============================================
+// FOTO A VALIDAR - trocar pela oficial da Me,up depois
+// Opções Unsplash de viagem:
+// - Mapa com passaporte: photo-1488646953014-85cb44e25828
+// - Avião decolando: photo-1436491865332-7a61a109cc05
+// ============================================
+const HERO_IMAGE = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&h=400&fit=crop&crop=center&q=80'
+
 const categoryTabs = [
   { id: 'daily', label: 'Diárias', icon: <CalendarIcon size={14} color="currentColor" /> },
   { id: 'weekly', label: 'Semanais', icon: <TargetIcon size={14} color="currentColor" /> },
@@ -38,92 +46,103 @@ function MissionCard({ task, onComplete, isLoading }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className={`relative p-6 rounded-2xl border transition-all ${
+      className={`relative overflow-hidden rounded-2xl border transition-all ${
         isCompleted
-          ? 'border-dusty-rose/10 bg-dusty-rose/5 opacity-60'
-          : 'border-dusty-rose/20 bg-deep-purple/40 hover:bg-deep-purple/60'
+          ? 'border-game-green/20 bg-game-green/5'
+          : 'border-dusty-rose/20 bg-deep-purple/30 hover:border-antique-gold/30 hover:bg-deep-purple/50'
       }`}
     >
-      <div className="flex items-start gap-4">
-        {/* Status Icon */}
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-          isCompleted ? 'bg-dusty-rose/10' : 'bg-antique-gold/10'
-        }`}>
-          {isCompleted ? (
-            <CheckIcon size={18} color="var(--dusty-rose)" />
-          ) : (
-            <SparkleIcon size={18} color="var(--antique-gold)" />
-          )}
+      {/* Completed badge */}
+      {isCompleted && (
+        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-game-green/20 border border-game-green/30">
+          <span className="text-[10px] uppercase tracking-wider text-game-green font-medium">Concluída</span>
         </div>
+      )}
 
-        {/* Content */}
-        <div className="flex-1">
-          <h3 className={`font-medium mb-1 ${
-            isCompleted ? 'text-dusty-rose' : 'text-ice-white'
+      <div className="p-6">
+        <div className="flex items-start gap-4">
+          {/* Status Icon */}
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+            isCompleted
+              ? 'bg-game-green/10'
+              : 'bg-gradient-to-br from-antique-gold/20 to-antique-gold/5'
           }`}>
-            {task.name}
-          </h3>
-          <p className="text-sm text-dusty-rose/70 mb-4">
-            {task.description}
-          </p>
+            {isCompleted ? (
+              <CheckIcon size={20} color="#22c55e" />
+            ) : (
+              <SparkleIcon size={20} color="#a27937" />
+            )}
+          </div>
 
-          {/* Progress */}
-          {hasProgress && !isCompleted && (
-            <div className="mb-4">
-              <div className="flex items-center justify-between text-xs mb-2">
-                <span className="text-dusty-rose/70">Progresso</span>
-                <span className="text-ice-white/80">{task.progress}/{task.target}</span>
-              </div>
-              <div className="h-1 bg-dusty-rose/20 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progressPercent}%` }}
-                  className="h-full bg-antique-gold rounded-full"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Footer */}
-          <div className="flex items-center justify-between">
-            <span className={`text-sm font-light ${
-              isCompleted ? 'text-dusty-rose/60' : 'text-antique-gold'
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <h3 className={`font-heading font-medium mb-1 ${
+              isCompleted ? 'text-game-green' : 'text-ice-white'
             }`}>
-              +{task.points} pontos
-            </span>
+              {task.name}
+            </h3>
+            <p className="text-sm text-dusty-rose/70 mb-4 line-clamp-2">
+              {task.description}
+            </p>
 
-            {!isCompleted && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => onComplete(task)}
-                disabled={isLoading}
-                className={`px-4 py-2 rounded-lg text-sm transition-all ${
-                  isLoading
-                    ? 'bg-dusty-rose/20 text-dusty-rose cursor-wait'
-                    : 'bg-antique-gold/20 text-antique-gold hover:bg-antique-gold hover:text-deep-purple'
-                }`}
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <motion.span
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="w-3 h-3 border border-current border-t-transparent rounded-full inline-block"
-                    />
-                    Processando...
-                  </span>
-                ) : isInProgress ? (
-                  'Continuar'
-                ) : (
-                  'Concluir'
-                )}
-              </motion.button>
+            {/* Progress */}
+            {hasProgress && !isCompleted && (
+              <div className="mb-4">
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="text-dusty-rose/60">Progresso</span>
+                  <span className="text-ice-white font-medium">{task.progress}/{task.target}</span>
+                </div>
+                <div className="h-1.5 bg-dusty-rose/10 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-full bg-gradient-to-r from-antique-gold/80 to-antique-gold rounded-full"
+                  />
+                </div>
+              </div>
             )}
 
-            {isCompleted && (
-              <span className="text-xs text-dusty-rose/60">Concluída</span>
-            )}
+            {/* Footer */}
+            <div className="flex items-center justify-between">
+              <div>
+                <span className={`text-lg font-display font-bold ${
+                  isCompleted ? 'text-game-green/60' : 'text-antique-gold'
+                }`}>
+                  +{task.points}
+                </span>
+                <span className="text-xs text-dusty-rose/60 ml-1">pontos</span>
+              </div>
+
+              {!isCompleted && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => onComplete(task)}
+                  disabled={isLoading}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
+                    isLoading
+                      ? 'bg-dusty-rose/10 text-dusty-rose cursor-wait'
+                      : 'bg-antique-gold text-deep-purple hover:bg-accent-light shadow-lg shadow-antique-gold/20'
+                  }`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        className="w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block"
+                      />
+                      Processando...
+                    </span>
+                  ) : isInProgress ? (
+                    'Continuar →'
+                  ) : (
+                    'Concluir'
+                  )}
+                </motion.button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -364,12 +383,12 @@ export function Tasks() {
 
       <DashboardHeader />
 
-      <main id="main-content" className="container-premium py-12">
+      <main id="main-content" className="container-premium py-8">
         {/* Back */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-8"
+          className="mb-6"
         >
           <Link
             to="/dashboard"
@@ -379,47 +398,65 @@ export function Tasks() {
           </Link>
         </motion.div>
 
-        {/* Header */}
+        {/* Hero Banner com imagem */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
+          className="relative overflow-hidden rounded-2xl border border-antique-gold/20 mb-10"
         >
-          <h1 className="text-4xl md:text-5xl font-display font-light text-ice-white mb-4">
-            Missões
-          </h1>
-          <p className="text-lg text-dusty-rose max-w-2xl">
-            Complete missões para ganhar pontos adicionais no clube.
-          </p>
-        </motion.div>
+          <div className="flex flex-col lg:flex-row">
+            {/* Conteúdo */}
+            <div className="relative flex-1 bg-gradient-to-br from-deep-purple to-deep-purple/90 p-6 lg:p-8">
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-24 -left-24 w-48 h-48 bg-antique-gold/5 rounded-full blur-3xl" />
+              </div>
 
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-wrap items-center gap-8 mb-12 pb-12 border-b border-dusty-rose/20"
-        >
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-1">Concluídas</p>
-            <p className="text-2xl font-light text-ice-white">
-              {totalCompleted}
-              <span className="text-dusty-rose text-lg ml-1">/ {totalTasks}</span>
-            </p>
-          </div>
+              <div className="relative">
+                <span className="inline-block text-xs font-heading uppercase tracking-[0.2em] text-antique-gold mb-2">
+                  Desafios
+                </span>
+                <h1 className="text-3xl lg:text-4xl font-display font-semibold text-ice-white mb-3">
+                  Missões do Clube
+                </h1>
+                <p className="text-dusty-rose max-w-md mb-6">
+                  Complete missões para acelerar sua jornada e ganhar pontos extras.
+                </p>
 
-          <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
+                {/* Stats inline */}
+                <div className="flex flex-wrap items-center gap-6">
+                  <div>
+                    <p className="text-2xl font-display font-bold text-antique-gold">
+                      {totalCompleted}<span className="text-dusty-rose text-lg font-normal">/{totalTasks}</span>
+                    </p>
+                    <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">concluídas</p>
+                  </div>
 
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-1">Pontos Acumulados</p>
-            <p className="text-2xl font-light text-antique-gold">+{format.pointsShort(tasksPoints.earned)}</p>
-          </div>
+                  <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
 
-          <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
+                  <div>
+                    <p className="text-2xl font-display font-bold text-game-green">+{format.pointsShort(tasksPoints.earned)}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">pontos ganhos</p>
+                  </div>
 
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-1">Disponíveis</p>
-            <p className="text-2xl font-light text-ice-white">+{format.pointsShort(tasksPoints.available)}</p>
+                  <div className="w-px h-10 bg-dusty-rose/20" aria-hidden="true" />
+
+                  <div>
+                    <p className="text-2xl font-display font-bold text-ice-white">+{format.pointsShort(tasksPoints.available)}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-dusty-rose/60">disponíveis</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Imagem (desktop only) */}
+            <div className="hidden lg:block relative w-[35%] min-h-[220px]">
+              <img
+                src={HERO_IMAGE}
+                alt="Planejamento de viagem"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-deep-purple via-deep-purple/50 to-transparent" />
+            </div>
           </div>
         </motion.div>
 

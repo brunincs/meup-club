@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 
 /**
  * Linha dourada decorativa para baixo de títulos
- * Seguindo o brand book da Me Up Viagens
+ * Seguindo o brand book da Me,up Viagens
  */
 export function GoldLine({
   width = '60px',

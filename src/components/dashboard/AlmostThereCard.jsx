@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ProgressBar, ProgressRing } from '@/components/effects/ProgressRing'
 import { GlowBorder } from '@/components/effects/GlowEffect'
-import { GiftIcon, TrendingUpIcon, TrophyIcon } from '@/components/ui/Icons'
+import { GiftIcon, TrendingUpIcon } from '@/components/ui/Icons'
 
 const typeConfig = {
   reward: {
@@ -18,13 +18,6 @@ const typeConfig = {
     label: 'Próxima Classe',
     cta: 'Ver progresso',
     link: '/perfil'
-  },
-  ranking: {
-    color: 'blue',
-    icon: <TrophyIcon size={18} color="#3b82f6" />,
-    label: 'Próxima Posição',
-    cta: 'Ver ranking',
-    link: '/ranking'
   }
 }
 
