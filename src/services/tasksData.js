@@ -2,16 +2,8 @@
 // Tasks diárias, semanais e únicas para engajamento
 
 export const tasksConfig = {
-  // Tasks Diárias - Resetam todo dia
+  // Tasks Recorrentes - Ações que fazem sentido repetir
   daily: [
-    {
-      id: 'daily_login',
-      name: 'Check-in diário',
-      description: 'Acesse o dashboard hoje',
-      points: 10,
-      icon: '📱',
-      autoComplete: true // Completa ao acessar
-    },
     {
       id: 'daily_share',
       name: 'Compartilhar código',
@@ -22,8 +14,8 @@ export const tasksConfig = {
     },
     {
       id: 'daily_view_rewards',
-      name: 'Explorar recompensas',
-      description: 'Visite a vitrine de recompensas',
+      name: 'Explorar experiências',
+      description: 'Descubra novas experiências disponíveis',
       points: 5,
       icon: '🎁',
       action: 'visit_rewards'
@@ -49,15 +41,6 @@ export const tasksConfig = {
       icon: '✅',
       target: 1,
       type: 'sale'
-    },
-    {
-      id: 'weekly_streak',
-      name: 'Sequência de 5 dias',
-      description: 'Acesse o app por 5 dias seguidos',
-      points: 100,
-      icon: '🔥',
-      target: 5,
-      type: 'streak'
     },
     {
       id: 'weekly_share_3',
@@ -146,15 +129,13 @@ export const tasksConfig = {
 // Usuário demo: 2.580 pts = Classe Executiva (Business, id 3)
 // Missões de nível devem refletir isso: Premium e Business concluídas, First pendente
 export const mockUserTasksProgress = {
-  // Diárias
-  daily_login: { completed: true, completedAt: new Date().toISOString() },
+  // Recorrentes
   daily_share: { completed: false },
   daily_view_rewards: { completed: true, completedAt: new Date().toISOString() },
 
   // Semanais
   weekly_2_referrals: { completed: false, progress: 1 },
   weekly_1_sale: { completed: true, progress: 1, completedAt: '2024-01-28T10:00:00Z' },
-  weekly_streak: { completed: false, progress: 3 },
   weekly_share_3: { completed: false, progress: 2 },
 
   // Únicas - Coerente com usuário Business (2.580 pts)

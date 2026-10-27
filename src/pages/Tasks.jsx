@@ -20,18 +20,17 @@ import { TargetIcon, CheckIcon, CalendarIcon, SparkleIcon } from '@/components/u
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&h=400&fit=crop&crop=center&q=80'
 
 const categoryTabs = [
-  { id: 'daily', label: 'Diárias', icon: <CalendarIcon size={14} color="currentColor" /> },
+  { id: 'daily', label: 'Ações', icon: <CalendarIcon size={14} color="currentColor" /> },
   { id: 'weekly', label: 'Semanais', icon: <TargetIcon size={14} color="currentColor" /> },
-  { id: 'oneTime', label: 'Especiais', icon: <SparkleIcon size={14} color="currentColor" /> }
+  { id: 'oneTime', label: 'Conquistas', icon: <SparkleIcon size={14} color="currentColor" /> }
 ]
 
-// Mapeamento de ações para navegação (Bug 2 - "Continuar")
+// Mapeamento de ações para navegação
 const actionRoutes = {
-  share: '/dashboard', // Modal de compartilhar fica no dashboard
+  share: '/dashboard',
   visit_rewards: '/recompensas',
   referral: '/dashboard',
   sale: '/dashboard',
-  streak: '/dashboard',
 }
 
 function MissionCard({ task, onComplete, isLoading }) {
@@ -628,16 +627,16 @@ export function Tasks() {
             ))}
           </motion.div>
 
-          {/* Reset info */}
+          {/* Info */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="mb-6 text-xs text-graphite/60"
             aria-live="polite"
           >
-            {activeTab === 'daily' && 'Missões diárias renovam à meia-noite'}
-            {activeTab === 'weekly' && 'Missões semanais renovam toda segunda-feira'}
-            {activeTab === 'oneTime' && 'Missões especiais podem ser concluídas uma única vez'}
+            {activeTab === 'daily' && 'Ações que você pode repetir quando quiser'}
+            {activeTab === 'weekly' && 'Metas semanais para acelerar sua evolução'}
+            {activeTab === 'oneTime' && 'Conquistas únicas que marcam sua jornada'}
           </motion.div>
 
           {/* Missions Grid (Bug 4 - tabpanel) */}

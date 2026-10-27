@@ -90,7 +90,7 @@ function PassportHeader({ profile, levelData, userPoints }) {
   )
 }
 
-function StatsGrid({ stats }) {
+function StatsGrid({ stats, levelData }) {
   const statItems = [
     {
       label: 'Indicações',
@@ -99,15 +99,15 @@ function StatsGrid({ stats }) {
       icon: '◇'
     },
     {
-      label: profileCopy.streak,
-      value: `${stats.engagement.longestStreak}`,
-      subvalue: 'dias',
+      label: 'Classe',
+      value: levelCopy.shortNames[levelData.current.id],
+      subvalue: levelData.next ? `${levelData.progress}% próxima` : 'Nível máximo',
       icon: '○'
     },
     {
       label: profileCopy.experiences,
       value: '3',
-      subvalue: 'ativadas',
+      subvalue: 'resgatadas',
       icon: '◆'
     }
   ]
@@ -419,7 +419,7 @@ export function Profile() {
 
         {/* Stats Grid */}
         <div className="mb-8">
-          <StatsGrid stats={stats} />
+          <StatsGrid stats={stats} levelData={levelData} />
         </div>
 
         {/* Main Content */}

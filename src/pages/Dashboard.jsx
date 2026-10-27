@@ -11,9 +11,9 @@ import {
   RewardsSection,
   TasksWidget,
   HeroSection,
-  MissionsSection,
-  StreakTracker
+  MissionsSection
 } from '@/components/dashboard'
+import { EvolutionCard } from '@/components/dashboard/EvolutionCard'
 import { mockReferrals, getStats } from '@/services/mockData'
 import { PointsSimulatorCompact } from '@/components/dashboard/PointsSimulatorCompact'
 import { ExperiencesCarousel } from '@/components/dashboard/ExperiencesCarousel'
@@ -122,8 +122,8 @@ export function Dashboard() {
             {/* Progresso de nível */}
             <LevelProgress />
 
-            {/* Streak Tracker */}
-            <StreakTracker />
+            {/* Sua Evolução */}
+            <EvolutionCard />
 
             {/* Tasks */}
             <TasksWidget />
