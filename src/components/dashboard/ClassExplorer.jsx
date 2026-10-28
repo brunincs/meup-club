@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { levels, rewardsTable } from '@/services/pointsSystem'
+import { levels, rewardsTable, calculateLevel } from '@/services/pointsSystem'
 import { levels as levelCopy } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
-import { demoUser } from '@/services/mockData'
-import { calculateLevel } from '@/services/pointsSystem'
+import { usePoints } from '@/contexts/PointsContext'
 
 export function ClassExplorer() {
-  const userPoints = demoUser.points
+  const { points: userPoints } = usePoints() // Pontos reais do usuário logado
   const levelData = calculateLevel(userPoints)
   const userLevelId = levelData.current.id
 

@@ -2,18 +2,17 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePoints } from '@/contexts/PointsContext'
 import { calculateLevel, rewardsTable, getNextRewards } from '@/services/pointsSystem'
 import { mockUserEngagement } from '@/services/engagementData'
-import { demoUser } from '@/services/mockData'
 import { greetings, levels as levelCopy, buttons, format } from '@/services/copy'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { getClassIcon } from '@/components/ui/Icons'
 
 export function EngagementHeader() {
-  const { profile } = useAuth()
-  // Usar demoUser como fonte única
-  const userPoints = demoUser.points
-  const userName = profile?.name?.split(' ')[0] || demoUser.name
+  const { profile, user } = useAuth()
+  const { points: userPoints } = usePoints() // Pontos reais do usuário logado
+  const userName = profile?.name?.split(' ')[0] || user?.user_metadata?.name?.split(' ')[0] || 'Usuário'
 
   const levelData = calculateLevel(userPoints)
   const currentLevel = levelData.current

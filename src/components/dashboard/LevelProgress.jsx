@@ -1,14 +1,13 @@
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePoints } from '@/contexts/PointsContext'
 import { calculateLevel, levels, getNextRewards } from '@/services/pointsSystem'
 import { levels as levelCopy, format } from '@/services/copy'
-import { demoUser } from '@/services/mockData'
 import { getClassIcon } from '@/components/ui/Icons'
 
 export function LevelProgress() {
   const { profile } = useAuth()
-  // Usar demoUser como fonte única
-  const points = demoUser.points
+  const { points } = usePoints() // Pontos reais do usuário logado
   const levelData = calculateLevel(points)
   const nextRewards = getNextRewards(points, 1)
   const nextExperience = nextRewards[0]

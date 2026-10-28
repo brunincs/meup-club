@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePoints } from '@/contexts/PointsContext'
 import {
   rewardsTable,
   calculateRewardsProgress,
   calculateLevel,
   getRarityConfig
 } from '@/services/pointsSystem'
-import { demoUser } from '@/services/mockData'
 import toast from 'react-hot-toast'
 import { format, levels as levelCopy } from '@/services/copy'
 import { ShimmerEffect } from '@/components/effects/GlowEffect'
@@ -49,8 +49,7 @@ const rarityStyles = {
 
 export function RewardsSection() {
   const { profile } = useAuth()
-  // Usar demoUser como fonte única
-  const userPoints = demoUser.points
+  const { points: userPoints } = usePoints() // Pontos reais do usuário logado
   const levelData = calculateLevel(userPoints)
   const userLevelId = levelData.current.id
 

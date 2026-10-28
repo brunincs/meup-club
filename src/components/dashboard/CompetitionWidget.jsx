@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePoints } from '@/contexts/PointsContext'
 import { calculateLevel } from '@/services/pointsSystem'
-import { demoUser } from '@/services/mockData'
 import {
   mockUserEngagement,
   mockNearbyRanking,
@@ -13,18 +13,20 @@ import { position, format, buttons, levels as levelCopy } from '@/services/copy'
 import { TrophyIcon, TrendingUpIcon } from '@/components/ui/Icons'
 
 export function CompetitionWidget() {
-  const { profile } = useAuth()
-  // Usar demoUser como fonte única
-  const userPoints = demoUser.points
+  const { profile, user } = useAuth()
+  const { points: userPoints } = usePoints() // Pontos reais do usuário logado
   const levelData = calculateLevel(userPoints)
   const userPosition = mockUserEngagement.weeklyPosition
   const weeklyReset = getTimeToWeeklyReset()
   const weeklyPrize = getWeeklyPrize(userPosition)
   const todayPoints = mockUserEngagement.today.pointsEarned
 
+  // Nome do usuário: prioriza profile, fallback para user do Auth
+  const userName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
+
   const userEntry = {
     position: userPosition,
-    name: profile?.name || demoUser.name,
+    name: userName,
     points: userPoints,
     levelId: levelData.current.id,
     isUser: true,

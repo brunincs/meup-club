@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { usePoints } from '@/contexts/PointsContext'
 import { rewardsTable, calculateLevel, calculateRewardsProgress } from '@/services/pointsSystem'
 import { format, levels as levelCopy } from '@/services/copy'
-import { demoUser } from '@/services/mockData'
 
 const categoryIcons = {
   travel: '✦',
@@ -26,8 +25,7 @@ export function ExperiencesCarousel() {
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
-
-  const userPoints = demoUser.points
+  const { points: userPoints } = usePoints() // Pontos reais do usuário logado
   const levelData = calculateLevel(userPoints)
   const userLevelId = levelData.current.id
   const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
