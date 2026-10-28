@@ -1,7 +1,11 @@
-# Environment variables
+# Environment variables (NUNCA commitar - contém secrets)
 .env
 .env.local
 .env.production
+.env.*
+
+# Claude Code settings (pode conter tokens em comandos salvos)
+.claude/
 
 # Logs
 logs
