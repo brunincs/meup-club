@@ -1,59 +1,71 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { MissionCard, MissionCardMini } from './MissionCard'
 import { ProgressRing } from '@/components/effects/ProgressRing'
 import { useConfetti } from '@/components/effects/ConfettiEffect'
 import { TargetIcon } from '@/components/ui/Icons'
 import toast from 'react-hot-toast'
 
-// Missões do clube - sem pressão de frequência diária
-const mockMissions = {
-  share: {
-    id: 'share_1',
-    name: 'Compartilhe seu código',
-    description: 'Envie seu código de indicação para um amigo',
-    points: 50,
-    progress: 0
-  },
-  referral: {
-    id: 'referral_1',
-    name: 'Traga 2 novos viajantes',
-    description: 'Faça 2 indicações que se cadastrem no clube',
-    points: 200,
-    progress: 50,
-    current: 1,
-    target: 2
-  },
-  convert: {
-    id: 'convert_1',
-    name: 'Primeira indicação convertida',
-    description: 'Tenha uma indicação que feche uma viagem',
-    points: 500,
-    progress: 75
+// Importa da fonte única de dados
+import {
+  tasksConfig,
+  mockUserTasksProgress
+} from '@/services/tasksData'
+
+// Seleciona missões em destaque para o dashboard
+// (uma de cada categoria para mostrar variedade)
+function getFeaturedMissions() {
+  const featured = {
+    // Ação rápida: compartilhar código
+    share: {
+      ...tasksConfig.daily.find(t => t.id === 'daily_share'),
+      progress: mockUserTasksProgress.daily_share?.completed ? 100 : 0
+    },
+    // Meta semanal: indicar 2 pessoas
+    referral: {
+      ...tasksConfig.weekly.find(t => t.id === 'weekly_2_referrals'),
+      progress: mockUserTasksProgress.weekly_2_referrals?.completed
+        ? 100
+        : ((mockUserTasksProgress.weekly_2_referrals?.progress || 0) / 2) * 100
+    },
+    // Conquista: primeira venda
+    convert: {
+      ...tasksConfig.oneTime.find(t => t.id === 'onetime_first_sale'),
+      progress: mockUserTasksProgress.onetime_first_sale?.completed ? 100 : 75
+    }
   }
+  return featured
 }
 
-// Ações rápidas
-const extraTasks = [
-  { id: 'rewards', name: 'Ver experiências', description: 'Confira as recompensas disponíveis', points: 5, progress: 0 },
-  { id: 'profile', name: 'Completar perfil', description: 'Adicione suas informações', points: 20, progress: 0 }
-]
+// Tarefas rápidas para o widget
+function getQuickTasks() {
+  return [
+    {
+      ...tasksConfig.daily.find(t => t.id === 'daily_view_rewards'),
+      progress: mockUserTasksProgress.daily_view_rewards?.completed ? 100 : 0
+    },
+    {
+      ...tasksConfig.oneTime.find(t => t.id === 'onetime_complete_profile'),
+      progress: mockUserTasksProgress.onetime_complete_profile?.completed ? 100 : 0
+    }
+  ]
+}
 
 export function MissionsSection({ variant = 'dark' }) {
-  const [missions, setMissions] = useState(mockMissions)
-  const [tasks, setTasks] = useState(extraTasks)
+  const [missions, setMissions] = useState(getFeaturedMissions)
+  const [tasks, setTasks] = useState(getQuickTasks)
   const { fire: fireConfetti, ConfettiComponent } = useConfetti()
 
-  // Color scheme based on variant
   const isLight = variant === 'light'
 
-  // Calculate total progress
+  // Calcula progresso total
   const allMissions = Object.values(missions)
   const completedMissions = allMissions.filter(m => m.progress >= 100).length
   const totalMissions = allMissions.length
   const missionsProgress = (completedMissions / totalMissions) * 100
 
-  // Total points available
+  // Pontos disponíveis/ganhos
   const totalPoints = allMissions.reduce((sum, m) => sum + m.points, 0) + tasks.reduce((sum, t) => sum + t.points, 0)
   const earnedPoints = allMissions.filter(m => m.progress >= 100).reduce((sum, m) => sum + m.points, 0) +
     tasks.filter(t => t.progress >= 100).reduce((sum, t) => sum + t.points, 0)
@@ -78,7 +90,6 @@ export function MissionsSection({ variant = 'dark' }) {
       }
     })
 
-    // Update mission progress
     setMissions(prev => {
       const key = Object.keys(prev).find(k => prev[k].id === mission.id)
       if (key) {
@@ -190,9 +201,12 @@ export function MissionsSection({ variant = 'dark' }) {
           <h3 className={`text-sm font-heading font-medium ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
             Tarefas Rápidas
           </h3>
-          <span className={`text-xs ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>
-            +{tasks.reduce((sum, t) => sum + t.points, 0)} pontos disponíveis
-          </span>
+          <Link
+            to="/missoes"
+            className={`text-xs ${isLight ? 'text-antique-gold hover:text-deep-purple' : 'text-antique-gold hover:text-ice-white'} transition-colors`}
+          >
+            Ver todas →
+          </Link>
         </div>
 
         <div className="space-y-2">
