@@ -71,7 +71,7 @@ export function RewardsAlternada() {
           viewport={{ once: true, margin: "-50px" }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5"
         >
-          {EXPERIENCES.map((reward) => (
+          {experiences.map((reward) => (
             <motion.div
               key={reward.id}
               variants={staggerItem}
@@ -185,7 +185,7 @@ export function RewardsAlternada() {
           viewport={{ once: true, margin: "-50px" }}
           className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 max-w-2xl mx-auto"
         >
-          {DREAM_EXPERIENCES.map((reward) => (
+          {dreamExperiences.map((reward) => (
             <motion.div
               key={reward.id}
               variants={staggerItem}
