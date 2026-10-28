@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PointsProvider } from '@/contexts/PointsContext'
-import { ProtectedRoute } from '@/components/auth'
+import { ProtectedRoute, AdminRoute } from '@/components/auth'
 import { RootLayout } from '@/layouts'
 import { Home, Login, Cadastro, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade } from '@/pages'
 import {
@@ -114,14 +114,14 @@ function App() {
             }
           />
 
-          {/* Admin routes */}
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/indicacoes" element={<AdminReferrals />} />
-          <Route path="/admin/vendas" element={<AdminSales />} />
-          <Route path="/admin/usuarios" element={<AdminUsers />} />
-          <Route path="/admin/tarefas" element={<AdminTasks />} />
-          <Route path="/admin/recompensas" element={<AdminRewards />} />
-          <Route path="/admin/historico" element={<AdminHistory />} />
+          {/* Admin routes - protegidas por AdminRoute (só role='admin') */}
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/indicacoes" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
+          <Route path="/admin/vendas" element={<AdminRoute><AdminSales /></AdminRoute>} />
+          <Route path="/admin/usuarios" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+          <Route path="/admin/tarefas" element={<AdminRoute><AdminTasks /></AdminRoute>} />
+          <Route path="/admin/recompensas" element={<AdminRoute><AdminRewards /></AdminRoute>} />
+          <Route path="/admin/historico" element={<AdminRoute><AdminHistory /></AdminRoute>} />
         </Routes>
         </PointsProvider>
       </AuthProvider>

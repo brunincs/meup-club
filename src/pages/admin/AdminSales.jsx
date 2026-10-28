@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { AdvancedFilters } from '@/components/admin/AdvancedFilters'
-import { FinancialPreview } from '@/components/admin/FinancialPreview'
 import { getAllSales, registerSale, getPendingReferrals, getAdminStats } from '@/services/adminData'
 import { creditsConfig } from '@/services/pointsSystem'
 import { format } from '@/services/copy'
@@ -19,8 +18,7 @@ function RegisterSaleForm({ onSuccess, pendingReferrals }) {
   const [formData, setFormData] = useState({
     clientName: '',
     referralCode: '',
-    saleValue: '',
-    profit: '',
+    credits: '',
     existingReferralId: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -32,21 +30,18 @@ function RegisterSaleForm({ onSuccess, pendingReferrals }) {
     e.preventDefault()
     setIsSubmitting(true)
 
+    const creditsValue = parseFloat(formData.credits)
     const result = registerSale(
       useExistingReferral ? selectedReferral?.clientName : formData.clientName,
       formData.referralCode,
-      parseFloat(formData.saleValue),
-      parseFloat(formData.profit),
+      0, // valor não usado
+      creditsValue, // créditos direto
       useExistingReferral ? formData.existingReferralId : null
     )
 
     if (result.success) {
-      const { credits } = result
-      toast.success(
-        `Venda registrada! Indicador: +${credits.referrerCredits} | Comprador: +${credits.buyerCredits}`,
-        { duration: 4000 }
-      )
-      setFormData({ clientName: '', referralCode: '', saleValue: '', profit: '', existingReferralId: '' })
+      toast.success(`Venda registrada! Créditos distribuídos.`, { duration: 4000 })
+      setFormData({ clientName: '', referralCode: '', credits: '', existingReferralId: '' })
       setUseExistingReferral(false)
       onSuccess()
     } else {
@@ -126,7 +121,7 @@ function RegisterSaleForm({ onSuccess, pendingReferrals }) {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {!useExistingReferral && (
             <>
               <div>
@@ -157,38 +152,22 @@ function RegisterSaleForm({ onSuccess, pendingReferrals }) {
           )}
 
           <div>
-            <label className="block text-xs text-neutral-500 mb-1">Valor da Venda (R$)</label>
+            <label className="block text-xs text-neutral-500 mb-1">Créditos a Distribuir</label>
             <input
               type="number"
-              value={formData.saleValue}
-              onChange={(e) => setFormData({ ...formData, saleValue: e.target.value })}
-              placeholder="5000"
-              className="w-full px-4 py-2.5 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs text-neutral-500 mb-1">Lucro/Comissão (R$)</label>
-            <input
-              type="number"
-              value={formData.profit}
-              onChange={(e) => setFormData({ ...formData, profit: e.target.value })}
+              value={formData.credits}
+              onChange={(e) => setFormData({ ...formData, credits: e.target.value })}
               placeholder="500"
-              min={creditsConfig.minProfitToGenerateCredits}
+              min="1"
               className="w-full px-4 py-2.5 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
               required
             />
             <p className="text-xs text-neutral-600 mt-1">
-              Minimo R$ {creditsConfig.minProfitToGenerateCredits} | Indicador: {creditsConfig.referrerPercentage * 100}% | Comprador: {creditsConfig.buyerPercentage * 100}%
+              Indicador: {creditsConfig.referrerPercentage * 100}% | Comprador: {creditsConfig.buyerPercentage * 100}%
             </p>
           </div>
         </div>
 
-        {/* Financial Preview */}
-        {formData.profit && parseFloat(formData.profit) > 0 && (
-          <FinancialPreview profit={formData.profit} />
-        )}
 
         <div className="flex justify-end pt-2">
           <button
@@ -230,8 +209,7 @@ export function AdminSales() {
     })
   }
 
-  const totalValue = filteredSales.reduce((sum, s) => sum + s.value, 0)
-  const totalProfit = filteredSales.reduce((sum, s) => sum + s.profit, 0)
+  const totalCredits = filteredSales.reduce((sum, s) => sum + (s.referrerCredits || 0) + (s.buyerCredits || 0), 0)
 
   const handleSaleRegistered = () => {
     setSales(getAllSales())
@@ -248,48 +226,27 @@ export function AdminSales() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
             <p className="text-xs text-neutral-500">Vendas</p>
             <p className="text-2xl font-semibold text-neutral-100 mt-1">{filteredSales.length}</p>
           </div>
           <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
-            <p className="text-xs text-neutral-500">Valor Total</p>
-            <p className="text-xl font-semibold text-emerald-400 mt-1">
-              R$ {totalValue.toLocaleString('pt-BR')}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
-            <p className="text-xs text-neutral-500">Lucro Total</p>
-            <p className="text-xl font-semibold text-green-400 mt-1">
-              R$ {totalProfit.toLocaleString('pt-BR')}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
-            <p className="text-xs text-neutral-500">Cred. Indicador</p>
+            <p className="text-xs text-neutral-500">Total Créditos</p>
             <p className="text-xl font-semibold text-accent-gold mt-1">
-              {filteredSales.reduce((sum, s) => sum + (s.referrerCredits || s.profit || 0), 0).toLocaleString('pt-BR')}
+              {totalCredits.toLocaleString('pt-BR')}
             </p>
-            <p className="text-xs text-neutral-600 mt-0.5">{creditsConfig.referrerPercentage * 100}% do lucro</p>
           </div>
           <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
-            <p className="text-xs text-neutral-500">Cred. Comprador</p>
+            <p className="text-xs text-neutral-500">Cred. Indicadores</p>
+            <p className="text-xl font-semibold text-purple-400 mt-1">
+              {filteredSales.reduce((sum, s) => sum + (s.referrerCredits || 0), 0).toLocaleString('pt-BR')}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
+            <p className="text-xs text-neutral-500">Cred. Compradores</p>
             <p className="text-xl font-semibold text-blue-400 mt-1">
               {filteredSales.reduce((sum, s) => sum + (s.buyerCredits || 0), 0).toLocaleString('pt-BR')}
-            </p>
-            <p className="text-xs text-neutral-600 mt-0.5">{creditsConfig.buyerPercentage * 100}% do lucro</p>
-          </div>
-          <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
-            <p className="text-xs text-neutral-500">Custo Total (%)</p>
-            <p className="text-xl font-semibold text-amber-400 mt-1">
-              {(() => {
-                const totalCost = filteredSales.reduce((sum, s) => sum + (s.estimatedCost || 0), 0)
-                const pct = totalProfit > 0 ? ((totalCost / totalProfit) * 100).toFixed(1) : 0
-                return `${pct}%`
-              })()}
-            </p>
-            <p className="text-xs text-neutral-600 mt-0.5">
-              R$ {filteredSales.reduce((sum, s) => sum + (s.estimatedCost || 0), 0).toFixed(2)}
             </p>
           </div>
         </div>
@@ -322,10 +279,8 @@ export function AdminSales() {
                   <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Cliente</th>
                   <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Indicador</th>
                   <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Data</th>
-                  <th className="text-right text-xs font-medium text-neutral-500 px-4 py-3">Lucro</th>
                   <th className="text-right text-xs font-medium text-neutral-500 px-4 py-3">Cred. Indicador</th>
                   <th className="text-right text-xs font-medium text-neutral-500 px-4 py-3">Cred. Comprador</th>
-                  <th className="text-right text-xs font-medium text-neutral-500 px-4 py-3">Custo (%)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-dark-700/20">
@@ -347,23 +302,13 @@ export function AdminSales() {
                       <span className="text-sm text-neutral-500">{sale.date}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="text-sm font-mono text-green-400">
-                        R$ {sale.profit.toLocaleString('pt-BR')}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
                       <span className="text-sm font-mono text-accent-gold">
-                        +{(sale.referrerCredits || sale.profit || 0).toLocaleString('pt-BR')}
+                        +{(sale.referrerCredits || 0).toLocaleString('pt-BR')}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="text-sm font-mono text-blue-400">
                         +{(sale.buyerCredits || 0).toLocaleString('pt-BR')}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-sm font-mono text-amber-400">
-                        {sale.costPercentage || 0}%
                       </span>
                     </td>
                   </motion.tr>

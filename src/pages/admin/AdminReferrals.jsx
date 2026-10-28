@@ -12,20 +12,18 @@ const statusConfig = {
 }
 
 function ApproveModal({ referral, onClose, onApprove }) {
-  const [saleValue, setSaleValue] = useState('')
-  const [profit, setProfit] = useState('')
+  const [credits, setCredits] = useState('')
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const value = parseFloat(saleValue)
-    const profitValue = parseFloat(profit)
+    const creditsValue = parseFloat(credits)
 
-    if (isNaN(value) || isNaN(profitValue)) {
-      toast.error('Preencha valores válidos')
+    if (isNaN(creditsValue) || creditsValue <= 0) {
+      toast.error('Preencha um valor de créditos válido')
       return
     }
 
-    onApprove(referral.id, value, profitValue)
+    onApprove(referral.id, 0, creditsValue)
   }
 
   return (
@@ -44,28 +42,17 @@ function ApproveModal({ referral, onClose, onApprove }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs text-neutral-500 mb-1">Valor da Venda (R$)</label>
+            <label className="block text-xs text-neutral-500 mb-1">Créditos a Conceder</label>
             <input
               type="number"
-              value={saleValue}
-              onChange={(e) => setSaleValue(e.target.value)}
-              placeholder="0,00"
+              value={credits}
+              onChange={(e) => setCredits(e.target.value)}
+              placeholder="500"
+              min="1"
               className="w-full px-4 py-2.5 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
               required
             />
-          </div>
-
-          <div>
-            <label className="block text-xs text-neutral-500 mb-1">Lucro/Comissão (R$)</label>
-            <input
-              type="number"
-              value={profit}
-              onChange={(e) => setProfit(e.target.value)}
-              placeholder="0,00"
-              className="w-full px-4 py-2.5 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
-              required
-            />
-            <p className="text-xs text-neutral-600 mt-1">O usuário receberá {profit || '0'} créditos</p>
+            <p className="text-xs text-neutral-600 mt-1">O indicador receberá {credits || '0'} créditos</p>
           </div>
 
           <div className="flex gap-3 pt-4">
@@ -202,7 +189,6 @@ export function AdminReferrals() {
                   <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Cliente</th>
                   <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Indicado por</th>
                   <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Data</th>
-                  <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Valor</th>
                   <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Status</th>
                   <th className="text-right text-xs font-medium text-neutral-500 px-4 py-3">Ações</th>
                 </tr>
@@ -226,15 +212,6 @@ export function AdminReferrals() {
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-sm text-neutral-500">{referral.date}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {referral.value ? (
-                          <span className="text-sm font-mono text-green-400">
-                            R$ {referral.value.toLocaleString('pt-BR')}
-                          </span>
-                        ) : (
-                          <span className="text-sm text-neutral-600">-</span>
-                        )}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${status.bgColor} ${status.color} border ${status.borderColor}`}>

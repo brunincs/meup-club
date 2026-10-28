@@ -33,17 +33,6 @@ function StatCard({ stat, value, index }) {
   )
 }
 
-function FinancialCard({ title, value, subtitle, color }) {
-  return (
-    <div className="p-5 rounded-xl border border-dark-700/50 bg-dark-800/30">
-      <p className="text-xs text-neutral-500 mb-1">{title}</p>
-      <p className={`text-2xl font-semibold ${color}`}>
-        R$ {value.toLocaleString('pt-BR')}
-      </p>
-      {subtitle && <p className="text-xs text-neutral-600 mt-1">{subtitle}</p>}
-    </div>
-  )
-}
 
 export function AdminDashboard() {
   const stats = getAdminStats()
@@ -68,28 +57,6 @@ export function AdminDashboard() {
               index={index}
             />
           ))}
-        </div>
-
-        {/* Financial Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FinancialCard
-            title="Valor Total em Vendas"
-            value={stats.totalSalesValue}
-            subtitle={`${stats.totalSales} vendas realizadas`}
-            color="text-emerald-400"
-          />
-          <FinancialCard
-            title="Lucro Total"
-            value={stats.totalProfit}
-            subtitle="Comissão da agência"
-            color="text-green-400"
-          />
-          <FinancialCard
-            title="Créditos Distribuídos"
-            value={stats.totalPointsDistributed}
-            subtitle="Total acumulado pelos usuários"
-            color="text-accent-gold"
-          />
         </div>
 
         {/* Top Users & Quick Actions */}
