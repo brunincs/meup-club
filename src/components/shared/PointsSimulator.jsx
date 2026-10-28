@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
+  useExperiencias,
   PONTOS_POR_REAL,
   PONTOS_POR_INDICACAO,
   formatPoints,
   getUnlockedExperiences,
   getNextExperience,
-} from '@/config/experiences'
+} from '@/hooks/useExperiencias'
 
 /**
  * Simulador de Pontos Unificado
@@ -60,10 +61,11 @@ export function PointsSimulator({
 }) {
   const config = CONFIG[mode]
   const [inputValue, setInputValue] = useState(config.sliderInitial)
+  const { allExperiences, loading } = useExperiencias()
 
   const pontosAcumulados = config.calculatePoints(inputValue)
-  const experienciasDesbloqueadas = getUnlockedExperiences(pontosAcumulados)
-  const proximaExperiencia = getNextExperience(pontosAcumulados)
+  const experienciasDesbloqueadas = getUnlockedExperiences(allExperiences, pontosAcumulados)
+  const proximaExperiencia = getNextExperience(allExperiences, pontosAcumulados)
   const pontosFaltando = proximaExperiencia
     ? proximaExperiencia.points - pontosAcumulados
     : 0

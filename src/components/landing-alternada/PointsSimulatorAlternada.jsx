@@ -3,12 +3,12 @@ import { motion } from 'framer-motion'
 import { fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
 import {
-  PONTOS_POR_REAL,
+  useExperiencias,
   calculatePoints,
   formatPoints,
   getUnlockedExperiences,
   getNextExperience,
-} from '@/config/experiences'
+} from '@/hooks/useExperiencias'
 
 /**
  * Simulador de Pontos - SECAO CLARA
@@ -23,10 +23,11 @@ const SLIDER_INITIAL = 8000
 
 export function PointsSimulatorAlternada() {
   const [valorGasto, setValorGasto] = useState(SLIDER_INITIAL)
+  const { allExperiences, loading } = useExperiencias()
 
   const pontosAcumulados = calculatePoints(valorGasto)
-  const experienciasDesbloqueadas = getUnlockedExperiences(pontosAcumulados)
-  const proximaExperiencia = getNextExperience(pontosAcumulados)
+  const experienciasDesbloqueadas = getUnlockedExperiences(allExperiences, pontosAcumulados)
+  const proximaExperiencia = getNextExperience(allExperiences, pontosAcumulados)
   const pontosFaltando = proximaExperiencia
     ? proximaExperiencia.points - pontosAcumulados
     : 0

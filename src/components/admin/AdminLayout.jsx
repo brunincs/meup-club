@@ -6,6 +6,8 @@ import { useAuth } from '@/contexts/AuthContext'
 const navItems = [
   { path: '/admin', label: 'Dashboard', icon: '◆' },
   { path: '/admin/usuarios', label: 'Clientes', icon: '◇' },
+  { path: '/admin/experiencias', label: 'Experiências', icon: '★' },
+  { path: '/admin/missoes', label: 'Tarefas', icon: '✓' },
   { path: '/admin/historico', label: 'Histórico', icon: '⊙' }
 ]
 

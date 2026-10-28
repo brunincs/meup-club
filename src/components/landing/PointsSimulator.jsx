@@ -3,12 +3,12 @@ import { motion } from 'framer-motion'
 import { fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
 import {
-  PONTOS_POR_REAL,
+  useExperiencias,
   calculatePoints,
   formatPoints,
   getUnlockedExperiences,
   getNextExperience,
-} from '@/config/experiences'
+} from '@/hooks/useExperiencias'
 
 /**
  * ╔════════════════════════════════════════════════════════════════════════════╗
@@ -30,13 +30,14 @@ const SLIDER_INITIAL = 8000
 
 export function PointsSimulator() {
   const [valorGasto, setValorGasto] = useState(SLIDER_INITIAL)
+  const { allExperiences, loading } = useExperiencias()
 
   // Calcula pontos usando a constante centralizada
   const pontosAcumulados = calculatePoints(valorGasto)
 
-  // Busca experiências desbloqueadas e próxima
-  const experienciasDesbloqueadas = getUnlockedExperiences(pontosAcumulados)
-  const proximaExperiencia = getNextExperience(pontosAcumulados)
+  // Busca experiências desbloqueadas e próxima (usando dados do Supabase)
+  const experienciasDesbloqueadas = getUnlockedExperiences(allExperiences, pontosAcumulados)
+  const proximaExperiencia = getNextExperience(allExperiences, pontosAcumulados)
 
   // Calcula quanto falta para a próxima
   const pontosFaltando = proximaExperiencia

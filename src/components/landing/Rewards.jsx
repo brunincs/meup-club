@@ -1,20 +1,42 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
-import { EXPERIENCES, DREAM_EXPERIENCES, formatPoints } from '@/config/experiences'
+import { useExperiencias, formatPoints } from '@/hooks/useExperiencias'
 
 /**
  * ╔════════════════════════════════════════════════════════════════════════════╗
  * ║  CATÁLOGO DE EXPERIÊNCIAS                                                  ║
  * ║                                                                            ║
- * ║  Os preços das experiências vêm do arquivo centralizado:                   ║
- * ║  src/config/experiences.js                                                 ║
- * ║                                                                            ║
- * ║  Para alterar preços, edite APENAS aquele arquivo.                         ║
+ * ║  Os dados vêm do Supabase (tabela: experiencias)                           ║
+ * ║  Para gerenciar experiências, acesse /admin/experiencias                   ║
  * ╚════════════════════════════════════════════════════════════════════════════╝
  */
 
 export function Rewards() {
+  const { experiences, dreamExperiences, loading, error } = useExperiencias()
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className="relative py-10 md:py-12 overflow-hidden bg-dusty-rose/15">
+        <div className="container-premium">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-4 w-24 bg-deep-purple/20 rounded mx-auto mb-4" />
+              <div className="h-8 w-64 bg-deep-purple/20 rounded mx-auto mb-4" />
+              <div className="h-4 w-48 bg-deep-purple/20 rounded mx-auto" />
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // Sem experiências cadastradas
+  if (!experiences.length && !dreamExperiences.length) {
+    return null
+  }
+
   return (
     <section className="relative py-10 md:py-12 overflow-hidden bg-dusty-rose/15">
       {/* Divider */}

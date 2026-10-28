@@ -1,14 +1,39 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
-import { EXPERIENCES, DREAM_EXPERIENCES, formatPoints } from '@/config/experiences'
+import { useExperiencias, formatPoints } from '@/hooks/useExperiencias'
 
 /**
  * Catalogo de Experiencias - SECAO CLARA
  * Texto escuro sobre fundo claro (contraste garantido)
+ * Dados do Supabase (tabela: experiencias)
  */
 
 export function RewardsAlternada() {
+  const { experiences, dreamExperiences, loading, error } = useExperiencias()
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className="relative py-10 md:py-12 overflow-hidden bg-ice-white">
+        <div className="container-premium">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-4 w-24 bg-deep-purple/20 rounded mx-auto mb-4" />
+              <div className="h-8 w-64 bg-deep-purple/20 rounded mx-auto mb-4" />
+              <div className="h-4 w-48 bg-deep-purple/20 rounded mx-auto" />
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // Sem experiências cadastradas
+  if (!experiences.length && !dreamExperiences.length) {
+    return null
+  }
+
   return (
     <section className="relative py-10 md:py-12 overflow-hidden bg-ice-white">
       {/* Divider */}
