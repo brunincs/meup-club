@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePoints } from '@/contexts/PointsContext'
 import { calculateLevel, rewardsTable, getNextRewards } from '@/services/pointsSystem'
-import { mockUserEngagement } from '@/services/engagementData'
-import { demoUser } from '@/services/mockData'
 import { AnimatedCounter, CountUp } from '@/components/effects/AnimatedCounter'
 import { ProgressBar } from '@/components/effects/ProgressRing'
 import { GlowBorder } from '@/components/effects/GlowEffect'
@@ -20,18 +19,19 @@ import { getClassIcon } from '@/components/ui/Icons'
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=800&h=600&fit=crop&crop=center&q=80'
 
 export function HeroSection() {
-  const { profile } = useAuth()
-  // Usar demoUser como fonte única
-  const userPoints = demoUser.points
-  const userName = profile?.name?.split(' ')[0] || demoUser.name
+  const { profile, useMock } = useAuth()
+  const { points: userPoints } = usePoints()
+
+  // Nome do usuário (real ou demo)
+  const userName = profile?.name?.split(' ')[0] || 'Viajante'
 
   const levelData = calculateLevel(userPoints)
   const currentLevel = levelData.current
   const nextLevel = levelData.next
 
-  // Dados de engajamento
-  const todayPoints = mockUserEngagement.today?.pointsEarned || 320
-  const weekPoints = mockUserEngagement.thisWeek?.pointsEarned || 1250
+  // Dados de engajamento (zerados para conta nova, demo mostra valores)
+  const todayPoints = useMock ? 320 : 0
+  const weekPoints = useMock ? 1250 : 0
 
   // Próxima experiência
   const nextRewards = getNextRewards(userPoints, 1)

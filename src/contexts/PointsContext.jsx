@@ -1,23 +1,30 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 import { demoUser } from '@/services/mockData'
 
 /**
  * PointsContext - Fonte única de verdade para pontos do usuário
  *
- * Por que isso existe?
- * Antes, cada página tinha seu próprio estado de pontos. Quando você resgatava
- * uma experiência, apenas a página de Experiências atualizava - o header e outras
- * páginas continuavam mostrando o valor antigo.
- *
- * Agora, todas as páginas leem deste contexto. Quando os pontos mudam,
- * TODAS as páginas atualizam automaticamente.
+ * Quando logado com conta real: usa pontos do profile (Supabase)
+ * Quando em modo demo: usa pontos do demoUser
  */
 
 const PointsContext = createContext(null)
 
 export function PointsProvider({ children }) {
-  // Estado único de pontos - começa com os pontos do usuário demo
-  const [points, setPoints] = useState(demoUser.points)
+  const { profile, useMock } = useAuth()
+
+  // Pontos: vem do profile real ou do demo
+  const [points, setPoints] = useState(0)
+
+  // Sincroniza pontos quando o profile carrega
+  useEffect(() => {
+    if (profile?.points !== undefined) {
+      setPoints(profile.points)
+    } else if (useMock) {
+      setPoints(demoUser.points)
+    }
+  }, [profile, useMock])
 
   // IDs das experiências já resgatadas (para evitar resgate duplo)
   const [redeemedIds, setRedeemedIds] = useState([])

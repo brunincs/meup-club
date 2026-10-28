@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
 import { calculateLevel } from '@/services/pointsSystem'
-import { demoUser } from '@/services/mockData'
+// Fallback para quando profile ainda não carregou
 import { levels as levelCopy } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
 
@@ -91,13 +91,13 @@ export function DashboardHeader() {
                 aria-haspopup="menu"
               >
                 <div className="text-right hidden sm:block">
-                  <div className="text-sm font-heading font-medium text-ice-white">{profile?.name || demoUser.name}</div>
+                  <div className="text-sm font-heading font-medium text-ice-white">{profile?.name || 'Viajante'}</div>
                   <div className="text-[10px] uppercase tracking-wider text-dusty-rose">
                     {levelCopy.names[level.id]}
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-antique-gold/20 to-antique-gold/10 flex items-center justify-center text-antique-gold font-heading font-medium text-sm border border-antique-gold/30">
-                  {(profile?.name || demoUser.name)?.charAt(0) || 'V'}
+                  {(profile?.name || 'Viajante')?.charAt(0) || 'V'}
                 </div>
               </motion.button>
 
@@ -118,7 +118,7 @@ export function DashboardHeader() {
                     >
                       {/* User info */}
                       <div className="p-5 border-b border-dusty-rose/20">
-                        <p className="font-heading font-medium text-ice-white">{profile?.name || demoUser.name}</p>
+                        <p className="font-heading font-medium text-ice-white">{profile?.name || 'Viajante'}</p>
                         <p className="text-xs text-dusty-rose mt-0.5">{profile?.email || 'viajante@meupclub.com'}</p>
                         <div className="flex items-center gap-2 mt-3">
                           <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-antique-gold/10 text-antique-gold border border-antique-gold/20">
