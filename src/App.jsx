@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PointsProvider } from '@/contexts/PointsContext'
+import { ProtectedRoute } from '@/components/auth'
 import { RootLayout } from '@/layouts'
 import { Home, Login, Cadastro, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade } from '@/pages'
 import {
@@ -96,11 +97,12 @@ function App() {
               </RootLayout>
             }
           />
-                    {/* Protected routes */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/recompensas" element={<Rewards />} />
-          <Route path="/tarefas" element={<Tasks />} />
-          <Route path="/perfil" element={<Profile />} />
+                    {/* Protected routes - só acessíveis para quem está logado */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/recompensas" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+          <Route path="/tarefas" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+          <Route path="/missoes" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+          <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
           {/* Referral redirect */}
           <Route

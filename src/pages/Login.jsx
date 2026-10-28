@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import toast from 'react-hot-toast'
@@ -19,6 +19,10 @@ export function Login() {
   const [loading, setLoading] = useState(false)
   const { signIn, loginAsDemo } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Pega a URL de onde o usuário veio (se foi redirecionado)
+  const from = location.state?.from?.pathname || '/dashboard'
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -33,13 +37,13 @@ export function Login() {
     }
 
     toast.success('Bem-vindo ao clube')
-    navigate('/dashboard')
+    navigate(from, { replace: true })
   }
 
   function handleDemoLogin() {
     loginAsDemo()
     toast.success('Bem-vindo ao modo demonstração')
-    navigate('/dashboard')
+    navigate(from, { replace: true })
   }
 
   return (
