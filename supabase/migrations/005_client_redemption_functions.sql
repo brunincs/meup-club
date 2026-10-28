@@ -182,9 +182,8 @@ $$;
 -- FUNÇÃO: client_check_redeemed
 -- Verifica se o cliente já resgatou uma experiência específica
 -- ══════════════════════════════════════════════════════════════════════════════
-CREATE OR REPLACE FUNCTION client_check_redeemed(
-  p_experience_id UUID
-)
+-- Aceita TEXT para compatibilidade com IDs do frontend
+CREATE OR REPLACE FUNCTION client_check_redeemed(p_experience_id TEXT)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -192,19 +191,36 @@ AS $$
 DECLARE
   v_user_id UUID;
   v_exists BOOLEAN;
+  v_experience_uuid UUID;
 BEGIN
   v_user_id := auth.uid();
-
   IF v_user_id IS NULL THEN
     RETURN false;
   END IF;
 
-  SELECT EXISTS (
-    SELECT 1 FROM point_transactions
-    WHERE user_id = v_user_id
-    AND type = 'redemption'
-    AND experience_id = p_experience_id
-  ) INTO v_exists;
+  -- Tentar converter para UUID
+  BEGIN
+    v_experience_uuid := p_experience_id::UUID;
+  EXCEPTION WHEN OTHERS THEN
+    v_experience_uuid := NULL;
+  END;
+
+  -- Se não for UUID válido, buscar pelo ID no reason
+  IF v_experience_uuid IS NULL THEN
+    SELECT EXISTS (
+      SELECT 1 FROM point_transactions
+      WHERE user_id = v_user_id
+      AND type = 'redemption'
+      AND reason LIKE '%' || p_experience_id || '%'
+    ) INTO v_exists;
+  ELSE
+    SELECT EXISTS (
+      SELECT 1 FROM point_transactions
+      WHERE user_id = v_user_id
+      AND type = 'redemption'
+      AND experience_id = v_experience_uuid
+    ) INTO v_exists;
+  END IF;
 
   RETURN v_exists;
 END;
