@@ -21,6 +21,9 @@ export function DashboardHeader() {
   // Dados do usuário: prioriza profile, fallback para user do Auth
   const userName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
   const userEmail = profile?.email || user?.email || ''
+
+  // Verificar se é admin (só para exibir o botão - a proteção real está no banco/RLS)
+  const isAdmin = profile?.role === 'admin'
   const location = useLocation()
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -134,6 +137,18 @@ export function DashboardHeader() {
 
                       {/* Menu items */}
                       <div className="p-2">
+                        {/* Link Admin - só aparece para admins */}
+                        {isAdmin && (
+                          <Link
+                            to="/admin"
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-antique-gold hover:text-antique-gold hover:bg-antique-gold/10 transition-all border border-antique-gold/20 mb-2"
+                          >
+                            <span className="text-antique-gold">⚙</span>
+                            <span className="font-medium">Painel Admin</span>
+                          </Link>
+                        )}
+
                         <Link
                           to="/perfil"
                           onClick={() => setShowUserMenu(false)}
@@ -233,6 +248,18 @@ export function DashboardHeader() {
                   <span className="text-xs opacity-60">◇</span>
                   <span>Meu Passaporte</span>
                 </Link>
+
+                {/* Link Admin Mobile - só aparece para admins */}
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setShowMobileMenu(false)}
+                    className="flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-heading font-medium text-antique-gold hover:bg-antique-gold/10 transition-all border border-antique-gold/20 mt-2"
+                  >
+                    <span className="text-xs">⚙</span>
+                    <span>Painel Admin</span>
+                  </Link>
+                )}
               </div>
             </motion.nav>
           )}
