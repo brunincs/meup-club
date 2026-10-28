@@ -141,9 +141,25 @@ export const rarityConfig = {
 }
 
 // ============================================
+// IMAGENS DAS EXPERIÊNCIAS (Unsplash)
+// ============================================
+const REWARD_IMAGES = {
+  passagem: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&h=400&fit=crop&crop=center',
+  kit: 'https://images.unsplash.com/photo-1553531384-cc64ac80f931?w=600&h=400&fit=crop&crop=center',
+  seguro: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&h=400&fit=crop&crop=center',
+  upgrade: 'https://images.unsplash.com/photo-1540339832862-474599807836?w=600&h=400&fit=crop&crop=center',
+  spa: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&h=400&fit=crop&crop=center',
+  jantar: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=400&fit=crop&crop=center',
+  stopover: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&h=400&fit=crop&crop=center',
+  lounge: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=600&h=400&fit=crop&crop=center',
+  elite: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=400&fit=crop&crop=center',
+  resort: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&h=400&fit=crop&crop=center',
+}
+
+// ============================================
 // CATÁLOGO DE EXPERIÊNCIAS (Com requisito de classe e raridade)
-// Conversão: 1.000 pontos = R$ 10 (1 pt = R$ 0,01)
 // Regra: preços de cada classe > preços da classe anterior
+// IMPORTANTE: Nunca mostrar valor em reais nas descrições
 // ============================================
 export const rewardsTable = [
   // CLASSE ECONÔMICA (1) — Primeiras conquistas
@@ -153,7 +169,8 @@ export const rewardsTable = [
     requiredLevel: 1,
     name: 'Desconto em Passagem',
     subtitle: 'Sua primeira conquista',
-    description: 'Desconto de R$50 na sua próxima passagem aérea',
+    description: 'Economize na sua próxima passagem aérea',
+    image: REWARD_IMAGES.passagem,
     points_required: 2000,
     category: 'travel',
     realCost: 50,
@@ -168,7 +185,8 @@ export const rewardsTable = [
     requiredLevel: 1,
     name: 'Kit Viajante',
     subtitle: 'Conforto na viagem',
-    description: 'Kit com travesseiro de pescoço, máscara e fones premium',
+    description: 'Travesseiro de pescoço, máscara e fones premium',
+    image: REWARD_IMAGES.kit,
     points_required: 3500,
     category: 'experience',
     realCost: 40,
@@ -183,7 +201,8 @@ export const rewardsTable = [
     requiredLevel: 1,
     name: 'Seguro Viagem Básico',
     subtitle: 'Viaje tranquilo',
-    description: 'Cobertura básica para viagens nacionais (7 dias)',
+    description: 'Cobertura completa para viagens nacionais por 7 dias',
+    image: REWARD_IMAGES.seguro,
     points_required: 5000,
     category: 'travel',
     realCost: 50,
@@ -200,7 +219,8 @@ export const rewardsTable = [
     requiredLevel: 2,
     name: 'Upgrade de Conforto',
     subtitle: 'Mais espaço, mais conforto',
-    description: 'Assento com espaço extra em voos selecionados (valor: R$100)',
+    description: 'Assento com espaço extra em voos selecionados',
+    image: REWARD_IMAGES.upgrade,
     points_required: 6000,
     category: 'travel',
     realCost: 80,
@@ -215,7 +235,8 @@ export const rewardsTable = [
     requiredLevel: 2,
     name: 'Day Use em Spa',
     subtitle: 'Relaxe antes de voar',
-    description: 'Acesso a spa premium em São Paulo ou Rio (valor: R$120)',
+    description: 'Acesso a spa premium em São Paulo ou Rio de Janeiro',
+    image: REWARD_IMAGES.spa,
     points_required: 8000,
     category: 'experience',
     realCost: 100,
@@ -232,7 +253,8 @@ export const rewardsTable = [
     requiredLevel: 3,
     name: 'Jantar Exclusivo',
     subtitle: 'Mesa para dois',
-    description: 'Jantar em restaurante premium (valor: R$120)',
+    description: 'Jantar completo em restaurante premium selecionado',
+    image: REWARD_IMAGES.jantar,
     points_required: 10000,
     category: 'experience',
     realCost: 100,
@@ -247,7 +269,8 @@ export const rewardsTable = [
     requiredLevel: 3,
     name: 'Stopover Exclusivo',
     subtitle: 'Transforme a escala em passeio',
-    description: 'Pernoite em cidade intermediária (valor: R$180)',
+    description: 'Pernoite em cidade intermediária durante sua conexão',
+    image: REWARD_IMAGES.stopover,
     points_required: 14000,
     category: 'experience',
     realCost: 140,
@@ -264,7 +287,8 @@ export const rewardsTable = [
     requiredLevel: 4,
     name: 'Upgrade Prioritário de Voo',
     subtitle: 'Voe como merece',
-    description: 'Upgrade para Classe Executiva em voo internacional (valor: R$200)',
+    description: 'Upgrade para Classe Executiva em voo internacional',
+    image: REWARD_IMAGES.upgrade,
     points_required: 16000,
     category: 'travel',
     realCost: 160,
@@ -280,7 +304,8 @@ export const rewardsTable = [
     requiredLevel: 4,
     name: 'Acesso Lounge Anual',
     subtitle: 'Seu refúgio nos aeroportos',
-    description: 'Acesso ilimitado a lounges premium por 12 meses (valor: R$250)',
+    description: 'Acesso ilimitado a lounges premium por 12 meses',
+    image: REWARD_IMAGES.lounge,
     points_required: 20000,
     category: 'lounge',
     realCost: 200,
@@ -297,7 +322,8 @@ export const rewardsTable = [
     requiredLevel: 5,
     name: 'Benefícios Elite',
     subtitle: 'Tratamento VIP',
-    description: 'Pacote completo de benefícios elite por 12 meses (valor: R$300)',
+    description: 'Pacote completo de benefícios elite por 12 meses',
+    image: REWARD_IMAGES.elite,
     points_required: 25000,
     category: 'premium',
     realCost: 250,
@@ -313,7 +339,8 @@ export const rewardsTable = [
     requiredLevel: 5,
     name: 'A Grande Experiência',
     subtitle: 'O melhor que oferecemos',
-    description: 'Voo executivo + resort all-inclusive por 5 noites (valor: R$500)',
+    description: 'Voo executivo + resort all-inclusive por 5 noites',
+    image: REWARD_IMAGES.resort,
     points_required: 40000,
     category: 'premium',
     realCost: 400,

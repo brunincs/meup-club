@@ -135,19 +135,19 @@ export const EXPERIENCE_NAMES = {
   'Crédito Inicial': {
     name: 'Crédito de Boas-Vindas',
     subtitle: 'Sua primeira conquista',
-    description: 'R$30 em créditos para iniciar sua jornada no clube'
+    description: 'Créditos para iniciar sua jornada no clube'
   },
   'Crédito Bronze': {
     name: 'Crédito Viajante',
     subtitle: 'Para sua próxima aventura',
-    description: 'R$45 em créditos para sua próxima experiência'
+    description: 'Créditos para sua próxima experiência'
   },
 
   // Tier 2
   'Crédito Prata': {
     name: 'Crédito Explorador',
     subtitle: 'Destinos mais distantes',
-    description: 'R$90 em créditos para experiências memoráveis'
+    description: 'Créditos para experiências memoráveis'
   },
   'Upgrade de Assento': {
     name: 'Upgrade de Conforto',
@@ -159,7 +159,7 @@ export const EXPERIENCE_NAMES = {
   'Crédito Ouro': {
     name: 'Crédito Premium',
     subtitle: 'Experiências extraordinárias',
-    description: 'R$180 em créditos para momentos especiais'
+    description: 'Créditos exclusivos para momentos especiais'
   },
   'Jantar Premium': {
     name: 'Experiência Gastronômica',

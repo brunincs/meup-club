@@ -468,7 +468,7 @@ function ClassSectionLight({ classId, rewards, userPoints, userLevelId, onActiva
   )
 }
 
-// Card de experiência para fundo claro
+// Card de experiência para fundo claro - COM FOTO
 function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRedeemed, triggerRef }) {
   const canRedeem = reward.canRedeem && !isRedeemed
   const isUnlockedByLevel = reward.isUnlockedByLevel
@@ -490,72 +490,84 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRe
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className={`group relative rounded-2xl border transition-all duration-300 ${
+      className={`group relative rounded-2xl border overflow-hidden transition-all duration-300 ${
         isRedeemed
           ? 'border-game-green/30 bg-game-green/5'
           : !isUnlockedByLevel
-          ? 'border-graphite/10 bg-white/50 opacity-50'
+          ? 'border-graphite/20 bg-white'
           : canRedeem
           ? 'border-antique-gold/30 bg-white hover:shadow-lg shadow-sm'
           : 'border-graphite/10 bg-white hover:shadow-md shadow-sm'
       }`}
     >
-      {/* Locked Overlay */}
-      {!isUnlockedByLevel && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-ice-white/80 backdrop-blur-sm z-10">
-          <span className="text-xs text-graphite/60 mb-1">Disponível em</span>
-          <span className="text-sm text-deep-purple">{levelCopy.names[reward.requiredLevelId]}</span>
-        </div>
-      )}
+      {/* Imagem com overlay */}
+      <div className={`relative h-36 overflow-hidden ${!isUnlockedByLevel ? 'grayscale' : ''}`}>
+        {reward.image && (
+          <img
+            src={reward.image}
+            alt={reward.name}
+            className="w-full h-full object-cover"
+          />
+        )}
+        {/* Overlay escuro para legibilidade */}
+        <div className="absolute inset-0 bg-gradient-to-t from-deep-purple/80 via-deep-purple/40 to-transparent" />
 
-      {/* Redeemed Badge */}
-      {isRedeemed && (
-        <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-game-green/20 border border-game-green/30 z-10">
-          <span className="text-xs text-game-green font-medium">Resgatada</span>
-        </div>
-      )}
-
-      <div className={`p-6 ${!isUnlockedByLevel ? 'opacity-30' : ''}`}>
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6">
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-            isRedeemed ? 'bg-game-green/10' : canRedeem ? 'bg-antique-gold/15' : 'bg-graphite/10'
-          }`}>
-            <span className={`text-xl ${isRedeemed ? 'text-game-green' : canRedeem ? 'text-antique-gold' : 'text-graphite/60'}`}>
-              {categoryIcons[reward.category] || '◇'}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
+        {/* Badges sobre a imagem */}
+        <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+          <div className="flex gap-2">
             {reward.badge && !isRedeemed && (
-              <span className={`text-[10px] px-2 py-1 rounded-lg border ${badgeConfig[reward.badge].color}`}>
+              <span className={`text-[10px] px-2 py-1 rounded-lg border backdrop-blur-sm ${badgeConfig[reward.badge].color}`}>
                 {badgeConfig[reward.badge].label}
               </span>
             )}
-            <span className="text-[10px] uppercase tracking-wider text-graphite/60">
-              {levelCopy.names[reward.requiredLevelId]}
-            </span>
+            {reward.isDream && (
+              <span className="text-[10px] px-2 py-1 rounded-lg bg-antique-gold/90 text-deep-purple font-medium">
+                Sonho
+              </span>
+            )}
           </div>
+          <span className="text-[10px] uppercase tracking-wider text-ice-white/80 bg-deep-purple/60 backdrop-blur-sm px-2 py-1 rounded-lg">
+            {levelCopy.names[reward.requiredLevelId]}
+          </span>
         </div>
 
+        {/* Redeemed Badge */}
+        {isRedeemed && (
+          <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-game-green/90 border border-game-green/30">
+            <span className="text-xs text-white font-medium">Resgatada</span>
+          </div>
+        )}
+      </div>
+
+      {/* Locked Overlay - mais legível */}
+      {!isUnlockedByLevel && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm z-10">
+          <div className="text-center p-4">
+            <span className="text-xs text-graphite mb-1 block">Disponível em</span>
+            <span className="text-base font-heading font-semibold text-deep-purple">{levelCopy.names[reward.requiredLevelId]}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="p-5">
         {/* Content */}
         <h3 className={`text-lg font-heading font-medium mb-1 ${
-          isRedeemed ? 'text-game-green' : canRedeem ? 'text-deep-purple' : 'text-graphite/70'
+          isRedeemed ? 'text-game-green' : canRedeem ? 'text-deep-purple' : 'text-graphite'
         }`}>
           {reward.name}
         </h3>
         {reward.subtitle && (
-          <p className="text-sm text-graphite/70 mb-2">{reward.subtitle}</p>
+          <p className="text-sm text-graphite/70 mb-1">{reward.subtitle}</p>
         )}
-        <p className="text-sm text-graphite/60 mb-6 leading-relaxed line-clamp-2">
+        <p className="text-sm text-graphite/60 mb-4 leading-relaxed line-clamp-2">
           {reward.description}
         </p>
 
         {/* Progress Bar */}
         {isUnlockedByLevel && !canRedeem && !isRedeemed && (
-          <div className="mb-6">
+          <div className="mb-4">
             <div
-              className="h-1 bg-graphite/10 rounded-full overflow-hidden"
+              className="h-1.5 bg-graphite/10 rounded-full overflow-hidden"
               role="progressbar"
               aria-valuenow={progress}
               aria-valuemin={0}
@@ -582,7 +594,7 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRe
         <div className="flex items-center justify-between">
           <div>
             <span className={`text-xl font-display font-light ${
-              isRedeemed ? 'text-game-green' : canRedeem ? 'text-antique-gold' : 'text-graphite/60'
+              isRedeemed ? 'text-game-green' : canRedeem ? 'text-antique-gold' : 'text-graphite/70'
             }`}>
               {format.pointsShort(reward.points_required)}
             </span>

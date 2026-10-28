@@ -215,10 +215,12 @@ export function HeroSection() {
             />
             {/* Overlay gradiente para blend com o conteúdo */}
             <div className="absolute inset-0 bg-gradient-to-r from-deep-purple via-deep-purple/60 to-transparent" />
+            {/* Overlay extra no rodapé para o texto */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-deep-purple/90 to-transparent" />
 
             {/* Frase aspiracional sobre a imagem */}
             <div className="absolute bottom-6 right-6 left-6 text-right">
-              <p className="text-lg font-display font-light text-ice-white/90 leading-tight">
+              <p className="text-lg font-display font-semibold text-ice-white leading-tight drop-shadow-lg">
                 Seu próximo destino{' '}
                 <span className="text-antique-gold">está mais perto.</span>
               </p>
