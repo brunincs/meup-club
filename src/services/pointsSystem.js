@@ -2,15 +2,23 @@
 // Economia interna equilibrada e sustentável
 
 // ============================================
+// FONTE DE VERDADE: CONSTANTES DE PONTOS
+// Importadas de experiences.js (única fonte)
+// ============================================
+import { PONTOS_POR_REAL, PONTOS_POR_INDICACAO } from '@/config/experiences'
+
+// Re-exportar para compatibilidade
+export { PONTOS_POR_REAL, PONTOS_POR_INDICACAO }
+
+// ============================================
 // CONFIGURAÇÃO PRINCIPAL DE CRÉDITOS
 // ============================================
 export const creditsConfig = {
-  // Distribuição de créditos (% do lucro)
-  referrerPercentage: 1.0,    // 100% do lucro para o indicador
-  buyerPercentage: 0.30,      // 30% do lucro para o comprador
-
-  // Condição mínima para gerar créditos
-  minProfitToGenerateCredits: 50, // R$50 mínimo de lucro
+  // REGRAS SIMPLIFICADAS (fonte: experiences.js)
+  // - Viagem: 1 ponto por R$1 gasto (PONTOS_POR_REAL)
+  // - Indicação: 3000 pontos fixos (PONTOS_POR_INDICACAO)
+  pontosPoReal: PONTOS_POR_REAL,
+  pontosPorIndicacao: PONTOS_POR_INDICACAO,
 
   // Limite mensal de saque
   monthlyWithdrawalLimit: 300, // R$300 máximo por mês
@@ -444,45 +452,47 @@ export const extraPointsConfig = {
 // ============================================
 
 /**
+ * Calcula pontos de viagem (1 ponto por R$1)
+ * @param {number} valorEmReais - Valor gasto em reais
+ * @returns {number} - Pontos calculados
+ */
+export function calcularPontosViagem(valorEmReais) {
+  return Math.floor(valorEmReais * PONTOS_POR_REAL)
+}
+
+/**
+ * Calcula pontos de indicação (valor fixo por indicação)
+ * @param {number} quantidade - Número de indicações
+ * @returns {number} - Pontos calculados
+ */
+export function calcularPontosIndicacao(quantidade = 1) {
+  return Math.floor(quantidade) * PONTOS_POR_INDICACAO
+}
+
+/**
  * Calcula os créditos gerados por uma venda
- * @param {number} profit - Lucro da venda em reais
- * @param {string} type - Tipo de multiplicador (opcional)
+ * REGRA SIMPLIFICADA: 1 ponto por R$1 gasto
+ * @param {number} valorGasto - Valor gasto em reais
+ * @param {string} type - Tipo de multiplicador (opcional, para viagens especiais)
  * @returns {object} - Detalhamento dos créditos
  */
-export function calculateSaleCredits(profit, type = 'padrao') {
-  const config = creditsConfig
+export function calculateSaleCredits(valorGasto, type = 'padrao') {
   const multiplier = multipliers[type]?.value || 1
 
-  // Verificar lucro mínimo
-  if (profit < config.minProfitToGenerateCredits) {
-    return {
-      eligible: false,
-      reason: `Lucro mínimo de R$${config.minProfitToGenerateCredits} não atingido`,
-      profit,
-      referrerCredits: 0,
-      buyerCredits: 0,
-      totalCredits: 0,
-      estimatedCost: 0,
-      costPercentage: 0
-    }
-  }
-
-  // Calcular créditos base
-  const baseReferrerCredits = Math.floor(profit * config.referrerPercentage * multiplier)
-  const baseBuyerCredits = Math.floor(profit * config.buyerPercentage * multiplier)
-  const totalCredits = baseReferrerCredits + baseBuyerCredits
+  // Regra simplificada: 1 ponto por R$1
+  const basePoints = Math.floor(valorGasto * PONTOS_POR_REAL)
+  const totalCredits = Math.floor(basePoints * multiplier)
 
   // Calcular custo estimado
-  const estimatedCost = totalCredits * config.creditCostRatio
-  const costPercentage = (estimatedCost / profit) * 100
+  const estimatedCost = totalCredits * creditsConfig.creditCostRatio
+  const costPercentage = valorGasto > 0 ? (estimatedCost / valorGasto) * 100 : 0
 
   return {
     eligible: true,
-    profit,
+    valorGasto,
     multiplier,
     multiplierLabel: multipliers[type]?.label || 'Padrão',
-    referrerCredits: baseReferrerCredits,
-    buyerCredits: baseBuyerCredits,
+    basePoints,
     totalCredits,
     estimatedCost,
     costPercentage: Math.round(costPercentage * 10) / 10,
@@ -496,22 +506,23 @@ export function calculateSaleCredits(profit, type = 'padrao') {
 
 /**
  * Calcula pontos base de uma venda (sem mostrar valores financeiros)
- * @param {number} profit - Lucro da venda em reais
+ * REGRA: 1 ponto por R$1 (usando PONTOS_POR_REAL)
+ * @param {number} valorGasto - Valor gasto em reais
  * @param {string} type - Tipo de multiplicador
  * @param {number} userLevel - Nível atual do usuário
  * @returns {object} - Pontos calculados e detalhes
  */
-export function calculateSalePoints(profit, type = 'padrao', userLevel = 1) {
+export function calculateSalePoints(valorGasto, type = 'padrao', userLevel = 1) {
   const multiplier = multipliers[type]?.value || 1
   const level = levels.find(l => l.id === userLevel) || levels[0]
 
-  // Base: 1 real = 1 ponto
-  const basePoints = Math.floor(profit)
+  // REGRA PRINCIPAL: 1 ponto por R$1 (fonte: experiences.js)
+  const basePoints = Math.floor(valorGasto * PONTOS_POR_REAL)
 
-  // Aplicar multiplicador de tipo
+  // Aplicar multiplicador de tipo (viagens especiais)
   const withTypeMultiplier = Math.floor(basePoints * multiplier)
 
-  // Aplicar bônus de nível
+  // Aplicar bônus de nível do usuário
   const finalPoints = Math.floor(withTypeMultiplier * level.bonusMultiplier)
 
   return {
@@ -519,7 +530,7 @@ export function calculateSalePoints(profit, type = 'padrao', userLevel = 1) {
     typeMultiplier: multiplier,
     levelBonus: level.bonusMultiplier,
     finalPoints,
-    // Não retornamos o valor em reais - apenas pontos
+    // IMPORTANTE: Nunca retornamos o valor em reais - apenas pontos
   }
 }
 
@@ -608,32 +619,21 @@ export function validateMonthlyWithdrawal(currentMonthWithdrawals, requestedAmou
 
 /**
  * Calcula o resumo financeiro de uma venda para exibição no admin
- * @param {number} profit - Lucro da venda
+ * NOTA: Nunca exibe o valor em reais na interface do cliente
+ * @param {number} valorGasto - Valor gasto em reais
  * @param {string} type - Tipo de multiplicador
  * @returns {object} - Resumo completo para exibição
  */
-export function getSaleFinancialSummary(profit, type = 'padrao') {
-  const credits = calculateSaleCredits(profit, type)
-
-  if (!credits.eligible) {
-    return {
-      ...credits,
-      summary: {
-        profit: `R$ ${profit.toFixed(2)}`,
-        referrerCredits: '0 (lucro insuficiente)',
-        buyerCredits: '0 (lucro insuficiente)',
-        totalCost: 'R$ 0,00',
-        costPercentage: '0%'
-      }
-    }
-  }
+export function getSaleFinancialSummary(valorGasto, type = 'padrao') {
+  const credits = calculateSaleCredits(valorGasto, type)
 
   return {
     ...credits,
     summary: {
-      profit: `R$ ${profit.toFixed(2)}`,
-      referrerCredits: `${credits.referrerCredits} créditos`,
-      buyerCredits: `${credits.buyerCredits} créditos`,
+      // ADMIN ONLY: pode ver o valor base
+      valorBase: `R$ ${valorGasto.toFixed(2)}`,
+      pontosGerados: `${credits.totalCredits} pontos`,
+      taxa: `${PONTOS_POR_REAL} pt/R$`,
       totalCost: `R$ ${credits.estimatedCost.toFixed(2)}`,
       costPercentage: `${credits.costPercentage}%`,
       marginRetained: `${credits.marginRetained}%`
@@ -818,10 +818,11 @@ export function getNextRewards(userPoints, limit = 3) {
 
 /**
  * Estima indicações necessárias para alcançar uma recompensa
+ * Usa PONTOS_POR_INDICACAO como valor padrão (fonte: experiences.js)
  * @param {number} pointsNeeded - Pontos necessários
- * @param {number} avgPointsPerReferral - Média de pontos por indicação
+ * @param {number} pontosPoIndicacao - Pontos por indicação (default: PONTOS_POR_INDICACAO)
  * @returns {number} - Estimativa de indicações
  */
-export function estimateReferralsNeeded(pointsNeeded, avgPointsPerReferral = 300) {
-  return Math.ceil(pointsNeeded / avgPointsPerReferral)
+export function estimateReferralsNeeded(pointsNeeded, pontosPoIndicacao = PONTOS_POR_INDICACAO) {
+  return Math.ceil(pointsNeeded / pontosPoIndicacao)
 }
