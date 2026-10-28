@@ -646,7 +646,7 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRe
 
 export function Rewards() {
   const { user, loading } = useAuth()
-  const { points: userPoints, deductPoints, markAsRedeemed, redeemedIds } = usePoints()
+  const { points: userPoints, resgatar, redeemedIds, isLoading: contextLoading } = usePoints()
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState('all')
   const [selectedReward, setSelectedReward] = useState(null)
@@ -692,7 +692,7 @@ export function Rewards() {
     setIsRedeeming(false)
   }
 
-  // Handler para confirmar resgate
+  // Handler para confirmar resgate - INTEGRAÇÃO REAL COM SUPABASE
   async function handleConfirmRedeem() {
     // Prevenir duplo clique
     if (!selectedReward || isRedeeming) return
@@ -708,23 +708,21 @@ export function Rewards() {
     setIsRedeeming(true)
 
     try {
-      // Simular chamada de API
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Chamar serviço REAL de resgate (debita no Supabase)
+      const result = await resgatar(
+        selectedReward.id,
+        selectedReward.name,
+        selectedReward.points_required
+      )
 
-      // Tentar debitar pontos
-      const success = deductPoints(selectedReward.points_required)
-
-      if (!success) {
-        // Saldo insuficiente - mostrar erro e FECHAR modal
-        toast.error('Saldo insuficiente para este resgate.', {
+      if (!result.success) {
+        // Erro do serviço - mostrar mensagem e FECHAR modal
+        toast.error(result.error || 'Erro ao resgatar.', {
           style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' }
         })
         closeModal()
         return
       }
-
-      // Sucesso - marcar como resgatada
-      markAsRedeemed(selectedReward.id)
 
       // Guardar nome antes de fechar
       const rewardName = selectedReward.name
@@ -745,6 +743,7 @@ export function Rewards() {
       )
     } catch (error) {
       // Em caso de erro de rede/API, mostrar mensagem e FECHAR modal
+      console.error('Erro no resgate:', error)
       toast.error('Erro ao resgatar. Tente novamente.', {
         style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' }
       })

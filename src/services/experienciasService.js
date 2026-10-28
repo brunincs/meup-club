@@ -316,11 +316,12 @@ export async function aprovarSolicitacao(solicitacaoId, adminId) {
     const tarefaNome = solicitacao.tarefas?.nome || 'Tarefa'
 
     // 2. Creditar pontos usando a função RPC existente
+    // CORREÇÃO: nomes de parâmetros devem ser p_user_id, p_amount, p_reason, p_type
     const { error: creditError } = await supabase.rpc('admin_credit_points', {
-      target_user_id: solicitacao.user_id,
-      points_amount: pontos,
-      transaction_reason: `Tarefa concluída: ${tarefaNome}`,
-      transaction_type: 'task'
+      p_user_id: solicitacao.user_id,
+      p_amount: pontos,
+      p_reason: `Tarefa concluída: ${tarefaNome}`,
+      p_type: 'task'
     })
 
     if (creditError) throw creditError
