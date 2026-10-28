@@ -19,11 +19,12 @@ import { getClassIcon } from '@/components/ui/Icons'
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=800&h=600&fit=crop&crop=center&q=80'
 
 export function HeroSection() {
-  const { profile, useMock } = useAuth()
+  const { profile, user, useMock } = useAuth()
   const { points: userPoints } = usePoints()
 
-  // Nome do usuário (real ou demo)
-  const userName = profile?.name?.split(' ')[0] || 'Viajante'
+  // Nome do usuário: prioriza profile, fallback para user do Auth
+  const fullName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
+  const userName = fullName.split(' ')[0]
 
   const levelData = calculateLevel(userPoints)
   const currentLevel = levelData.current

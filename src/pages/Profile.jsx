@@ -17,7 +17,10 @@ import {
   history as historyCopy
 } from '@/services/copy'
 
-function PassportHeader({ profile, levelData, userPoints }) {
+function PassportHeader({ profile, user, levelData, userPoints }) {
+  // Dados do usuário: prioriza profile, fallback para user do Auth
+  const userName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
+  const userEmail = profile?.email || user?.email || ''
   const memberSince = new Date('2024-01-01').toLocaleDateString('pt-BR', {
     month: 'long',
     year: 'numeric'
@@ -35,7 +38,7 @@ function PassportHeader({ profile, levelData, userPoints }) {
           {/* Avatar */}
           <div className="relative">
             <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-neutral-100/10 flex items-center justify-center text-neutral-100 text-4xl font-light">
-              {profile?.name?.charAt(0) || 'M'}
+              {userName?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="absolute -bottom-2 -right-2 px-2 py-1 rounded-lg bg-dark-800 border border-dark-700/50 text-[10px] uppercase tracking-wider text-neutral-500">
               {levelCopy.shortNames[levelData.current.id]}
@@ -48,7 +51,7 @@ function PassportHeader({ profile, levelData, userPoints }) {
               {profileCopy.header}
             </p>
             <h1 className="text-3xl md:text-4xl font-display font-light text-neutral-100 mb-3">
-              {profile?.name || 'Membro'}
+              {userName}
             </h1>
 
             <div className="flex items-center gap-3 mb-4">
@@ -67,7 +70,7 @@ function PassportHeader({ profile, levelData, userPoints }) {
                 <p className="text-[10px] uppercase tracking-wider text-neutral-700 mb-1">
                   Email
                 </p>
-                <p className="text-neutral-400">{profile?.email || 'membro@meupclub.com'}</p>
+                <p className="text-neutral-400">{userEmail}</p>
               </div>
             </div>
           </div>
@@ -412,6 +415,7 @@ export function Profile() {
         <div className="mb-8">
           <PassportHeader
             profile={profile}
+            user={user}
             levelData={levelData}
             userPoints={userPoints}
           />

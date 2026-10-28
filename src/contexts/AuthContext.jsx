@@ -84,6 +84,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   // Buscar perfil do usuário na tabela profiles
+  // Se não existir, cria automaticamente com os dados do Auth
   async function fetchProfile(userId) {
     try {
       const { data, error } = await supabase
@@ -93,10 +94,48 @@ export function AuthProvider({ children }) {
         .single()
 
       if (error) {
-        // Se o perfil não existe, pode ser que o trigger não rodou
-        // Isso pode acontecer em contas antigas
-        console.error('Perfil não encontrado:', error)
-        setProfile(null)
+        // Perfil não existe - criar automaticamente
+        console.warn('Perfil não encontrado, criando automaticamente...')
+
+        // Buscar dados do usuário autenticado
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+
+        if (authUser) {
+          // Criar perfil com dados do Auth
+          const newProfile = {
+            id: userId,
+            name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário',
+            email: authUser.email,
+            points: 0,
+            level_id: 1,
+            referral_code: generateReferralCode(),
+            total_referrals: 0,
+            status: 'active'
+          }
+
+          const { data: createdProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert([newProfile])
+            .select()
+            .single()
+
+          if (createError) {
+            console.error('Erro ao criar perfil:', createError)
+            // Usar dados do Auth como fallback temporário
+            setProfile({
+              id: userId,
+              name: authUser.user_metadata?.name || authUser.email?.split('@')[0],
+              email: authUser.email,
+              points: 0,
+              level_id: 1
+            })
+          } else {
+            console.log('Perfil criado com sucesso!')
+            setProfile(createdProfile)
+          }
+        } else {
+          setProfile(null)
+        }
       } else {
         setProfile(data)
       }
@@ -106,6 +145,16 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Gerar código de indicação único
+  function generateReferralCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    let code = 'MEUP'
+    for (let i = 0; i < 4; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return code
   }
 
   // CADASTRO - criar nova conta

@@ -15,8 +15,12 @@ const navItems = [
 ]
 
 export function DashboardHeader() {
-  const { profile, signOut } = useAuth()
+  const { profile, user, signOut } = useAuth()
   const { points: userPoints } = usePoints()
+
+  // Dados do usuário: prioriza profile, fallback para user do Auth
+  const userName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
+  const userEmail = profile?.email || user?.email || ''
   const location = useLocation()
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -91,13 +95,13 @@ export function DashboardHeader() {
                 aria-haspopup="menu"
               >
                 <div className="text-right hidden sm:block">
-                  <div className="text-sm font-heading font-medium text-ice-white">{profile?.name || 'Viajante'}</div>
+                  <div className="text-sm font-heading font-medium text-ice-white">{userName}</div>
                   <div className="text-[10px] uppercase tracking-wider text-dusty-rose">
                     {levelCopy.names[level.id]}
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-antique-gold/20 to-antique-gold/10 flex items-center justify-center text-antique-gold font-heading font-medium text-sm border border-antique-gold/30">
-                  {(profile?.name || 'Viajante')?.charAt(0) || 'V'}
+                  {userName?.charAt(0)?.toUpperCase() || 'U'}
                 </div>
               </motion.button>
 
@@ -118,8 +122,8 @@ export function DashboardHeader() {
                     >
                       {/* User info */}
                       <div className="p-5 border-b border-dusty-rose/20">
-                        <p className="font-heading font-medium text-ice-white">{profile?.name || 'Viajante'}</p>
-                        <p className="text-xs text-dusty-rose mt-0.5">{profile?.email || 'viajante@meupclub.com'}</p>
+                        <p className="font-heading font-medium text-ice-white">{userName}</p>
+                        <p className="text-xs text-dusty-rose mt-0.5">{userEmail}</p>
                         <div className="flex items-center gap-2 mt-3">
                           <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-antique-gold/10 text-antique-gold border border-antique-gold/20">
                             {getClassIcon(level.id, { size: 14 })}
