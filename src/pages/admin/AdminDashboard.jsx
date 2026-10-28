@@ -19,7 +19,7 @@ function StatCard({ label, value, icon, index }) {
         </div>
         <div>
           <p className="text-2xl font-display font-bold text-graphite">{value}</p>
-          <p className="text-sm text-dusty-rose font-heading">{label}</p>
+          <p className="text-sm text-graphite/70 font-heading">{label}</p>
         </div>
       </div>
     </motion.div>
@@ -75,7 +75,7 @@ export function AdminDashboard() {
             ════════════════════════════════════════════════════════════ */}
         <div>
           <h1 className="text-2xl font-display font-bold text-graphite">Dashboard</h1>
-          <p className="text-sm text-dusty-rose mt-1 font-heading">Visão geral do Meup Club</p>
+          <p className="text-sm text-graphite/70 mt-1 font-heading">Visão geral do Meup Club</p>
         </div>
 
         {/* ════════════════════════════════════════════════════════════

@@ -35,11 +35,11 @@ function TransactionsModal({ user, onClose }) {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-lg font-display font-bold text-graphite">Histórico de Transações</h3>
-            <p className="text-sm text-dusty-rose font-heading">{user.name}</p>
+            <p className="text-sm text-graphite/70 font-heading">{user.name}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-dusty-rose hover:text-graphite transition-colors"
+            className="p-2 text-graphite/50 hover:text-graphite transition-colors"
           >
             ✕
           </button>
@@ -47,9 +47,9 @@ function TransactionsModal({ user, onClose }) {
 
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="text-center py-8 text-dusty-rose">Carregando...</div>
+            <div className="text-center py-8 text-graphite/70">Carregando...</div>
           ) : transactions.length === 0 ? (
-            <div className="text-center py-8 text-dusty-rose">
+            <div className="text-center py-8 text-graphite/70">
               Nenhuma transação registrada
             </div>
           ) : (
@@ -69,7 +69,7 @@ function TransactionsModal({ user, onClose }) {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <p className="text-sm text-graphite">{t.reason}</p>
-                      <p className="text-xs text-dusty-rose mt-1">
+                      <p className="text-xs text-graphite/60 mt-1">
                         por {t.adminName} · {t.createdAt}
                       </p>
                     </div>
@@ -79,7 +79,7 @@ function TransactionsModal({ user, onClose }) {
                       }`}>
                         {t.amount > 0 ? '+' : ''}{t.amount.toLocaleString('pt-BR')}
                       </p>
-                      <p className="text-xs text-dusty-rose">
+                      <p className="text-xs text-graphite/60">
                         {t.balanceBefore.toLocaleString('pt-BR')} → {t.balanceAfter.toLocaleString('pt-BR')}
                       </p>
                     </div>
@@ -93,7 +93,7 @@ function TransactionsModal({ user, onClose }) {
         <div className="mt-4 pt-4 border-t border-dusty-rose/20">
           <button
             onClick={onClose}
-            className="w-full px-4 py-2.5 rounded-xl border border-dusty-rose/30 text-dusty-rose hover:text-graphite hover:border-dusty-rose/50 transition-colors font-heading"
+            className="w-full px-4 py-2.5 rounded-xl border border-dusty-rose/30 text-graphite/70 hover:text-graphite hover:border-dusty-rose/50 transition-colors font-heading"
           >
             Fechar
           </button>
@@ -178,7 +178,7 @@ export function AdminUsers() {
         {/* Users Table */}
         <div className="rounded-2xl border border-dusty-rose/20 bg-white shadow-sm overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center text-dusty-rose">
+            <div className="p-8 text-center text-graphite/70">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -210,7 +210,7 @@ export function AdminUsers() {
                       <td className="px-4 py-4">
                         <div>
                           <p className="text-sm font-heading font-medium text-graphite">{user.name}</p>
-                          <p className="text-xs text-dusty-rose">{user.email}</p>
+                          <p className="text-xs text-graphite/60">{user.email}</p>
                         </div>
                       </td>
                       <td className="px-4 py-4">
@@ -236,7 +236,7 @@ export function AdminUsers() {
                           </button>
                           <button
                             onClick={() => setViewingTransactions(user)}
-                            className="px-4 py-2 rounded-xl text-xs font-heading text-dusty-rose hover:text-graphite hover:bg-dusty-rose/10 transition-colors"
+                            className="px-4 py-2 rounded-xl text-xs font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors"
                           >
                             Histórico
                           </button>
@@ -251,7 +251,7 @@ export function AdminUsers() {
 
           {!loading && users.length === 0 && (
             <div className="p-8 text-center">
-              <p className="text-sm text-dusty-rose font-heading">
+              <p className="text-sm text-graphite/70 font-heading">
                 {searchQuery ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado ainda'}
               </p>
             </div>
