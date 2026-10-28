@@ -6,43 +6,37 @@ import { useConfetti } from '@/components/effects/ConfettiEffect'
 import { TargetIcon } from '@/components/ui/Icons'
 import toast from 'react-hot-toast'
 
-// Mock missions data
+// Missões do clube - sem pressão de frequência diária
 const mockMissions = {
-  daily: {
-    id: 'daily_1',
+  share: {
+    id: 'share_1',
     name: 'Compartilhe seu código',
     description: 'Envie seu código de indicação para um amigo',
     points: 50,
-    progress: 0,
-    resetIn: '18h',
-    rarity: 'common'
+    progress: 0
   },
-  weekly: {
-    id: 'weekly_1',
+  referral: {
+    id: 'referral_1',
     name: 'Traga 2 novos viajantes',
     description: 'Faça 2 indicações que se cadastrem no clube',
     points: 200,
     progress: 50,
-    resetIn: '3d 12h',
-    rarity: 'common',
     current: 1,
     target: 2
   },
-  special: {
-    id: 'special_1',
+  convert: {
+    id: 'convert_1',
     name: 'Primeira indicação convertida',
     description: 'Tenha uma indicação que feche uma viagem',
     points: 500,
-    progress: 75,
-    resetIn: null,
-    rarity: 'rare'
+    progress: 75
   }
 }
 
-// Extra daily tasks
+// Ações rápidas
 const extraTasks = [
-  { id: 'access', name: 'Acesso diário', description: 'Entre no app hoje', points: 10, progress: 100 },
-  { id: 'rewards', name: 'Ver experiências', description: 'Confira as recompensas', points: 5, progress: 0 }
+  { id: 'rewards', name: 'Ver experiências', description: 'Confira as recompensas disponíveis', points: 5, progress: 0 },
+  { id: 'profile', name: 'Completar perfil', description: 'Adicione suas informações', points: 20, progress: 0 }
 ]
 
 export function MissionsSection({ variant = 'dark' }) {
@@ -54,13 +48,15 @@ export function MissionsSection({ variant = 'dark' }) {
   const isLight = variant === 'light'
 
   // Calculate total progress
-  const completedTasks = tasks.filter(t => t.progress >= 100).length
-  const totalTasks = tasks.length
-  const tasksProgress = (completedTasks / totalTasks) * 100
+  const allMissions = Object.values(missions)
+  const completedMissions = allMissions.filter(m => m.progress >= 100).length
+  const totalMissions = allMissions.length
+  const missionsProgress = (completedMissions / totalMissions) * 100
 
-  // Total points available today
-  const totalDailyPoints = missions.daily.points + tasks.reduce((sum, t) => sum + t.points, 0)
-  const earnedDailyPoints = tasks.filter(t => t.progress >= 100).reduce((sum, t) => sum + t.points, 0)
+  // Total points available
+  const totalPoints = allMissions.reduce((sum, m) => sum + m.points, 0) + tasks.reduce((sum, t) => sum + t.points, 0)
+  const earnedPoints = allMissions.filter(m => m.progress >= 100).reduce((sum, m) => sum + m.points, 0) +
+    tasks.filter(t => t.progress >= 100).reduce((sum, t) => sum + t.points, 0)
 
   const handleStartMission = (mission) => {
     toast.success(`Missão "${mission.name}" iniciada!`, {
@@ -83,12 +79,13 @@ export function MissionsSection({ variant = 'dark' }) {
     })
 
     // Update mission progress
-    if (mission.id.startsWith('daily')) {
-      setMissions(prev => ({
-        ...prev,
-        daily: { ...prev.daily, progress: 0 }
-      }))
-    }
+    setMissions(prev => {
+      const key = Object.keys(prev).find(k => prev[k].id === mission.id)
+      if (key) {
+        return { ...prev, [key]: { ...prev[key], progress: 0 } }
+      }
+      return prev
+    })
   }
 
   const handleTaskClick = (task) => {
@@ -129,23 +126,23 @@ export function MissionsSection({ variant = 'dark' }) {
           </p>
         </div>
 
-        {/* Daily Progress Ring */}
+        {/* Progress Ring */}
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className={`text-xs ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>Hoje</p>
+            <p className={`text-xs ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>Progresso</p>
             <p className="text-sm font-heading font-semibold text-game-green">
-              +{earnedDailyPoints}/{totalDailyPoints}
+              +{earnedPoints}/{totalPoints}
             </p>
           </div>
           <ProgressRing
-            progress={tasksProgress}
+            progress={missionsProgress}
             size={48}
             strokeWidth={4}
             color="#22c55e"
             bgColor={isLight ? "rgba(50, 17, 63, 0.1)" : "rgba(163, 150, 149, 0.1)"}
           >
             <span className={`text-[10px] font-heading font-semibold ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
-              {completedTasks}/{totalTasks}
+              {completedMissions}/{totalMissions}
             </span>
           </ProgressRing>
         </div>
@@ -153,21 +150,21 @@ export function MissionsSection({ variant = 'dark' }) {
 
       {/* Main Missions Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Daily Mission - Featured */}
+        {/* Compartilhar */}
         <div className="lg:col-span-1">
           <MissionCard
-            mission={missions.daily}
-            type="daily"
+            mission={missions.share}
+            type="action"
             variant={variant}
             onStart={handleStartMission}
             onClaim={handleClaimMission}
           />
         </div>
 
-        {/* Weekly Mission */}
+        {/* Indicar */}
         <div className="lg:col-span-1">
           <MissionCard
-            mission={missions.weekly}
+            mission={missions.referral}
             type="weekly"
             variant={variant}
             onStart={handleStartMission}
@@ -175,10 +172,10 @@ export function MissionsSection({ variant = 'dark' }) {
           />
         </div>
 
-        {/* Special Mission */}
+        {/* Converter */}
         <div className="lg:col-span-1">
           <MissionCard
-            mission={missions.special}
+            mission={missions.convert}
             type="special"
             variant={variant}
             onStart={handleStartMission}

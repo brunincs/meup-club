@@ -3,8 +3,8 @@ import { ProgressRing } from '@/components/effects/ProgressRing'
 import { GlowBorder } from '@/components/effects/GlowEffect'
 
 const missionTypeConfig = {
-  daily: {
-    label: 'MISSÃO DO DIA',
+  action: {
+    label: 'AÇÃO',
     color: '#a27937',
     bgGradient: 'from-antique-gold/10 to-antique-gold/5',
     bgGradientLight: 'from-antique-gold/15 to-antique-gold/5',
@@ -12,7 +12,7 @@ const missionTypeConfig = {
     pulseClass: ''
   },
   weekly: {
-    label: 'MISSÃO DA SEMANA',
+    label: 'INDICAÇÃO',
     color: '#3b82f6',
     bgGradient: 'from-game-blue/10 to-game-blue/5',
     bgGradientLight: 'from-game-blue/15 to-game-blue/5',
@@ -20,7 +20,7 @@ const missionTypeConfig = {
     pulseClass: ''
   },
   special: {
-    label: 'MISSÃO ESPECIAL',
+    label: 'META',
     color: '#f97316',
     bgGradient: 'from-game-orange/10 to-game-orange/5',
     bgGradientLight: 'from-game-orange/15 to-game-orange/5',
@@ -31,21 +31,21 @@ const missionTypeConfig = {
 
 export function MissionCard({
   mission,
-  type = 'daily',
+  type = 'action',
   variant = 'dark',
   onStart,
   onClaim
 }) {
-  const config = missionTypeConfig[type] || missionTypeConfig.daily
+  const config = missionTypeConfig[type] || missionTypeConfig.action
   const isCompleted = mission.progress >= 100
   const isInProgress = mission.progress > 0 && mission.progress < 100
   const isLight = variant === 'light'
 
-  const CardWrapper = type === 'daily' ? GlowBorder : motion.div
+  const CardWrapper = type === 'action' ? GlowBorder : motion.div
 
   const bgGradient = isLight ? config.bgGradientLight : config.bgGradient
 
-  const wrapperProps = type === 'daily'
+  const wrapperProps = type === 'action'
     ? { color: 'purple', className: 'h-full' }
     : {
         className: `h-full rounded-xl bg-gradient-to-br ${bgGradient} border ${config.borderColor} ${isLight ? 'bg-white shadow-sm' : ''}`,
@@ -55,7 +55,7 @@ export function MissionCard({
 
   return (
     <CardWrapper {...wrapperProps}>
-      <div className={`p-5 h-full flex flex-col ${type === 'daily' ? '' : ''} ${isLight && type !== 'daily' ? 'bg-white rounded-xl' : ''}`}>
+      <div className={`p-5 h-full flex flex-col ${type === 'action' ? '' : ''} ${isLight && type !== 'daily' ? 'bg-white rounded-xl' : ''}`}>
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -66,11 +66,6 @@ export function MissionCard({
               >
                 {config.label}
               </span>
-              {mission.rarity === 'rare' && (
-                <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-bold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                  RARO
-                </span>
-              )}
             </div>
             <h3 className={`text-base font-heading font-medium ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
               {mission.name}
@@ -103,14 +98,8 @@ export function MissionCard({
             <span className={`text-xs ml-1 ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>pontos</span>
           </div>
 
-          {/* Timer / Action */}
+          {/* Action */}
           <div className="flex items-center gap-3">
-            {mission.resetIn && !isCompleted && (
-              <span className={`text-[10px] ${isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>
-                Reset em {mission.resetIn}
-              </span>
-            )}
-
             {isCompleted ? (
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -145,7 +134,7 @@ export function MissionCard({
 
 // Mini version para lista compacta
 export function MissionCardMini({ mission, type = 'daily', variant = 'dark', onClick }) {
-  const config = missionTypeConfig[type] || missionTypeConfig.daily
+  const config = missionTypeConfig[type] || missionTypeConfig.action
   const isCompleted = mission.progress >= 100
   const isLight = variant === 'light'
 
@@ -173,16 +162,9 @@ export function MissionCardMini({ mission, type = 'daily', variant = 'dark', onC
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h4 className={`text-sm font-heading font-medium truncate ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
-              {mission.name}
-            </h4>
-            {mission.rarity === 'rare' && (
-              <span className="px-1.5 py-0.5 text-[8px] uppercase tracking-wider font-bold rounded bg-blue-500/20 text-blue-400">
-                RARO
-              </span>
-            )}
-          </div>
+          <h4 className={`text-sm font-heading font-medium truncate ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
+            {mission.name}
+          </h4>
           <p className={`text-xs truncate ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>{mission.description}</p>
         </div>
 
