@@ -6,9 +6,9 @@ import { getAllReferrals, approveReferral, rejectReferral } from '@/services/adm
 import toast from 'react-hot-toast'
 
 const statusConfig = {
-  pending: { label: 'Pendente', color: 'text-amber-400', bgColor: 'bg-amber-500/10', borderColor: 'border-amber-500/20' },
-  approved: { label: 'Aprovada', color: 'text-green-400', bgColor: 'bg-green-500/10', borderColor: 'border-green-500/20' },
-  rejected: { label: 'Rejeitada', color: 'text-red-400', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/20' }
+  pending: { label: 'Pendente', color: 'text-amber-600', bgColor: 'bg-amber-100', borderColor: 'border-amber-200' },
+  approved: { label: 'Aprovada', color: 'text-green-600', bgColor: 'bg-green-100', borderColor: 'border-green-200' },
+  rejected: { label: 'Rejeitada', color: 'text-red-600', bgColor: 'bg-red-100', borderColor: 'border-red-200' }
 }
 
 function ApproveModal({ referral, onClose, onApprove }) {
@@ -27,45 +27,45 @@ function ApproveModal({ referral, onClose, onApprove }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-dark-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-dark-800 rounded-2xl border border-dark-700/50 p-6"
+        className="w-full max-w-md bg-white rounded-2xl border border-dusty-rose/20 shadow-xl p-6"
       >
-        <h3 className="text-lg font-semibold text-neutral-100 mb-4">Aprovar Indicação</h3>
-        <p className="text-sm text-neutral-400 mb-6">
-          Cliente: <span className="text-neutral-200">{referral.clientName}</span>
+        <h3 className="text-lg font-display font-bold text-graphite mb-4">Aprovar Indicação</h3>
+        <p className="text-sm text-dusty-rose font-heading mb-6">
+          Cliente: <span className="text-graphite font-medium">{referral.clientName}</span>
           <br />
-          Indicado por: <span className="text-neutral-200">{referral.referrerName}</span>
+          Indicado por: <span className="text-graphite font-medium">{referral.referrerName}</span>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs text-neutral-500 mb-1">Créditos a Conceder</label>
+            <label className="block text-xs text-dusty-rose font-heading mb-1.5">Créditos a Conceder</label>
             <input
               type="number"
               value={credits}
               onChange={(e) => setCredits(e.target.value)}
               placeholder="500"
               min="1"
-              className="w-full px-4 py-2.5 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
+              className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-dusty-rose/50 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
               required
             />
-            <p className="text-xs text-neutral-600 mt-1">O indicador receberá {credits || '0'} créditos</p>
+            <p className="text-xs text-dusty-rose/70 mt-1 font-heading">O indicador receberá {credits || '0'} créditos</p>
           </div>
 
           <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-lg border border-dark-600/50 text-neutral-400 hover:text-neutral-200 transition-colors"
+              className="flex-1 px-4 py-3 rounded-xl border border-dusty-rose/30 text-dusty-rose hover:text-graphite hover:border-dusty-rose/50 transition-colors font-heading"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2.5 rounded-lg bg-green-500/80 text-dark-900 font-medium hover:bg-green-500 transition-colors"
+              className="flex-1 px-4 py-3 rounded-xl bg-green-500 text-white font-heading font-semibold hover:bg-green-600 transition-colors shadow-sm"
             >
               Aprovar
             </button>
@@ -142,9 +142,9 @@ export function AdminReferrals() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-display font-bold text-neutral-100">Indicações</h1>
-            <p className="text-sm text-neutral-500 mt-1">
-              {pendingCount > 0 && <span className="text-amber-400">{pendingCount} pendentes · </span>}
+            <h1 className="text-2xl font-display font-bold text-graphite">Indicações</h1>
+            <p className="text-sm text-dusty-rose mt-1 font-heading">
+              {pendingCount > 0 && <span className="text-amber-600 font-medium">{pendingCount} pendentes · </span>}
               {referrals.length} total
             </p>
           </div>
@@ -162,10 +162,10 @@ export function AdminReferrals() {
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-4 py-2 rounded-xl text-xs font-heading font-medium transition-colors ${
                   filter === f.value
-                    ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20'
-                    : 'bg-dark-800/50 text-neutral-500 border border-dark-700/50 hover:text-neutral-300'
+                    ? 'bg-antique-gold text-deep-purple shadow-sm'
+                    : 'bg-white text-dusty-rose border border-dusty-rose/30 hover:text-graphite hover:border-dusty-rose/50'
                 }`}
               >
                 {f.label}
@@ -181,19 +181,19 @@ export function AdminReferrals() {
         </div>
 
         {/* Table */}
-        <div className="rounded-xl border border-dark-700/50 bg-dark-800/30 overflow-hidden">
+        <div className="rounded-2xl border border-dusty-rose/20 bg-white shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-dark-700/30">
-                  <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Cliente</th>
-                  <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Indicado por</th>
-                  <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Data</th>
-                  <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Status</th>
-                  <th className="text-right text-xs font-medium text-neutral-500 px-4 py-3">Ações</th>
+                <tr className="border-b border-dusty-rose/20 bg-ice-white">
+                  <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Cliente</th>
+                  <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Indicado por</th>
+                  <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Data</th>
+                  <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Status</th>
+                  <th className="text-right text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dark-700/20">
+              <tbody className="divide-y divide-dusty-rose/10">
                 {filteredReferrals.map((referral, index) => {
                   const status = statusConfig[referral.status]
                   return (
@@ -202,34 +202,34 @@ export function AdminReferrals() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: index * 0.03 }}
-                      className="hover:bg-dark-700/10"
+                      className="hover:bg-ice-white/50 transition-colors"
                     >
-                      <td className="px-4 py-3">
-                        <span className="text-sm text-neutral-200">{referral.clientName}</span>
+                      <td className="px-4 py-4">
+                        <span className="text-sm text-graphite font-heading font-medium">{referral.clientName}</span>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="text-sm text-neutral-400">{referral.referrerName}</span>
+                      <td className="px-4 py-4">
+                        <span className="text-sm text-dusty-rose font-heading">{referral.referrerName}</span>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="text-sm text-neutral-500">{referral.date}</span>
+                      <td className="px-4 py-4">
+                        <span className="text-sm text-dusty-rose font-heading">{referral.date}</span>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${status.bgColor} ${status.color} border ${status.borderColor}`}>
+                      <td className="px-4 py-4">
+                        <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-heading font-medium ${status.bgColor} ${status.color} border ${status.borderColor}`}>
                           {status.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-4 text-right">
                         {referral.status === 'pending' && (
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => setApproveModal(referral)}
-                              className="px-3 py-1 rounded-lg text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-colors"
+                              className="px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm"
                             >
                               Aprovar
                             </button>
                             <button
                               onClick={() => handleReject(referral.id)}
-                              className="px-3 py-1 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                              className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-red-100 text-red-600 border border-red-200 hover:bg-red-200 transition-colors"
                             >
                               Rejeitar
                             </button>
@@ -245,7 +245,7 @@ export function AdminReferrals() {
 
           {filteredReferrals.length === 0 && (
             <div className="p-8 text-center">
-              <p className="text-sm text-neutral-500">Nenhuma indicação encontrada</p>
+              <p className="text-sm text-dusty-rose font-heading">Nenhuma indicação encontrada</p>
             </div>
           )}
         </div>

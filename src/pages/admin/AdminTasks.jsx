@@ -5,10 +5,10 @@ import { getAllTasksAdmin, approveTask, rejectTask } from '@/services/adminData'
 import toast from 'react-hot-toast'
 
 const statusConfig = {
-  pending: { label: 'Aguardando validação', color: 'text-amber-400', bgColor: 'bg-amber-500/10', borderColor: 'border-amber-500/20' },
-  awaiting_validation: { label: 'Aguardando validação', color: 'text-amber-400', bgColor: 'bg-amber-500/10', borderColor: 'border-amber-500/20' },
-  approved: { label: 'Aprovado', color: 'text-green-400', bgColor: 'bg-green-500/10', borderColor: 'border-green-500/20' },
-  rejected: { label: 'Rejeitado', color: 'text-red-400', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/20' }
+  pending: { label: 'Aguardando validação', color: 'text-amber-600', bgColor: 'bg-amber-100', borderColor: 'border-amber-200' },
+  awaiting_validation: { label: 'Aguardando validação', color: 'text-amber-600', bgColor: 'bg-amber-100', borderColor: 'border-amber-200' },
+  approved: { label: 'Aprovado', color: 'text-green-600', bgColor: 'bg-green-100', borderColor: 'border-green-200' },
+  rejected: { label: 'Rejeitado', color: 'text-red-600', bgColor: 'bg-red-100', borderColor: 'border-red-200' }
 }
 
 const taskTypeLabels = {
@@ -45,9 +45,9 @@ export function AdminTasks() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl font-display font-bold text-neutral-100">Tarefas</h1>
-          <p className="text-sm text-neutral-500 mt-1">
-            {pendingCount > 0 && <span className="text-amber-400">{pendingCount} pendentes · </span>}
+          <h1 className="text-2xl font-display font-bold text-graphite">Tarefas</h1>
+          <p className="text-sm text-dusty-rose mt-1 font-heading">
+            {pendingCount > 0 && <span className="text-amber-600 font-medium">{pendingCount} pendentes · </span>}
             {tasks.length} total
           </p>
         </div>
@@ -63,10 +63,10 @@ export function AdminTasks() {
             <button
               key={f.value}
               onClick={() => setFilter(f.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-4 py-2 rounded-xl text-xs font-heading font-medium transition-colors ${
                 filter === f.value
-                  ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20'
-                  : 'bg-dark-800/50 text-neutral-500 border border-dark-700/50 hover:text-neutral-300'
+                  ? 'bg-antique-gold text-deep-purple shadow-sm'
+                  : 'bg-white text-dusty-rose border border-dusty-rose/30 hover:text-graphite hover:border-dusty-rose/50'
               }`}
             >
               {f.label}
@@ -86,36 +86,36 @@ export function AdminTasks() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`p-4 rounded-xl border bg-dark-800/30 ${
-                  task.status === 'pending' ? 'border-amber-500/20' : 'border-dark-700/50'
+                className={`p-5 rounded-2xl border bg-white shadow-sm ${
+                  task.status === 'pending' ? 'border-amber-200' : 'border-dusty-rose/20'
                 }`}
               >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{taskType.icon}</span>
-                    <span className="text-xs text-neutral-500">{taskType.label}</span>
+                    <span className="text-xs text-dusty-rose font-heading">{taskType.label}</span>
                   </div>
-                  <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${status.bgColor} ${status.color} border ${status.borderColor}`}>
+                  <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-heading font-medium ${status.bgColor} ${status.color} border ${status.borderColor}`}>
                     {status.label}
                   </span>
                 </div>
 
                 {/* Content */}
                 <div className="mb-4">
-                  <p className="text-sm font-medium text-neutral-200 mb-1">{task.taskName}</p>
-                  <p className="text-xs text-neutral-500">
-                    Usuário: <span className="text-neutral-400">{task.userName}</span>
+                  <p className="text-sm font-heading font-semibold text-graphite mb-1">{task.taskName}</p>
+                  <p className="text-xs text-dusty-rose font-heading">
+                    Usuário: <span className="text-graphite">{task.userName}</span>
                   </p>
-                  <p className="text-xs text-neutral-500">
-                    Data: <span className="text-neutral-400">{task.date}</span>
+                  <p className="text-xs text-dusty-rose font-heading">
+                    Data: <span className="text-graphite">{task.date}</span>
                   </p>
                 </div>
 
                 {/* Points */}
-                <div className="flex items-center justify-between pb-3 border-b border-dark-700/30">
-                  <span className="text-xs text-neutral-500">Recompensa</span>
-                  <span className="text-sm font-mono text-accent-gold">+{task.points} créditos</span>
+                <div className="flex items-center justify-between pb-3 border-b border-dusty-rose/20">
+                  <span className="text-xs text-dusty-rose font-heading">Recompensa</span>
+                  <span className="text-sm font-mono font-semibold text-antique-gold">+{task.points} créditos</span>
                 </div>
 
                 {/* Actions */}
@@ -123,13 +123,13 @@ export function AdminTasks() {
                   <div className="flex gap-2 pt-3">
                     <button
                       onClick={() => handleApprove(task.id)}
-                      className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-colors"
+                      className="flex-1 px-4 py-2.5 rounded-xl text-xs font-heading font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm"
                     >
                       Aprovar
                     </button>
                     <button
                       onClick={() => handleReject(task.id)}
-                      className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                      className="flex-1 px-4 py-2.5 rounded-xl text-xs font-heading font-medium bg-red-100 text-red-600 border border-red-200 hover:bg-red-200 transition-colors"
                     >
                       Rejeitar
                     </button>
@@ -141,8 +141,8 @@ export function AdminTasks() {
         </div>
 
         {filteredTasks.length === 0 && (
-          <div className="p-8 text-center rounded-xl border border-dark-700/50 bg-dark-800/30">
-            <p className="text-sm text-neutral-500">
+          <div className="p-8 text-center rounded-2xl border border-dusty-rose/20 bg-white shadow-sm">
+            <p className="text-sm text-dusty-rose font-heading">
               {filter === 'pending' ? 'Nenhuma tarefa aguardando validação' : 'Nenhuma tarefa encontrada'}
             </p>
           </div>

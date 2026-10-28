@@ -24,10 +24,10 @@ export function AdvancedFilters({ filters, values, onChange, onClear }) {
       {/* Toggle button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-heading font-medium transition-colors ${
           hasActiveFilters
-            ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20'
-            : 'bg-dark-800/50 text-neutral-500 border border-dark-700/50 hover:text-neutral-300'
+            ? 'bg-antique-gold/15 text-antique-gold border border-antique-gold/30'
+            : 'bg-white text-dusty-rose border border-dusty-rose/30 hover:text-graphite hover:border-dusty-rose/50'
         }`}
       >
         <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5">
@@ -35,7 +35,7 @@ export function AdvancedFilters({ filters, values, onChange, onClear }) {
         </svg>
         Filtros avançados
         {hasActiveFilters && (
-          <span className="w-1.5 h-1.5 rounded-full bg-accent-gold" />
+          <span className="w-1.5 h-1.5 rounded-full bg-antique-gold" />
         )}
       </button>
 
@@ -48,11 +48,11 @@ export function AdvancedFilters({ filters, values, onChange, onClear }) {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30 space-y-4">
+            <div className="p-5 rounded-2xl border border-dusty-rose/20 bg-white shadow-sm space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filters.map(filter => (
                   <div key={filter.key}>
-                    <label className="block text-xs text-neutral-500 mb-1.5">{filter.label}</label>
+                    <label className="block text-xs text-dusty-rose font-heading mb-1.5">{filter.label}</label>
 
                     {filter.type === 'text' && (
                       <input
@@ -60,7 +60,7 @@ export function AdvancedFilters({ filters, values, onChange, onClear }) {
                         value={values[filter.key] || ''}
                         onChange={(e) => handleChange(filter.key, e.target.value)}
                         placeholder={filter.placeholder || ''}
-                        className="w-full px-3 py-2 rounded-lg bg-dark-700/50 border border-dark-600/50 text-sm text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
+                        className="w-full px-3 py-2.5 rounded-xl bg-ice-white border border-dusty-rose/30 text-sm text-graphite placeholder:text-dusty-rose/50 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
                       />
                     )}
 
@@ -69,7 +69,7 @@ export function AdvancedFilters({ filters, values, onChange, onClear }) {
                         type="date"
                         value={values[filter.key] || ''}
                         onChange={(e) => handleChange(filter.key, e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg bg-dark-700/50 border border-dark-600/50 text-sm text-neutral-200 focus:outline-none focus:border-accent-gold/30"
+                        className="w-full px-3 py-2.5 rounded-xl bg-ice-white border border-dusty-rose/30 text-sm text-graphite focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
                       />
                     )}
 
@@ -77,7 +77,7 @@ export function AdvancedFilters({ filters, values, onChange, onClear }) {
                       <select
                         value={values[filter.key] || ''}
                         onChange={(e) => handleChange(filter.key, e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg bg-dark-700/50 border border-dark-600/50 text-sm text-neutral-200 focus:outline-none focus:border-accent-gold/30"
+                        className="w-full px-3 py-2.5 rounded-xl bg-ice-white border border-dusty-rose/30 text-sm text-graphite focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
                       >
                         <option value="">Todos</option>
                         {filter.options?.map(opt => (
@@ -90,16 +90,16 @@ export function AdvancedFilters({ filters, values, onChange, onClear }) {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-between pt-2 border-t border-dark-700/30">
+              <div className="flex items-center justify-between pt-3 border-t border-dusty-rose/20">
                 <button
                   onClick={handleClear}
-                  className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
+                  className="text-xs text-dusty-rose hover:text-graphite transition-colors font-heading"
                 >
                   Limpar filtros
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-dark-700/50 text-neutral-400 hover:text-neutral-200 transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-deep-purple/10 text-deep-purple hover:bg-deep-purple/20 transition-colors"
                 >
                   Fechar
                 </button>

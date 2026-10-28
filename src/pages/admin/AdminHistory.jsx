@@ -5,11 +5,11 @@ import { AdvancedFilters } from '@/components/admin/AdvancedFilters'
 import { getAuditLogs } from '@/services/adminData'
 
 const actionTypeConfig = {
-  approve: { label: 'Aprovação', color: 'text-green-400', bgColor: 'bg-green-500/10', icon: '✓' },
-  reject: { label: 'Rejeição', color: 'text-red-400', bgColor: 'bg-red-500/10', icon: '✗' },
-  edit: { label: 'Edição', color: 'text-blue-400', bgColor: 'bg-blue-500/10', icon: '✎' },
-  delete: { label: 'Exclusão', color: 'text-red-400', bgColor: 'bg-red-500/10', icon: '🗑' },
-  credit_adjust: { label: 'Ajuste de créditos', color: 'text-amber-400', bgColor: 'bg-amber-500/10', icon: '±' }
+  approve: { label: 'Aprovação', color: 'text-green-600', bgColor: 'bg-green-100', icon: '✓' },
+  reject: { label: 'Rejeição', color: 'text-red-600', bgColor: 'bg-red-100', icon: '✗' },
+  edit: { label: 'Edição', color: 'text-blue-600', bgColor: 'bg-blue-100', icon: '✎' },
+  delete: { label: 'Exclusão', color: 'text-red-600', bgColor: 'bg-red-100', icon: '🗑' },
+  credit_adjust: { label: 'Ajuste de créditos', color: 'text-amber-600', bgColor: 'bg-amber-100', icon: '±' }
 }
 
 const resourceTypeConfig = {
@@ -61,21 +61,21 @@ function formatDate(isoString) {
 }
 
 function LogDetailModal({ log, onClose }) {
-  const actionConfig = actionTypeConfig[log.actionType] || { label: log.actionType, color: 'text-neutral-400', bgColor: 'bg-dark-700/50', icon: '•' }
+  const actionConfig = actionTypeConfig[log.actionType] || { label: log.actionType, color: 'text-dusty-rose', bgColor: 'bg-dusty-rose/10', icon: '•' }
   const resourceConfig = resourceTypeConfig[log.resourceType] || { label: log.resourceType, icon: '•' }
 
   return (
-    <div className="fixed inset-0 bg-dark-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-lg bg-dark-800 rounded-2xl border border-dark-700/50 p-6"
+        className="w-full max-w-lg bg-white rounded-2xl border border-dusty-rose/20 shadow-xl p-6"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-neutral-100">Detalhes da Ação</h3>
+          <h3 className="text-lg font-display font-bold text-graphite">Detalhes da Ação</h3>
           <button
             onClick={onClose}
-            className="p-1 text-neutral-500 hover:text-neutral-300 transition-colors"
+            className="p-1 text-dusty-rose hover:text-graphite transition-colors"
           >
             <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
               <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -86,40 +86,40 @@ function LogDetailModal({ log, onClose }) {
         <div className="space-y-4">
           {/* Action info */}
           <div className="flex items-center gap-3">
-            <span className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${actionConfig.bgColor}`}>
+            <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${actionConfig.bgColor}`}>
               {actionConfig.icon}
             </span>
             <div>
-              <p className={`font-medium ${actionConfig.color}`}>{actionConfig.label}</p>
-              <p className="text-xs text-neutral-500">{formatDate(log.createdAt)}</p>
+              <p className={`font-heading font-semibold ${actionConfig.color}`}>{actionConfig.label}</p>
+              <p className="text-xs text-dusty-rose">{formatDate(log.createdAt)}</p>
             </div>
           </div>
 
           {/* Details grid */}
-          <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-dark-700/30">
+          <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-ice-white border border-dusty-rose/10">
             <div>
-              <p className="text-xs text-neutral-500 mb-1">Administrador</p>
-              <p className="text-sm text-neutral-200">{log.adminName}</p>
+              <p className="text-xs text-dusty-rose mb-1 font-heading">Administrador</p>
+              <p className="text-sm text-graphite font-heading">{log.adminName}</p>
             </div>
             <div>
-              <p className="text-xs text-neutral-500 mb-1">Recurso</p>
-              <p className="text-sm text-neutral-200">
+              <p className="text-xs text-dusty-rose mb-1 font-heading">Recurso</p>
+              <p className="text-sm text-graphite font-heading">
                 <span className="mr-2">{resourceConfig.icon}</span>
                 {resourceConfig.label}
               </p>
             </div>
             {log.affectedUserName && (
               <div className="col-span-2">
-                <p className="text-xs text-neutral-500 mb-1">Usuário afetado</p>
-                <p className="text-sm text-neutral-200">{log.affectedUserName}</p>
+                <p className="text-xs text-dusty-rose mb-1 font-heading">Usuário afetado</p>
+                <p className="text-sm text-graphite font-heading">{log.affectedUserName}</p>
               </div>
             )}
           </div>
 
           {/* Description */}
           <div>
-            <p className="text-xs text-neutral-500 mb-2">Descrição</p>
-            <p className="text-sm text-neutral-300 p-3 rounded-lg bg-dark-700/30">{log.description}</p>
+            <p className="text-xs text-dusty-rose mb-2 font-heading">Descrição</p>
+            <p className="text-sm text-graphite p-3 rounded-xl bg-ice-white border border-dusty-rose/10 font-heading">{log.description}</p>
           </div>
 
           {/* Old/New values */}
@@ -127,16 +127,16 @@ function LogDetailModal({ log, onClose }) {
             <div className="grid grid-cols-2 gap-4">
               {log.oldValue && (
                 <div>
-                  <p className="text-xs text-neutral-500 mb-2">Valor anterior</p>
-                  <pre className="text-xs text-red-400/80 p-3 rounded-lg bg-dark-700/30 overflow-x-auto">
+                  <p className="text-xs text-dusty-rose mb-2 font-heading">Valor anterior</p>
+                  <pre className="text-xs text-red-600 p-3 rounded-xl bg-red-50 border border-red-100 overflow-x-auto">
                     {JSON.stringify(log.oldValue, null, 2)}
                   </pre>
                 </div>
               )}
               {log.newValue && (
                 <div>
-                  <p className="text-xs text-neutral-500 mb-2">Novo valor</p>
-                  <pre className="text-xs text-green-400/80 p-3 rounded-lg bg-dark-700/30 overflow-x-auto">
+                  <p className="text-xs text-dusty-rose mb-2 font-heading">Novo valor</p>
+                  <pre className="text-xs text-green-600 p-3 rounded-xl bg-green-50 border border-green-100 overflow-x-auto">
                     {JSON.stringify(log.newValue, null, 2)}
                   </pre>
                 </div>
@@ -145,10 +145,10 @@ function LogDetailModal({ log, onClose }) {
           )}
         </div>
 
-        <div className="flex justify-end mt-6 pt-4 border-t border-dark-700/30">
+        <div className="flex justify-end mt-6 pt-4 border-t border-dusty-rose/20">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-dark-700/50 text-neutral-300 hover:text-neutral-100 transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-deep-purple/10 text-deep-purple font-heading font-medium hover:bg-deep-purple/20 transition-colors"
           >
             Fechar
           </button>
@@ -169,8 +169,8 @@ export function AdminHistory() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl font-display font-bold text-neutral-100">Histórico de Ações</h1>
-          <p className="text-sm text-neutral-500 mt-1">
+          <h1 className="text-2xl font-display font-bold text-graphite">Histórico de Ações</h1>
+          <p className="text-sm text-dusty-rose mt-1 font-heading">
             Registro de todas as ações administrativas
           </p>
         </div>
@@ -185,12 +185,12 @@ export function AdminHistory() {
         {/* Logs list */}
         <div className="space-y-3">
           {logs.length === 0 ? (
-            <div className="p-8 text-center rounded-xl border border-dark-700/50 bg-dark-800/30">
-              <p className="text-sm text-neutral-500">Nenhuma ação registrada</p>
+            <div className="p-8 text-center rounded-2xl border border-dusty-rose/20 bg-white shadow-sm">
+              <p className="text-sm text-dusty-rose font-heading">Nenhuma ação registrada</p>
             </div>
           ) : (
             logs.map((log, index) => {
-              const actionConfig = actionTypeConfig[log.actionType] || { label: log.actionType, color: 'text-neutral-400', bgColor: 'bg-dark-700/50', icon: '•' }
+              const actionConfig = actionTypeConfig[log.actionType] || { label: log.actionType, color: 'text-dusty-rose', bgColor: 'bg-dusty-rose/10', icon: '•' }
               const resourceConfig = resourceTypeConfig[log.resourceType] || { label: log.resourceType, icon: '•' }
 
               return (
@@ -200,33 +200,33 @@ export function AdminHistory() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
                   onClick={() => setSelectedLog(log)}
-                  className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30 hover:border-dark-600/50 cursor-pointer transition-colors"
+                  className="p-4 rounded-2xl border border-dusty-rose/20 bg-white shadow-sm hover:border-dusty-rose/40 hover:shadow-md cursor-pointer transition-all"
                 >
                   <div className="flex items-start gap-4">
                     {/* Icon */}
-                    <span className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 ${actionConfig.bgColor}`}>
+                    <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 ${actionConfig.bgColor}`}>
                       {actionConfig.icon}
                     </span>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-sm font-medium ${actionConfig.color}`}>
+                        <span className={`text-sm font-heading font-semibold ${actionConfig.color}`}>
                           {actionConfig.label}
                         </span>
-                        <span className="text-xs text-neutral-600">•</span>
-                        <span className="text-xs text-neutral-500">
+                        <span className="text-xs text-dusty-rose/50">•</span>
+                        <span className="text-xs text-dusty-rose font-heading">
                           {resourceConfig.icon} {resourceConfig.label}
                         </span>
                       </div>
 
-                      <p className="text-sm text-neutral-300 line-clamp-1">{log.description}</p>
+                      <p className="text-sm text-graphite line-clamp-1 font-heading">{log.description}</p>
 
-                      <div className="flex items-center gap-4 mt-2 text-xs text-neutral-500">
+                      <div className="flex items-center gap-4 mt-2 text-xs text-dusty-rose font-heading">
                         <span>por {log.adminName}</span>
                         <span>{formatDate(log.createdAt)}</span>
                         {log.affectedUserName && (
-                          <span className="text-neutral-600">
+                          <span className="text-dusty-rose/70">
                             → {log.affectedUserName}
                           </span>
                         )}
@@ -234,7 +234,7 @@ export function AdminHistory() {
                     </div>
 
                     {/* Arrow */}
-                    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-neutral-600 flex-shrink-0">
+                    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-dusty-rose flex-shrink-0">
                       <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>

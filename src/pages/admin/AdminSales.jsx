@@ -72,10 +72,10 @@ function RegisterSaleForm({ onSuccess, pendingReferrals }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-dark-700/50 bg-dark-800/30 p-5"
+      className="rounded-2xl border border-dusty-rose/20 bg-white shadow-sm p-6"
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-neutral-200">Registrar Nova Venda</h2>
+        <h2 className="text-sm font-heading font-semibold text-graphite">Registrar Nova Venda</h2>
 
         {pendingReferrals.length > 0 && (
           <label className="flex items-center gap-2 cursor-pointer">
@@ -88,9 +88,9 @@ function RegisterSaleForm({ onSuccess, pendingReferrals }) {
                   setFormData({ ...formData, existingReferralId: '', clientName: '' })
                 }
               }}
-              className="w-4 h-4 rounded border-dark-600 bg-dark-700/50 text-accent-gold focus:ring-accent-gold/30"
+              className="w-4 h-4 rounded border-dusty-rose/30 bg-ice-white text-antique-gold focus:ring-antique-gold/30"
             />
-            <span className="text-xs text-neutral-400">Vincular a indicação existente</span>
+            <span className="text-xs text-dusty-rose font-heading">Vincular a indicação existente</span>
           </label>
         )}
       </div>
@@ -98,12 +98,12 @@ function RegisterSaleForm({ onSuccess, pendingReferrals }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Existing Referral Selector */}
         {useExistingReferral && pendingReferrals.length > 0 && (
-          <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20">
-            <label className="block text-xs text-amber-400 mb-2">Selecionar Indicação Pendente</label>
+          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+            <label className="block text-xs text-amber-700 font-heading mb-2">Selecionar Indicação Pendente</label>
             <select
               value={formData.existingReferralId}
               onChange={(e) => handleReferralSelect(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-200 focus:outline-none focus:border-accent-gold/30"
+              className="w-full px-4 py-3 rounded-xl bg-white border border-amber-200 text-graphite focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
               required={useExistingReferral}
             >
               <option value="">Selecione uma indicação...</option>
@@ -114,8 +114,8 @@ function RegisterSaleForm({ onSuccess, pendingReferrals }) {
               ))}
             </select>
             {selectedReferral && (
-              <p className="text-xs text-amber-400/70 mt-2">
-                Indicador: <span className="text-neutral-300">{selectedReferral.referrerName}</span>
+              <p className="text-xs text-amber-600 mt-2 font-heading">
+                Indicador: <span className="text-graphite font-medium">{selectedReferral.referrerName}</span>
               </p>
             )}
           </div>
@@ -125,44 +125,44 @@ function RegisterSaleForm({ onSuccess, pendingReferrals }) {
           {!useExistingReferral && (
             <>
               <div>
-                <label className="block text-xs text-neutral-500 mb-1">Nome do Cliente</label>
+                <label className="block text-xs text-dusty-rose font-heading mb-1.5">Nome do Cliente</label>
                 <input
                   type="text"
                   value={formData.clientName}
                   onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
                   placeholder="João Silva"
-                  className="w-full px-4 py-2.5 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
+                  className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-dusty-rose/50 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
                   required={!useExistingReferral}
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-neutral-500 mb-1">Código/Nome do Indicador</label>
+                <label className="block text-xs text-dusty-rose font-heading mb-1.5">Código/Nome do Indicador</label>
                 <input
                   type="text"
                   value={formData.referralCode}
                   onChange={(e) => setFormData({ ...formData, referralCode: e.target.value })}
                   placeholder="Marina"
-                  className="w-full px-4 py-2.5 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
+                  className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-dusty-rose/50 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
                   required={!useExistingReferral}
                 />
-                <p className="text-xs text-neutral-600 mt-1">Digite parte do nome do usuário</p>
+                <p className="text-xs text-dusty-rose/70 mt-1 font-heading">Digite parte do nome do usuário</p>
               </div>
             </>
           )}
 
           <div>
-            <label className="block text-xs text-neutral-500 mb-1">Créditos a Distribuir</label>
+            <label className="block text-xs text-dusty-rose font-heading mb-1.5">Créditos a Distribuir</label>
             <input
               type="number"
               value={formData.credits}
               onChange={(e) => setFormData({ ...formData, credits: e.target.value })}
               placeholder="500"
               min="1"
-              className="w-full px-4 py-2.5 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-accent-gold/30"
+              className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-dusty-rose/50 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
               required
             />
-            <p className="text-xs text-neutral-600 mt-1">
+            <p className="text-xs text-dusty-rose/70 mt-1 font-heading">
               Indicador: {creditsConfig.referrerPercentage * 100}% | Comprador: {creditsConfig.buyerPercentage * 100}%
             </p>
           </div>
@@ -173,7 +173,7 @@ function RegisterSaleForm({ onSuccess, pendingReferrals }) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2.5 rounded-lg bg-accent-gold/80 text-dark-900 font-medium hover:bg-accent-gold transition-colors disabled:opacity-50"
+            className="px-6 py-3 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold hover:bg-accent-light transition-colors disabled:opacity-50 shadow-sm"
           >
             {isSubmitting ? 'Registrando...' : 'Registrar Venda'}
           </button>
@@ -221,31 +221,31 @@ export function AdminSales() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl font-display font-bold text-neutral-100">Vendas</h1>
-          <p className="text-sm text-neutral-500 mt-1">Registro e histórico de vendas</p>
+          <h1 className="text-2xl font-display font-bold text-graphite">Vendas</h1>
+          <p className="text-sm text-dusty-rose mt-1 font-heading">Registro e histórico de vendas</p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
-            <p className="text-xs text-neutral-500">Vendas</p>
-            <p className="text-2xl font-semibold text-neutral-100 mt-1">{filteredSales.length}</p>
+          <div className="p-5 rounded-2xl border border-dusty-rose/20 bg-white shadow-sm">
+            <p className="text-xs text-dusty-rose font-heading">Vendas</p>
+            <p className="text-2xl font-display font-bold text-graphite mt-1">{filteredSales.length}</p>
           </div>
-          <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
-            <p className="text-xs text-neutral-500">Total Créditos</p>
-            <p className="text-xl font-semibold text-accent-gold mt-1">
+          <div className="p-5 rounded-2xl border border-dusty-rose/20 bg-white shadow-sm">
+            <p className="text-xs text-dusty-rose font-heading">Total Créditos</p>
+            <p className="text-xl font-mono font-semibold text-antique-gold mt-1">
               {totalCredits.toLocaleString('pt-BR')}
             </p>
           </div>
-          <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
-            <p className="text-xs text-neutral-500">Cred. Indicadores</p>
-            <p className="text-xl font-semibold text-purple-400 mt-1">
+          <div className="p-5 rounded-2xl border border-dusty-rose/20 bg-white shadow-sm">
+            <p className="text-xs text-dusty-rose font-heading">Cred. Indicadores</p>
+            <p className="text-xl font-mono font-semibold text-deep-purple mt-1">
               {filteredSales.reduce((sum, s) => sum + (s.referrerCredits || 0), 0).toLocaleString('pt-BR')}
             </p>
           </div>
-          <div className="p-4 rounded-xl border border-dark-700/50 bg-dark-800/30">
-            <p className="text-xs text-neutral-500">Cred. Compradores</p>
-            <p className="text-xl font-semibold text-blue-400 mt-1">
+          <div className="p-5 rounded-2xl border border-dusty-rose/20 bg-white shadow-sm">
+            <p className="text-xs text-dusty-rose font-heading">Cred. Compradores</p>
+            <p className="text-xl font-mono font-semibold text-blue-600 mt-1">
               {filteredSales.reduce((sum, s) => sum + (s.buyerCredits || 0), 0).toLocaleString('pt-BR')}
             </p>
           </div>
@@ -266,48 +266,48 @@ export function AdminSales() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-xl border border-dark-700/50 bg-dark-800/30 overflow-hidden"
+          className="rounded-2xl border border-dusty-rose/20 bg-white shadow-sm overflow-hidden"
         >
-          <div className="p-4 border-b border-dark-700/30">
-            <h2 className="text-sm font-semibold text-neutral-200">Histórico de Vendas</h2>
+          <div className="p-4 border-b border-dusty-rose/20 bg-ice-white">
+            <h2 className="text-sm font-heading font-semibold text-graphite">Histórico de Vendas</h2>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-dark-700/30">
-                  <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Cliente</th>
-                  <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Indicador</th>
-                  <th className="text-left text-xs font-medium text-neutral-500 px-4 py-3">Data</th>
-                  <th className="text-right text-xs font-medium text-neutral-500 px-4 py-3">Cred. Indicador</th>
-                  <th className="text-right text-xs font-medium text-neutral-500 px-4 py-3">Cred. Comprador</th>
+                <tr className="border-b border-dusty-rose/20 bg-ice-white">
+                  <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Cliente</th>
+                  <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Indicador</th>
+                  <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Data</th>
+                  <th className="text-right text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Cred. Indicador</th>
+                  <th className="text-right text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Cred. Comprador</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dark-700/20">
+              <tbody className="divide-y divide-dusty-rose/10">
                 {filteredSales.map((sale, index) => (
                   <motion.tr
                     key={sale.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: index * 0.03 }}
-                    className="hover:bg-dark-700/10"
+                    className="hover:bg-ice-white/50 transition-colors"
                   >
-                    <td className="px-4 py-3">
-                      <span className="text-sm text-neutral-200">{sale.clientName}</span>
+                    <td className="px-4 py-4">
+                      <span className="text-sm text-graphite font-heading font-medium">{sale.clientName}</span>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm text-neutral-400">{sale.referrerName}</span>
+                    <td className="px-4 py-4">
+                      <span className="text-sm text-dusty-rose font-heading">{sale.referrerName}</span>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm text-neutral-500">{sale.date}</span>
+                    <td className="px-4 py-4">
+                      <span className="text-sm text-dusty-rose font-heading">{sale.date}</span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-sm font-mono text-accent-gold">
+                    <td className="px-4 py-4 text-right">
+                      <span className="text-sm font-mono font-semibold text-antique-gold">
                         +{(sale.referrerCredits || 0).toLocaleString('pt-BR')}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-sm font-mono text-blue-400">
+                    <td className="px-4 py-4 text-right">
+                      <span className="text-sm font-mono font-semibold text-blue-600">
                         +{(sale.buyerCredits || 0).toLocaleString('pt-BR')}
                       </span>
                     </td>
@@ -319,7 +319,7 @@ export function AdminSales() {
 
           {filteredSales.length === 0 && (
             <div className="p-8 text-center">
-              <p className="text-sm text-neutral-500">Nenhuma venda registrada</p>
+              <p className="text-sm text-dusty-rose font-heading">Nenhuma venda registrada</p>
             </div>
           )}
         </motion.div>
