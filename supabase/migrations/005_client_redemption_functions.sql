@@ -19,7 +19,7 @@ ON point_transactions(experience_id);
 -- Verifica saldo, debita pontos e registra transação atomicamente
 -- ══════════════════════════════════════════════════════════════════════════════
 CREATE OR REPLACE FUNCTION client_redeem_experience(
-  p_experience_id UUID,
+  p_experience_id TEXT,  -- Aceita TEXT (pode ser UUID ou ID simples do frontend)
   p_experience_name TEXT,
   p_points_cost INTEGER
 )
@@ -32,6 +32,7 @@ DECLARE
   v_current_points INTEGER;
   v_new_points INTEGER;
   v_transaction_id UUID;
+  v_experience_uuid UUID;
 BEGIN
   -- Pegar o ID do usuário atual
   v_user_id := auth.uid();
@@ -50,6 +51,13 @@ BEGIN
       'error', 'Custo inválido.'
     );
   END IF;
+
+  -- Tentar converter o ID para UUID (se não for válido, fica NULL)
+  BEGIN
+    v_experience_uuid := p_experience_id::UUID;
+  EXCEPTION WHEN OTHERS THEN
+    v_experience_uuid := NULL;
+  END;
 
   -- Buscar pontos atuais do usuário
   SELECT points INTO v_current_points
@@ -108,7 +116,7 @@ BEGIN
     'redemption',
     'Resgate: ' || p_experience_name,
     v_user_id,  -- Cliente é seu próprio "admin" no resgate
-    p_experience_id
+    v_experience_uuid  -- Pode ser NULL se não for UUID válido
   )
   RETURNING id INTO v_transaction_id;
 
