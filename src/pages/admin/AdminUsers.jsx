@@ -159,7 +159,7 @@ export function AdminUsers() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-display font-bold text-graphite">Clientes</h1>
-          <p className="text-sm text-dusty-rose mt-1 font-heading">
+          <p className="text-sm text-graphite/70 mt-1 font-heading">
             {users.length} cliente{users.length !== 1 ? 's' : ''} cadastrado{users.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -191,11 +191,11 @@ export function AdminUsers() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-dusty-rose/20 bg-ice-white">
-                    <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Cliente</th>
-                    <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Classe</th>
-                    <th className="text-right text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Pontos</th>
-                    <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Desde</th>
-                    <th className="text-right text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">Ações</th>
+                    <th className="text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Cliente</th>
+                    <th className="text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Classe</th>
+                    <th className="text-right text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Pontos</th>
+                    <th className="text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Desde</th>
+                    <th className="text-right text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-dusty-rose/10">
@@ -224,7 +224,7 @@ export function AdminUsers() {
                         </span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-sm text-dusty-rose font-heading">{user.joinDate}</span>
+                        <span className="text-sm text-graphite/70 font-heading">{user.joinDate}</span>
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-2">
@@ -259,7 +259,7 @@ export function AdminUsers() {
         </div>
 
         {/* Dica */}
-        <p className="text-xs text-dusty-rose text-center font-heading">
+        <p className="text-xs text-graphite/60 text-center font-heading">
           Os pontos creditados atualizam automaticamente a classe do cliente.
         </p>
       </div>

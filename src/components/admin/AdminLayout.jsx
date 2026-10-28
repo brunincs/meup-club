@@ -149,7 +149,7 @@ export function AdminLayout({ children }) {
       {/* Footer sutil */}
       <footer className="border-t border-dusty-rose/20 bg-ice-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-xs text-dusty-rose text-center">
+          <p className="text-xs text-graphite/60 text-center">
             Meup Club · Painel Administrativo
           </p>
         </div>
