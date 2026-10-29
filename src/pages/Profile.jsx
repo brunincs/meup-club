@@ -1,379 +1,652 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardHeader } from '@/components/dashboard'
 import { calculateLevel } from '@/services/pointsSystem'
 import {
-  getPointsBreakdown,
-  getUserStatistics,
-  mockAchievements,
-  mockActivityHistory
-} from '@/services/profileData'
-import {
-  profile as profileCopy,
-  levels as levelCopy,
-  format,
-  history as historyCopy
-} from '@/services/copy'
+  updateUserProfile,
+  fetchReferralStats,
+  fetchApprovedTasks,
+  fetchRedeemedExperiences,
+  fetchRecentActivity,
+  maskCPF,
+  formatCPF,
+  formatPhone,
+  formatMemberSince,
+  isValidCPFFormat
+} from '@/services/passportService'
+import { levels as levelCopy, format } from '@/services/copy'
+import toast from 'react-hot-toast'
 
-function PassportHeader({ profile, user, levelData, userPoints }) {
-  // Dados do usuário: prioriza profile, fallback para user do Auth
-  const userName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
-  const userEmail = profile?.email || user?.email || ''
-  const memberSince = new Date('2024-01-01').toLocaleDateString('pt-BR', {
-    month: 'long',
-    year: 'numeric'
-  })
+// ══════════════════════════════════════════════════════════════════════════════
+// CONSTANTES E UTILITÁRIOS
+// ══════════════════════════════════════════════════════════════════════════════
+
+const BRAZILIAN_STATES = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+  'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+  'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+]
+
+const TRAVEL_TYPES = [
+  { id: 'lazer', label: 'Lazer', icon: '☀️' },
+  { id: 'negocios', label: 'Negócios', icon: '💼' },
+  { id: 'aventura', label: 'Aventura', icon: '🏔️' },
+  { id: 'romantico', label: 'Romântico', icon: '💕' },
+  { id: 'familia', label: 'Família', icon: '👨‍👩‍👧‍👦' },
+  { id: 'cultural', label: 'Cultural', icon: '🏛️' }
+]
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COMPONENTE: CABEÇALHO DO PASSAPORTE
+// ══════════════════════════════════════════════════════════════════════════════
+
+function PassportHeader({ profile, levelData, userPoints }) {
+  const userName = profile?.name || 'Viajante'
   const currentLevelId = levelData?.current?.id ?? 1
+  const memberSince = formatMemberSince(profile?.created_at)
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-2xl border border-dark-700/30 bg-dark-800/20"
-    >
-      {/* Passport-style header */}
-      <div className="p-8 md:p-10">
-        <div className="flex flex-col md:flex-row md:items-start gap-8">
-          {/* Avatar */}
-          <div className="relative">
-            <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-neutral-100/10 flex items-center justify-center text-neutral-100 text-4xl font-light">
-              {userName?.charAt(0)?.toUpperCase() || 'U'}
+    <div className="relative">
+      {/* Fundo decorativo com padrão de passaporte */}
+      <div className="absolute inset-0 overflow-hidden rounded-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#32113f] via-[#5c005a] to-[#32113f]" />
+        {/* Padrão sutil de "selos" */}
+        <div className="absolute top-4 right-4 w-24 h-24 rounded-full border border-[#a27937]/20 opacity-30" />
+        <div className="absolute top-8 right-8 w-16 h-16 rounded-full border border-[#a27937]/20 opacity-20" />
+        <div className="absolute bottom-4 left-4 w-20 h-20 rounded-full border-2 border-dashed border-[#a27937]/10 opacity-30" />
+      </div>
+
+      <div className="relative p-6 md:p-8">
+        {/* Título do passaporte */}
+        <div className="text-center mb-6">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-[#a27937] mb-1">
+            República Federativa do Brasil
+          </p>
+          <h2 className="font-display text-lg text-[#edf0f1] tracking-wide">
+            PASSAPORTE DE VIAGEM
+          </h2>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#ddd1d0]/60 mt-1">
+            Meup Club
+          </p>
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
+          {/* Foto tipo documento */}
+          <div className="relative flex-shrink-0">
+            <div className="w-28 h-36 md:w-32 md:h-40 rounded-lg bg-[#edf0f1]/10 border-2 border-[#a27937]/30 flex items-center justify-center overflow-hidden">
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt="Foto"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-[#edf0f1]/40">
+                  <span className="text-4xl mb-1">
+                    {userName?.charAt(0)?.toUpperCase() || 'V'}
+                  </span>
+                  <span className="text-[8px] uppercase tracking-wider">Foto</span>
+                </div>
+              )}
             </div>
-            <div className="absolute -bottom-2 -right-2 px-2 py-1 rounded-lg bg-dark-800 border border-dark-700/50 text-[10px] uppercase tracking-wider text-neutral-500">
+            {/* Badge de classe */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#a27937] text-[#1f1f1f] text-[10px] font-medium uppercase tracking-wider whitespace-nowrap">
               {levelCopy.shortNames[currentLevelId]}
             </div>
           </div>
 
-          {/* Info */}
-          <div className="flex-1">
-            <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-2">
-              {profileCopy.header}
-            </p>
-            <h1 className="text-3xl md:text-4xl font-display font-light text-neutral-100 mb-3">
-              {userName}
-            </h1>
-
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-lg">{levelCopy.icons[currentLevelId]}</span>
-              <span className="text-neutral-300">{levelCopy.names[currentLevelId]}</span>
+          {/* Dados do passaporte */}
+          <div className="flex-1 text-center md:text-left">
+            <div className="mb-4">
+              <p className="text-[9px] uppercase tracking-wider text-[#a39695] mb-1">
+                Nome / Name
+              </p>
+              <h1 className="font-display text-2xl md:text-3xl text-[#edf0f1] font-light">
+                {userName}
+              </h1>
             </div>
 
-            <div className="flex flex-wrap gap-6 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-left">
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-700 mb-1">
-                  {profileCopy.memberSince}
+                <p className="text-[9px] uppercase tracking-wider text-[#a39695] mb-1">
+                  Classe / Class
                 </p>
-                <p className="text-neutral-400 capitalize">{memberSince}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{levelCopy.icons[currentLevelId]}</span>
+                  <span className="text-sm text-[#ddd1d0]">{levelCopy.names[currentLevelId]}</span>
+                </div>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-700 mb-1">
-                  Email
+                <p className="text-[9px] uppercase tracking-wider text-[#a39695] mb-1">
+                  Membro desde / Member since
                 </p>
-                <p className="text-neutral-400">{userEmail}</p>
+                <p className="text-sm text-[#ddd1d0] capitalize">{memberSince}</p>
               </div>
             </div>
           </div>
 
-          {/* Points */}
-          <div className="md:text-right">
-            <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-2">
-              Pontos acumulados
+          {/* Pontos acumulados */}
+          <div className="text-center md:text-right flex-shrink-0">
+            <p className="text-[9px] uppercase tracking-wider text-[#a39695] mb-1">
+              Milhas / Points
             </p>
-            <p className="text-4xl md:text-5xl font-display font-light text-neutral-100">
+            <p className="font-display text-4xl md:text-5xl text-[#a27937] font-light">
               {format.pointsShort(userPoints)}
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Decorative line */}
-      <div className="h-px bg-gradient-to-r from-transparent via-neutral-700/30 to-transparent" />
-    </motion.div>
+        {/* Linha decorativa */}
+        <div className="mt-6 flex items-center gap-3">
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#a27937]/30 to-transparent" />
+          <span className="text-[#a27937]/40 text-lg">✈</span>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#a27937]/30 to-transparent" />
+        </div>
+      </div>
+    </div>
   )
 }
 
-function StatsGrid({ stats, levelData }) {
+// ══════════════════════════════════════════════════════════════════════════════
+// COMPONENTE: ESTATÍSTICAS REAIS
+// ══════════════════════════════════════════════════════════════════════════════
+
+function RealStats({ stats, levelData }) {
   const currentLevelId = levelData?.current?.id ?? 1
+
   const statItems = [
     {
       label: 'Indicações',
-      value: stats.referrals.total,
-      subvalue: `${stats.referrals.approved} aprovadas`,
+      value: stats.referrals?.total ?? 0,
+      subvalue: stats.referrals?.total > 0 ? `${stats.referrals.approved} aprovadas` : 'Nenhuma ainda',
       icon: '◇'
     },
     {
-      label: 'Classe',
+      label: 'Classe Atual',
       value: levelCopy.shortNames[currentLevelId],
-      subvalue: levelData?.next ? `${levelData.progress}% próxima` : 'Nível máximo',
-      icon: '○'
+      subvalue: levelData?.next ? `${levelData.progress}% para próxima` : 'Nível máximo',
+      icon: levelCopy.icons[currentLevelId]
     },
     {
-      label: profileCopy.experiences,
-      value: '3',
-      subvalue: 'resgatadas',
-      icon: '◆'
+      label: 'Tarefas',
+      value: stats.tasks?.total ?? 0,
+      subvalue: stats.tasks?.total > 0 ? `+${format.pointsShort(stats.tasks.points)} pts` : 'Nenhuma concluída',
+      icon: '✓'
+    },
+    {
+      label: 'Experiências',
+      value: stats.experiences?.total ?? 0,
+      subvalue: stats.experiences?.total > 0 ? 'resgatadas' : 'Nenhuma ainda',
+      icon: '★'
     }
   ]
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className="grid grid-cols-2 md:grid-cols-4 gap-4"
-    >
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {statItems.map((stat, index) => (
         <motion.div
           key={stat.label}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 + index * 0.05 }}
-          className="p-5 rounded-xl bg-dark-800/20 border border-dark-700/30"
+          className="p-4 rounded-xl bg-dark-800/40 border border-dark-700/30"
         >
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-neutral-600 text-sm">{stat.icon}</span>
-            <span className="text-[10px] uppercase tracking-wider text-neutral-600">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[#a27937]">{stat.icon}</span>
+            <span className="text-[10px] uppercase tracking-wider text-neutral-500">
               {stat.label}
             </span>
           </div>
-          <p className="text-2xl font-light text-neutral-100">{stat.value}</p>
+          <p className="text-xl font-light text-neutral-100">{stat.value}</p>
           <p className="text-xs text-neutral-600 mt-1">{stat.subvalue}</p>
         </motion.div>
       ))}
-    </motion.div>
+    </div>
   )
 }
 
-function BenefitsBreakdown({ breakdown }) {
+// ══════════════════════════════════════════════════════════════════════════════
+// COMPONENTE: FORMULÁRIO DE EDIÇÃO
+// ══════════════════════════════════════════════════════════════════════════════
+
+function EditProfileForm({ profile, onSave, saving }) {
+  const [form, setForm] = useState({
+    name: profile?.name || '',
+    phone: profile?.phone || '',
+    city: profile?.city || '',
+    state: profile?.state || '',
+    birth_date: profile?.birth_date || '',
+    cpf: profile?.cpf || '',
+    dream_destinations: profile?.dream_destinations || '',
+    travel_preferences: profile?.travel_preferences || ''
+  })
+
+  const [showCPF, setShowCPF] = useState(false)
+  const [errors, setErrors] = useState({})
+
+  // Atualizar form quando profile mudar
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        name: profile.name || '',
+        phone: profile.phone || '',
+        city: profile.city || '',
+        state: profile.state || '',
+        birth_date: profile.birth_date || '',
+        cpf: profile.cpf || '',
+        dream_destinations: profile.dream_destinations || '',
+        travel_preferences: profile.travel_preferences || ''
+      })
+    }
+  }, [profile])
+
+  const handleChange = (field, value) => {
+    let processedValue = value
+
+    // Formatar campos especiais
+    if (field === 'phone') {
+      processedValue = formatPhone(value)
+    } else if (field === 'cpf') {
+      processedValue = formatCPF(value)
+    } else if (field === 'state') {
+      processedValue = value.toUpperCase().slice(0, 2)
+    }
+
+    setForm(prev => ({ ...prev, [field]: processedValue }))
+
+    // Limpar erro do campo
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: null }))
+    }
+  }
+
+  const toggleTravelPref = (typeId) => {
+    const current = form.travel_preferences.split(',').filter(Boolean)
+    const updated = current.includes(typeId)
+      ? current.filter(t => t !== typeId)
+      : [...current, typeId]
+    handleChange('travel_preferences', updated.join(','))
+  }
+
+  const validate = () => {
+    const newErrors = {}
+
+    if (!form.name.trim()) {
+      newErrors.name = 'Nome é obrigatório'
+    }
+
+    if (form.cpf && !isValidCPFFormat(form.cpf)) {
+      newErrors.cpf = 'CPF deve ter 11 dígitos'
+    }
+
+    if (form.phone && form.phone.replace(/\D/g, '').length < 10) {
+      newErrors.phone = 'Telefone incompleto'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (validate()) {
+      onSave(form)
+    }
+  }
+
+  const selectedPrefs = form.travel_preferences.split(',').filter(Boolean)
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className="rounded-2xl border border-dark-700/30 bg-dark-800/20 p-6"
-    >
-      <h2 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-6">
-        {profileCopy.benefitsOrigin}
-      </h2>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Dados Básicos */}
+      <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
+        <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 flex items-center gap-2">
+          <span>✈</span> Dados do Viajante
+        </h3>
 
-      <div className="space-y-5">
-        {breakdown.map((item, index) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 + index * 0.05 }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <span className="text-neutral-600 text-sm">{item.icon}</span>
-                <span className="text-sm text-neutral-300">{item.label}</span>
-              </div>
-              <span className="text-sm font-light text-neutral-200">
-                {format.pointsShort(item.points)}
-              </span>
-            </div>
-            <div className="h-1 bg-dark-700/50 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${item.percentage}%` }}
-                transition={{ duration: 0.8, delay: 0.3 + index * 0.1 }}
-                className="h-full bg-neutral-500 rounded-full"
-              />
-            </div>
-            <div className="flex items-center justify-between mt-1">
-              <span className="text-[10px] text-neutral-700">{item.description}</span>
-              <span className="text-[10px] text-neutral-600">{item.percentage}%</span>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
-  )
-}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Nome */}
+          <div className="md:col-span-2">
+            <label className="block text-xs text-neutral-500 mb-2">
+              Nome completo *
+            </label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              className={`w-full px-4 py-3 rounded-lg bg-dark-700/50 border text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-[#a27937]/50 transition-colors ${errors.name ? 'border-red-500/50' : 'border-dark-600/50'}`}
+              placeholder="Como consta no documento"
+            />
+            {errors.name && (
+              <p className="text-xs text-red-400 mt-1">{errors.name}</p>
+            )}
+          </div>
 
-function JourneyMilestones({ achievements }) {
-  const unlockedCount = achievements.filter(a => a.unlocked).length
+          {/* Telefone */}
+          <div>
+            <label className="block text-xs text-neutral-500 mb-2">
+              Telefone
+            </label>
+            <input
+              type="tel"
+              value={form.phone}
+              onChange={(e) => handleChange('phone', e.target.value)}
+              className={`w-full px-4 py-3 rounded-lg bg-dark-700/50 border text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-[#a27937]/50 transition-colors ${errors.phone ? 'border-red-500/50' : 'border-dark-600/50'}`}
+              placeholder="(11) 99999-9999"
+            />
+            {errors.phone && (
+              <p className="text-xs text-red-400 mt-1">{errors.phone}</p>
+            )}
+          </div>
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="rounded-2xl border border-dark-700/30 bg-dark-800/20 p-6"
-    >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-[10px] uppercase tracking-wider text-neutral-600">
-          {profileCopy.achievements}
-        </h2>
-        <span className="text-xs text-neutral-600">
-          {unlockedCount}/{achievements.length}
-        </span>
-      </div>
+          {/* Data de nascimento */}
+          <div>
+            <label className="block text-xs text-neutral-500 mb-2">
+              Data de nascimento
+            </label>
+            <input
+              type="date"
+              value={form.birth_date}
+              onChange={(e) => handleChange('birth_date', e.target.value)}
+              className="w-full px-4 py-3 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-100 focus:outline-none focus:border-[#a27937]/50 transition-colors"
+            />
+          </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        {achievements.map((achievement, index) => {
-          const isUnlocked = achievement.unlocked
-          const hasProgress = achievement.progress !== undefined && !isUnlocked
+          {/* Cidade */}
+          <div>
+            <label className="block text-xs text-neutral-500 mb-2">
+              Cidade
+            </label>
+            <input
+              type="text"
+              value={form.city}
+              onChange={(e) => handleChange('city', e.target.value)}
+              className="w-full px-4 py-3 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-[#a27937]/50 transition-colors"
+              placeholder="Sua cidade"
+            />
+          </div>
 
-          return (
-            <motion.div
-              key={achievement.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 + index * 0.03 }}
-              whileHover={{ scale: 1.02 }}
-              className={`relative p-4 rounded-xl text-center transition-all ${
-                isUnlocked
-                  ? 'bg-neutral-100/5 border border-neutral-100/10'
-                  : 'bg-dark-700/20 border border-dark-700/30 opacity-50'
-              }`}
+          {/* Estado */}
+          <div>
+            <label className="block text-xs text-neutral-500 mb-2">
+              Estado
+            </label>
+            <select
+              value={form.state}
+              onChange={(e) => handleChange('state', e.target.value)}
+              className="w-full px-4 py-3 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-100 focus:outline-none focus:border-[#a27937]/50 transition-colors"
             >
-              <div className={`text-xl mb-2 ${isUnlocked ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                {achievement.icon}
-              </div>
-              <p className={`text-xs font-medium ${isUnlocked ? 'text-neutral-200' : 'text-neutral-600'}`}>
-                {achievement.name}
-              </p>
-
-              {hasProgress && (
-                <div className="mt-2">
-                  <div className="h-0.5 bg-dark-600 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-neutral-500 rounded-full"
-                      style={{ width: `${(achievement.progress / achievement.target) * 100}%` }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-neutral-700 mt-1">
-                    {achievement.progress}/{achievement.target}
-                  </p>
-                </div>
-              )}
-
-              {isUnlocked && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-neutral-100/20 flex items-center justify-center">
-                  <span className="text-[10px] text-neutral-300">✓</span>
-                </div>
-              )}
-            </motion.div>
-          )
-        })}
+              <option value="">Selecione</option>
+              {BRAZILIAN_STATES.map(uf => (
+                <option key={uf} value={uf}>{uf}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
-    </motion.div>
+
+      {/* Documento - OPCIONAL */}
+      <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] flex items-center gap-2">
+            <span>🔒</span> Documento (opcional)
+          </h3>
+          <span className="text-[10px] text-neutral-600">
+            Apenas para emissão de passagens
+          </span>
+        </div>
+
+        <div className="relative">
+          <label className="block text-xs text-neutral-500 mb-2">
+            CPF
+          </label>
+          <div className="relative">
+            <input
+              type={showCPF ? 'text' : 'password'}
+              value={showCPF ? form.cpf : (form.cpf ? maskCPF(form.cpf) : '')}
+              onChange={(e) => showCPF && handleChange('cpf', e.target.value)}
+              onFocus={() => setShowCPF(true)}
+              className={`w-full px-4 py-3 rounded-lg bg-dark-700/50 border text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-[#a27937]/50 transition-colors pr-20 ${errors.cpf ? 'border-red-500/50' : 'border-dark-600/50'}`}
+              placeholder="000.000.000-00"
+            />
+            <button
+              type="button"
+              onClick={() => setShowCPF(!showCPF)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
+            >
+              {showCPF ? 'Ocultar' : 'Mostrar'}
+            </button>
+          </div>
+          {errors.cpf && (
+            <p className="text-xs text-red-400 mt-1">{errors.cpf}</p>
+          )}
+          <p className="text-[10px] text-neutral-600 mt-2">
+            Seu CPF é armazenado com segurança e nunca será compartilhado.
+          </p>
+        </div>
+      </div>
+
+      {/* Preferências de Viagem */}
+      <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
+        <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 flex items-center gap-2">
+          <span>🌍</span> Preferências de Viagem
+        </h3>
+
+        {/* Tipos de viagem */}
+        <div className="mb-6">
+          <label className="block text-xs text-neutral-500 mb-3">
+            Tipo de viagem preferido (selecione quantos quiser)
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {TRAVEL_TYPES.map(type => (
+              <button
+                key={type.id}
+                type="button"
+                onClick={() => toggleTravelPref(type.id)}
+                className={`px-4 py-2 rounded-full text-sm transition-all ${
+                  selectedPrefs.includes(type.id)
+                    ? 'bg-[#a27937] text-[#1f1f1f]'
+                    : 'bg-dark-700/50 text-neutral-400 hover:bg-dark-700 border border-dark-600/50'
+                }`}
+              >
+                {type.icon} {type.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Destinos dos sonhos */}
+        <div>
+          <label className="block text-xs text-neutral-500 mb-2">
+            Destinos dos sonhos
+          </label>
+          <textarea
+            value={form.dream_destinations}
+            onChange={(e) => handleChange('dream_destinations', e.target.value)}
+            className="w-full px-4 py-3 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-[#a27937]/50 transition-colors resize-none"
+            rows={3}
+            placeholder="Ex: Maldivas, Japão, Patagônia..."
+          />
+        </div>
+      </div>
+
+      {/* Botão Salvar */}
+      <div className="flex justify-end gap-4">
+        <motion.button
+          type="submit"
+          disabled={saving}
+          whileHover={{ scale: saving ? 1 : 1.02 }}
+          whileTap={{ scale: saving ? 1 : 0.98 }}
+          className="px-8 py-3 rounded-xl bg-[#a27937] text-[#1f1f1f] font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          {saving ? (
+            <>
+              <motion.span
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className="w-4 h-4 border-2 border-[#1f1f1f]/30 border-t-[#1f1f1f] rounded-full"
+              />
+              Salvando...
+            </>
+          ) : (
+            <>
+              ✓ Salvar alterações
+            </>
+          )}
+        </motion.button>
+      </div>
+    </form>
   )
 }
 
-function ActivityTimeline({ activities }) {
-  const typeConfig = {
-    mission: { icon: '◇', label: 'Missão' },
-    referral: { icon: '○', label: 'Indicação' },
-    approved: { icon: '◆', label: 'Aprovada' },
-    levelUp: { icon: '✦', label: 'Classe' },
-    achievement: { icon: '▲', label: 'Marco' }
+// ══════════════════════════════════════════════════════════════════════════════
+// COMPONENTE: HISTÓRICO RECENTE
+// ══════════════════════════════════════════════════════════════════════════════
+
+function RecentActivity({ activities }) {
+  if (!activities || activities.length === 0) {
+    return (
+      <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
+        <h3 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-4">
+          Atividades Recentes
+        </h3>
+        <p className="text-sm text-neutral-600 text-center py-8">
+          Nenhuma atividade registrada ainda.
+        </p>
+      </div>
+    )
   }
 
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr)
-    const now = new Date()
-    const diffMs = now - date
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
-
-    if (diffMins < 60) return `${diffMins}min`
-    if (diffHours < 24) return `${diffHours}h`
-    if (diffDays < 7) return `${diffDays}d`
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+  const typeConfig = {
+    credit: { icon: '+', color: 'text-green-400' },
+    debit: { icon: '-', color: 'text-red-400' },
+    task: { icon: '✓', color: 'text-[#a27937]' },
+    referral: { icon: '◇', color: 'text-[#a27937]' },
+    redemption: { icon: '★', color: 'text-purple-400' },
+    admin: { icon: '⚡', color: 'text-blue-400' }
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-      className="rounded-2xl border border-dark-700/30 bg-dark-800/20 p-6"
-    >
-      <h2 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-6">
-        {profileCopy.history}
-      </h2>
+    <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
+      <h3 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-4">
+        Atividades Recentes
+      </h3>
 
-      <div className="space-y-1">
-        {activities.slice(0, 6).map((activity, index) => {
-          const config = typeConfig[activity.type] || typeConfig.mission
+      <div className="space-y-3">
+        {activities.slice(0, 5).map((activity, index) => {
+          const config = typeConfig[activity.type] || { icon: '•', color: 'text-neutral-400' }
+          const date = new Date(activity.created_at)
+          const isPositive = activity.amount > 0
 
           return (
             <motion.div
-              key={index}
+              key={activity.id || index}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + index * 0.05 }}
-              className="flex items-center gap-4 py-3 border-b border-dark-700/20 last:border-0"
+              transition={{ delay: index * 0.05 }}
+              className="flex items-center gap-3 py-2 border-b border-dark-700/20 last:border-0"
             >
-              <div className="w-8 h-8 rounded-lg bg-dark-700/30 flex items-center justify-center">
-                <span className="text-sm text-neutral-500">{config.icon}</span>
+              <div className={`w-8 h-8 rounded-lg bg-dark-700/50 flex items-center justify-center ${config.color}`}>
+                {config.icon}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-neutral-300 truncate">{activity.description}</p>
-                <p className="text-[10px] text-neutral-700">{formatDate(activity.date)}</p>
+                <p className="text-sm text-neutral-300 truncate">
+                  {activity.reason || 'Transação'}
+                </p>
+                <p className="text-[10px] text-neutral-700">
+                  {date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                </p>
               </div>
-              {activity.points > 0 && (
-                <span className="text-sm font-light text-neutral-400">
-                  +{format.pointsShort(activity.points)}
-                </span>
-              )}
+              <span className={`text-sm font-light ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                {isPositive ? '+' : ''}{format.pointsShort(activity.amount)}
+              </span>
             </motion.div>
           )
         })}
       </div>
-    </motion.div>
+    </div>
   )
 }
 
-function PerformanceStats({ stats }) {
-  const items = [
-    { label: 'Taxa de conversão', value: `${stats.referrals.conversionRate}%` },
-    { label: 'Média por indicação', value: format.pointsShort(stats.performance.averagePointsPerReferral) },
-    { label: 'Viajantes indicados', value: stats.performance.totalClients },
-    { label: 'Dias ativos', value: stats.engagement.daysActive }
-  ]
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.35 }}
-      className="rounded-2xl border border-dark-700/30 bg-dark-800/20 p-6"
-    >
-      <h2 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-6">
-        {profileCopy.statistics}
-      </h2>
-
-      <div className="space-y-4">
-        {items.map((item, index) => (
-          <div
-            key={item.label}
-            className="flex items-center justify-between py-2 border-b border-dark-700/20 last:border-0"
-          >
-            <span className="text-sm text-neutral-500">{item.label}</span>
-            <span className="text-sm font-light text-neutral-200">{item.value}</span>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  )
-}
+// ══════════════════════════════════════════════════════════════════════════════
+// PÁGINA PRINCIPAL
+// ══════════════════════════════════════════════════════════════════════════════
 
 export function Profile() {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
 
+  const [stats, setStats] = useState({
+    referrals: { total: 0, approved: 0, pending: 0 },
+    tasks: { total: 0, points: 0 },
+    experiences: { total: 0 }
+  })
+  const [activities, setActivities] = useState([])
+  const [saving, setSaving] = useState(false)
+  const [loadingStats, setLoadingStats] = useState(true)
+
+  // Redirecionar se não logado
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login')
     }
   }, [user, loading, navigate])
+
+  // Carregar dados reais
+  useEffect(() => {
+    async function loadRealData() {
+      if (!user?.id) return
+
+      setLoadingStats(true)
+      try {
+        const [referralRes, tasksRes, expRes, activityRes] = await Promise.all([
+          fetchReferralStats(user.id),
+          fetchApprovedTasks(user.id),
+          fetchRedeemedExperiences(user.id),
+          fetchRecentActivity(user.id)
+        ])
+
+        setStats({
+          referrals: referralRes.stats,
+          tasks: tasksRes.stats,
+          experiences: expRes.stats
+        })
+        setActivities(activityRes.activities)
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error)
+      } finally {
+        setLoadingStats(false)
+      }
+    }
+
+    loadRealData()
+  }, [user?.id])
+
+  // Salvar perfil
+  const handleSave = useCallback(async (formData) => {
+    if (!user?.id) return
+
+    setSaving(true)
+    try {
+      const result = await updateUserProfile(user.id, formData)
+
+      if (result.success) {
+        toast.success('Perfil atualizado com sucesso!')
+        // Atualizar o contexto
+        if (refreshProfile) {
+          await refreshProfile()
+        }
+      } else {
+        toast.error(result.error || 'Erro ao salvar')
+      }
+    } catch (error) {
+      toast.error('Erro ao salvar perfil')
+    } finally {
+      setSaving(false)
+    }
+  }, [user?.id, refreshProfile])
 
   if (loading) {
     return (
@@ -381,7 +654,7 @@ export function Profile() {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-6 h-6 border border-neutral-600 border-t-neutral-300 rounded-full"
+          className="w-6 h-6 border border-neutral-600 border-t-[#a27937] rounded-full"
         />
       </div>
     )
@@ -391,19 +664,17 @@ export function Profile() {
 
   const userPoints = profile?.points || 0
   const levelData = calculateLevel(userPoints)
-  const pointsBreakdown = getPointsBreakdown(userPoints)
-  const stats = getUserStatistics()
 
   return (
     <div className="min-h-screen bg-dark-900">
       <DashboardHeader />
 
-      <main className="container-premium py-12">
-        {/* Back link */}
+      <main className="container-premium py-8 md:py-12">
+        {/* Voltar */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-8"
+          className="mb-6"
         >
           <Link
             to="/dashboard"
@@ -413,81 +684,90 @@ export function Profile() {
           </Link>
         </motion.div>
 
-        {/* Passport Header */}
-        <div className="mb-8">
+        {/* Cabeçalho do Passaporte */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 rounded-2xl overflow-hidden"
+        >
           <PassportHeader
             profile={profile}
-            user={user}
             levelData={levelData}
             userPoints={userPoints}
           />
-        </div>
+        </motion.div>
 
-        {/* Stats Grid */}
-        <div className="mb-8">
-          <StatsGrid stats={stats} levelData={levelData} />
-        </div>
+        {/* Estatísticas Reais */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          {loadingStats ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="p-4 rounded-xl bg-dark-800/40 border border-dark-700/30 animate-pulse">
+                  <div className="h-4 w-20 bg-dark-700/50 rounded mb-3" />
+                  <div className="h-6 w-12 bg-dark-700/50 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <RealStats stats={stats} levelData={levelData} />
+          )}
+        </motion.div>
 
-        {/* Main Content */}
+        {/* Grid Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Main content */}
-          <div className="lg:col-span-2 space-y-6">
-            <BenefitsBreakdown breakdown={pointsBreakdown.breakdown} />
-            <JourneyMilestones achievements={mockAchievements} />
-          </div>
-
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
-            <PerformanceStats stats={stats} />
-            <ActivityTimeline activities={mockActivityHistory} />
-          </div>
-        </div>
-
-        {/* Journey Progress */}
-        {levelData.next && (
+          {/* Formulário de Edição (2 colunas) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-8 p-6 rounded-2xl bg-dark-800/20 border border-dark-700/30"
+            transition={{ delay: 0.2 }}
+            className="lg:col-span-2"
           >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-600 mb-2">
-                  {levelCopy.next}
-                </p>
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">{levelCopy.icons[levelData.next.id]}</span>
-                  <span className="text-lg text-neutral-200">{levelCopy.names[levelData.next.id]}</span>
-                </div>
-              </div>
+            <EditProfileForm
+              profile={profile}
+              onSave={handleSave}
+              saving={saving}
+            />
+          </motion.div>
 
-              <div className="flex-1 max-w-md">
-                <div className="h-1 bg-dark-700/50 rounded-full overflow-hidden">
+          {/* Sidebar (1 coluna) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-6"
+          >
+            <RecentActivity activities={activities} />
+
+            {/* Próxima classe */}
+            {levelData?.next && (
+              <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
+                <h3 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-4">
+                  Próxima Classe
+                </h3>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-2xl">{levelCopy.icons[levelData.next.id]}</span>
+                  <span className="text-neutral-200">{levelCopy.names[levelData.next.id]}</span>
+                </div>
+                <div className="h-2 bg-dark-700/50 rounded-full overflow-hidden mb-2">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${levelData.progress}%` }}
-                    transition={{ duration: 1 }}
-                    className="h-full bg-neutral-400 rounded-full"
+                    transition={{ duration: 0.8 }}
+                    className="h-full bg-[#a27937] rounded-full"
                   />
                 </div>
-                <p className="text-xs text-neutral-600 mt-2 text-right">
+                <p className="text-xs text-neutral-600">
                   {format.pointsShort(levelData.pointsToNext)} pontos restantes
                 </p>
               </div>
-
-              <Link to="/recompensas">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-6 py-3 rounded-xl bg-neutral-100 text-dark-900 font-medium text-sm"
-                >
-                  Ver experiências
-                </motion.button>
-              </Link>
-            </div>
+            )}
           </motion.div>
-        )}
+        </div>
       </main>
     </div>
   )
