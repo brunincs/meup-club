@@ -150,7 +150,7 @@ function PassportHeader({ profile, levelData, userPoints }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// COMPONENTE: ESTATÍSTICAS REAIS
+// COMPONENTE: ESTATÍSTICAS REAIS (FUNDO CLARO)
 // ══════════════════════════════════════════════════════════════════════════════
 
 function RealStats({ stats, levelData }) {
@@ -184,25 +184,27 @@ function RealStats({ stats, levelData }) {
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {statItems.map((stat, index) => (
-        <motion.div
-          key={stat.label}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 + index * 0.05 }}
-          className="p-4 rounded-xl bg-dark-800/40 border border-dark-700/30"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[#a27937]">{stat.icon}</span>
-            <span className="text-[10px] uppercase tracking-wider text-neutral-500">
-              {stat.label}
-            </span>
-          </div>
-          <p className="text-xl font-light text-neutral-100">{stat.value}</p>
-          <p className="text-xs text-neutral-600 mt-1">{stat.subvalue}</p>
-        </motion.div>
-      ))}
+    <div className="rounded-2xl bg-[#edf0f1] p-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statItems.map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 + index * 0.05 }}
+            className="p-4 rounded-xl bg-white border border-[#ddd1d0]/50 shadow-sm"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[#5c005a]">{stat.icon}</span>
+              <span className="text-[10px] uppercase tracking-wider text-[#a39695]">
+                {stat.label}
+              </span>
+            </div>
+            <p className="text-xl font-light text-[#32113f]">{stat.value}</p>
+            <p className="text-xs text-[#a39695] mt-1">{stat.subvalue}</p>
+          </motion.div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -298,204 +300,212 @@ function EditProfileForm({ profile, onSave, saving }) {
 
   const selectedPrefs = form.travel_preferences.split(',').filter(Boolean)
 
+  // Classes de input para fundo claro
+  const inputClass = `w-full px-4 py-3 rounded-lg bg-white border text-[#1f1f1f] placeholder:text-[#a39695] focus:outline-none focus:ring-2 focus:ring-[#5c005a]/30 focus:border-[#5c005a] transition-all`
+  const inputErrorClass = `border-red-500`
+  const inputNormalClass = `border-[#ddd1d0]`
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Dados Básicos */}
-      <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
-        <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 flex items-center gap-2">
-          <span>✈</span> Dados do Viajante
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Nome */}
-          <div className="md:col-span-2">
-            <label className="block text-xs text-neutral-500 mb-2">
-              Nome completo *
-            </label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              className={`w-full px-4 py-3 rounded-lg bg-dark-700/50 border text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-[#a27937]/50 transition-colors ${errors.name ? 'border-red-500/50' : 'border-dark-600/50'}`}
-              placeholder="Como consta no documento"
-            />
-            {errors.name && (
-              <p className="text-xs text-red-400 mt-1">{errors.name}</p>
-            )}
-          </div>
-
-          {/* Telefone */}
-          <div>
-            <label className="block text-xs text-neutral-500 mb-2">
-              Telefone
-            </label>
-            <input
-              type="tel"
-              value={form.phone}
-              onChange={(e) => handleChange('phone', e.target.value)}
-              className={`w-full px-4 py-3 rounded-lg bg-dark-700/50 border text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-[#a27937]/50 transition-colors ${errors.phone ? 'border-red-500/50' : 'border-dark-600/50'}`}
-              placeholder="(11) 99999-9999"
-            />
-            {errors.phone && (
-              <p className="text-xs text-red-400 mt-1">{errors.phone}</p>
-            )}
-          </div>
-
-          {/* Data de nascimento */}
-          <div>
-            <label className="block text-xs text-neutral-500 mb-2">
-              Data de nascimento
-            </label>
-            <input
-              type="date"
-              value={form.birth_date}
-              onChange={(e) => handleChange('birth_date', e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-100 focus:outline-none focus:border-[#a27937]/50 transition-colors"
-            />
-          </div>
-
-          {/* Cidade */}
-          <div>
-            <label className="block text-xs text-neutral-500 mb-2">
-              Cidade
-            </label>
-            <input
-              type="text"
-              value={form.city}
-              onChange={(e) => handleChange('city', e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-[#a27937]/50 transition-colors"
-              placeholder="Sua cidade"
-            />
-          </div>
-
-          {/* Estado */}
-          <div>
-            <label className="block text-xs text-neutral-500 mb-2">
-              Estado
-            </label>
-            <select
-              value={form.state}
-              onChange={(e) => handleChange('state', e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-100 focus:outline-none focus:border-[#a27937]/50 transition-colors"
-            >
-              <option value="">Selecione</option>
-              {BRAZILIAN_STATES.map(uf => (
-                <option key={uf} value={uf}>{uf}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Documento - OPCIONAL */}
-      <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] flex items-center gap-2">
-            <span>🔒</span> Documento (opcional)
+    <form onSubmit={handleSubmit}>
+      {/* Container com fundo claro para o formulário */}
+      <div className="rounded-2xl bg-[#edf0f1] p-6 space-y-6">
+        {/* Dados Básicos */}
+        <div className="rounded-xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
+          <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 flex items-center gap-2 font-medium">
+            <span>✈</span> Dados do Viajante
           </h3>
-          <span className="text-[10px] text-neutral-600">
-            Apenas para emissão de passagens
-          </span>
-        </div>
 
-        <div className="relative">
-          <label className="block text-xs text-neutral-500 mb-2">
-            CPF
-          </label>
-          <div className="relative">
-            <input
-              type={showCPF ? 'text' : 'password'}
-              value={showCPF ? form.cpf : (form.cpf ? maskCPF(form.cpf) : '')}
-              onChange={(e) => showCPF && handleChange('cpf', e.target.value)}
-              onFocus={() => setShowCPF(true)}
-              className={`w-full px-4 py-3 rounded-lg bg-dark-700/50 border text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-[#a27937]/50 transition-colors pr-20 ${errors.cpf ? 'border-red-500/50' : 'border-dark-600/50'}`}
-              placeholder="000.000.000-00"
-            />
-            <button
-              type="button"
-              onClick={() => setShowCPF(!showCPF)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
-            >
-              {showCPF ? 'Ocultar' : 'Mostrar'}
-            </button>
-          </div>
-          {errors.cpf && (
-            <p className="text-xs text-red-400 mt-1">{errors.cpf}</p>
-          )}
-          <p className="text-[10px] text-neutral-600 mt-2">
-            Seu CPF é armazenado com segurança e nunca será compartilhado.
-          </p>
-        </div>
-      </div>
-
-      {/* Preferências de Viagem */}
-      <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
-        <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 flex items-center gap-2">
-          <span>🌍</span> Preferências de Viagem
-        </h3>
-
-        {/* Tipos de viagem */}
-        <div className="mb-6">
-          <label className="block text-xs text-neutral-500 mb-3">
-            Tipo de viagem preferido (selecione quantos quiser)
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {TRAVEL_TYPES.map(type => (
-              <button
-                key={type.id}
-                type="button"
-                onClick={() => toggleTravelPref(type.id)}
-                className={`px-4 py-2 rounded-full text-sm transition-all ${
-                  selectedPrefs.includes(type.id)
-                    ? 'bg-[#a27937] text-[#1f1f1f]'
-                    : 'bg-dark-700/50 text-neutral-400 hover:bg-dark-700 border border-dark-600/50'
-                }`}
-              >
-                {type.icon} {type.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Destinos dos sonhos */}
-        <div>
-          <label className="block text-xs text-neutral-500 mb-2">
-            Destinos dos sonhos
-          </label>
-          <textarea
-            value={form.dream_destinations}
-            onChange={(e) => handleChange('dream_destinations', e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-dark-700/50 border border-dark-600/50 text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-[#a27937]/50 transition-colors resize-none"
-            rows={3}
-            placeholder="Ex: Maldivas, Japão, Patagônia..."
-          />
-        </div>
-      </div>
-
-      {/* Botão Salvar */}
-      <div className="flex justify-end gap-4">
-        <motion.button
-          type="submit"
-          disabled={saving}
-          whileHover={{ scale: saving ? 1 : 1.02 }}
-          whileTap={{ scale: saving ? 1 : 0.98 }}
-          className="px-8 py-3 rounded-xl bg-[#a27937] text-[#1f1f1f] font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        >
-          {saving ? (
-            <>
-              <motion.span
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                className="w-4 h-4 border-2 border-[#1f1f1f]/30 border-t-[#1f1f1f] rounded-full"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Nome */}
+            <div className="md:col-span-2">
+              <label className="block text-xs text-[#32113f] font-medium mb-2">
+                Nome completo *
+              </label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                className={`${inputClass} ${errors.name ? inputErrorClass : inputNormalClass}`}
+                placeholder="Como consta no documento"
               />
-              Salvando...
-            </>
-          ) : (
-            <>
-              ✓ Salvar alterações
-            </>
-          )}
-        </motion.button>
+              {errors.name && (
+                <p className="text-xs text-red-600 mt-1">{errors.name}</p>
+              )}
+            </div>
+
+            {/* Telefone */}
+            <div>
+              <label className="block text-xs text-[#32113f] font-medium mb-2">
+                Telefone
+              </label>
+              <input
+                type="tel"
+                value={form.phone}
+                onChange={(e) => handleChange('phone', e.target.value)}
+                className={`${inputClass} ${errors.phone ? inputErrorClass : inputNormalClass}`}
+                placeholder="(11) 99999-9999"
+              />
+              {errors.phone && (
+                <p className="text-xs text-red-600 mt-1">{errors.phone}</p>
+              )}
+            </div>
+
+            {/* Data de nascimento */}
+            <div>
+              <label className="block text-xs text-[#32113f] font-medium mb-2">
+                Data de nascimento
+              </label>
+              <input
+                type="date"
+                value={form.birth_date}
+                onChange={(e) => handleChange('birth_date', e.target.value)}
+                className={`${inputClass} ${inputNormalClass}`}
+              />
+            </div>
+
+            {/* Cidade */}
+            <div>
+              <label className="block text-xs text-[#32113f] font-medium mb-2">
+                Cidade
+              </label>
+              <input
+                type="text"
+                value={form.city}
+                onChange={(e) => handleChange('city', e.target.value)}
+                className={`${inputClass} ${inputNormalClass}`}
+                placeholder="Sua cidade"
+              />
+            </div>
+
+            {/* Estado */}
+            <div>
+              <label className="block text-xs text-[#32113f] font-medium mb-2">
+                Estado
+              </label>
+              <select
+                value={form.state}
+                onChange={(e) => handleChange('state', e.target.value)}
+                className={`${inputClass} ${inputNormalClass}`}
+              >
+                <option value="">Selecione</option>
+                {BRAZILIAN_STATES.map(uf => (
+                  <option key={uf} value={uf}>{uf}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Documento - OPCIONAL */}
+        <div className="rounded-xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] flex items-center gap-2 font-medium">
+              <span>🔒</span> Documento (opcional)
+            </h3>
+            <span className="text-[10px] text-[#a39695]">
+              Apenas para emissão de passagens
+            </span>
+          </div>
+
+          <div className="relative">
+            <label className="block text-xs text-[#32113f] font-medium mb-2">
+              CPF
+            </label>
+            <div className="relative">
+              <input
+                type={showCPF ? 'text' : 'password'}
+                value={showCPF ? form.cpf : (form.cpf ? maskCPF(form.cpf) : '')}
+                onChange={(e) => showCPF && handleChange('cpf', e.target.value)}
+                onFocus={() => setShowCPF(true)}
+                className={`${inputClass} pr-20 ${errors.cpf ? inputErrorClass : inputNormalClass}`}
+                placeholder="000.000.000-00"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCPF(!showCPF)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#5c005a] hover:text-[#32113f] transition-colors font-medium"
+              >
+                {showCPF ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
+            {errors.cpf && (
+              <p className="text-xs text-red-600 mt-1">{errors.cpf}</p>
+            )}
+            <p className="text-[10px] text-[#a39695] mt-2">
+              Seu CPF é armazenado com segurança e nunca será compartilhado.
+            </p>
+          </div>
+        </div>
+
+        {/* Preferências de Viagem */}
+        <div className="rounded-xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
+          <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 flex items-center gap-2 font-medium">
+            <span>🌍</span> Preferências de Viagem
+          </h3>
+
+          {/* Tipos de viagem */}
+          <div className="mb-6">
+            <label className="block text-xs text-[#32113f] font-medium mb-3">
+              Tipo de viagem preferido (selecione quantos quiser)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {TRAVEL_TYPES.map(type => (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => toggleTravelPref(type.id)}
+                  className={`px-4 py-2 rounded-full text-sm transition-all ${
+                    selectedPrefs.includes(type.id)
+                      ? 'bg-[#5c005a] text-white'
+                      : 'bg-[#edf0f1] text-[#32113f] hover:bg-[#ddd1d0] border border-[#ddd1d0]'
+                  }`}
+                >
+                  {type.icon} {type.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Destinos dos sonhos */}
+          <div>
+            <label className="block text-xs text-[#32113f] font-medium mb-2">
+              Destinos dos sonhos
+            </label>
+            <textarea
+              value={form.dream_destinations}
+              onChange={(e) => handleChange('dream_destinations', e.target.value)}
+              className={`${inputClass} ${inputNormalClass} resize-none`}
+              rows={3}
+              placeholder="Ex: Maldivas, Japão, Patagônia..."
+            />
+          </div>
+        </div>
+
+        {/* Botão Salvar */}
+        <div className="flex justify-end gap-4 pt-2">
+          <motion.button
+            type="submit"
+            disabled={saving}
+            whileHover={{ scale: saving ? 1 : 1.02 }}
+            whileTap={{ scale: saving ? 1 : 0.98 }}
+            className="px-8 py-3 rounded-xl bg-[#5c005a] text-white font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-[#5c005a]/20 hover:bg-[#32113f] transition-colors"
+          >
+            {saving ? (
+              <>
+                <motion.span
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                />
+                Salvando...
+              </>
+            ) : (
+              <>
+                ✓ Salvar alterações
+              </>
+            )}
+          </motion.button>
+        </div>
       </div>
     </form>
   )
@@ -508,11 +518,11 @@ function EditProfileForm({ profile, onSave, saving }) {
 function RecentActivity({ activities }) {
   if (!activities || activities.length === 0) {
     return (
-      <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
-        <h3 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-4">
+      <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
+        <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium">
           Atividades Recentes
         </h3>
-        <p className="text-sm text-neutral-600 text-center py-8">
+        <p className="text-sm text-[#ddd1d0]/60 text-center py-8">
           Nenhuma atividade registrada ainda.
         </p>
       </div>
@@ -529,14 +539,14 @@ function RecentActivity({ activities }) {
   }
 
   return (
-    <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
-      <h3 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-4">
+    <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
+      <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium">
         Atividades Recentes
       </h3>
 
       <div className="space-y-3">
         {activities.slice(0, 5).map((activity, index) => {
-          const config = typeConfig[activity.type] || { icon: '•', color: 'text-neutral-400' }
+          const config = typeConfig[activity.type] || { icon: '•', color: 'text-[#ddd1d0]' }
           const date = new Date(activity.created_at)
           const isPositive = activity.amount > 0
 
@@ -546,20 +556,20 @@ function RecentActivity({ activities }) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="flex items-center gap-3 py-2 border-b border-dark-700/20 last:border-0"
+              className="flex items-center gap-3 py-2 border-b border-white/10 last:border-0"
             >
-              <div className={`w-8 h-8 rounded-lg bg-dark-700/50 flex items-center justify-center ${config.color}`}>
+              <div className={`w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center ${config.color}`}>
                 {config.icon}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-neutral-300 truncate">
+                <p className="text-sm text-[#edf0f1] truncate">
                   {activity.reason || 'Transação'}
                 </p>
-                <p className="text-[10px] text-neutral-700">
+                <p className="text-[10px] text-[#ddd1d0]/60">
                   {date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                 </p>
               </div>
-              <span className={`text-sm font-light ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+              <span className={`text-sm font-medium ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
                 {isPositive ? '+' : ''}{format.pointsShort(activity.amount)}
               </span>
             </motion.div>
@@ -705,13 +715,15 @@ export function Profile() {
           className="mb-8"
         >
           {loadingStats ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="p-4 rounded-xl bg-dark-800/40 border border-dark-700/30 animate-pulse">
-                  <div className="h-4 w-20 bg-dark-700/50 rounded mb-3" />
-                  <div className="h-6 w-12 bg-dark-700/50 rounded" />
-                </div>
-              ))}
+            <div className="rounded-2xl bg-[#edf0f1] p-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="p-4 rounded-xl bg-white border border-[#ddd1d0]/50 animate-pulse">
+                    <div className="h-4 w-20 bg-[#ddd1d0] rounded mb-3" />
+                    <div className="h-6 w-12 bg-[#ddd1d0] rounded" />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             <RealStats stats={stats} levelData={levelData} />
@@ -745,15 +757,15 @@ export function Profile() {
 
             {/* Próxima classe */}
             {levelData?.next && (
-              <div className="rounded-xl bg-dark-800/40 border border-dark-700/30 p-6">
-                <h3 className="text-[10px] uppercase tracking-wider text-neutral-600 mb-4">
+              <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
+                <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium">
                   Próxima Classe
                 </h3>
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-2xl">{levelCopy.icons[levelData.next.id]}</span>
-                  <span className="text-neutral-200">{levelCopy.names[levelData.next.id]}</span>
+                  <span className="text-[#edf0f1]">{levelCopy.names[levelData.next.id]}</span>
                 </div>
-                <div className="h-2 bg-dark-700/50 rounded-full overflow-hidden mb-2">
+                <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-2">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${levelData.progress}%` }}
@@ -761,7 +773,7 @@ export function Profile() {
                     className="h-full bg-[#a27937] rounded-full"
                   />
                 </div>
-                <p className="text-xs text-neutral-600">
+                <p className="text-xs text-[#ddd1d0]/60">
                   {format.pointsShort(levelData.pointsToNext)} pontos restantes
                 </p>
               </div>
