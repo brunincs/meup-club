@@ -656,7 +656,7 @@ export function Rewards() {
   const triggerButtonRef = useRef(null)
 
   const levelData = calculateLevel(userPoints)
-  const userLevelId = levelData.current.id
+  const userLevelId = levelData?.current?.id ?? 1
   const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
 
   const availableCount = rewardsWithProgress.filter(r => r.canRedeem && !redeemedIds.includes(r.id)).length

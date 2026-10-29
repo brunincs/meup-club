@@ -25,6 +25,7 @@ function PassportHeader({ profile, user, levelData, userPoints }) {
     month: 'long',
     year: 'numeric'
   })
+  const currentLevelId = levelData?.current?.id ?? 1
 
   return (
     <motion.div
@@ -41,7 +42,7 @@ function PassportHeader({ profile, user, levelData, userPoints }) {
               {userName?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="absolute -bottom-2 -right-2 px-2 py-1 rounded-lg bg-dark-800 border border-dark-700/50 text-[10px] uppercase tracking-wider text-neutral-500">
-              {levelCopy.shortNames[levelData.current.id]}
+              {levelCopy.shortNames[currentLevelId]}
             </div>
           </div>
 
@@ -55,8 +56,8 @@ function PassportHeader({ profile, user, levelData, userPoints }) {
             </h1>
 
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-lg">{levelCopy.icons[levelData.current.id]}</span>
-              <span className="text-neutral-300">{levelCopy.names[levelData.current.id]}</span>
+              <span className="text-lg">{levelCopy.icons[currentLevelId]}</span>
+              <span className="text-neutral-300">{levelCopy.names[currentLevelId]}</span>
             </div>
 
             <div className="flex flex-wrap gap-6 text-sm">
@@ -94,6 +95,7 @@ function PassportHeader({ profile, user, levelData, userPoints }) {
 }
 
 function StatsGrid({ stats, levelData }) {
+  const currentLevelId = levelData?.current?.id ?? 1
   const statItems = [
     {
       label: 'Indicações',
@@ -103,8 +105,8 @@ function StatsGrid({ stats, levelData }) {
     },
     {
       label: 'Classe',
-      value: levelCopy.shortNames[levelData.current.id],
-      subvalue: levelData.next ? `${levelData.progress}% próxima` : 'Nível máximo',
+      value: levelCopy.shortNames[currentLevelId],
+      subvalue: levelData?.next ? `${levelData.progress}% próxima` : 'Nível máximo',
       icon: '○'
     },
     {

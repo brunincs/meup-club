@@ -12,7 +12,10 @@ export function LevelProgress() {
   const nextRewards = getNextRewards(points, 1)
   const nextExperience = nextRewards[0]
 
-  const { current, next, progress, pointsToNext } = levelData
+  const current = levelData?.current || { id: 1, shortName: 'Econômica', bonusMultiplier: 1 }
+  const next = levelData?.next || null
+  const progress = levelData?.progress || 0
+  const pointsToNext = levelData?.pointsToNext || 0
   const ClassIcon = getClassIcon(current.id)
 
   return (

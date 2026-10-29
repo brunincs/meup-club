@@ -16,6 +16,7 @@ export function CompetitionWidget() {
   const { profile, user } = useAuth()
   const { points: userPoints } = usePoints() // Pontos reais do usuário logado
   const levelData = calculateLevel(userPoints)
+  const currentLevelId = levelData?.current?.id ?? 1
   const userPosition = mockUserEngagement.weeklyPosition
   const weeklyReset = getTimeToWeeklyReset()
   const weeklyPrize = getWeeklyPrize(userPosition)
@@ -28,7 +29,7 @@ export function CompetitionWidget() {
     position: userPosition,
     name: userName,
     points: userPoints,
-    levelId: levelData.current.id,
+    levelId: currentLevelId,
     isUser: true,
     todayPoints
   }

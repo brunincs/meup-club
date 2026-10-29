@@ -27,8 +27,8 @@ export function HeroSection() {
   const userName = fullName.split(' ')[0]
 
   const levelData = calculateLevel(userPoints)
-  const currentLevel = levelData.current
-  const nextLevel = levelData.next
+  const currentLevel = levelData?.current || { id: 1, shortName: 'Econômica', bonusMultiplier: 1 }
+  const nextLevel = levelData?.next || null
 
   // Dados de engajamento (zerados para conta nova, demo mostra valores)
   const todayPoints = useMock ? 320 : 0

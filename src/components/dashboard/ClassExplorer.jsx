@@ -8,7 +8,7 @@ import { usePoints } from '@/contexts/PointsContext'
 export function ClassExplorer() {
   const { points: userPoints } = usePoints() // Pontos reais do usuário logado
   const levelData = calculateLevel(userPoints)
-  const userLevelId = levelData.current.id
+  const userLevelId = levelData?.current?.id ?? 1
 
   const [selectedClass, setSelectedClass] = useState(userLevelId)
 

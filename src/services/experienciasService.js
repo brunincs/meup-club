@@ -393,3 +393,102 @@ export async function fetchMinhasSolicitacoes(userId) {
     return { success: false, error: error.message, solicitacoes: [] }
   }
 }
+
+/**
+ * Verifica se já existe solicitação pendente para uma tarefa
+ * Evita duplicatas - cliente não pode solicitar a mesma tarefa duas vezes
+ */
+export async function verificarSolicitacaoPendente(userId, tarefaId) {
+  try {
+    const { data, error } = await supabase
+      .from('tarefa_solicitacoes')
+      .select('id, status')
+      .eq('user_id', userId)
+      .eq('tarefa_id', tarefaId)
+      .eq('status', 'pendente')
+      .maybeSingle()
+
+    if (error) throw error
+
+    return {
+      success: true,
+      pendente: !!data,
+      solicitacaoId: data?.id
+    }
+  } catch (error) {
+    console.error('Erro ao verificar solicitação:', error)
+    return { success: false, error: error.message, pendente: false }
+  }
+}
+
+/**
+ * Busca status de todas as solicitações do usuário para exibição
+ * Retorna mapa de tarefaId -> status
+ */
+export async function fetchStatusSolicitacoes(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('tarefa_solicitacoes')
+      .select('tarefa_id, status, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    // Criar mapa de tarefa_id -> status mais recente
+    const statusMap = {}
+    for (const s of (data || [])) {
+      // Só guarda a primeira (mais recente) de cada tarefa
+      if (!statusMap[s.tarefa_id]) {
+        statusMap[s.tarefa_id] = s.status
+      }
+    }
+
+    return { success: true, statusMap }
+  } catch (error) {
+    console.error('Erro ao buscar status:', error)
+    return { success: false, error: error.message, statusMap: {} }
+  }
+}
+
+/**
+ * Busca solicitações de um cliente específico (admin)
+ */
+export async function fetchSolicitacoesCliente(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('tarefa_solicitacoes')
+      .select(`
+        *,
+        tarefas (nome, pontos, icone)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    // Formatar dados para exibição
+    const solicitacoes = (data || []).map(s => ({
+      id: s.id,
+      tarefaId: s.tarefa_id,
+      tarefaNome: s.tarefas?.nome || 'Tarefa',
+      tarefaPontos: s.tarefas?.pontos || 0,
+      tarefaIcone: s.tarefas?.icone || '✓',
+      status: s.status,
+      pontosCredidados: s.pontos_concedidos,
+      adminComentario: s.admin_comentario,
+      createdAt: new Date(s.created_at).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }))
+
+    return { success: true, solicitacoes }
+  } catch (error) {
+    console.error('Erro ao buscar solicitações do cliente:', error)
+    return { success: false, error: error.message, solicitacoes: [] }
+  }
+}

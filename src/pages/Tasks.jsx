@@ -5,11 +5,13 @@ import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardHeader } from '@/components/dashboard'
 import {
-  tasksConfig,
-  mockUserTasksProgress as initialTasksProgress
-} from '@/services/tasksData'
+  fetchTarefas,
+  solicitarTarefa,
+  fetchStatusSolicitacoes,
+  verificarSolicitacaoPendente
+} from '@/services/experienciasService'
 import { format } from '@/services/copy'
-import { TargetIcon, CheckIcon, CalendarIcon, SparkleIcon } from '@/components/ui/Icons'
+import { TargetIcon, CheckIcon, CalendarIcon, SparkleIcon, ClockIcon } from '@/components/ui/Icons'
 
 // ============================================
 // FOTO A VALIDAR - trocar pela oficial da Me,up depois
@@ -152,6 +154,8 @@ function MissionCard({ task, onComplete, isLoading }) {
 // Versão para fundo claro
 function MissionCardLight({ task, onComplete, isLoading }) {
   const isCompleted = task.completed
+  const isPending = task.pending
+  const isRejected = task.rejected
   const hasProgress = task.target > 1
   const progressPercent = hasProgress ? (task.progress / task.target) * 100 : 0
   const isInProgress = hasProgress && task.progress > 0 && task.progress < task.target
@@ -165,13 +169,27 @@ function MissionCardLight({ task, onComplete, isLoading }) {
       className={`relative overflow-hidden rounded-2xl border transition-all ${
         isCompleted
           ? 'border-game-green/30 bg-game-green/5'
-          : 'border-graphite/10 bg-white hover:border-antique-gold/40 shadow-sm hover:shadow-md'
+          : isPending
+            ? 'border-antique-gold/30 bg-antique-gold/5'
+            : isRejected
+              ? 'border-red-400/30 bg-red-400/5'
+              : 'border-graphite/10 bg-white hover:border-antique-gold/40 shadow-sm hover:shadow-md'
       }`}
     >
-      {/* Completed badge */}
+      {/* Status badge */}
       {isCompleted && (
         <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-game-green/20 border border-game-green/30">
-          <span className="text-[10px] uppercase tracking-wider text-game-green font-medium">Concluída</span>
+          <span className="text-[10px] uppercase tracking-wider text-game-green font-medium">Aprovada</span>
+        </div>
+      )}
+      {isPending && (
+        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-antique-gold/20 border border-antique-gold/30">
+          <span className="text-[10px] uppercase tracking-wider text-antique-gold font-medium">Aguardando</span>
+        </div>
+      )}
+      {isRejected && (
+        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-red-400/20 border border-red-400/30">
+          <span className="text-[10px] uppercase tracking-wider text-red-400 font-medium">Rejeitada</span>
         </div>
       )}
 
@@ -181,10 +199,14 @@ function MissionCardLight({ task, onComplete, isLoading }) {
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
             isCompleted
               ? 'bg-game-green/10'
-              : 'bg-gradient-to-br from-antique-gold/20 to-antique-gold/5'
+              : isPending
+                ? 'bg-antique-gold/10'
+                : 'bg-gradient-to-br from-antique-gold/20 to-antique-gold/5'
           }`}>
             {isCompleted ? (
               <CheckIcon size={20} color="#22c55e" />
+            ) : isPending ? (
+              <ClockIcon size={20} color="#a27937" />
             ) : (
               <SparkleIcon size={20} color="#a27937" />
             )}
@@ -193,7 +215,7 @@ function MissionCardLight({ task, onComplete, isLoading }) {
           {/* Content */}
           <div className="flex-1 min-w-0">
             <h3 className={`font-heading font-medium mb-1 ${
-              isCompleted ? 'text-game-green' : 'text-deep-purple'
+              isCompleted ? 'text-game-green' : isPending ? 'text-antique-gold' : 'text-deep-purple'
             }`}>
               {task.name}
             </h3>
@@ -202,7 +224,7 @@ function MissionCardLight({ task, onComplete, isLoading }) {
             </p>
 
             {/* Progress */}
-            {hasProgress && !isCompleted && (
+            {hasProgress && !isCompleted && !isPending && (
               <div className="mb-4">
                 <div className="flex items-center justify-between text-xs mb-2">
                   <span className="text-graphite/60">Progresso</span>
@@ -219,18 +241,25 @@ function MissionCardLight({ task, onComplete, isLoading }) {
               </div>
             )}
 
+            {/* Pending message */}
+            {isPending && (
+              <p className="text-xs text-antique-gold/80 mb-4">
+                Sua solicitação está sendo analisada pelo admin.
+              </p>
+            )}
+
             {/* Footer */}
             <div className="flex items-center justify-between">
               <div>
                 <span className={`text-lg font-display font-bold ${
-                  isCompleted ? 'text-game-green/60' : 'text-antique-gold'
+                  isCompleted ? 'text-game-green/60' : isPending ? 'text-antique-gold/60' : 'text-antique-gold'
                 }`}>
                   +{task.points}
                 </span>
                 <span className="text-xs text-graphite/60 ml-1">pontos</span>
               </div>
 
-              {!isCompleted && (
+              {!isCompleted && !isPending && (
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -249,10 +278,12 @@ function MissionCardLight({ task, onComplete, isLoading }) {
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                         className="w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block"
                       />
-                      Processando...
+                      Enviando...
                     </span>
                   ) : isInProgress ? (
                     'Continuar →'
+                  ) : isRejected ? (
+                    'Tentar novamente'
                   ) : (
                     'Concluir'
                   )}
@@ -266,6 +297,13 @@ function MissionCardLight({ task, onComplete, isLoading }) {
   )
 }
 
+// Mapeia tipo do banco para categoria do frontend
+const tipoToCategory = {
+  diaria: 'daily',
+  semanal: 'weekly',
+  unica: 'oneTime'
+}
+
 export function Tasks() {
   const { user, loading } = useAuth()
   const navigate = useNavigate()
@@ -273,11 +311,10 @@ export function Tasks() {
   const [loadingTaskId, setLoadingTaskId] = useState(null)
   const tabListRef = useRef(null)
 
-  // Estado local para progresso das tasks (Bug 2)
-  const [tasksProgress, setTasksProgress] = useState(() => {
-    // Clonar o estado inicial para não mutar o original
-    return JSON.parse(JSON.stringify(initialTasksProgress))
-  })
+  // Estado para tarefas do banco
+  const [tarefas, setTarefas] = useState([])
+  const [solicitacoesStatus, setSolicitacoesStatus] = useState({})
+  const [isLoadingTarefas, setIsLoadingTarefas] = useState(true)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -285,25 +322,60 @@ export function Tasks() {
     }
   }, [user, loading, navigate])
 
-  // Função para obter tasks com status atualizado (Bug 1 - Filtro)
-  const getTasksWithStatus = useCallback((category) => {
-    const tasks = tasksConfig[category] || []
+  // Carregar tarefas do banco e status das solicitações
+  useEffect(() => {
+    async function loadData() {
+      if (!user) return
 
-    return tasks.map(task => {
-      const progress = tasksProgress[task.id] || { completed: false }
+      setIsLoadingTarefas(true)
+      try {
+        // Buscar tarefas ativas do banco
+        const tarefasResult = await fetchTarefas(false)
+        if (tarefasResult.success) {
+          setTarefas(tarefasResult.tarefas)
+        }
 
-      return {
-        ...task,
-        category,
-        completed: progress.completed,
-        completedAt: progress.completedAt,
-        progress: progress.progress || 0,
-        target: task.target || 1
+        // Buscar status das solicitações do usuário
+        const statusResult = await fetchStatusSolicitacoes(user.id)
+        if (statusResult.success) {
+          setSolicitacoesStatus(statusResult.statusMap)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar tarefas:', error)
+      } finally {
+        setIsLoadingTarefas(false)
       }
-    })
-  }, [tasksProgress])
+    }
 
-  // Memoizar tasks filtradas para evitar recálculos (Bug 1)
+    loadData()
+  }, [user])
+
+  // Função para obter tasks com status atualizado
+  const getTasksWithStatus = useCallback((category) => {
+    // Mapear categoria para tipo do banco
+    const tipoMap = { daily: 'diaria', weekly: 'semanal', oneTime: 'unica' }
+    const tipo = tipoMap[category]
+
+    return tarefas
+      .filter(t => t.tipo === tipo && t.ativa)
+      .map(task => {
+        const status = solicitacoesStatus[task.id]
+        return {
+          ...task,
+          category,
+          points: task.pontos,
+          name: task.nome,
+          description: task.descricao,
+          completed: status === 'aprovada',
+          pending: status === 'pendente',
+          rejected: status === 'rejeitada',
+          target: 1,
+          progress: status === 'aprovada' ? 1 : 0
+        }
+      })
+  }, [tarefas, solicitacoesStatus])
+
+  // Memoizar tasks filtradas
   const filteredTasks = useMemo(() => {
     return getTasksWithStatus(activeTab)
   }, [activeTab, getTasksWithStatus])
@@ -318,16 +390,19 @@ export function Tasks() {
       daily: {
         total: daily.length,
         completed: daily.filter(t => t.completed).length,
+        pending: daily.filter(t => t.pending).length,
         points: daily.reduce((sum, t) => sum + (t.completed ? t.points : 0), 0)
       },
       weekly: {
         total: weekly.length,
         completed: weekly.filter(t => t.completed).length,
+        pending: weekly.filter(t => t.pending).length,
         points: weekly.reduce((sum, t) => sum + (t.completed ? t.points : 0), 0)
       },
       oneTime: {
         total: oneTime.length,
         completed: oneTime.filter(t => t.completed).length,
+        pending: oneTime.filter(t => t.pending).length,
         points: oneTime.reduce((sum, t) => sum + (t.completed ? t.points : 0), 0)
       }
     }
@@ -335,106 +410,84 @@ export function Tasks() {
 
   // Calcular pontos totais
   const tasksPoints = useMemo(() => {
-    let earned = 0
-    let available = 0
-
-    Object.entries(tasksConfig).forEach(([category, tasks]) => {
-      tasks.forEach(task => {
-        const progress = tasksProgress[task.id]
-        if (progress?.completed) {
-          earned += task.points
-        } else {
-          available += task.points
-        }
-      })
-    })
-
+    const allTasks = [...getTasksWithStatus('daily'), ...getTasksWithStatus('weekly'), ...getTasksWithStatus('oneTime')]
+    const earned = allTasks.filter(t => t.completed).reduce((sum, t) => sum + t.points, 0)
+    const available = allTasks.filter(t => !t.completed && !t.pending).reduce((sum, t) => sum + t.points, 0)
     return { earned, available, total: earned + available }
-  }, [tasksProgress])
+  }, [getTasksWithStatus])
 
   const totalCompleted = tasksSummary.daily.completed + tasksSummary.weekly.completed + tasksSummary.oneTime.completed
   const totalTasks = tasksSummary.daily.total + tasksSummary.weekly.total + tasksSummary.oneTime.total
 
-  // Handler para completar task (Bug 2)
+  // Handler para completar task - AGORA CRIA SOLICITAÇÃO NO BANCO
   const handleCompleteTask = useCallback(async (task) => {
-    // Se tem progresso parcial, navegar para a ação
-    if (task.target > 1 && task.progress < task.target) {
-      const route = actionRoutes[task.type] || actionRoutes[task.action]
-      if (route) {
-        toast(`Redirecionando para continuar a missão...`, {
-          icon: '🎯',
-          style: {
-            background: '#32113f',
-            color: '#edf0f1',
-            border: '1px solid rgba(162, 121, 55, 0.3)'
-          }
-        })
-        setTimeout(() => navigate(route), 500)
-      } else {
-        toast(`Progresso: ${task.progress}/${task.target}`, {
-          icon: '📊',
-          style: {
-            background: '#32113f',
-            color: '#edf0f1',
-            border: '1px solid rgba(162, 121, 55, 0.3)'
-          }
-        })
-      }
+    if (!user) {
+      toast.error('Você precisa estar logado', {
+        style: { background: '#32113f', color: '#edf0f1' }
+      })
       return
     }
 
-    // Se é task com ação (daily_share, daily_view_rewards), navegar primeiro
-    if (task.action && !task.completed) {
-      const route = actionRoutes[task.action]
-      if (route && route !== '/dashboard') {
-        toast(`Redirecionando...`, {
-          icon: '🎯',
-          style: {
-            background: '#32113f',
-            color: '#edf0f1',
-            border: '1px solid rgba(162, 121, 55, 0.3)'
-          }
-        })
-        setTimeout(() => navigate(route), 500)
-        return
-      }
+    // Se já está pendente, não faz nada
+    if (task.pending) {
+      toast('Esta tarefa já está aguardando aprovação', {
+        icon: '⏳',
+        style: { background: '#32113f', color: '#edf0f1' }
+      })
+      return
     }
 
-    // Simular loading
+    // Se já foi aprovada, não faz nada
+    if (task.completed) {
+      toast('Esta tarefa já foi concluída!', {
+        icon: '✅',
+        style: { background: '#32113f', color: '#edf0f1' }
+      })
+      return
+    }
+
     setLoadingTaskId(task.id)
 
     try {
-      // Simular chamada de API
-      await new Promise(resolve => setTimeout(resolve, 800))
+      // Verificar se já existe solicitação pendente (evitar duplicatas)
+      const checkResult = await verificarSolicitacaoPendente(user.id, task.id)
+      if (checkResult.pendente) {
+        toast('Você já solicitou esta tarefa. Aguarde aprovação.', {
+          icon: '⏳',
+          style: { background: '#32113f', color: '#edf0f1' }
+        })
+        // Atualizar status local
+        setSolicitacoesStatus(prev => ({ ...prev, [task.id]: 'pendente' }))
+        return
+      }
 
-      // Atualizar estado local
-      setTasksProgress(prev => ({
-        ...prev,
-        [task.id]: {
-          ...prev[task.id],
-          completed: true,
-          completedAt: new Date().toISOString(),
-          progress: task.target || 1
-        }
-      }))
+      // Criar solicitação no banco
+      const result = await solicitarTarefa(user.id, task.id)
 
-      // Mostrar toast de sucesso
-      toast.success(
-        <div>
-          <strong>Missão concluída!</strong>
-          <div className="text-sm opacity-80">+{task.points} pontos adicionados</div>
-        </div>,
-        {
-          duration: 4000,
-          style: {
-            background: '#32113f',
-            color: '#edf0f1',
-            border: '1px solid rgba(34, 197, 94, 0.3)'
+      if (result.success) {
+        // Atualizar status local
+        setSolicitacoesStatus(prev => ({ ...prev, [task.id]: 'pendente' }))
+
+        toast.success(
+          <div>
+            <strong>Solicitação enviada!</strong>
+            <div className="text-sm opacity-80">Aguardando aprovação do admin</div>
+          </div>,
+          {
+            duration: 4000,
+            style: {
+              background: '#32113f',
+              color: '#edf0f1',
+              border: '1px solid rgba(162, 121, 55, 0.3)'
+            }
           }
-        }
-      )
+        )
+      } else {
+        throw new Error(result.error || 'Erro ao solicitar tarefa')
+      }
     } catch (error) {
-      toast.error('Erro ao completar missão. Tente novamente.', {
+      console.error('Erro ao solicitar tarefa:', error)
+      toast.error('Erro ao enviar solicitação. Tente novamente.', {
         style: {
           background: '#32113f',
           color: '#edf0f1',
@@ -444,7 +497,7 @@ export function Tasks() {
     } finally {
       setLoadingTaskId(null)
     }
-  }, [navigate])
+  }, [user])
 
   // Navegação por teclado nas abas (Bug 4)
   const handleTabKeyDown = useCallback((e, currentIndex) => {
@@ -473,14 +526,17 @@ export function Tasks() {
     tabButtons?.[newIndex]?.focus()
   }, [])
 
-  if (loading) {
+  if (loading || isLoadingTarefas) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-deep-purple">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-6 h-6 border border-dusty-rose/30 border-t-antique-gold rounded-full"
-        />
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            className="w-6 h-6 border border-dusty-rose/30 border-t-antique-gold rounded-full mx-auto mb-3"
+          />
+          <p className="text-sm text-dusty-rose/60">Carregando missões...</p>
+        </div>
       </div>
     )
   }

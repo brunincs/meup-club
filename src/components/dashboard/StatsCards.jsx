@@ -18,7 +18,7 @@ export function StatsCards({ stats }) {
   const { profile } = useAuth()
   const { points } = usePoints() // Pontos reais do usuário logado
   const levelData = calculateLevel(points)
-  const level = levelData.current
+  const level = levelData?.current || { id: 1, shortName: 'Econômica', bonusMultiplier: 1 }
 
   const ClassIcon = getClassIcon(level.id)
 

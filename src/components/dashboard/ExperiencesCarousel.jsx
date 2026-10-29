@@ -27,7 +27,7 @@ export function ExperiencesCarousel() {
   const [scrollLeft, setScrollLeft] = useState(0)
   const { points: userPoints } = usePoints() // Pontos reais do usuário logado
   const levelData = calculateLevel(userPoints)
-  const userLevelId = levelData.current.id
+  const userLevelId = levelData?.current?.id ?? 1
   const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
     .filter(r => r.category !== 'cash')
     .slice(0, 8)

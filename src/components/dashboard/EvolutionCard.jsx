@@ -13,7 +13,7 @@ import { ProgressBar } from '@/components/effects/ProgressRing'
 export function EvolutionCard() {
   const { points: userPoints } = usePoints()
   const levelData = calculateLevel(userPoints)
-  const userLevelId = levelData.current.id
+  const userLevelId = levelData?.current?.id ?? 1
 
   // Próxima experiência alcançável
   const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
@@ -21,7 +21,7 @@ export function EvolutionCard() {
     .sort((a, b) => b.progress - a.progress)
 
   const nextExperience = rewardsWithProgress[0]
-  const hasNextLevel = levelData.next !== null
+  const hasNextLevel = Boolean(levelData?.next)
 
   const CurrentIcon = getClassIcon(userLevelId)
   const NextIcon = hasNextLevel ? getClassIcon(levelData.next.id) : null
