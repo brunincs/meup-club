@@ -518,11 +518,11 @@ function EditProfileForm({ profile, onSave, saving }) {
 function RecentActivity({ activities }) {
   if (!activities || activities.length === 0) {
     return (
-      <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
-        <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium">
-          Atividades Recentes
+      <div className="rounded-2xl bg-[#edf0f1] p-6 border border-[#ddd1d0]/30">
+        <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 font-medium flex items-center gap-2">
+          <span>📋</span> Atividades Recentes
         </h3>
-        <p className="text-sm text-[#ddd1d0]/60 text-center py-8">
+        <p className="text-sm text-[#a39695] text-center py-8">
           Nenhuma atividade registrada ainda.
         </p>
       </div>
@@ -530,23 +530,23 @@ function RecentActivity({ activities }) {
   }
 
   const typeConfig = {
-    credit: { icon: '+', color: 'text-green-400' },
-    debit: { icon: '-', color: 'text-red-400' },
-    task: { icon: '✓', color: 'text-[#a27937]' },
-    referral: { icon: '◇', color: 'text-[#a27937]' },
-    redemption: { icon: '★', color: 'text-purple-400' },
-    admin: { icon: '⚡', color: 'text-blue-400' }
+    credit: { icon: '+', color: 'text-green-600', bg: 'bg-green-100' },
+    debit: { icon: '-', color: 'text-red-600', bg: 'bg-red-100' },
+    task: { icon: '✓', color: 'text-[#5c005a]', bg: 'bg-[#5c005a]/10' },
+    referral: { icon: '◇', color: 'text-[#a27937]', bg: 'bg-[#a27937]/10' },
+    redemption: { icon: '★', color: 'text-purple-600', bg: 'bg-purple-100' },
+    admin: { icon: '⚡', color: 'text-blue-600', bg: 'bg-blue-100' }
   }
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
-      <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium">
-        Atividades Recentes
+    <div className="rounded-2xl bg-[#edf0f1] p-6 border border-[#ddd1d0]/30">
+      <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 font-medium flex items-center gap-2">
+        <span>📋</span> Atividades Recentes
       </h3>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {activities.slice(0, 5).map((activity, index) => {
-          const config = typeConfig[activity.type] || { icon: '•', color: 'text-[#ddd1d0]' }
+          const config = typeConfig[activity.type] || { icon: '•', color: 'text-[#a39695]', bg: 'bg-[#ddd1d0]' }
           const date = new Date(activity.created_at)
           const isPositive = activity.amount > 0
 
@@ -556,20 +556,20 @@ function RecentActivity({ activities }) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="flex items-center gap-3 py-2 border-b border-white/10 last:border-0"
+              className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-white border border-[#ddd1d0]/50"
             >
-              <div className={`w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center ${config.color}`}>
+              <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center ${config.color}`}>
                 {config.icon}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-[#edf0f1] truncate">
+                <p className="text-sm text-[#32113f] truncate">
                   {activity.reason || 'Transação'}
                 </p>
-                <p className="text-[10px] text-[#ddd1d0]/60">
+                <p className="text-[10px] text-[#a39695]">
                   {date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                 </p>
               </div>
-              <span className={`text-sm font-medium ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+              <span className={`text-sm font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                 {isPositive ? '+' : ''}{format.pointsShort(activity.amount)}
               </span>
             </motion.div>
@@ -660,11 +660,11 @@ export function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-900">
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa]">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-6 h-6 border border-neutral-600 border-t-[#a27937] rounded-full"
+          className="w-6 h-6 border-2 border-[#ddd1d0] border-t-[#5c005a] rounded-full"
         />
       </div>
     )
@@ -676,7 +676,7 @@ export function Profile() {
   const levelData = calculateLevel(userPoints)
 
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div className="min-h-screen bg-[#f8f9fa]">
       <DashboardHeader />
 
       <main className="container-premium py-8 md:py-12">
@@ -688,7 +688,7 @@ export function Profile() {
         >
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-400 transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-[#5c005a] hover:text-[#32113f] transition-colors"
           >
             ← Voltar ao clube
           </Link>
@@ -757,23 +757,23 @@ export function Profile() {
 
             {/* Próxima classe */}
             {levelData?.next && (
-              <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
-                <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium">
-                  Próxima Classe
+              <div className="rounded-2xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
+                <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 font-medium flex items-center gap-2">
+                  <span>🎯</span> Próxima Classe
                 </h3>
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-2xl">{levelCopy.icons[levelData.next.id]}</span>
-                  <span className="text-[#edf0f1]">{levelCopy.names[levelData.next.id]}</span>
+                  <span className="text-[#32113f] font-medium">{levelCopy.names[levelData.next.id]}</span>
                 </div>
-                <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-2">
+                <div className="h-2.5 bg-[#edf0f1] rounded-full overflow-hidden mb-2">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${levelData.progress}%` }}
                     transition={{ duration: 0.8 }}
-                    className="h-full bg-[#a27937] rounded-full"
+                    className="h-full bg-gradient-to-r from-[#5c005a] to-[#a27937] rounded-full"
                   />
                 </div>
-                <p className="text-xs text-[#ddd1d0]/60">
+                <p className="text-xs text-[#a39695]">
                   {format.pointsShort(levelData.pointsToNext)} pontos restantes
                 </p>
               </div>
