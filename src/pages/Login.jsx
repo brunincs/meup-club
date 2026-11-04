@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
@@ -17,12 +17,19 @@ export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signIn, loginAsDemo } = useAuth()
+  const { signIn, loginAsDemo, user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   // Pega a URL de onde o usuário veio (se foi redirecionado)
   const from = location.state?.from?.pathname || '/dashboard'
+
+  // Se já está logado, redireciona para o dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(from, { replace: true })
+    }
+  }, [user, authLoading, navigate, from])
 
   async function handleSubmit(e) {
     e.preventDefault()

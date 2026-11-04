@@ -158,12 +158,14 @@ export function AuthProvider({ children }) {
   }
 
   // CADASTRO - criar nova conta
+  // IMPORTANTE: NUNCA cai no demo - só cadastra no Supabase real
   async function signUp({ email, password, name }) {
-    // Modo demonstração
-    if (useMock) {
-      setUser(mockUser)
-      setProfile({ ...mockProfile, name, email })
-      return { data: { user: mockUser }, error: null }
+    // Se Supabase não está configurado, mostrar erro claro (NÃO cair no demo!)
+    if (!isSupabaseConfigured()) {
+      return {
+        data: null,
+        error: { message: 'Sistema de cadastro indisponível. Entre em contato com o suporte.' }
+      }
     }
 
     try {
@@ -195,12 +197,14 @@ export function AuthProvider({ children }) {
   }
 
   // LOGIN - entrar com conta existente
+  // IMPORTANTE: NUNCA cai no demo - só autentica no Supabase real
   async function signIn({ email, password }) {
-    // Modo demonstração
-    if (useMock) {
-      setUser(mockUser)
-      setProfile(mockProfile)
-      return { data: { user: mockUser }, error: null }
+    // Se Supabase não está configurado, mostrar erro claro (NÃO cair no demo!)
+    if (!isSupabaseConfigured()) {
+      return {
+        data: null,
+        error: { message: 'Sistema de login indisponível. Entre em contato com o suporte.' }
+      }
     }
 
     try {
@@ -212,6 +216,9 @@ export function AuthProvider({ children }) {
       if (error) {
         return { data: null, error: { message: translateError(error) } }
       }
+
+      // Login real bem-sucedido - garantir que NÃO estamos em modo demo
+      setUseMock(false)
 
       return { data, error: null }
     } catch (error) {
