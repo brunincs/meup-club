@@ -516,13 +516,14 @@ function EditProfileForm({ profile, onSave, saving }) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function RecentActivity({ activities }) {
+  // FUNDO ESCURO - alternância visual com seções claras acima
   if (!activities || activities.length === 0) {
     return (
-      <div className="rounded-2xl bg-[#edf0f1] p-6 border border-[#ddd1d0]/30">
-        <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 font-medium flex items-center gap-2">
+      <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
+        <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium flex items-center gap-2">
           <span>📋</span> Atividades Recentes
         </h3>
-        <p className="text-sm text-[#a39695] text-center py-8">
+        <p className="text-sm text-[#ddd1d0]/60 text-center py-8">
           Nenhuma atividade registrada ainda.
         </p>
       </div>
@@ -530,23 +531,23 @@ function RecentActivity({ activities }) {
   }
 
   const typeConfig = {
-    credit: { icon: '+', color: 'text-green-600', bg: 'bg-green-100' },
-    debit: { icon: '-', color: 'text-red-600', bg: 'bg-red-100' },
-    task: { icon: '✓', color: 'text-[#5c005a]', bg: 'bg-[#5c005a]/10' },
-    referral: { icon: '◇', color: 'text-[#a27937]', bg: 'bg-[#a27937]/10' },
-    redemption: { icon: '★', color: 'text-purple-600', bg: 'bg-purple-100' },
-    admin: { icon: '⚡', color: 'text-blue-600', bg: 'bg-blue-100' }
+    credit: { icon: '+', color: 'text-green-400', bg: 'bg-green-400/20' },
+    debit: { icon: '-', color: 'text-red-400', bg: 'bg-red-400/20' },
+    task: { icon: '✓', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20' },
+    referral: { icon: '◇', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20' },
+    redemption: { icon: '★', color: 'text-purple-400', bg: 'bg-purple-400/20' },
+    admin: { icon: '⚡', color: 'text-blue-400', bg: 'bg-blue-400/20' }
   }
 
   return (
-    <div className="rounded-2xl bg-[#edf0f1] p-6 border border-[#ddd1d0]/30">
-      <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 font-medium flex items-center gap-2">
+    <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
+      <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium flex items-center gap-2">
         <span>📋</span> Atividades Recentes
       </h3>
 
       <div className="space-y-2">
         {activities.slice(0, 5).map((activity, index) => {
-          const config = typeConfig[activity.type] || { icon: '•', color: 'text-[#a39695]', bg: 'bg-[#ddd1d0]' }
+          const config = typeConfig[activity.type] || { icon: '•', color: 'text-[#ddd1d0]', bg: 'bg-white/10' }
           const date = new Date(activity.created_at)
           const isPositive = activity.amount > 0
 
@@ -556,20 +557,20 @@ function RecentActivity({ activities }) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-white border border-[#ddd1d0]/50"
+              className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-white/5 border border-white/10"
             >
               <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center ${config.color}`}>
                 {config.icon}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-[#32113f] truncate">
+                <p className="text-sm text-[#edf0f1] truncate">
                   {activity.reason || 'Transação'}
                 </p>
-                <p className="text-[10px] text-[#a39695]">
+                <p className="text-[10px] text-[#ddd1d0]/60">
                   {date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                 </p>
               </div>
-              <span className={`text-sm font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+              <span className={`text-sm font-semibold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
                 {isPositive ? '+' : ''}{format.pointsShort(activity.amount)}
               </span>
             </motion.div>
