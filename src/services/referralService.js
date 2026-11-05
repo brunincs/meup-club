@@ -84,34 +84,42 @@ export async function getMyReferrals(userId) {
 }
 
 /**
- * Busca o indicador pelo código de indicação
- * @param {string} code - Código de indicação (ex: MEUP7X3K)
- * @returns {Promise<{referrerId: string|null}>}
+ * Valida código de indicação usando função RPC segura
+ * - Funciona mesmo SEM estar logado (para página de cadastro)
+ * - Retorna apenas: válido (bool), ID do indicador, primeiro nome
+ * - NÃO expõe: email, CPF, pontos ou outros dados sensíveis
+ *
+ * @param {string} code - Código de indicação (ex: MEUP85F3)
+ * @returns {Promise<{success: boolean, referrerId: string|null, referrerName: string|null}>}
  */
 export async function getReferrerByCode(code) {
   if (!code || code.length < 4) {
-    return { success: false, referrerId: null }
+    return { success: false, referrerId: null, referrerName: null }
   }
 
   try {
+    // Usa função RPC segura (não expõe dados sensíveis)
     const { data, error } = await supabase
-      .from('profiles')
-      .select('id, name')
-      .eq('referral_code', code.toUpperCase())
-      .single()
+      .rpc('validate_referral_code', { p_code: code.trim() })
 
-    if (error || !data) {
-      return { success: false, referrerId: null }
+    if (error) {
+      console.error('Erro ao validar código:', error)
+      return { success: false, referrerId: null, referrerName: null }
+    }
+
+    // A função retorna: { valid, referrer_id, referrer_first_name }
+    if (!data || !data.valid) {
+      return { success: false, referrerId: null, referrerName: null }
     }
 
     return {
       success: true,
-      referrerId: data.id,
-      referrerName: data.name
+      referrerId: data.referrer_id,
+      referrerName: data.referrer_first_name // Apenas primeiro nome (segurança)
     }
   } catch (error) {
     console.error('Erro ao buscar indicador:', error)
-    return { success: false, referrerId: null, error: error.message }
+    return { success: false, referrerId: null, referrerName: null, error: error.message }
   }
 }
 
