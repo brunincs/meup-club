@@ -7,6 +7,7 @@ import { calculateLevel } from '@/services/pointsSystem'
 // Fallback para quando profile ainda não carregou
 import { levels as levelCopy } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
+import { NotificationBell } from './NotificationBell'
 
 const navItems = [
   { path: '/dashboard', label: 'Clube', icon: '◆' },
@@ -76,7 +77,7 @@ export function DashboardHeader() {
           </nav>
 
           {/* Right side */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3 sm:gap-5">
             {/* Stats rápidos */}
             <div className="hidden lg:flex items-center gap-5">
               <div className="text-right">
@@ -86,6 +87,9 @@ export function DashboardHeader() {
                 </div>
               </div>
             </div>
+
+            {/* Notificações (sininho) */}
+            <NotificationBell />
 
             {/* User menu */}
             <div className="relative">
