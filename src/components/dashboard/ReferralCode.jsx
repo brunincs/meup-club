@@ -6,27 +6,33 @@ import { invites, alerts } from '@/services/copy'
 
 export function ReferralCode({ variant = 'dark' }) {
   const { profile } = useAuth()
-  const [copied, setCopied] = useState(false)
+  const [copiedLink, setCopiedLink] = useState(false)
   const isLight = variant === 'light'
 
   const referralCode = profile?.referral_code || 'MEUP0000'
-  const referralLink = `${window.location.origin}/cadastro?ref=${referralCode}`
 
-  const whatsappMessage = encodeURIComponent(
-    `Convite exclusivo para o Meup Club.\n\nUse o código ${referralCode} ao reservar sua próxima viagem e tenha acesso a experiências exclusivas.\n\nCódigo: ${referralCode}`
-  )
-  const whatsappLink = `https://wa.me/?text=${whatsappMessage}`
+  // URL real do site em produção
+  const siteUrl = window.location.hostname === 'localhost'
+    ? window.location.origin
+    : 'https://meup-club.vercel.app'
+  const referralLink = `${siteUrl}/cadastro?ref=${referralCode}`
 
-  function copyCode() {
-    navigator.clipboard.writeText(referralCode)
-    setCopied(true)
-    toast.success(alerts.linkCopied)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  // Mensagem com LINK clicável para WhatsApp
+  const shareMessage = `Vem pro Meup Club! ✈️\n\nCadastre-se pelo meu link e a gente ganha experiências juntos:\n\n${referralLink}`
+  const whatsappLink = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`
 
+  // Copiar o link completo (não só o código)
   function copyLink() {
     navigator.clipboard.writeText(referralLink)
-    toast.success(alerts.linkCopied)
+    setCopiedLink(true)
+    toast.success('Link copiado!')
+    setTimeout(() => setCopiedLink(false), 2000)
+  }
+
+  // Copiar a mensagem completa (com link)
+  function copyMessage() {
+    navigator.clipboard.writeText(shareMessage)
+    toast.success('Mensagem copiada!')
   }
 
   return (
@@ -59,9 +65,10 @@ export function ReferralCode({ variant = 'dark' }) {
         </div>
       </div>
 
-      {/* Code */}
+      {/* Link de indicação */}
       <div className="p-6">
-        <div className="flex items-center gap-3 mb-6">
+        {/* Código grande */}
+        <div className="flex items-center gap-3 mb-4">
           <div className={`flex-1 px-5 py-4 rounded-xl font-mono text-2xl text-center tracking-[0.2em] ${
             isLight
               ? 'bg-deep-purple border border-deep-purple text-ice-white'
@@ -72,16 +79,17 @@ export function ReferralCode({ variant = 'dark' }) {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={copyCode}
+            onClick={copyLink}
+            title="Copiar link"
             className={`px-5 py-4 rounded-xl transition-all ${
-              copied
+              copiedLink
                 ? 'bg-game-green/20 text-game-green border border-game-green/30'
                 : isLight
                   ? 'bg-deep-purple text-antique-gold border border-deep-purple hover:bg-deep-purple/90'
                   : 'bg-deep-purple/50 text-antique-gold border border-antique-gold/30 hover:bg-deep-purple/70'
             }`}
           >
-            {copied ? (
+            {copiedLink ? (
               <span className="text-sm">✓</span>
             ) : (
               <span className="text-sm">◇</span>
@@ -89,7 +97,14 @@ export function ReferralCode({ variant = 'dark' }) {
           </motion.button>
         </div>
 
-        {/* Action buttons */}
+        {/* Link preview */}
+        <div className={`mb-4 p-3 rounded-lg text-xs break-all ${
+          isLight ? 'bg-ice-white text-deep-purple/70' : 'bg-deep-purple/30 text-dusty-rose/80'
+        }`}>
+          {referralLink}
+        </div>
+
+        {/* Botões de ação */}
         <div className="grid grid-cols-2 gap-3">
           <motion.a
             href={whatsappLink}
@@ -99,7 +114,7 @@ export function ReferralCode({ variant = 'dark' }) {
             whileTap={{ scale: 0.98 }}
             className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold text-sm"
           >
-            {invites.shareInvite}
+            WhatsApp
           </motion.a>
 
           <motion.button
@@ -107,12 +122,14 @@ export function ReferralCode({ variant = 'dark' }) {
             whileTap={{ scale: 0.98 }}
             onClick={copyLink}
             className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-heading font-medium text-sm transition-colors ${
-              isLight
-                ? 'bg-deep-purple/10 text-deep-purple border border-deep-purple/20 hover:bg-deep-purple/20'
-                : 'bg-deep-purple/50 text-ice-white border border-dusty-rose/20 hover:bg-deep-purple/70'
+              copiedLink
+                ? 'bg-game-green/20 text-game-green border border-game-green/30'
+                : isLight
+                  ? 'bg-deep-purple/10 text-deep-purple border border-deep-purple/20 hover:bg-deep-purple/20'
+                  : 'bg-deep-purple/50 text-ice-white border border-dusty-rose/20 hover:bg-deep-purple/70'
             }`}
           >
-            {invites.copyCode}
+            {copiedLink ? 'Copiado!' : 'Copiar link'}
           </motion.button>
         </div>
       </div>

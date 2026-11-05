@@ -23,9 +23,14 @@ export function Cadastro() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  // Código de indicação da URL (?ref=CODIGO)
-  const refCode = searchParams.get('ref')
+  // Código de indicação da URL (?ref=CODIGO) ou digitado manualmente
+  const refCodeFromUrl = searchParams.get('ref')
+  const [manualCode, setManualCode] = useState('')
   const [referrerInfo, setReferrerInfo] = useState(null)
+  const [codeStatus, setCodeStatus] = useState('idle') // 'idle' | 'checking' | 'valid' | 'invalid'
+
+  // Código ativo: da URL ou digitado manualmente
+  const activeCode = refCodeFromUrl || manualCode
 
   // Se já está logado, redireciona para o dashboard
   useEffect(() => {
@@ -34,21 +39,40 @@ export function Cadastro() {
     }
   }, [user, authLoading, navigate])
 
-  // Buscar informações do indicador quando há código na URL
+  // Buscar informações do indicador quando há código (da URL ou manual)
   useEffect(() => {
     async function checkReferrer() {
-      if (refCode) {
-        const result = await getReferrerByCode(refCode)
-        if (result.success) {
-          setReferrerInfo({
-            id: result.referrerId,
-            name: result.referrerName
-          })
-        }
+      const codeToCheck = refCodeFromUrl || manualCode.trim()
+
+      if (!codeToCheck || codeToCheck.length < 4) {
+        setReferrerInfo(null)
+        setCodeStatus('idle')
+        return
+      }
+
+      setCodeStatus('checking')
+      const result = await getReferrerByCode(codeToCheck)
+
+      if (result.success) {
+        setReferrerInfo({
+          id: result.referrerId,
+          name: result.referrerName
+        })
+        setCodeStatus('valid')
+      } else {
+        setReferrerInfo(null)
+        setCodeStatus('invalid')
       }
     }
     checkReferrer()
-  }, [refCode])
+  }, [refCodeFromUrl, manualCode])
+
+  // Preencher campo manual se veio da URL
+  useEffect(() => {
+    if (refCodeFromUrl) {
+      setManualCode(refCodeFromUrl)
+    }
+  }, [refCodeFromUrl])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -180,20 +204,20 @@ export function Cadastro() {
             </p>
           </div>
 
-          {/* Badge de indicação (quando vem por link de indicação) */}
+          {/* Badge de indicação - sucesso */}
           {referrerInfo && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 rounded-xl bg-antique-gold/10 border border-antique-gold/30"
+              className="mb-6 p-4 rounded-xl bg-game-green/10 border border-game-green/30"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-antique-gold/20 flex items-center justify-center">
-                  <span className="text-antique-gold">◇</span>
+                <div className="w-10 h-10 rounded-full bg-game-green/20 flex items-center justify-center">
+                  <span className="text-game-green text-lg">✓</span>
                 </div>
                 <div>
-                  <p className="text-xs text-antique-gold/80">Indicado por</p>
-                  <p className="text-sm text-ice-white font-medium">{referrerInfo.name}</p>
+                  <p className="text-xs text-game-green">Você foi convidado! Indicação aplicada</p>
+                  <p className="text-sm text-ice-white font-medium">por {referrerInfo.name}</p>
                 </div>
               </div>
             </motion.div>
@@ -257,6 +281,56 @@ export function Cadastro() {
                 placeholder="••••••••"
                 required
               />
+            </div>
+
+            {/* Campo de código de indicação (opcional) */}
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-dusty-rose/80 mb-2 font-heading">
+                Código de indicação <span className="text-dusty-rose/50">(opcional)</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={manualCode}
+                  onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+                  maxLength={8}
+                  className={`w-full px-4 py-3.5 rounded-xl bg-deep-purple/50 border text-ice-white placeholder:text-dusty-rose/50 focus:outline-none transition-all font-mono tracking-wider ${
+                    codeStatus === 'valid'
+                      ? 'border-game-green/50 focus:border-game-green focus:ring-1 focus:ring-game-green/20'
+                      : codeStatus === 'invalid'
+                        ? 'border-red-400/50 focus:border-red-400 focus:ring-1 focus:ring-red-400/20'
+                        : 'border-dusty-rose/20 focus:border-antique-gold/50 focus:ring-1 focus:ring-antique-gold/20'
+                  }`}
+                  placeholder="Ex: MEUP85F3"
+                />
+                {/* Indicador de status */}
+                {codeStatus === 'checking' && (
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-dusty-rose/50 text-sm">
+                    ...
+                  </span>
+                )}
+                {codeStatus === 'valid' && (
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-game-green">
+                    ✓
+                  </span>
+                )}
+                {codeStatus === 'invalid' && manualCode.length >= 4 && (
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-red-400">
+                    ✗
+                  </span>
+                )}
+              </div>
+              {/* Mensagem de feedback */}
+              {codeStatus === 'invalid' && manualCode.length >= 4 && (
+                <p className="text-[10px] text-red-400/80 mt-1">
+                  Código não encontrado, mas você pode continuar o cadastro
+                </p>
+              )}
+              {codeStatus === 'valid' && (
+                <p className="text-[10px] text-game-green/80 mt-1">
+                  Indicação de {referrerInfo?.name} será aplicada
+                </p>
+              )}
             </div>
 
             {/* Botão Criar Conta */}
