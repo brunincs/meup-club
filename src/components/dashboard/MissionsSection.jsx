@@ -17,7 +17,7 @@ import {
   podeFazerCheckin,
   registrarCompartilhamento
 } from '@/services/supabaseData'
-import { getMissionAction, isExternalMission, requiresApproval, EXTERNAL_LINKS } from '@/services/missionActions'
+import { getMissionAction, isExternalMission, requiresApproval, isAutomaticMission, shouldHideFromList } from '@/services/missionActions'
 import toast from 'react-hot-toast'
 
 export function MissionsSection({ variant = 'dark' }) {
@@ -104,7 +104,21 @@ export function MissionsSection({ variant = 'dark' }) {
 
   // Processar tarefas com status real
   const processedTasks = useMemo(() => {
-    return tarefas.map(tarefa => {
+    return tarefas
+      // Filtrar check-in (tem card dedicado) e outras que devem ser escondidas
+      .filter(tarefa => {
+        const nomeLower = tarefa.nome.toLowerCase()
+        // Esconder check-in da lista
+        if (nomeLower.includes('check-in') || nomeLower.includes('checkin')) {
+          return false
+        }
+        // Esconder missões marcadas com hideFromList
+        if (shouldHideFromList(tarefa.nome)) {
+          return false
+        }
+        return true
+      })
+      .map(tarefa => {
       const status = statusMap[tarefa.id]
       const isCompleted = status === 'aprovada'
       const isPending = status === 'pendente'
@@ -152,6 +166,10 @@ export function MissionsSection({ variant = 'dark' }) {
 
       const progressPercent = target > 0 ? (progress / target) * 100 : 0
 
+      // Verificar se é missão automática ou precisa de aprovação
+      const isAutomatic = isAutomaticMission(tarefa.nome)
+      const needsApproval = requiresApproval(tarefa.nome)
+
       return {
         ...tarefa,
         name: tarefa.nome,
@@ -163,7 +181,9 @@ export function MissionsSection({ variant = 'dark' }) {
         rejected: isRejected,
         progress,
         target,
-        progressPercent
+        progressPercent,
+        isAutomatic,     // Credita via trigger, sem ação
+        needsApproval    // SÓ true para Instagram/Google
       }
     })
   }, [tarefas, statusMap, userStats])

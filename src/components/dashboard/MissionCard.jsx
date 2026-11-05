@@ -190,8 +190,8 @@ export function MissionCard({
                   {action?.label || 'Ir Fazer'} {isExternal ? '↗' : '→'}
                 </motion.button>
 
-                {/* Botão "Fiz isso" (para missões que requerem aprovação) */}
-                {action?.requiresApproval && (
+                {/* Botão "Fiz isso" - SÓ para Instagram e Google (únicas que precisam aprovação) */}
+                {mission.needsApproval && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}

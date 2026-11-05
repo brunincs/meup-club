@@ -12,7 +12,9 @@ import {
 } from '@/services/experienciasService'
 import { format } from '@/services/copy'
 import { TargetIcon, CheckIcon, CalendarIcon, SparkleIcon, ClockIcon } from '@/components/ui/Icons'
-import { getMissionAction, isExternalMission, requiresApproval } from '@/services/missionActions'
+import { getMissionAction, isExternalMission, requiresApproval, isAutomaticMission, shouldHideFromList } from '@/services/missionActions'
+import { registrarCompartilhamento } from '@/services/supabaseData'
+import { useConfetti } from '@/components/effects/ConfettiEffect'
 
 // ============================================
 // FOTO A VALIDAR - trocar pela oficial da Me,up depois
@@ -272,7 +274,7 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
 
               {!isCompleted && !isPending && (
                 <div className="flex items-center gap-2">
-                  {/* Botão "Ir Fazer" */}
+                  {/* Botão "Ir Fazer" - sempre aparece */}
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -282,35 +284,35 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
                     {action?.label || 'Ir Fazer'} {isExternal ? '↗' : '→'}
                   </motion.button>
 
-                  {/* Botão "Fiz isso" / "Concluir" */}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onComplete(task)}
-                    disabled={isLoading}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
-                      isLoading
-                        ? 'bg-graphite/10 text-graphite/60 cursor-wait'
-                        : 'bg-deep-purple text-ice-white hover:bg-bright-purple shadow-lg shadow-deep-purple/20'
-                    }`}
-                  >
-                    {isLoading ? (
-                      <span className="flex items-center gap-2">
-                        <motion.span
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                          className="w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block"
-                        />
-                        Enviando...
-                      </span>
-                    ) : isRejected ? (
-                      'Tentar novamente'
-                    ) : needsApproval ? (
-                      'Fiz isso'
-                    ) : (
-                      'Concluir'
-                    )}
-                  </motion.button>
+                  {/* Botão "Fiz isso" - SÓ para missões externas (Instagram/Google) */}
+                  {needsApproval && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => onComplete(task)}
+                      disabled={isLoading}
+                      className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
+                        isLoading
+                          ? 'bg-graphite/10 text-graphite/60 cursor-wait'
+                          : 'bg-deep-purple text-ice-white hover:bg-bright-purple shadow-lg shadow-deep-purple/20'
+                      }`}
+                    >
+                      {isLoading ? (
+                        <span className="flex items-center gap-2">
+                          <motion.span
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            className="w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block"
+                          />
+                          Enviando...
+                        </span>
+                      ) : isRejected ? (
+                        'Tentar novamente'
+                      ) : (
+                        'Fiz isso'
+                      )}
+                    </motion.button>
+                  )}
                 </div>
               )}
             </div>
@@ -329,7 +331,7 @@ const tipoToCategory = {
 }
 
 export function Tasks() {
-  const { user, loading } = useAuth()
+  const { user, profile, loading } = useAuth()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('daily')
   const [loadingTaskId, setLoadingTaskId] = useState(null)
@@ -382,8 +384,19 @@ export function Tasks() {
 
     return tarefas
       .filter(t => t.tipo === tipo && t.ativa)
+      // Filtrar check-in (tem card dedicado no dashboard)
+      .filter(t => {
+        const nomeLower = t.nome.toLowerCase()
+        if (nomeLower.includes('check-in') || nomeLower.includes('checkin')) {
+          return false
+        }
+        return !shouldHideFromList(t.nome)
+      })
       .map(task => {
         const status = solicitacoesStatus[task.id]
+        const needsApproval = requiresApproval(task.nome)
+        const isAutomatic = isAutomaticMission(task.nome)
+
         return {
           ...task,
           category,
@@ -394,7 +407,9 @@ export function Tasks() {
           pending: status === 'pendente',
           rejected: status === 'rejeitada',
           target: 1,
-          progress: status === 'aprovada' ? 1 : 0
+          progress: status === 'aprovada' ? 1 : 0,
+          needsApproval,  // SÓ true para Instagram/Google
+          isAutomatic     // Credita via trigger
         }
       })
   }, [tarefas, solicitacoesStatus])
@@ -443,10 +458,11 @@ export function Tasks() {
   const totalCompleted = tasksSummary.daily.completed + tasksSummary.weekly.completed + tasksSummary.oneTime.completed
   const totalTasks = tasksSummary.daily.total + tasksSummary.weekly.total + tasksSummary.oneTime.total
 
-  // Handler para completar task - AGORA CRIA SOLICITAÇÃO NO BANCO
+  // Handler para completar task
+  // SÓ cria solicitação pendente para Instagram/Google (needsApproval = true)
   const handleCompleteTask = useCallback(async (task) => {
     if (!user) {
-      toast.error('Você precisa estar logado', {
+      toast.error('Voce precisa estar logado', {
         style: { background: '#32113f', color: '#edf0f1' }
       })
       return
@@ -454,7 +470,7 @@ export function Tasks() {
 
     // Se já está pendente, não faz nada
     if (task.pending) {
-      toast('Esta tarefa já está aguardando aprovação', {
+      toast('Esta tarefa ja esta aguardando aprovacao', {
         icon: '⏳',
         style: { background: '#32113f', color: '#edf0f1' }
       })
@@ -463,39 +479,50 @@ export function Tasks() {
 
     // Se já foi aprovada, não faz nada
     if (task.completed) {
-      toast('Esta tarefa já foi concluída!', {
-        icon: '✅',
+      toast('Esta tarefa ja foi concluida!', {
+        icon: '✓',
         style: { background: '#32113f', color: '#edf0f1' }
       })
       return
     }
 
+    // Verificar se realmente precisa de aprovação (SÓ Instagram e Google)
+    const needsApproval = requiresApproval(task.name || task.nome)
+
+    if (!needsApproval) {
+      // NÃO precisa de aprovação - apenas navegar para fazer a ação
+      toast('Use o botao "Ir Fazer" para completar esta missao', {
+        icon: '→',
+        style: { background: '#32113f', color: '#edf0f1' }
+      })
+      return
+    }
+
+    // SÓ Instagram e Google chegam aqui
     setLoadingTaskId(task.id)
 
     try {
       // Verificar se já existe solicitação pendente (evitar duplicatas)
       const checkResult = await verificarSolicitacaoPendente(user.id, task.id)
       if (checkResult.pendente) {
-        toast('Você já solicitou esta tarefa. Aguarde aprovação.', {
+        toast('Voce ja solicitou esta tarefa. Aguarde aprovacao.', {
           icon: '⏳',
           style: { background: '#32113f', color: '#edf0f1' }
         })
-        // Atualizar status local
         setSolicitacoesStatus(prev => ({ ...prev, [task.id]: 'pendente' }))
         return
       }
 
-      // Criar solicitação no banco
+      // Criar solicitação no banco (SÓ para Instagram/Google)
       const result = await solicitarTarefa(user.id, task.id)
 
       if (result.success) {
-        // Atualizar status local
         setSolicitacoesStatus(prev => ({ ...prev, [task.id]: 'pendente' }))
 
         toast.success(
           <div>
-            <strong>Solicitação enviada!</strong>
-            <div className="text-sm opacity-80">Aguardando aprovação do admin</div>
+            <strong>Solicitacao enviada!</strong>
+            <div className="text-sm opacity-80">Aguardando aprovacao do admin</div>
           </div>,
           {
             duration: 4000,
@@ -511,7 +538,7 @@ export function Tasks() {
       }
     } catch (error) {
       console.error('Erro ao solicitar tarefa:', error)
-      toast.error('Erro ao enviar solicitação. Tente novamente.', {
+      toast.error('Erro ao enviar solicitacao. Tente novamente.', {
         style: {
           background: '#32113f',
           color: '#edf0f1',
@@ -524,7 +551,7 @@ export function Tasks() {
   }, [user])
 
   // Handler para ir fazer a tarefa
-  const handleGoToTask = useCallback((task) => {
+  const handleGoToTask = useCallback(async (task) => {
     const action = getMissionAction(task.name)
 
     if (!action) {
@@ -536,14 +563,59 @@ export function Tasks() {
       // Abre link externo em nova aba
       window.open(action.route, '_blank', 'noopener,noreferrer')
     } else if (action.type === 'share') {
-      // Compartilhar código
-      // TODO: Implementar compartilhamento
-      navigate('/dashboard')
+      // Compartilhar código - credita pontos automaticamente na primeira vez
+      const code = profile?.referral_code || 'MEUP0000'
+      const shareUrl = `${window.location.origin}/cadastro?ref=${code}`
+      const shareText = `Use meu codigo ${code} para entrar no Meup Club e ganhar pontos!`
+
+      // Registrar compartilhamento (credita pontos na primeira vez)
+      if (user?.id) {
+        try {
+          const result = await registrarCompartilhamento(user.id)
+          if (result.creditou) {
+            toast.success(
+              <div>
+                <strong>Missao concluida!</strong>
+                <div className="text-sm opacity-80">+{result.pontos} pontos por compartilhar</div>
+              </div>,
+              {
+                duration: 3000,
+                style: {
+                  background: '#32113f',
+                  color: '#edf0f1',
+                  border: '1px solid rgba(34, 197, 94, 0.3)'
+                }
+              }
+            )
+          }
+        } catch (e) {
+          console.error('Erro ao registrar compartilhamento:', e)
+        }
+      }
+
+      // Abrir share nativo ou copiar
+      if (navigator.share) {
+        navigator.share({
+          title: 'Meup Club - Convite',
+          text: shareText,
+          url: shareUrl
+        }).catch(() => {
+          navigator.clipboard.writeText(`${shareText} ${shareUrl}`)
+          toast.success('Link copiado!', {
+            style: { background: '#32113f', color: '#edf0f1' }
+          })
+        })
+      } else {
+        navigator.clipboard.writeText(`${shareText} ${shareUrl}`)
+        toast.success('Link copiado!', {
+          style: { background: '#32113f', color: '#edf0f1' }
+        })
+      }
     } else {
       // Navega para rota interna
       navigate(action.route)
     }
-  }, [navigate])
+  }, [navigate, user, profile])
 
   // Navegação por teclado nas abas (Bug 4)
   const handleTabKeyDown = useCallback((e, currentIndex) => {

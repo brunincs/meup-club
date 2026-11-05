@@ -12,78 +12,129 @@ export const EXTERNAL_LINKS = {
 
 // Mapeamento de missões para ações
 // Chave: nome da tarefa (normalizado) ou parte do nome
-// Valor: { type, route, external, requiresApproval }
+// Valor: { type, route, label, requiresApproval, isAutomatic }
+//
+// IMPORTANTE:
+// - requiresApproval: true = mostra botão "Fiz isso" e vai pra fila do admin
+// - requiresApproval: false = NÃO mostra "Fiz isso", credita automaticamente
+// - isAutomatic: true = credita via trigger no banco, sem ação do usuário
 export const MISSION_ACTIONS = {
-  // === MISSÕES INTERNAS (navegam dentro do site) ===
+  // === CHECK-IN (tem card dedicado, não deve aparecer como missão) ===
+  'check-in': {
+    type: 'checkin',
+    route: null,
+    label: 'Fazer Check-in',
+    requiresApproval: false,
+    isAutomatic: false,
+    hideFromList: true // Não mostrar na lista de missões
+  },
+
+  // === MISSÕES AUTOMÁTICAS (creditam via TRIGGER no banco) ===
   'completar perfil': {
-    type: 'internal',
+    type: 'automatic',
     route: '/perfil',
     label: 'Ir ao Perfil',
-    requiresApproval: false // Pode verificar automaticamente
+    requiresApproval: false,
+    isAutomatic: true // Trigger credita quando perfil completo
   },
+  'primeira indicação': {
+    type: 'automatic',
+    route: '/dashboard',
+    label: 'Indicar Amigos',
+    requiresApproval: false,
+    isAutomatic: true // Trigger credita quando total_referrals = 1
+  },
+  '10 indicações': {
+    type: 'automatic',
+    route: '/dashboard',
+    label: 'Indicar Amigos',
+    requiresApproval: false,
+    isAutomatic: true // Trigger credita quando total_referrals >= 10
+  },
+  'classe': {
+    type: 'automatic',
+    route: '/dashboard',
+    label: 'Ver Progresso',
+    requiresApproval: false,
+    isAutomatic: true // Trigger credita quando atinge nível
+  },
+
+  // === AÇÕES (creditam na hora ao fazer, sem aprovação) ===
   'explorar experiências': {
-    type: 'internal',
+    type: 'action',
     route: '/recompensas',
     label: 'Ver Experiências',
-    requiresApproval: false
+    requiresApproval: false,
+    isAutomatic: false // Credita via RPC ao visitar página
   },
   'compartilhar código': {
     type: 'share',
-    route: null, // Ação especial de compartilhamento
-    label: 'Compartilhar',
-    requiresApproval: false
-  },
-  'compartilhar 3 vezes': {
-    type: 'share',
     route: null,
     label: 'Compartilhar',
-    requiresApproval: true // Não dá pra verificar automaticamente
+    requiresApproval: false,
+    isAutomatic: false // Credita via RPC ao compartilhar
   },
+
+  // === INDICAÇÕES (sistema verifica automaticamente) ===
   'indicar': {
-    type: 'internal',
-    route: '/dashboard', // Seção de indicação no dashboard
-    label: 'Indicar Amigos',
-    requiresApproval: false // Sistema verifica automaticamente
-  },
-  'primeira indicação': {
     type: 'internal',
     route: '/dashboard',
     label: 'Indicar Amigos',
-    requiresApproval: false
+    requiresApproval: false,
+    isAutomatic: true
   },
   'indicações': {
     type: 'internal',
     route: '/dashboard',
     label: 'Indicar Amigos',
-    requiresApproval: false
+    requiresApproval: false,
+    isAutomatic: true
   },
 
-  // === MISSÕES EXTERNAS (abrem em nova aba, requerem aprovação) ===
+  // === EXTERNAS (únicas que precisam de aprovação do admin) ===
   'seguir no instagram': {
     type: 'external',
     route: EXTERNAL_LINKS.instagram,
     label: 'Seguir',
-    requiresApproval: true // Admin precisa aprovar
+    requiresApproval: true, // ÚNICA que vai pra fila do admin
+    isAutomatic: false
+  },
+  'instagram': {
+    type: 'external',
+    route: EXTERNAL_LINKS.instagram,
+    label: 'Seguir',
+    requiresApproval: true,
+    isAutomatic: false
   },
   'avaliar no google': {
     type: 'external',
     route: EXTERNAL_LINKS.google_review,
     label: 'Avaliar',
-    requiresApproval: true // Admin precisa aprovar
+    requiresApproval: true, // ÚNICA que vai pra fila do admin
+    isAutomatic: false
+  },
+  'google': {
+    type: 'external',
+    route: EXTERNAL_LINKS.google_review,
+    label: 'Avaliar',
+    requiresApproval: true,
+    isAutomatic: false
   },
 
-  // === MISSÕES DE CONVERSÃO (dependem de vendas reais) ===
+  // === VENDAS (sistema verifica automaticamente) ===
   'primeira venda': {
-    type: 'internal',
+    type: 'automatic',
     route: '/dashboard',
     label: 'Ver Indicações',
-    requiresApproval: false // Sistema verifica automaticamente
+    requiresApproval: false,
+    isAutomatic: true
   },
   'converter': {
-    type: 'internal',
+    type: 'automatic',
     route: '/dashboard',
     label: 'Ver Indicações',
-    requiresApproval: false
+    requiresApproval: false,
+    isAutomatic: true
   }
 }
 
@@ -109,12 +160,14 @@ export function getMissionAction(missionName) {
     }
   }
 
-  // Fallback: rota padrão para missões
+  // Fallback: rota padrão - NÃO requer aprovação por padrão
+  // Só Instagram e Google (configurados acima) vão pra fila do admin
   return {
     type: 'internal',
     route: '/tarefas',
     label: 'Ver Missões',
-    requiresApproval: true
+    requiresApproval: false,
+    isAutomatic: false
   }
 }
 
@@ -130,10 +183,31 @@ export function isExternalMission(missionName) {
 
 /**
  * Verifica se a missão requer aprovação do admin
+ * SÓ retorna true para Instagram e Google
  * @param {string} missionName - Nome da missão
  * @returns {boolean}
  */
 export function requiresApproval(missionName) {
   const action = getMissionAction(missionName)
-  return action?.requiresApproval ?? true
+  return action?.requiresApproval ?? false // Padrão: NÃO requer aprovação
+}
+
+/**
+ * Verifica se a missão é automática (credita via trigger, sem ação do usuário)
+ * @param {string} missionName - Nome da missão
+ * @returns {boolean}
+ */
+export function isAutomaticMission(missionName) {
+  const action = getMissionAction(missionName)
+  return action?.isAutomatic ?? false
+}
+
+/**
+ * Verifica se a missão deve ser escondida da lista (ex: check-in tem card dedicado)
+ * @param {string} missionName - Nome da missão
+ * @returns {boolean}
+ */
+export function shouldHideFromList(missionName) {
+  const action = getMissionAction(missionName)
+  return action?.hideFromList ?? false
 }
