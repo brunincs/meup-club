@@ -12,6 +12,7 @@ import {
 } from '@/services/experienciasService'
 import { format } from '@/services/copy'
 import { TargetIcon, CheckIcon, CalendarIcon, SparkleIcon, ClockIcon } from '@/components/ui/Icons'
+import { getMissionAction, isExternalMission, requiresApproval } from '@/services/missionActions'
 
 // ============================================
 // FOTO A VALIDAR - trocar pela oficial da Me,up depois
@@ -152,13 +153,18 @@ function MissionCard({ task, onComplete, isLoading }) {
 }
 
 // Versão para fundo claro
-function MissionCardLight({ task, onComplete, isLoading }) {
+function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
   const isCompleted = task.completed
   const isPending = task.pending
   const isRejected = task.rejected
   const hasProgress = task.target > 1
   const progressPercent = hasProgress ? (task.progress / task.target) * 100 : 0
   const isInProgress = hasProgress && task.progress > 0 && task.progress < task.target
+
+  // Obter ação da missão
+  const action = getMissionAction(task.name)
+  const isExternal = isExternalMission(task.name)
+  const needsApproval = requiresApproval(task.name)
 
   return (
     <motion.div
@@ -190,6 +196,11 @@ function MissionCardLight({ task, onComplete, isLoading }) {
       {isRejected && (
         <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-red-400/20 border border-red-400/30">
           <span className="text-[10px] uppercase tracking-wider text-red-400 font-medium">Rejeitada</span>
+        </div>
+      )}
+      {isExternal && !isCompleted && !isPending && (
+        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-dusty-rose/20 border border-dusty-rose/30">
+          <span className="text-[10px] uppercase tracking-wider text-dusty-rose font-medium">Externo ↗</span>
         </div>
       )}
 
@@ -260,34 +271,47 @@ function MissionCardLight({ task, onComplete, isLoading }) {
               </div>
 
               {!isCompleted && !isPending && (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => onComplete(task)}
-                  disabled={isLoading}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
-                    isLoading
-                      ? 'bg-graphite/10 text-graphite/60 cursor-wait'
-                      : 'bg-deep-purple text-ice-white hover:bg-bright-purple shadow-lg shadow-deep-purple/20'
-                  }`}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center gap-2">
-                      <motion.span
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        className="w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block"
-                      />
-                      Enviando...
-                    </span>
-                  ) : isInProgress ? (
-                    'Continuar →'
-                  ) : isRejected ? (
-                    'Tentar novamente'
-                  ) : (
-                    'Concluir'
-                  )}
-                </motion.button>
+                <div className="flex items-center gap-2">
+                  {/* Botão "Ir Fazer" */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onGoTo?.(task)}
+                    className="px-4 py-2.5 rounded-xl text-sm font-heading font-medium bg-graphite/10 text-deep-purple hover:bg-graphite/20 transition-all"
+                  >
+                    {action?.label || 'Ir Fazer'} {isExternal ? '↗' : '→'}
+                  </motion.button>
+
+                  {/* Botão "Fiz isso" / "Concluir" */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onComplete(task)}
+                    disabled={isLoading}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
+                      isLoading
+                        ? 'bg-graphite/10 text-graphite/60 cursor-wait'
+                        : 'bg-deep-purple text-ice-white hover:bg-bright-purple shadow-lg shadow-deep-purple/20'
+                    }`}
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <motion.span
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                          className="w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block"
+                        />
+                        Enviando...
+                      </span>
+                    ) : isRejected ? (
+                      'Tentar novamente'
+                    ) : needsApproval ? (
+                      'Fiz isso'
+                    ) : (
+                      'Concluir'
+                    )}
+                  </motion.button>
+                </div>
               )}
             </div>
           </div>
@@ -499,6 +523,28 @@ export function Tasks() {
     }
   }, [user])
 
+  // Handler para ir fazer a tarefa
+  const handleGoToTask = useCallback((task) => {
+    const action = getMissionAction(task.name)
+
+    if (!action) {
+      navigate('/tarefas')
+      return
+    }
+
+    if (action.type === 'external') {
+      // Abre link externo em nova aba
+      window.open(action.route, '_blank', 'noopener,noreferrer')
+    } else if (action.type === 'share') {
+      // Compartilhar código
+      // TODO: Implementar compartilhamento
+      navigate('/dashboard')
+    } else {
+      // Navega para rota interna
+      navigate(action.route)
+    }
+  }, [navigate])
+
   // Navegação por teclado nas abas (Bug 4)
   const handleTabKeyDown = useCallback((e, currentIndex) => {
     const tabs = categoryTabs
@@ -709,6 +755,7 @@ export function Tasks() {
                     key={task.id}
                     task={task}
                     onComplete={handleCompleteTask}
+                    onGoTo={handleGoToTask}
                     isLoading={loadingTaskId === task.id}
                   />
                 ))}
