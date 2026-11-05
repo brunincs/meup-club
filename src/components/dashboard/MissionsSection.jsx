@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { MissionCard, MissionCardMini } from './MissionCard'
 import { ProgressRing } from '@/components/effects/ProgressRing'
 import { useConfetti } from '@/components/effects/ConfettiEffect'
-import { TargetIcon } from '@/components/ui/Icons'
+import { TargetIcon, CalendarIcon } from '@/components/ui/Icons'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   fetchTarefas,
@@ -12,6 +12,11 @@ import {
   solicitarTarefa,
   verificarSolicitacaoPendente
 } from '@/services/experienciasService'
+import {
+  fazerCheckin,
+  podeFazerCheckin,
+  registrarCompartilhamento
+} from '@/services/supabaseData'
 import { getMissionAction, isExternalMission, requiresApproval, EXTERNAL_LINKS } from '@/services/missionActions'
 import toast from 'react-hot-toast'
 
@@ -27,6 +32,13 @@ export function MissionsSection({ variant = 'dark' }) {
   const [statusMap, setStatusMap] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [loadingTaskId, setLoadingTaskId] = useState(null)
+
+  // Estado para check-in diário
+  const [checkinStatus, setCheckinStatus] = useState({
+    podeFazer: true,
+    proximoCheckin: null,
+    isLoading: false
+  })
 
   // Carregar tarefas e status do usuário
   useEffect(() => {
@@ -48,6 +60,14 @@ export function MissionsSection({ variant = 'dark' }) {
         if (statusResult.success) {
           setStatusMap(statusResult.statusMap)
         }
+
+        // Verificar status do check-in
+        const checkinResult = await podeFazerCheckin(user.id)
+        setCheckinStatus({
+          podeFazer: checkinResult.pode_fazer,
+          proximoCheckin: checkinResult.proximo_checkin,
+          isLoading: false
+        })
       } catch (error) {
         console.error('Erro ao carregar missões:', error)
       } finally {
@@ -205,6 +225,29 @@ export function MissionsSection({ variant = 'dark' }) {
       const shareUrl = `${window.location.origin}/cadastro?ref=${code}`
       const shareText = `Use meu código ${code} para entrar no Meup Club e ganhar pontos de boas-vindas!`
 
+      // Registrar compartilhamento no banco (credita pontos na primeira vez)
+      if (user?.id) {
+        registrarCompartilhamento(user.id).then(result => {
+          if (result.creditou) {
+            fireConfetti({ x: '50%', y: '50%' })
+            toast.success(
+              <div>
+                <strong>Compartilhamento registrado!</strong>
+                <div className="text-sm opacity-80">+{result.pontos} pontos</div>
+              </div>,
+              {
+                duration: 3000,
+                style: {
+                  background: '#32113f',
+                  color: '#edf0f1',
+                  border: '1px solid rgba(34, 197, 94, 0.3)'
+                }
+              }
+            )
+          }
+        }).catch(console.error)
+      }
+
       if (navigator.share) {
         navigator.share({
           title: 'Meup Club - Convite',
@@ -227,7 +270,7 @@ export function MissionsSection({ variant = 'dark' }) {
       // Navega para rota interna
       navigate(action.route)
     }
-  }, [navigate, profile])
+  }, [navigate, profile, user, fireConfetti])
 
   // Handler para completar/solicitar missão
   const handleCompleteMission = useCallback(async (mission) => {
@@ -309,6 +352,73 @@ export function MissionsSection({ variant = 'dark' }) {
     })
   }, [fireConfetti])
 
+  // Handler para check-in diário
+  const handleCheckin = useCallback(async () => {
+    if (!user?.id || !checkinStatus.podeFazer || checkinStatus.isLoading) return
+
+    setCheckinStatus(prev => ({ ...prev, isLoading: true }))
+
+    try {
+      const result = await fazerCheckin(user.id)
+
+      if (result.success) {
+        fireConfetti({ x: '50%', y: '30%' })
+        toast.success(
+          <div>
+            <strong>Check-in realizado!</strong>
+            <div className="text-sm opacity-80">+{result.pontos} pontos</div>
+          </div>,
+          {
+            duration: 4000,
+            style: {
+              background: '#32113f',
+              color: '#edf0f1',
+              border: '1px solid rgba(34, 197, 94, 0.3)'
+            }
+          }
+        )
+        setCheckinStatus({
+          podeFazer: false,
+          proximoCheckin: result.proximo_checkin,
+          isLoading: false
+        })
+      } else {
+        setCheckinStatus({
+          podeFazer: false,
+          proximoCheckin: result.proximo_checkin,
+          isLoading: false
+        })
+        toast('Volte amanha para o proximo check-in!', {
+          icon: '⏰',
+          style: { background: '#32113f', color: '#edf0f1' }
+        })
+      }
+    } catch (error) {
+      console.error('Erro no check-in:', error)
+      toast.error('Erro ao fazer check-in')
+      setCheckinStatus(prev => ({ ...prev, isLoading: false }))
+    }
+  }, [user, checkinStatus.podeFazer, checkinStatus.isLoading, fireConfetti])
+
+  // Calcular tempo restante para próximo check-in
+  const getTempoRestante = useCallback(() => {
+    if (!checkinStatus.proximoCheckin) return null
+
+    const agora = new Date()
+    const proximo = new Date(checkinStatus.proximoCheckin)
+    const diff = proximo - agora
+
+    if (diff <= 0) return null
+
+    const horas = Math.floor(diff / (1000 * 60 * 60))
+    const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+
+    if (horas > 0) {
+      return `${horas}h ${minutos}m`
+    }
+    return `${minutos}m`
+  }, [checkinStatus.proximoCheckin])
+
   // Loading state
   if (isLoading) {
     return (
@@ -375,6 +485,80 @@ export function MissionsSection({ variant = 'dark' }) {
           </ProgressRing>
         </div>
       </div>
+
+      {/* Check-in Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.1 }}
+        className={`p-5 rounded-xl border ${
+          checkinStatus.podeFazer
+            ? isLight
+              ? 'bg-gradient-to-r from-antique-gold/10 to-antique-gold/5 border-antique-gold/30'
+              : 'bg-gradient-to-r from-antique-gold/20 to-deep-purple/40 border-antique-gold/30'
+            : isLight
+              ? 'bg-graphite/5 border-graphite/10'
+              : 'bg-deep-purple/20 border-dusty-rose/10'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+              checkinStatus.podeFazer
+                ? 'bg-antique-gold/20'
+                : isLight ? 'bg-graphite/10' : 'bg-dusty-rose/10'
+            }`}>
+              <CalendarIcon size={24} color={checkinStatus.podeFazer ? '#a27937' : '#a39695'} />
+            </div>
+            <div>
+              <h3 className={`text-base font-heading font-medium ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
+                Check-in Diario
+              </h3>
+              <p className={`text-sm ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
+                {checkinStatus.podeFazer
+                  ? 'Ganhe 50 pontos por dia!'
+                  : `Volte em ${getTempoRestante() || 'algumas horas'}`
+                }
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <span className={`text-lg font-bold ${checkinStatus.podeFazer ? 'text-game-green' : 'text-graphite/40'}`}>
+                +50
+              </span>
+              <span className={`text-xs block ${isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>pontos</span>
+            </div>
+
+            <motion.button
+              whileHover={checkinStatus.podeFazer ? { scale: 1.05 } : {}}
+              whileTap={checkinStatus.podeFazer ? { scale: 0.95 } : {}}
+              onClick={handleCheckin}
+              disabled={!checkinStatus.podeFazer || checkinStatus.isLoading}
+              className={`px-5 py-2.5 rounded-lg text-sm font-heading font-semibold transition-all ${
+                checkinStatus.podeFazer
+                  ? 'bg-antique-gold text-deep-purple hover:bg-accent-light shadow-lg shadow-antique-gold/20'
+                  : isLight
+                    ? 'bg-graphite/10 text-graphite/40 cursor-not-allowed'
+                    : 'bg-dusty-rose/10 text-dusty-rose/40 cursor-not-allowed'
+              }`}
+            >
+              {checkinStatus.isLoading ? (
+                <motion.span
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="inline-block w-4 h-4 border-2 border-deep-purple border-t-transparent rounded-full"
+                />
+              ) : checkinStatus.podeFazer ? (
+                <>Fazer Check-in</>
+              ) : (
+                <>Volte amanha</>
+              )}
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Main Missions Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

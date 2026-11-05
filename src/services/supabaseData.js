@@ -965,3 +965,108 @@ export async function createNotification(userId, title, message, type = 'info', 
 
   return !error
 }
+
+// ============================================
+// FUNÇÕES DE CHECK-IN DIÁRIO
+// ============================================
+
+/**
+ * Faz check-in diário do usuário
+ * Retorna { success, pontos, proximo_checkin } ou { success: false, error, proximo_checkin, horas_restantes }
+ */
+export async function fazerCheckin(userId) {
+  const { data, error } = await supabase.rpc('fazer_checkin', { p_user_id: userId })
+
+  if (error) {
+    console.error('Erro ao fazer check-in:', error)
+    return { success: false, error: error.message }
+  }
+
+  return data
+}
+
+/**
+ * Verifica se usuário pode fazer check-in
+ * Retorna { pode_fazer, ultimo_checkin, proximo_checkin }
+ */
+export async function podeFazerCheckin(userId) {
+  const { data, error } = await supabase.rpc('pode_fazer_checkin', { p_user_id: userId })
+
+  if (error) {
+    console.error('Erro ao verificar check-in:', error)
+    return { pode_fazer: true, ultimo_checkin: null, proximo_checkin: null }
+  }
+
+  return data
+}
+
+// ============================================
+// FUNÇÕES DE MISSÕES AUTOMÁTICAS
+// ============================================
+
+/**
+ * Registra visita à página de experiências/recompensas
+ * Credita pontos apenas na primeira vez
+ */
+export async function registrarVisitaExperiencias(userId) {
+  const { data, error } = await supabase.rpc('registrar_visita_experiencias', { p_user_id: userId })
+
+  if (error) {
+    console.error('Erro ao registrar visita:', error)
+    return { success: false, creditou: false, pontos: 0 }
+  }
+
+  return data
+}
+
+/**
+ * Registra compartilhamento do código de indicação
+ * Credita pontos apenas na primeira vez
+ */
+export async function registrarCompartilhamento(userId) {
+  const { data, error } = await supabase.rpc('registrar_compartilhamento', { p_user_id: userId })
+
+  if (error) {
+    console.error('Erro ao registrar compartilhamento:', error)
+    return { success: false, creditou: false, pontos: 0 }
+  }
+
+  return data
+}
+
+/**
+ * Obtém status das missões automáticas do usuário
+ * Retorna array de missões já concluídas
+ */
+export async function getMissoesAutomaticas(userId) {
+  const { data, error } = await supabase
+    .from('missoes_automaticas_concluidas')
+    .select('*')
+    .eq('user_id', userId)
+
+  if (error) {
+    console.error('Erro ao buscar missões automáticas:', error)
+    return []
+  }
+
+  return data || []
+}
+
+/**
+ * Obtém histórico de check-ins do usuário
+ */
+export async function getHistoricoCheckins(userId, limit = 7) {
+  const { data, error } = await supabase
+    .from('checkins')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('Erro ao buscar histórico de check-ins:', error)
+    return []
+  }
+
+  return data || []
+}

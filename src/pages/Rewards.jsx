@@ -10,6 +10,7 @@ import {
   calculateRewardsProgress,
   calculateLevel
 } from '@/services/pointsSystem'
+import { registrarVisitaExperiencias } from '@/services/supabaseData'
 import { format, levels as levelCopy } from '@/services/copy'
 import { getClassIcon, GiftIcon } from '@/components/ui/Icons'
 
@@ -667,6 +668,30 @@ export function Rewards() {
       navigate('/login')
     }
   }, [user, loading, navigate])
+
+  // Registrar visita à página de experiências (credita pontos na primeira vez)
+  useEffect(() => {
+    if (user?.id) {
+      registrarVisitaExperiencias(user.id).then(result => {
+        if (result.creditou) {
+          toast.success(
+            <div>
+              <strong>Missao concluida!</strong>
+              <div className="text-sm opacity-80">+{result.pontos} pontos por explorar experiencias</div>
+            </div>,
+            {
+              duration: 4000,
+              style: {
+                background: '#32113f',
+                color: '#edf0f1',
+                border: '1px solid rgba(34, 197, 94, 0.3)'
+              }
+            }
+          )
+        }
+      }).catch(console.error)
+    }
+  }, [user?.id])
 
   // Handler para iniciar resgate (abre modal)
   const handleActivate = useCallback((reward) => {
