@@ -157,18 +157,7 @@ export async function creditPoints(userId, amount, reason, type = 'credit') {
 export async function fetchUserTransactions(userId) {
   const { data, error } = await supabase
     .from('point_transactions')
-    .select(`
-      id,
-      amount,
-      balance_before,
-      balance_after,
-      type,
-      reason,
-      created_at,
-      admin:admin_id (
-        name
-      )
-    `)
+    .select('id, admin_id, amount, balance_before, balance_after, type, reason, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
@@ -177,14 +166,36 @@ export async function fetchUserTransactions(userId) {
     return { success: false, error: error.message, transactions: [] }
   }
 
+  if (!data || data.length === 0) {
+    return { success: true, transactions: [] }
+  }
+
+  // Buscar nomes dos admins
+  const adminIds = [...new Set(data.map(t => t.admin_id).filter(Boolean))]
+  let adminsMap = {}
+
+  if (adminIds.length > 0) {
+    const { data: admins } = await supabase
+      .from('profiles')
+      .select('id, name')
+      .in('id', adminIds)
+
+    if (admins) {
+      adminsMap = admins.reduce((acc, a) => {
+        acc[a.id] = a.name
+        return acc
+      }, {})
+    }
+  }
+
   const transactions = data.map(t => ({
     id: t.id,
     amount: t.amount,
-    balanceBefore: t.balance_before,
-    balanceAfter: t.balance_after,
+    balanceBefore: t.balance_before || 0,
+    balanceAfter: t.balance_after || 0,
     type: t.type,
-    reason: t.reason,
-    adminName: t.admin?.name || 'Admin',
+    reason: t.reason || 'Sem descrição',
+    adminName: adminsMap[t.admin_id] || 'Sistema',
     createdAt: new Date(t.created_at).toLocaleString('pt-BR')
   }))
 
@@ -193,27 +204,13 @@ export async function fetchUserTransactions(userId) {
 
 /**
  * Busca todas as transações (para o admin)
+ * Usa função RPC segura que bypassa RLS
  */
 export async function fetchAllTransactions(filters = {}) {
+  // Primeiro, buscar as transações
   let query = supabase
     .from('point_transactions')
-    .select(`
-      id,
-      amount,
-      balance_before,
-      balance_after,
-      type,
-      reason,
-      created_at,
-      user:user_id (
-        id,
-        name,
-        email
-      ),
-      admin:admin_id (
-        name
-      )
-    `)
+    .select('id, user_id, admin_id, amount, balance_before, balance_after, type, reason, created_at')
     .order('created_at', { ascending: false })
     .limit(100)
 
@@ -232,17 +229,41 @@ export async function fetchAllTransactions(filters = {}) {
     return { success: false, error: error.message, transactions: [] }
   }
 
+  if (!data || data.length === 0) {
+    return { success: true, transactions: [] }
+  }
+
+  // Buscar nomes dos usuários e admins em uma segunda query
+  const userIds = [...new Set(data.map(t => t.user_id).filter(Boolean))]
+  const adminIds = [...new Set(data.map(t => t.admin_id).filter(Boolean))]
+  const allIds = [...new Set([...userIds, ...adminIds])]
+
+  let profilesMap = {}
+  if (allIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, name, email')
+      .in('id', allIds)
+
+    if (profiles) {
+      profilesMap = profiles.reduce((acc, p) => {
+        acc[p.id] = p
+        return acc
+      }, {})
+    }
+  }
+
   const transactions = data.map(t => ({
     id: t.id,
     amount: t.amount,
-    balanceBefore: t.balance_before,
-    balanceAfter: t.balance_after,
+    balanceBefore: t.balance_before || 0,
+    balanceAfter: t.balance_after || 0,
     type: t.type,
-    reason: t.reason,
-    userId: t.user?.id,
-    userName: t.user?.name || 'Desconhecido',
-    userEmail: t.user?.email,
-    adminName: t.admin?.name || 'Admin',
+    reason: t.reason || 'Sem descrição',
+    userId: t.user_id,
+    userName: profilesMap[t.user_id]?.name || 'Usuário',
+    userEmail: profilesMap[t.user_id]?.email || '',
+    adminName: profilesMap[t.admin_id]?.name || 'Sistema',
     createdAt: new Date(t.created_at).toLocaleString('pt-BR')
   }))
 

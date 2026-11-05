@@ -309,7 +309,7 @@ export async function approveReferral(referralId) {
 
     const newPoints = currentPoints + PONTOS_POR_INDICACAO
 
-    // 3. Registrar no histórico de transações
+    // 3. Registrar no histórico de transações (com balance obrigatório)
     const { error: txError } = await supabase
       .from('point_transactions')
       .insert({
@@ -317,11 +317,13 @@ export async function approveReferral(referralId) {
         amount: PONTOS_POR_INDICACAO,
         type: 'referral',
         reason: 'Indicação aprovada',
-        reference_id: referralId
+        balance_before: currentPoints,
+        balance_after: newPoints
       })
 
     if (txError) {
-      console.warn('Erro ao registrar transação (não crítico):', txError)
+      console.error('Erro ao registrar transação:', txError)
+      // Continua mesmo com erro para não bloquear a aprovação
     }
 
     return {

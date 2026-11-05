@@ -47,7 +47,7 @@ export async function getUserById(userId) {
   return data
 }
 
-export async function updateUserPoints(userId, newPoints) {
+export async function updateUserPoints(userId, newPoints, reason = 'Atualização de pontos') {
   const { data: user } = await supabase
     .from('profiles')
     .select('points')
@@ -56,7 +56,7 @@ export async function updateUserPoints(userId, newPoints) {
 
   if (!user) return { success: false, message: 'Usuário não encontrado' }
 
-  const oldPoints = user.points
+  const oldPoints = user.points || 0
   const diff = newPoints - oldPoints
 
   const { error } = await supabase
@@ -65,6 +65,21 @@ export async function updateUserPoints(userId, newPoints) {
     .eq('id', userId)
 
   if (error) return { success: false, message: error.message }
+
+  // Registrar transação no histórico
+  if (diff !== 0) {
+    await supabase
+      .from('point_transactions')
+      .insert({
+        user_id: userId,
+        amount: diff,
+        type: diff > 0 ? 'credit' : 'debit',
+        reason: reason,
+        balance_before: oldPoints,
+        balance_after: newPoints
+      })
+  }
+
   return { success: true, diff, oldPoints, newPoints }
 }
 
@@ -197,12 +212,27 @@ export async function approveReferral(referralId, saleValue, profit, clientId = 
     .eq('id', referralId)
 
   // Adicionar créditos ao indicador
+  const oldReferrerPoints = referral.referrer.points || 0
+  const newReferrerPoints = oldReferrerPoints + creditsCalc.referrerCredits
+
   await supabase
     .from('profiles')
     .update({
-      points: referral.referrer.points + creditsCalc.referrerCredits
+      points: newReferrerPoints
     })
     .eq('id', referral.referrer_id)
+
+  // Registrar transação do indicador
+  await supabase
+    .from('point_transactions')
+    .insert({
+      user_id: referral.referrer_id,
+      amount: creditsCalc.referrerCredits,
+      type: 'sale',
+      reason: `Indicação aprovada: ${referral.client_name}`,
+      balance_before: oldReferrerPoints,
+      balance_after: newReferrerPoints
+    })
 
   // Adicionar créditos ao comprador (se existir)
   if (clientId) {
@@ -213,10 +243,25 @@ export async function approveReferral(referralId, saleValue, profit, clientId = 
       .single()
 
     if (buyer) {
+      const oldBuyerPoints = buyer.points || 0
+      const newBuyerPoints = oldBuyerPoints + creditsCalc.buyerCredits
+
       await supabase
         .from('profiles')
-        .update({ points: buyer.points + creditsCalc.buyerCredits })
+        .update({ points: newBuyerPoints })
         .eq('id', clientId)
+
+      // Registrar transação do comprador
+      await supabase
+        .from('point_transactions')
+        .insert({
+          user_id: clientId,
+          amount: creditsCalc.buyerCredits,
+          type: 'purchase',
+          reason: 'Bônus por compra realizada',
+          balance_before: oldBuyerPoints,
+          balance_after: newBuyerPoints
+        })
     }
   }
 
@@ -346,10 +391,25 @@ export async function registerSale(clientName, referrerCode, saleValue, profit, 
       .eq('id', existingReferralId)
 
     // Adicionar créditos ao indicador
+    const oldRefPoints = referral.referrer.points || 0
+    const newRefPoints = oldRefPoints + creditsCalc.referrerCredits
+
     await supabase
       .from('profiles')
-      .update({ points: referral.referrer.points + creditsCalc.referrerCredits })
+      .update({ points: newRefPoints })
       .eq('id', referrerId)
+
+    // Registrar transação do indicador
+    await supabase
+      .from('point_transactions')
+      .insert({
+        user_id: referrerId,
+        amount: creditsCalc.referrerCredits,
+        type: 'sale',
+        reason: `Venda convertida: ${clientName}`,
+        balance_before: oldRefPoints,
+        balance_after: newRefPoints
+      })
   } else {
     // Buscar usuário pelo código de indicação
     const { data: referrer } = await supabase
@@ -379,13 +439,28 @@ export async function registerSale(clientName, referrerCode, saleValue, profit, 
     referralId = newReferral?.id
 
     // Adicionar créditos e incrementar contador
+    const oldRefPoints2 = referrer.points || 0
+    const newRefPoints2 = oldRefPoints2 + creditsCalc.referrerCredits
+
     await supabase
       .from('profiles')
       .update({
-        points: referrer.points + creditsCalc.referrerCredits,
-        total_referrals: referrer.total_referrals + 1
+        points: newRefPoints2,
+        total_referrals: (referrer.total_referrals || 0) + 1
       })
       .eq('id', referrerId)
+
+    // Registrar transação do indicador
+    await supabase
+      .from('point_transactions')
+      .insert({
+        user_id: referrerId,
+        amount: creditsCalc.referrerCredits,
+        type: 'sale',
+        reason: `Venda registrada: ${clientName}`,
+        balance_before: oldRefPoints2,
+        balance_after: newRefPoints2
+      })
   }
 
   // Adicionar créditos ao comprador (se existir)
@@ -397,10 +472,25 @@ export async function registerSale(clientName, referrerCode, saleValue, profit, 
       .single()
 
     if (buyer) {
+      const oldBuyerPts = buyer.points || 0
+      const newBuyerPts = oldBuyerPts + creditsCalc.buyerCredits
+
       await supabase
         .from('profiles')
-        .update({ points: buyer.points + creditsCalc.buyerCredits })
+        .update({ points: newBuyerPts })
         .eq('id', clientId)
+
+      // Registrar transação do comprador
+      await supabase
+        .from('point_transactions')
+        .insert({
+          user_id: clientId,
+          amount: creditsCalc.buyerCredits,
+          type: 'purchase',
+          reason: 'Bônus por compra realizada',
+          balance_before: oldBuyerPts,
+          balance_after: newBuyerPts
+        })
     }
   }
 
@@ -495,10 +585,25 @@ export async function approveTask(taskId, adminId) {
     .eq('id', taskId)
 
   // Adicionar pontos ao usuário
+  const oldTaskPoints = task.user.points || 0
+  const newTaskPoints = oldTaskPoints + task.points
+
   await supabase
     .from('profiles')
-    .update({ points: task.user.points + task.points })
+    .update({ points: newTaskPoints })
     .eq('id', task.user_id)
+
+  // Registrar transação da tarefa
+  await supabase
+    .from('point_transactions')
+    .insert({
+      user_id: task.user_id,
+      amount: task.points,
+      type: 'task',
+      reason: `Tarefa aprovada: ${task.task_name}`,
+      balance_before: oldTaskPoints,
+      balance_after: newTaskPoints
+    })
 
   await logAdminAction({
     actionType: 'approve',
@@ -693,10 +798,25 @@ export async function processWithdrawal(withdrawalId, adminId, approved, reason 
 
   if (approved) {
     // Deduzir pontos do usuário
+    const oldWithdrawPoints = withdrawal.user.points || 0
+    const newWithdrawPoints = oldWithdrawPoints - withdrawal.amount
+
     await supabase
       .from('profiles')
-      .update({ points: withdrawal.user.points - withdrawal.amount })
+      .update({ points: newWithdrawPoints })
       .eq('id', withdrawal.user_id)
+
+    // Registrar transação do saque
+    await supabase
+      .from('point_transactions')
+      .insert({
+        user_id: withdrawal.user_id,
+        amount: -withdrawal.amount,
+        type: 'withdrawal',
+        reason: 'Saque aprovado',
+        balance_before: oldWithdrawPoints,
+        balance_after: newWithdrawPoints
+      })
 
     await supabase
       .from('withdrawals')
@@ -744,7 +864,7 @@ export async function adjustUserCredits(userId, amount, reason, adminId, categor
 
   if (!user) return { success: false, message: 'Usuário não encontrado' }
 
-  const oldBalance = user.points
+  const oldBalance = user.points || 0
   const newBalance = Math.max(0, oldBalance + amount)
 
   // Atualizar pontos
@@ -753,22 +873,25 @@ export async function adjustUserCredits(userId, amount, reason, adminId, categor
     .update({ points: newBalance })
     .eq('id', userId)
 
-  // Registrar ajuste
-  const { data: adjustment, error } = await supabase
-    .from('credit_adjustments')
+  // Registrar transação na tabela unificada point_transactions
+  const { data: transaction, error } = await supabase
+    .from('point_transactions')
     .insert({
       user_id: userId,
       admin_id: adminId,
-      amount,
-      old_balance: oldBalance,
-      new_balance: newBalance,
-      reason,
-      category
+      amount: amount,
+      balance_before: oldBalance,
+      balance_after: newBalance,
+      type: amount >= 0 ? 'credit' : 'debit',
+      reason: reason || 'Ajuste manual'
     })
     .select()
     .single()
 
-  if (error) return { success: false, message: error.message }
+  if (error) {
+    console.error('Erro ao registrar transação:', error)
+    return { success: false, message: error.message }
+  }
 
   await logAdminAction({
     actionType: 'credit_adjust',
@@ -781,17 +904,27 @@ export async function adjustUserCredits(userId, amount, reason, adminId, categor
     description: `Ajuste de ${amount > 0 ? '+' : ''}${amount} créditos. Motivo: ${reason}`
   })
 
-  return { success: true, oldBalance, newBalance, adjustment }
+  return { success: true, oldBalance, newBalance, transaction }
 }
 
 export async function getCreditAdjustments(userId = null) {
+  // Busca transações do tipo credit/debit (ajustes manuais)
   let query = supabase
-    .from('credit_adjustments')
+    .from('point_transactions')
     .select(`
-      *,
+      id,
+      user_id,
+      admin_id,
+      amount,
+      balance_before,
+      balance_after,
+      type,
+      reason,
+      created_at,
       user:profiles!user_id(id, name),
       admin:profiles!admin_id(id, name)
     `)
+    .in('type', ['credit', 'debit'])
     .order('created_at', { ascending: false })
 
   if (userId) {
