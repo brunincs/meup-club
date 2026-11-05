@@ -2,8 +2,9 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 import { useAuth } from '@/contexts/AuthContext'
 import { demoUser } from '@/services/mockData'
 import {
-  resgatarExperiencia,
-  buscarExperienciasResgatadas
+  solicitarResgate,
+  buscarExperienciasResgatadas,
+  buscarStatusResgates
 } from '@/services/resgateService'
 import { supabase } from '@/lib/supabase'
 
@@ -13,7 +14,9 @@ import { supabase } from '@/lib/supabase'
  * Quando logado com conta real: usa pontos do profile (Supabase)
  * Quando em modo demo: usa pontos do demoUser
  *
- * RESGATE: Agora integrado com Supabase real!
+ * RESGATE: Agora com fluxo de APROVAÇÃO!
+ * - Cliente solicita → pendente
+ * - Admin aprova → só então debita
  */
 
 const PointsContext = createContext(null)
@@ -34,46 +37,58 @@ export function PointsProvider({ children }) {
     }
   }, [profile, useMock])
 
-  // IDs das experiências já resgatadas (para evitar resgate duplo)
+  // IDs das experiências já resgatadas (APROVADAS)
   const [redeemedIds, setRedeemedIds] = useState([])
+  // IDs das experiências com pedido pendente
+  const [pendingIds, setPendingIds] = useState([])
 
-  // Carregar experiências já resgatadas do Supabase
+  // Carregar status dos resgates do Supabase
   useEffect(() => {
-    async function loadRedeemedIds() {
+    async function loadResgateStatus() {
       if (!user || useMock) return
+
+      // Buscar IDs aprovados
       const ids = await buscarExperienciasResgatadas()
       setRedeemedIds(ids)
+
+      // Buscar mapa de status (para identificar pendentes)
+      const statusMap = await buscarStatusResgates()
+      const pending = Object.entries(statusMap)
+        .filter(([_, status]) => status === 'pendente')
+        .map(([id]) => id)
+      setPendingIds(pending)
     }
-    loadRedeemedIds()
+    loadResgateStatus()
   }, [user, useMock])
 
   /**
-   * Resgata uma experiência - INTEGRAÇÃO REAL COM SUPABASE
+   * Solicita resgate de uma experiência
+   * NÃO debita imediatamente - cria pedido PENDENTE
+   *
    * @param {string} experienciaId - ID da experiência
-   * @param {string} experienciaNome - Nome da experiência (para histórico)
+   * @param {string} experienciaNome - Nome da experiência
    * @param {number} pontosNecessarios - Custo em pontos
-   * @returns {Object} { success, error, novoSaldo }
+   * @param {number} classeMinima - Classe mínima exigida
+   * @returns {Object} { success, error, message }
    */
-  const resgatar = useCallback(async (experienciaId, experienciaNome, pontosNecessarios) => {
+  const resgatar = useCallback(async (experienciaId, experienciaNome, pontosNecessarios, classeMinima = 1) => {
     if (useMock) {
-      // Modo demo: usa lógica local
+      // Modo demo: simula solicitação
       if (points < pontosNecessarios) {
         return { success: false, error: 'Saldo insuficiente.' }
       }
-      setPoints(prev => prev - pontosNecessarios)
-      setRedeemedIds(prev => [...prev, experienciaId])
-      return { success: true, novoSaldo: points - pontosNecessarios }
+      setPendingIds(prev => [...prev, experienciaId])
+      return { success: true, message: 'Solicitação enviada! Aguarde aprovação.' }
     }
 
     // Modo real: chama o serviço Supabase
     setIsLoading(true)
     try {
-      const result = await resgatarExperiencia(experienciaId, experienciaNome, pontosNecessarios)
+      const result = await solicitarResgate(experienciaId, experienciaNome, pontosNecessarios, classeMinima)
 
       if (result.success) {
-        // Atualiza estado local imediatamente
-        setPoints(result.novoSaldo)
-        setRedeemedIds(prev => [...prev, experienciaId])
+        // Marca como pendente (NÃO como resgatado ainda)
+        setPendingIds(prev => [...prev, experienciaId])
       }
 
       return result
@@ -100,8 +115,23 @@ export function PointsProvider({ children }) {
   }, [user, useMock])
 
   /**
-   * Debita pontos do saldo (DEPRECATED - use resgatar para integração real)
-   * Mantido para compatibilidade com outros componentes
+   * Recarrega status dos resgates (chamado após aprovação/rejeição)
+   */
+  const refreshResgates = useCallback(async () => {
+    if (!user || useMock) return
+
+    const ids = await buscarExperienciasResgatadas()
+    setRedeemedIds(ids)
+
+    const statusMap = await buscarStatusResgates()
+    const pending = Object.entries(statusMap)
+      .filter(([_, status]) => status === 'pendente')
+      .map(([id]) => id)
+    setPendingIds(pending)
+  }, [user, useMock])
+
+  /**
+   * Debita pontos do saldo (DEPRECATED)
    */
   const deductPoints = useCallback((amount) => {
     let success = false
@@ -117,7 +147,6 @@ export function PointsProvider({ children }) {
 
   /**
    * Adiciona pontos ao saldo (para missões, indicações, etc)
-   * @param {number} amount - Quantidade a adicionar
    */
   const addPoints = useCallback((amount) => {
     setPoints(prev => prev + amount)
@@ -125,7 +154,6 @@ export function PointsProvider({ children }) {
 
   /**
    * Marca uma experiência como resgatada
-   * @param {string} rewardId - ID da experiência
    */
   const markAsRedeemed = useCallback((rewardId) => {
     setRedeemedIds(prev => {
@@ -135,24 +163,32 @@ export function PointsProvider({ children }) {
   }, [])
 
   /**
-   * Verifica se uma experiência já foi resgatada
-   * @param {string} rewardId - ID da experiência
-   * @returns {boolean}
+   * Verifica se uma experiência já foi resgatada (aprovada)
    */
   const isRedeemed = useCallback((rewardId) => {
     return redeemedIds.includes(rewardId)
   }, [redeemedIds])
 
+  /**
+   * Verifica se uma experiência tem pedido pendente
+   */
+  const isPending = useCallback((rewardId) => {
+    return pendingIds.includes(rewardId)
+  }, [pendingIds])
+
   const value = {
     points,
     redeemedIds,
+    pendingIds,
     isLoading,
-    resgatar,        // NOVO: integração real com Supabase
-    refreshPoints,   // NOVO: sincroniza pontos do banco
-    deductPoints,    // deprecated - use resgatar
+    resgatar,         // Solicita resgate (pendente)
+    refreshPoints,    // Sincroniza pontos do banco
+    refreshResgates,  // Sincroniza status dos resgates
+    deductPoints,     // deprecated
     addPoints,
     markAsRedeemed,
-    isRedeemed
+    isRedeemed,
+    isPending
   }
 
   return (
@@ -164,7 +200,6 @@ export function PointsProvider({ children }) {
 
 /**
  * Hook para usar o contexto de pontos
- * Use assim: const { points, deductPoints } = usePoints()
  */
 export function usePoints() {
   const context = useContext(PointsContext)

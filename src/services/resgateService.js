@@ -1,60 +1,325 @@
-// Serviço de Resgate de Experiências - Meup Club
-// Debita pontos do saldo real no Supabase e registra a transação
-// CORREÇÃO: Usa função RPC segura que roda no banco
+// ============================================
+// SERVIÇO DE RESGATE DE EXPERIÊNCIAS - Meup Club
+// Fluxo: Cliente SOLICITA → Admin APROVA → Só então debita
+// ============================================
 
 import { supabase } from '@/lib/supabase'
 
+// ============================================
+// FUNÇÕES DO CLIENTE
+// ============================================
+
 /**
- * Resgata uma experiência (debita pontos do saldo do usuário)
- *
- * SEGURANÇA:
- * - Usa função RPC do banco (SECURITY DEFINER)
- * - Valida saldo no banco antes de debitar
- * - Registra transação com balance_before/after corretos
+ * Solicita resgate de uma experiência (NÃO debita ainda!)
+ * Cria uma solicitação PENDENTE para aprovação do admin
  *
  * @param {string} experienciaId - ID da experiência
- * @param {string} experienciaNome - Nome da experiência (para histórico)
+ * @param {string} experienciaNome - Nome da experiência
  * @param {number} pontosNecessarios - Custo em pontos
- * @returns {Object} { success, error, novoSaldo }
+ * @param {number} classeMinima - Classe mínima exigida (1-4)
+ * @returns {Object} { success, error, requestId }
  */
-export async function resgatarExperiencia(experienciaId, experienciaNome, pontosNecessarios) {
+export async function solicitarResgate(experienciaId, experienciaNome, pontosNecessarios, classeMinima = 1) {
   try {
-    // Chamar função segura do banco que faz tudo atomicamente
-    const { data, error } = await supabase.rpc('client_redeem_experience', {
+    const { data, error } = await supabase.rpc('client_request_redemption', {
       p_experience_id: experienciaId,
       p_experience_name: experienciaNome,
-      p_points_cost: pontosNecessarios
+      p_points_cost: pontosNecessarios,
+      p_min_class: classeMinima
     })
 
     if (error) {
-      console.error('Erro ao resgatar experiência:', error)
-      return {
-        success: false,
-        error: error.message || 'Erro ao processar o resgate.'
-      }
+      console.error('Erro ao solicitar resgate:', error)
+      return { success: false, error: error.message || 'Erro ao processar solicitação.' }
     }
 
-    // A função retorna um JSON com success/error
     if (!data.success) {
       return { success: false, error: data.error }
     }
 
     return {
       success: true,
-      novoSaldo: data.balance_after,
-      message: 'Experiência resgatada com sucesso!'
+      requestId: data.request_id,
+      message: data.message || 'Solicitação enviada! Aguarde a aprovação.'
     }
-
   } catch (error) {
-    console.error('Erro inesperado no resgate:', error)
+    console.error('Erro inesperado na solicitação:', error)
     return { success: false, error: 'Erro inesperado. Tente novamente.' }
   }
 }
 
 /**
- * Busca histórico de resgates do usuário
- * Usa função RPC para contornar RLS
- * @returns {Object} { success, resgates, error }
+ * Busca solicitações de resgate do cliente logado
+ * @returns {Object} { success, solicitacoes, error }
+ */
+export async function buscarMinhasSolicitacoesResgate() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { success: false, error: 'Não logado', solicitacoes: [] }
+    }
+
+    const { data, error } = await supabase
+      .from('resgate_solicitacoes')
+      .select('id, experiencia_id, experiencia_nome, pontos, status, admin_comentario, created_at, processed_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Erro ao buscar solicitações:', error)
+      return { success: false, error: error.message, solicitacoes: [] }
+    }
+
+    const solicitacoes = (data || []).map(s => ({
+      id: s.id,
+      experienciaId: s.experiencia_id,
+      experienciaNome: s.experiencia_nome,
+      pontos: s.pontos,
+      status: s.status,
+      adminComentario: s.admin_comentario,
+      createdAt: new Date(s.created_at).toLocaleDateString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      }),
+      processedAt: s.processed_at ? new Date(s.processed_at).toLocaleDateString('pt-BR') : null
+    }))
+
+    return { success: true, solicitacoes }
+  } catch (error) {
+    console.error('Erro ao buscar solicitações:', error)
+    return { success: false, error: error.message, solicitacoes: [] }
+  }
+}
+
+/**
+ * Verifica se já existe pedido pendente para uma experiência
+ * @param {string} experienciaId
+ * @returns {Object} { pendente, aprovado }
+ */
+export async function verificarStatusResgate(experienciaId) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { pendente: false, aprovado: false }
+
+    const { data, error } = await supabase
+      .from('resgate_solicitacoes')
+      .select('status')
+      .eq('user_id', user.id)
+      .eq('experiencia_id', experienciaId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error || !data) return { pendente: false, aprovado: false }
+
+    return {
+      pendente: data.status === 'pendente',
+      aprovado: data.status === 'aprovado',
+      rejeitado: data.status === 'rejeitado'
+    }
+  } catch {
+    return { pendente: false, aprovado: false }
+  }
+}
+
+/**
+ * Busca mapa de status de todas experiências do cliente
+ * @returns {Object} { experienciaId: status }
+ */
+export async function buscarStatusResgates() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return {}
+
+    const { data, error } = await supabase
+      .from('resgate_solicitacoes')
+      .select('experiencia_id, status, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (error) return {}
+
+    // Criar mapa: experiencia_id -> status mais recente
+    const statusMap = {}
+    for (const s of (data || [])) {
+      if (!statusMap[s.experiencia_id]) {
+        statusMap[s.experiencia_id] = s.status
+      }
+    }
+
+    return statusMap
+  } catch {
+    return {}
+  }
+}
+
+// ============================================
+// FUNÇÕES DO ADMIN
+// ============================================
+
+/**
+ * Busca todas as solicitações de resgate (admin)
+ * @param {string} statusFilter - 'pendente', 'aprovado', 'rejeitado' ou null para todas
+ */
+export async function fetchSolicitacoesResgate(statusFilter = null) {
+  try {
+    let query = supabase
+      .from('resgate_solicitacoes')
+      .select('id, user_id, experiencia_id, experiencia_nome, pontos, status, admin_comentario, created_at, processed_at')
+      .order('created_at', { ascending: false })
+
+    if (statusFilter) {
+      query = query.eq('status', statusFilter)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Erro ao buscar solicitações:', error)
+      return { success: false, error: error.message, solicitacoes: [] }
+    }
+
+    // Buscar nomes dos usuários
+    const userIds = [...new Set((data || []).map(s => s.user_id))]
+    let usersMap = {}
+
+    if (userIds.length > 0) {
+      const { data: users } = await supabase
+        .from('profiles')
+        .select('id, name, email, points')
+        .in('id', userIds)
+
+      if (users) {
+        usersMap = users.reduce((acc, u) => {
+          acc[u.id] = u
+          return acc
+        }, {})
+      }
+    }
+
+    const solicitacoes = (data || []).map(s => ({
+      id: s.id,
+      userId: s.user_id,
+      userName: usersMap[s.user_id]?.name || 'Usuário',
+      userEmail: usersMap[s.user_id]?.email || '',
+      userPoints: usersMap[s.user_id]?.points || 0,
+      experienciaId: s.experiencia_id,
+      experienciaNome: s.experiencia_nome,
+      pontos: s.pontos,
+      status: s.status,
+      adminComentario: s.admin_comentario,
+      createdAt: new Date(s.created_at).toLocaleDateString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      }),
+      processedAt: s.processed_at ? new Date(s.processed_at).toLocaleDateString('pt-BR') : null
+    }))
+
+    // Estatísticas
+    const stats = {
+      total: solicitacoes.length,
+      pendentes: solicitacoes.filter(s => s.status === 'pendente').length,
+      aprovados: solicitacoes.filter(s => s.status === 'aprovado').length,
+      rejeitados: solicitacoes.filter(s => s.status === 'rejeitado').length
+    }
+
+    return { success: true, solicitacoes, stats }
+  } catch (error) {
+    console.error('Erro ao buscar solicitações:', error)
+    return { success: false, error: error.message, solicitacoes: [], stats: {} }
+  }
+}
+
+/**
+ * Conta solicitações pendentes (para badge no menu)
+ */
+export async function contarResgatesPendentes() {
+  try {
+    const { count, error } = await supabase
+      .from('resgate_solicitacoes')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pendente')
+
+    if (error) return 0
+    return count || 0
+  } catch {
+    return 0
+  }
+}
+
+/**
+ * Admin aprova resgate (debita pontos + registra histórico)
+ * @param {string} solicitacaoId
+ */
+export async function aprovarResgate(solicitacaoId) {
+  try {
+    const { data, error } = await supabase.rpc('admin_approve_redemption', {
+      p_request_id: solicitacaoId
+    })
+
+    if (error) {
+      console.error('Erro ao aprovar resgate:', error)
+      return { success: false, error: error.message }
+    }
+
+    if (!data.success) {
+      return { success: false, error: data.error }
+    }
+
+    return {
+      success: true,
+      pointsDebited: data.points_debited,
+      newBalance: data.new_balance
+    }
+  } catch (error) {
+    console.error('Erro inesperado ao aprovar:', error)
+    return { success: false, error: 'Erro inesperado. Tente novamente.' }
+  }
+}
+
+/**
+ * Admin rejeita resgate (não debita)
+ * @param {string} solicitacaoId
+ * @param {string} motivo - Motivo da rejeição (opcional)
+ */
+export async function rejeitarResgate(solicitacaoId, motivo = null) {
+  try {
+    const { data, error } = await supabase.rpc('admin_reject_redemption', {
+      p_request_id: solicitacaoId,
+      p_reason: motivo
+    })
+
+    if (error) {
+      console.error('Erro ao rejeitar resgate:', error)
+      return { success: false, error: error.message }
+    }
+
+    if (!data.success) {
+      return { success: false, error: data.error }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Erro inesperado ao rejeitar:', error)
+    return { success: false, error: 'Erro inesperado. Tente novamente.' }
+  }
+}
+
+// ============================================
+// FUNÇÕES LEGADAS (mantidas para compatibilidade)
+// ============================================
+
+/**
+ * @deprecated Use solicitarResgate() - Resgate agora requer aprovação
+ */
+export async function resgatarExperiencia(experienciaId, experienciaNome, pontosNecessarios) {
+  // Redireciona para o novo fluxo
+  return solicitarResgate(experienciaId, experienciaNome, pontosNecessarios)
+}
+
+/**
+ * Busca histórico de resgates APROVADOS do usuário
+ * (Lê de point_transactions type='redemption')
  */
 export async function buscarHistoricoResgates() {
   try {
@@ -63,7 +328,6 @@ export async function buscarHistoricoResgates() {
       return { success: false, error: 'Não logado' }
     }
 
-    // Usar função RPC que permite cliente ver seu próprio histórico
     const { data, error } = await supabase.rpc('client_get_my_transactions', {
       p_type_filter: 'redemption'
     })
@@ -81,47 +345,31 @@ export async function buscarHistoricoResgates() {
 }
 
 /**
- * Verifica se uma experiência já foi resgatada pelo usuário
- * @param {string} experienciaId
- * @returns {boolean}
+ * Verifica se uma experiência já foi resgatada (aprovada)
  */
 export async function verificarJaResgatada(experienciaId) {
-  try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return false
-
-    // Usar função RPC para verificar
-    const { data, error } = await supabase.rpc('client_check_redeemed', {
-      p_experience_id: experienciaId
-    })
-
-    if (error) return false
-    return data === true
-  } catch {
-    return false
-  }
+  const status = await verificarStatusResgate(experienciaId)
+  return status.aprovado
 }
 
 /**
- * Busca IDs das experiências já resgatadas pelo usuário
- * @returns {string[]} Array de IDs
+ * Busca IDs das experiências já resgatadas (aprovadas)
  */
 export async function buscarExperienciasResgatadas() {
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return []
 
-    // Usar função RPC para buscar IDs
-    const { data, error } = await supabase.rpc('client_get_redeemed_ids')
+    const { data, error } = await supabase
+      .from('resgate_solicitacoes')
+      .select('experiencia_id')
+      .eq('user_id', user.id)
+      .eq('status', 'aprovado')
 
-    if (error) {
-      console.error('Erro ao buscar resgatadas:', error)
-      return []
-    }
+    if (error) return []
 
-    return data || []
-  } catch (err) {
-    console.error('Erro ao buscar resgatadas:', err)
+    return (data || []).map(s => s.experiencia_id)
+  } catch {
     return []
   }
 }

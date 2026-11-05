@@ -141,11 +141,11 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
           </div>
 
           <h2 id="modal-title" className="text-xl font-heading font-medium text-ice-white text-center mb-2">
-            Confirmar Resgate
+            Solicitar Resgate
           </h2>
 
           <p id="modal-description" className="text-sm text-dusty-rose text-center mb-6">
-            Você está prestes a resgatar:
+            Você está solicitando o resgate de:
           </p>
 
           <div className="p-4 rounded-xl bg-dusty-rose/5 border border-dusty-rose/10 mb-6">
@@ -157,21 +157,24 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
             )}
           </div>
 
-          <div className="space-y-3 mb-6">
+          <div className="space-y-3 mb-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-dusty-rose">Custo</span>
               <span className="text-antique-gold font-medium">
-                -{format.pointsShort(reward.points_required)} pontos
+                {format.pointsShort(reward.points_required)} pontos
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-dusty-rose">Saldo atual</span>
+              <span className="text-dusty-rose">Seu saldo</span>
               <span className="text-ice-white">{format.pointsShort(userPoints)} pontos</span>
             </div>
-            <div className="border-t border-dusty-rose/20 pt-3 flex items-center justify-between text-sm">
-              <span className="text-dusty-rose">Saldo após resgate</span>
-              <span className="text-ice-white font-medium">{format.pointsShort(remainingPoints)} pontos</span>
-            </div>
+          </div>
+
+          {/* Aviso sobre aprovação */}
+          <div className="p-3 rounded-xl bg-antique-gold/10 border border-antique-gold/20 mb-4">
+            <p className="text-xs text-antique-gold/90 text-center">
+              Os pontos serão debitados após aprovação da equipe Me,up.
+            </p>
           </div>
         </div>
 
@@ -197,10 +200,10 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   className="w-4 h-4 border-2 border-deep-purple/30 border-t-deep-purple rounded-full inline-block"
                 />
-                Resgatando...
+                Enviando...
               </span>
             ) : (
-              'Confirmar Resgate'
+              'Enviar Solicitação'
             )}
           </button>
         </div>
@@ -422,7 +425,7 @@ function ClassSection({ classId, rewards, userPoints, userLevelId, onActivate, r
 }
 
 // Versão para fundo claro
-function ClassSectionLight({ classId, rewards, userPoints, userLevelId, onActivate, redeemedIds }) {
+function ClassSectionLight({ classId, rewards, userPoints, userLevelId, onActivate, redeemedIds, pendingIds }) {
   const classRewards = rewards.filter(r => r.requiredLevelId === classId)
   if (classRewards.length === 0) return null
 
@@ -462,6 +465,7 @@ function ClassSectionLight({ classId, rewards, userPoints, userLevelId, onActiva
             userLevelId={userLevelId}
             onActivate={onActivate}
             isRedeemed={redeemedIds.includes(reward.id)}
+            isPending={pendingIds.includes(reward.id)}
           />
         ))}
       </div>
@@ -470,13 +474,14 @@ function ClassSectionLight({ classId, rewards, userPoints, userLevelId, onActiva
 }
 
 // Card de experiência para fundo claro - COM FOTO
-function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRedeemed, triggerRef }) {
-  const canRedeem = reward.canRedeem && !isRedeemed
+function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRedeemed, isPending, triggerRef }) {
+  const canRedeem = reward.canRedeem && !isRedeemed && !isPending
   const isUnlockedByLevel = reward.isUnlockedByLevel
   const progress = reward.progress
 
   const getButtonText = () => {
     if (isRedeemed) return 'Resgatada'
+    if (isPending) return 'Aguardando...'
     if (canRedeem) return 'Resgatar'
     return `Faltam ${format.pointsShort(reward.pointsNeeded)}`
   }
@@ -494,6 +499,8 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRe
       className={`group relative rounded-2xl border overflow-hidden transition-all duration-300 ${
         isRedeemed
           ? 'border-game-green/30 bg-game-green/5'
+          : isPending
+          ? 'border-amber-300 bg-amber-50/50'
           : !isUnlockedByLevel
           ? 'border-graphite/20 bg-white'
           : canRedeem
@@ -536,6 +543,13 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRe
         {isRedeemed && (
           <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-game-green/90 border border-game-green/30">
             <span className="text-xs text-white font-medium">Resgatada</span>
+          </div>
+        )}
+
+        {/* Pending Badge */}
+        {isPending && !isRedeemed && (
+          <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-amber-500/90 border border-amber-400/30">
+            <span className="text-xs text-white font-medium">Aguardando aprovação</span>
           </div>
         )}
       </div>
@@ -620,6 +634,8 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRe
               className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
                 isRedeemed
                   ? 'bg-game-green/10 text-game-green cursor-default'
+                  : isPending
+                  ? 'bg-amber-100 text-amber-700 cursor-default'
                   : canRedeem
                   ? 'bg-deep-purple text-ice-white hover:bg-bright-purple'
                   : 'bg-graphite/10 text-graphite/60 cursor-not-allowed'
@@ -647,7 +663,7 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRe
 
 export function Rewards() {
   const { user, loading } = useAuth()
-  const { points: userPoints, resgatar, redeemedIds, isLoading: contextLoading } = usePoints()
+  const { points: userPoints, resgatar, redeemedIds, pendingIds, isLoading: contextLoading } = usePoints()
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState('all')
   const [selectedReward, setSelectedReward] = useState(null)
@@ -755,15 +771,16 @@ export function Rewards() {
       // FECHAR MODAL PRIMEIRO
       closeModal()
 
-      // Depois mostrar toast de sucesso
+      // Mostrar toast de sucesso (agora é solicitação, não resgate imediato)
       toast.success(
         <div>
-          <strong>Experiência resgatada!</strong>
+          <strong>Solicitação enviada!</strong>
           <div className="text-sm opacity-80">{rewardName}</div>
+          <div className="text-xs opacity-60 mt-1">Aguarde a aprovação</div>
         </div>,
         {
-          duration: 4000,
-          style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(34, 197, 94, 0.3)' }
+          duration: 5000,
+          style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(162, 121, 55, 0.5)' }
         }
       )
     } catch (error) {
@@ -973,6 +990,7 @@ export function Rewards() {
                   userLevelId={userLevelId}
                   onActivate={handleActivate}
                   redeemedIds={redeemedIds}
+                  pendingIds={pendingIds}
                 />
               ))}
             </motion.div>
@@ -994,6 +1012,7 @@ export function Rewards() {
                         userLevelId={userLevelId}
                         onActivate={handleActivate}
                         isRedeemed={redeemedIds.includes(reward.id)}
+                        isPending={pendingIds.includes(reward.id)}
                         triggerRef={triggerButtonRef}
                       />
                     ))}
