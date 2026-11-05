@@ -7,17 +7,6 @@ export function Termos() {
       <Header />
       <section className="py-20 md:py-28">
         <div className="container-premium max-w-3xl">
-          {/* Aviso de rascunho */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-amber-500/20 border-2 border-amber-500 rounded-xl p-4 mb-8"
-          >
-            <p className="text-amber-400 font-semibold text-center">
-              ⚠️ RASCUNHO — revisar com advogado antes de publicar
-            </p>
-          </motion.div>
-
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -18,6 +18,7 @@ export function Cadastro() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const { signUp, user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
@@ -98,14 +99,20 @@ export function Cadastro() {
       return
     }
 
+    if (!acceptedTerms) {
+      toast.error('Você precisa aceitar os Termos de Uso e a Política de Privacidade')
+      return
+    }
+
     setLoading(true)
 
-    // Passar o referrer_id para o signUp se houver indicação
+    // Passar o referrer_id e aceite de termos para o signUp
     const { data, error } = await signUp({
       email,
       password,
       name,
-      referrerId: referrerInfo?.id || null
+      referrerId: referrerInfo?.id || null,
+      acceptedTerms: true
     })
 
     if (error) {
@@ -328,6 +335,52 @@ export function Cadastro() {
               )}
             </div>
 
+            {/* Aceite de Termos (obrigatório) */}
+            <div className="pt-2">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <div className="relative flex-shrink-0 mt-0.5">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="peer sr-only"
+                    required
+                  />
+                  <div className={`w-5 h-5 rounded-md border-2 transition-all flex items-center justify-center ${
+                    acceptedTerms
+                      ? 'bg-antique-gold border-antique-gold'
+                      : 'border-dusty-rose/40 group-hover:border-dusty-rose/60'
+                  }`}>
+                    {acceptedTerms && (
+                      <svg className="w-3 h-3 text-deep-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span className="text-sm text-dusty-rose leading-tight">
+                  Li e aceito a{' '}
+                  <Link
+                    to="/privacidade"
+                    target="_blank"
+                    className="text-antique-gold hover:text-accent-light transition-colors underline underline-offset-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Política de Privacidade
+                  </Link>
+                  {' '}e os{' '}
+                  <Link
+                    to="/termos"
+                    target="_blank"
+                    className="text-antique-gold hover:text-accent-light transition-colors underline underline-offset-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Termos de Uso
+                  </Link>
+                </span>
+              </label>
+            </div>
+
             {/* Botão Criar Conta */}
             <motion.button
               whileHover={{ scale: 1.01, boxShadow: '0 8px 25px rgba(162, 121, 55, 0.25)' }}
@@ -351,17 +404,6 @@ export function Cadastro() {
             </Link>
           </p>
 
-          {/* Termos */}
-          <p className="text-center text-[10px] text-dusty-rose/50 mt-6">
-            Ao criar conta, você concorda com nossos{' '}
-            <Link to="/termos" className="text-dusty-rose/70 hover:text-antique-gold transition-colors">
-              Termos de Uso
-            </Link>
-            {' '}e{' '}
-            <Link to="/privacidade" className="text-dusty-rose/70 hover:text-antique-gold transition-colors">
-              Política de Privacidade
-            </Link>
-          </p>
         </motion.div>
       </div>
     </div>

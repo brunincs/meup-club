@@ -159,7 +159,7 @@ export function AuthProvider({ children }) {
 
   // CADASTRO - criar nova conta
   // IMPORTANTE: NUNCA cai no demo - só cadastra no Supabase real
-  async function signUp({ email, password, name, referrerId = null }) {
+  async function signUp({ email, password, name, referrerId = null, acceptedTerms = false }) {
     // Se Supabase não está configurado, mostrar erro claro (NÃO cair no demo!)
     if (!isSupabaseConfigured()) {
       return {
@@ -176,7 +176,8 @@ export function AuthProvider({ children }) {
         options: {
           data: {
             name,
-            referred_by: referrerId // Salva quem indicou nos metadados
+            referred_by: referrerId, // Salva quem indicou nos metadados
+            accepted_terms: acceptedTerms // Salva aceite dos termos (LGPD)
           }
         }
       })
