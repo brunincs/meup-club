@@ -10,7 +10,7 @@ export function ReferralCode({ variant = 'dark' }) {
   const isLight = variant === 'light'
 
   const referralCode = profile?.referral_code || 'MEUP0000'
-  const referralLink = `${window.location.origin}/ref/${referralCode}`
+  const referralLink = `${window.location.origin}/cadastro?ref=${referralCode}`
 
   const whatsappMessage = encodeURIComponent(
     `Convite exclusivo para o Meup Club.\n\nUse o código ${referralCode} ao reservar sua próxima viagem e tenha acesso a experiências exclusivas.\n\nCódigo: ${referralCode}`

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { getReferrerByCode, createReferral } from '@/services/referralService'
 import toast from 'react-hot-toast'
 
 // ============================================
@@ -20,6 +21,11 @@ export function Cadastro() {
   const [loading, setLoading] = useState(false)
   const { signUp, user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  // Código de indicação da URL (?ref=CODIGO)
+  const refCode = searchParams.get('ref')
+  const [referrerInfo, setReferrerInfo] = useState(null)
 
   // Se já está logado, redireciona para o dashboard
   useEffect(() => {
@@ -27,6 +33,22 @@ export function Cadastro() {
       navigate('/dashboard', { replace: true })
     }
   }, [user, authLoading, navigate])
+
+  // Buscar informações do indicador quando há código na URL
+  useEffect(() => {
+    async function checkReferrer() {
+      if (refCode) {
+        const result = await getReferrerByCode(refCode)
+        if (result.success) {
+          setReferrerInfo({
+            id: result.referrerId,
+            name: result.referrerName
+          })
+        }
+      }
+    }
+    checkReferrer()
+  }, [refCode])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -54,12 +76,27 @@ export function Cadastro() {
 
     setLoading(true)
 
-    const { error } = await signUp({ email, password, name })
+    // Passar o referrer_id para o signUp se houver indicação
+    const { data, error } = await signUp({
+      email,
+      password,
+      name,
+      referrerId: referrerInfo?.id || null
+    })
 
     if (error) {
       toast.error(error.message || 'Erro ao criar conta')
       setLoading(false)
       return
+    }
+
+    // Se foi cadastro por indicação, criar a indicação pendente
+    if (data?.user && referrerInfo?.id) {
+      try {
+        await createReferral(referrerInfo.id, data.user.id)
+      } catch (err) {
+        console.warn('Erro ao criar indicação (não crítico):', err)
+      }
     }
 
     toast.success('Conta criada com sucesso!')
@@ -142,6 +179,25 @@ export function Cadastro() {
               Preencha seus dados para entrar no clube
             </p>
           </div>
+
+          {/* Badge de indicação (quando vem por link de indicação) */}
+          {referrerInfo && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-xl bg-antique-gold/10 border border-antique-gold/30"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-antique-gold/20 flex items-center justify-center">
+                  <span className="text-antique-gold">◇</span>
+                </div>
+                <div>
+                  <p className="text-xs text-antique-gold/80">Indicado por</p>
+                  <p className="text-sm text-ice-white font-medium">{referrerInfo.name}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Formulário */}
           <form onSubmit={handleSubmit} className="space-y-4">

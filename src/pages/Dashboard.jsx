@@ -7,7 +7,7 @@ import {
   StatsCards,
   ReferralCode,
   LevelProgress,
-  ReferralHistory,
+  MyReferrals,
   RewardsSection,
   TasksWidget,
   HeroSection,
@@ -90,7 +90,7 @@ export function Dashboard() {
         <div className="container-premium">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ReferralCode variant="light" />
-            <ReferralHistory variant="light" />
+            <MyReferrals variant="light" />
           </div>
         </div>
       </section>
