@@ -1,6 +1,8 @@
 export { Home } from './Home'
 export { Login } from './Login'
 export { Cadastro } from './Cadastro'
+export { EsqueciSenha } from './EsqueciSenha'
+export { RedefinirSenha } from './RedefinirSenha'
 export { Dashboard } from './Dashboard'
 export { Rewards } from './Rewards'
 export { Tasks } from './Tasks'

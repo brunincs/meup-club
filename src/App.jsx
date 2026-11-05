@@ -4,7 +4,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { PointsProvider } from '@/contexts/PointsContext'
 import { ProtectedRoute, AdminRoute } from '@/components/auth'
 import { RootLayout } from '@/layouts'
-import { Home, Login, Cadastro, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade } from '@/pages'
+import { Home, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade } from '@/pages'
 import {
   AdminDashboard,
   AdminReferrals,
@@ -72,6 +72,22 @@ function App() {
             element={
               <RootLayout>
                 <Cadastro />
+              </RootLayout>
+            }
+          />
+          <Route
+            path="/esqueci-senha"
+            element={
+              <RootLayout>
+                <EsqueciSenha />
+              </RootLayout>
+            }
+          />
+          <Route
+            path="/redefinir-senha"
+            element={
+              <RootLayout>
+                <RedefinirSenha />
               </RootLayout>
             }
           />

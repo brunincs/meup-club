@@ -147,9 +147,17 @@ export function Login() {
             </div>
 
             <div>
-              <label className="block text-xs uppercase tracking-wider text-dusty-rose/80 mb-2 font-heading">
-                Senha
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs uppercase tracking-wider text-dusty-rose/80 font-heading">
+                  Senha
+                </label>
+                <Link
+                  to="/esqueci-senha"
+                  className="text-xs text-antique-gold/80 hover:text-antique-gold transition-colors"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
               <input
                 type="password"
                 value={password}

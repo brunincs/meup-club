@@ -5,8 +5,10 @@
 
 import { supabase } from '@/lib/supabase'
 
-// Constante de pontos (também está no banco, mas mantemos aqui para referência)
-export const PONTOS_POR_INDICACAO = 3000
+// Constantes de pontos (também estão no banco, mas mantemos aqui para referência)
+export const PONTOS_POR_INDICACAO = 3000      // Aprovação manual (viagem fechada)
+export const PONTOS_BOAS_VINDAS = 500         // Automático no cadastro por indicação
+export const LIMITE_INDICACOES_AUTO = 20      // Máximo de indicações automáticas por pessoa
 
 // ============================================
 // FUNÇÕES PARA O CLIENTE (PORTAL)
