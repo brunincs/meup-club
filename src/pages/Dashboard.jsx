@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
@@ -14,7 +14,7 @@ import {
   MissionsSection
 } from '@/components/dashboard'
 import { EvolutionCard } from '@/components/dashboard/EvolutionCard'
-import { mockReferrals, getStats } from '@/services/mockData'
+import { getMyReferrals } from '@/services/referralService'
 import { PointsSimulatorTabs } from '@/components/shared/PointsSimulator'
 import { ExperiencesCarousel } from '@/components/dashboard/ExperiencesCarousel'
 import { ClassExplorer } from '@/components/dashboard/ClassExplorer'
@@ -23,11 +23,34 @@ export function Dashboard() {
   const { user, profile, loading } = useAuth()
   const navigate = useNavigate()
 
+  // Stats de indicações - dados REAIS do banco
+  const [referralStats, setReferralStats] = useState({
+    approvedReferrals: 0,
+    pendingReferrals: 0
+  })
+
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login')
     }
   }, [user, loading, navigate])
+
+  // Buscar indicações reais do usuário
+  useEffect(() => {
+    async function loadReferralStats() {
+      if (!user?.id) return
+
+      const result = await getMyReferrals(user.id)
+      if (result.success) {
+        setReferralStats({
+          approvedReferrals: result.stats.approved,
+          pendingReferrals: result.stats.pending
+        })
+      }
+    }
+
+    loadReferralStats()
+  }, [user?.id])
 
   if (loading) {
     return (
@@ -42,8 +65,6 @@ export function Dashboard() {
   }
 
   if (!user) return null
-
-  const stats = getStats(mockReferrals)
 
   return (
     <div className="min-h-screen">
@@ -75,7 +96,7 @@ export function Dashboard() {
         <div className="container-premium">
           {/* Stats cards */}
           <div className="mb-8">
-            <StatsCards stats={stats} />
+            <StatsCards stats={referralStats} />
           </div>
 
           {/* Carrossel de experiências */}

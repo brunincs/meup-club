@@ -30,6 +30,7 @@ export async function fetchUserProfile(userId) {
 /**
  * Atualiza os dados do perfil do usuário
  * Campos permitidos: name, phone, city, state, birth_date, cpf, dream_destinations, travel_preferences
+ * IMPORTANTE: Strings vazias são convertidas para NULL para campos opcionais
  */
 export async function updateUserProfile(userId, updates) {
   try {
@@ -39,10 +40,21 @@ export async function updateUserProfile(userId, updates) {
       'cpf', 'dream_destinations', 'travel_preferences', 'avatar_url'
     ]
 
+    // Campos que devem ser NULL quando vazios (tipos especiais no banco)
+    const nullableFields = ['birth_date', 'cpf', 'phone', 'city', 'state', 'dream_destinations', 'travel_preferences', 'avatar_url']
+
     const safeUpdates = {}
     for (const field of allowedFields) {
       if (updates[field] !== undefined) {
-        safeUpdates[field] = updates[field]
+        let value = updates[field]
+
+        // Converter string vazia para null em campos opcionais
+        // Isso evita erro "invalid input syntax for type date" quando birth_date = ""
+        if (nullableFields.includes(field) && value === '') {
+          value = null
+        }
+
+        safeUpdates[field] = value
       }
     }
 
@@ -70,24 +82,29 @@ export async function updateUserProfile(userId, updates) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 /**
- * Busca estatísticas reais de indicações
- * Por enquanto retorna 0 pois não temos tabela referrals implementada
+ * Busca estatísticas REAIS de indicações que o usuário FEZ
+ * Conta apenas onde o usuário é o INDICADOR (referrer_id), não onde foi indicado
  */
 export async function fetchReferralStats(userId) {
   try {
-    // Buscar do profile o total_referrals
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('total_referrals')
-      .eq('id', userId)
-      .single()
+    // Buscar indicações onde o usuário é o INDICADOR
+    const { data, error } = await supabase
+      .from('referrals')
+      .select('id, status')
+      .eq('referrer_id', userId)
+
+    if (error) throw error
+
+    const referrals = data || []
+    const approved = referrals.filter(r => r.status === 'approved').length
+    const pending = referrals.filter(r => r.status === 'pending').length
 
     return {
       success: true,
       stats: {
-        total: profile?.total_referrals || 0,
-        approved: profile?.total_referrals || 0, // Por enquanto igual ao total
-        pending: 0
+        total: referrals.length,
+        approved,
+        pending
       }
     }
   } catch (error) {
