@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { getReferrerByCode, createReferral } from '@/services/referralService'
+import { getReferrerByCode } from '@/services/referralService'
 import toast from 'react-hot-toast'
 
 // ============================================
@@ -114,14 +114,9 @@ export function Cadastro() {
       return
     }
 
-    // Se foi cadastro por indicação, criar a indicação pendente
-    if (data?.user && referrerInfo?.id) {
-      try {
-        await createReferral(referrerInfo.id, data.user.id)
-      } catch (err) {
-        console.warn('Erro ao criar indicação (não crítico):', err)
-      }
-    }
+    // A indicação é criada AUTOMATICAMENTE pelo trigger no banco
+    // (trigger_new_user_referral) quando o perfil é inserido.
+    // Não precisa chamar createReferral aqui.
 
     toast.success('Conta criada com sucesso!')
     navigate('/dashboard')
