@@ -15,11 +15,15 @@ CREATE TABLE IF NOT EXISTS public.notifications (
   type TEXT NOT NULL CHECK (type IN ('points_earned', 'level_up', 'redemption', 'referral_signup')),
   title TEXT NOT NULL,
   message TEXT NOT NULL,
-  icon TEXT DEFAULT '🔔',
+  icon TEXT DEFAULT 'bell',  -- Identificador ASCII (mapeado para emoji no frontend)
   read BOOLEAN DEFAULT false,
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- NOTA: O campo 'icon' usa identificadores ASCII para evitar problemas de encoding.
+-- Valores possíveis: sparkles, gift, wave, handshake, plane, target, bell
+-- O frontend mapeia esses identificadores para emojis reais.
 
 -- Índices para performance
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications(user_id);

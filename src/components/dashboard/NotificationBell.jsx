@@ -216,6 +216,56 @@ export function NotificationBell() {
   )
 }
 
+// Mapeamento de identificadores para emojis
+const ICON_MAP = {
+  // Pontos
+  sparkles: '✨',
+  gift: '🎁',
+  star: '⭐',
+  // Indicação
+  wave: '👋',
+  handshake: '🤝',
+  // Classe
+  plane: '✈️',
+  rocket: '🚀',
+  // Missões
+  target: '🎯',
+  check: '✅',
+  // Fallback
+  bell: '🔔',
+  default: '🔔'
+}
+
+// Função para obter emoji do identificador
+function getIconEmoji(iconId) {
+  if (!iconId) return ICON_MAP.default
+  // Se já é um emoji (não ASCII), retorna direto
+  if (iconId.length <= 2 && /[^\x00-\x7F]/.test(iconId)) {
+    return iconId
+  }
+  return ICON_MAP[iconId] || ICON_MAP.default
+}
+
+// Função para corrigir texto com encoding quebrado
+function fixText(text) {
+  if (!text) return ''
+  return text
+    // Corrigir acentos comuns que vieram quebrados
+    .replace(/Voc�/g, 'Você')
+    .replace(/voc�/g, 'você')
+    .replace(/indica��o/g, 'indicação')
+    .replace(/Indica��o/g, 'Indicação')
+    .replace(/miss�o/g, 'missão')
+    .replace(/Miss�o/g, 'Missão')
+    .replace(/Parab�ns/g, 'Parabéns')
+    .replace(/benef�cios/g, 'benefícios')
+    .replace(/Econ�mica/g, 'Econômica')
+    .replace(/c�digo/g, 'código')
+    .replace(/experi�ncia/g, 'experiência')
+    .replace(/\?\?/g, '') // Remover emojis quebrados
+    .replace(/�/g, '') // Remover caracteres quebrados restantes
+}
+
 // Componente de item de notificação
 function NotificationItem({ notification, onMarkAsRead }) {
   const { id, title, message, icon, read, created_at, type } = notification
@@ -229,6 +279,11 @@ function NotificationItem({ notification, onMarkAsRead }) {
   }
 
   const iconBgClass = typeStyles[type] || 'bg-dusty-rose/10 text-dusty-rose'
+
+  // Obter emoji correto e corrigir textos
+  const displayIcon = getIconEmoji(icon)
+  const displayTitle = fixText(title)
+  const displayMessage = fixText(message)
 
   function handleClick() {
     if (!read) {
@@ -250,16 +305,16 @@ function NotificationItem({ notification, onMarkAsRead }) {
       >
         {/* Ícone */}
         <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-base ${iconBgClass}`}>
-          {icon || '🔔'}
+          {displayIcon}
         </div>
 
         {/* Conteúdo */}
         <div className="flex-1 min-w-0">
           <p className={`text-sm font-medium ${read ? 'text-dusty-rose' : 'text-ice-white'}`}>
-            {title}
+            {displayTitle}
           </p>
           <p className="text-xs text-dusty-rose/80 mt-0.5 line-clamp-2">
-            {message}
+            {displayMessage}
           </p>
           <p className="text-[10px] text-dusty-rose/50 mt-1.5 uppercase tracking-wider">
             {formatRelativeTime(created_at)}
