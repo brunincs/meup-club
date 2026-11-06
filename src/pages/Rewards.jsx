@@ -426,7 +426,7 @@ function ClassSection({ classId, rewards, userPoints, userLevelId, onActivate, r
 }
 
 // Versão para fundo claro
-function ClassSectionLight({ classId, rewards, userPoints, userLevelId, onActivate, redeemedIds, pendingIds }) {
+function ClassSectionLight({ classId, rewards, userPoints, userLevelId, onActivate, onViewDetails, redeemedIds, pendingIds }) {
   const classRewards = rewards.filter(r => r.requiredLevelId === classId)
   if (classRewards.length === 0) return null
 
@@ -465,6 +465,7 @@ function ClassSectionLight({ classId, rewards, userPoints, userLevelId, onActiva
             userPoints={userPoints}
             userLevelId={userLevelId}
             onActivate={onActivate}
+            onViewDetails={onViewDetails}
             isRedeemed={redeemedIds.includes(reward.id)}
             isPending={pendingIds.includes(reward.id)}
           />
@@ -475,7 +476,7 @@ function ClassSectionLight({ classId, rewards, userPoints, userLevelId, onActiva
 }
 
 // Card de experiência para fundo claro - COM FOTO
-function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRedeemed, isPending, triggerRef }) {
+function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onViewDetails, isRedeemed, isPending, triggerRef }) {
   const canRedeem = reward.canRedeem && !isRedeemed && !isPending
   const isUnlockedByLevel = reward.isUnlockedByLevel
   const progress = reward.progress
@@ -491,13 +492,21 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRe
     return `Requer a classe ${levelCopy.names[reward.requiredLevelId]}`
   }
 
+  // Abrir detalhes ao clicar no card (exceto no botão)
+  const handleCardClick = (e) => {
+    // Não abrir se clicou no botão
+    if (e.target.closest('button')) return
+    onViewDetails(reward)
+  }
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className={`group relative rounded-2xl border overflow-hidden transition-all duration-300 ${
+      onClick={handleCardClick}
+      className={`group relative rounded-2xl border overflow-hidden transition-all duration-300 cursor-pointer ${
         isRedeemed
           ? 'border-game-green/30 bg-game-green/5'
           : isPending
@@ -515,7 +524,7 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, isRe
           <img
             src={reward.image}
             alt={reward.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         )}
         {/* Overlay escuro para legibilidade */}
@@ -1057,6 +1066,7 @@ export function Rewards() {
                   userPoints={userPoints}
                   userLevelId={userLevelId}
                   onActivate={handleActivate}
+                  onViewDetails={handleActivate}
                   redeemedIds={redeemedIds}
                   pendingIds={pendingIds}
                 />
@@ -1079,6 +1089,7 @@ export function Rewards() {
                         userPoints={userPoints}
                         userLevelId={userLevelId}
                         onActivate={handleActivate}
+                        onViewDetails={handleActivate}
                         isRedeemed={redeemedIds.includes(reward.id)}
                         isPending={pendingIds.includes(reward.id)}
                         triggerRef={triggerButtonRef}
