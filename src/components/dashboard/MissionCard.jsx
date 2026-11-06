@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { ProgressRing } from '@/components/effects/ProgressRing'
 import { GlowBorder } from '@/components/effects/GlowEffect'
-import { getMissionAction, isExternalMission } from '@/services/missionActions'
+import { getMissionAction, isExternalMission, requiresApproval } from '@/services/missionActions'
 
 const missionTypeConfig = {
   action: {
@@ -48,6 +48,7 @@ export function MissionCard({
   // Obter ação da missão
   const action = getMissionAction(mission.name)
   const isExternal = isExternalMission(mission.name)
+  const needsApproval = requiresApproval(mission.name)
 
   const CardWrapper = type === 'action' ? GlowBorder : motion.div
 
@@ -159,7 +160,7 @@ export function MissionCard({
                 onClick={() => onClaim?.(mission)}
                 className="px-4 py-2 rounded-lg text-xs font-heading font-semibold bg-game-green text-deep-purple shadow-lg shadow-game-green/20"
               >
-                Concluída ✓
+                {needsApproval ? 'Aprovada' : 'Concluída'} ✓
               </motion.button>
             ) : isPending ? (
               <span className={`text-xs px-3 py-2 rounded-lg ${isLight ? 'bg-antique-gold/10 text-antique-gold' : 'bg-antique-gold/20 text-antique-gold'}`}>
@@ -191,7 +192,7 @@ export function MissionCard({
                 </motion.button>
 
                 {/* Botão "Fiz isso" - SÓ para Instagram e Google (únicas que precisam aprovação) */}
-                {mission.needsApproval && (
+                {needsApproval && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}

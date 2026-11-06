@@ -187,7 +187,9 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
       {/* Status badge */}
       {isCompleted && (
         <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-game-green/20 border border-game-green/30">
-          <span className="text-[10px] uppercase tracking-wider text-game-green font-medium">Aprovada</span>
+          <span className="text-[10px] uppercase tracking-wider text-game-green font-medium">
+            {needsApproval ? 'Aprovada' : 'Concluída'}
+          </span>
         </div>
       )}
       {isPending && (
