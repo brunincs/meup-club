@@ -41,6 +41,25 @@ WHERE LOWER(nome) LIKE '%classe 3%' AND missao_tipo IS NULL;
 UPDATE public.tarefas SET missao_tipo = 'classe_4'
 WHERE LOWER(nome) LIKE '%classe 4%' AND missao_tipo IS NULL;
 
+-- Mapeamentos adicionais
+UPDATE public.tarefas SET missao_tipo = 'checkin'
+WHERE LOWER(nome) LIKE '%check-in%' AND missao_tipo IS NULL;
+
+UPDATE public.tarefas SET missao_tipo = '5_indicacoes'
+WHERE LOWER(nome) LIKE '%5 indicaç%' AND missao_tipo IS NULL;
+
+UPDATE public.tarefas SET missao_tipo = 'classe_executiva'
+WHERE LOWER(nome) LIKE '%classe executiva%' AND missao_tipo IS NULL;
+
+UPDATE public.tarefas SET missao_tipo = 'classe_premium_economy'
+WHERE LOWER(nome) LIKE '%premium economy%' AND missao_tipo IS NULL;
+
+UPDATE public.tarefas SET missao_tipo = 'classe_primeira'
+WHERE LOWER(nome) LIKE '%primeira classe%' AND missao_tipo IS NULL;
+
+UPDATE public.tarefas SET missao_tipo = 'primeira_venda'
+WHERE LOWER(nome) LIKE '%primeira venda%' AND missao_tipo IS NULL;
+
 -- ============================================
 -- 2. FUNÇÃO RPC: Buscar status unificado de missões
 -- Retorna mapa de tarefa_id -> status ('aprovada', 'pendente', 'rejeitada')
