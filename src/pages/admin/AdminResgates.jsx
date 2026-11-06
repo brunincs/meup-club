@@ -292,7 +292,7 @@ export function AdminResgates() {
 
                     {/* Ações (só para pendentes) */}
                     {sol.status === 'pendente' && (
-                      <div className="flex gap-2 flex-shrink-0">
+                      <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 w-full sm:w-auto mt-3 sm:mt-0">
                         <button
                           onClick={(e) => {
                             e.preventDefault()
@@ -303,7 +303,7 @@ export function AdminResgates() {
                             }
                           }}
                           disabled={isProcessing}
-                          className="px-4 py-2 rounded-xl bg-green-500 text-white text-xs font-heading font-medium hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                          className="px-4 py-2.5 sm:py-2 rounded-xl bg-green-500 text-white text-xs font-heading font-medium hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
                         >
                           {isProcessing ? (
                             <motion.div
@@ -326,7 +326,7 @@ export function AdminResgates() {
                             }
                           }}
                           disabled={isProcessing}
-                          className="px-4 py-2 rounded-xl bg-ice-white border border-red-200 text-red-600 text-xs font-heading font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+                          className="px-4 py-2.5 sm:py-2 rounded-xl bg-ice-white border border-red-200 text-red-600 text-xs font-heading font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
                         >
                           Rejeitar
                         </button>

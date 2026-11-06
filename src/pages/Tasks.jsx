@@ -262,7 +262,7 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
             )}
 
             {/* Footer */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
                 <span className={`text-lg font-display font-bold ${
                   isCompleted ? 'text-game-green/60' : isPending ? 'text-antique-gold/60' : 'text-antique-gold'
@@ -273,13 +273,13 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
               </div>
 
               {!isCompleted && !isPending && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0">
                   {/* Botão "Ir Fazer" - sempre aparece */}
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => onGoTo?.(task)}
-                    className="px-4 py-2.5 rounded-xl text-sm font-heading font-medium bg-graphite/10 text-deep-purple hover:bg-graphite/20 transition-all"
+                    className="px-4 py-2.5 rounded-xl text-sm font-heading font-medium bg-graphite/10 text-deep-purple hover:bg-graphite/20 transition-all whitespace-nowrap"
                   >
                     {action?.label || 'Ir Fazer'} {isExternal ? '↗' : '→'}
                   </motion.button>
@@ -291,14 +291,14 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
                       whileTap={{ scale: 0.98 }}
                       onClick={() => onComplete(task)}
                       disabled={isLoading}
-                      className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
+                      className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all whitespace-nowrap ${
                         isLoading
                           ? 'bg-graphite/10 text-graphite/60 cursor-wait'
                           : 'bg-deep-purple text-ice-white hover:bg-bright-purple shadow-lg shadow-deep-purple/20'
                       }`}
                     >
                       {isLoading ? (
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center justify-center gap-2">
                           <motion.span
                             animate={{ rotate: 360 }}
                             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -769,7 +769,7 @@ export function Tasks() {
             ref={tabListRef}
             role="tablist"
             aria-label="Categorias de missões"
-            className="flex items-center gap-1 mb-8 p-1 rounded-xl bg-white border border-graphite/10 shadow-sm w-fit"
+            className="flex items-center gap-1 mb-8 p-1 rounded-xl bg-white border border-graphite/10 shadow-sm w-full sm:w-fit overflow-x-auto"
           >
             {categoryTabs.map((tab, index) => (
               <button

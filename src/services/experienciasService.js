@@ -422,10 +422,38 @@ export async function verificarSolicitacaoPendente(userId, tarefaId) {
 }
 
 /**
- * Busca status de todas as solicitações do usuário para exibição
- * Retorna mapa de tarefaId -> status
+ * Busca status de todas as missões do usuário para exibição
+ * Combina missões manuais (tarefa_solicitacoes) e automáticas (missoes_automaticas_concluidas)
+ * Retorna mapa de tarefaId -> status ('aprovada', 'pendente', 'rejeitada')
  */
 export async function fetchStatusSolicitacoes(userId) {
+  try {
+    // Usar função RPC que combina ambas as tabelas
+    const { data, error } = await supabase.rpc('get_user_mission_status', {
+      p_user_id: userId
+    })
+
+    if (error) {
+      console.warn('RPC get_user_mission_status falhou, usando fallback:', error)
+      // Fallback: buscar apenas de tarefa_solicitacoes (comportamento antigo)
+      return await fetchStatusSolicitacoesFallback(userId)
+    }
+
+    // A função RPC retorna JSONB já no formato { tarefa_id: status }
+    const statusMap = data || {}
+
+    return { success: true, statusMap }
+  } catch (error) {
+    console.error('Erro ao buscar status:', error)
+    return { success: false, error: error.message, statusMap: {} }
+  }
+}
+
+/**
+ * Fallback: busca apenas de tarefa_solicitacoes (comportamento antigo)
+ * Usado caso a função RPC não exista ainda
+ */
+async function fetchStatusSolicitacoesFallback(userId) {
   try {
     const { data, error } = await supabase
       .from('tarefa_solicitacoes')
@@ -446,7 +474,7 @@ export async function fetchStatusSolicitacoes(userId) {
 
     return { success: true, statusMap }
   } catch (error) {
-    console.error('Erro ao buscar status:', error)
+    console.error('Erro ao buscar status (fallback):', error)
     return { success: false, error: error.message, statusMap: {} }
   }
 }

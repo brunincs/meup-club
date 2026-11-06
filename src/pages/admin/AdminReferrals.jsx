@@ -226,10 +226,10 @@ export function AdminReferrals() {
                       <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">
                         Indicado
                       </th>
-                      <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">
+                      <th className="hidden sm:table-cell text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">
                         Indicado por
                       </th>
-                      <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">
+                      <th className="hidden md:table-cell text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">
                         Data
                       </th>
                       <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">
@@ -261,7 +261,7 @@ export function AdminReferrals() {
                               </p>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden sm:table-cell px-4 py-4">
                             <div>
                               <span className="text-sm text-dusty-rose font-heading">
                                 {referral.referrer?.name || 'N/A'}
@@ -271,7 +271,7 @@ export function AdminReferrals() {
                               </p>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden md:table-cell px-4 py-4">
                             <span className="text-sm text-dusty-rose font-heading">
                               {formatReferralDate(referral.created_at)}
                             </span>
@@ -288,16 +288,16 @@ export function AdminReferrals() {
                           </td>
                           <td className="px-4 py-4 text-right">
                             {referral.status === 'pending' && (
-                              <div className="flex items-center justify-end gap-2">
+                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-1.5 sm:gap-2">
                                 <button
                                   onClick={() => setModal({ referral, type: 'approve' })}
-                                  className="px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm"
+                                  className="px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm whitespace-nowrap"
                                 >
                                   Aprovar
                                 </button>
                                 <button
                                   onClick={() => setModal({ referral, type: 'reject' })}
-                                  className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-red-100 text-red-600 border border-red-200 hover:bg-red-200 transition-colors"
+                                  className="px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-medium bg-red-100 text-red-600 border border-red-200 hover:bg-red-200 transition-colors whitespace-nowrap"
                                 >
                                   Rejeitar
                                 </button>

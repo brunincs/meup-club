@@ -316,9 +316,9 @@ export function AdminUsers() {
                 <thead>
                   <tr className="border-b border-dusty-rose/20 bg-ice-white">
                     <th className="text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Cliente</th>
-                    <th className="text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Classe</th>
+                    <th className="hidden sm:table-cell text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Classe</th>
                     <th className="text-right text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Pontos</th>
-                    <th className="text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Desde</th>
+                    <th className="hidden md:table-cell text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Desde</th>
                     <th className="text-right text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Ações</th>
                   </tr>
                 </thead>
@@ -337,7 +337,7 @@ export function AdminUsers() {
                           <p className="text-xs text-graphite/60">{user.email}</p>
                         </div>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="hidden sm:table-cell px-4 py-4">
                         <span className="text-xs px-2.5 py-1 rounded-lg bg-deep-purple/10 text-deep-purple font-heading font-medium">
                           {user.levelName}
                         </span>
@@ -347,29 +347,31 @@ export function AdminUsers() {
                           {format.pointsShort(user.points)}
                         </span>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="hidden md:table-cell px-4 py-4">
                         <span className="text-sm text-graphite/70 font-heading">{user.joinDate}</span>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-1.5 sm:gap-2">
                           <button
                             onClick={() => setAdjustingUser(user)}
-                            className="px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-antique-gold text-deep-purple hover:bg-accent-light transition-colors shadow-sm"
+                            className="px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-semibold bg-antique-gold text-deep-purple hover:bg-accent-light transition-colors shadow-sm whitespace-nowrap"
                           >
                             Creditar
                           </button>
-                          <button
-                            onClick={() => setViewingTasks(user)}
-                            className="px-4 py-2 rounded-xl text-xs font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors"
-                          >
-                            Tarefas
-                          </button>
-                          <button
-                            onClick={() => setViewingTransactions(user)}
-                            className="px-4 py-2 rounded-xl text-xs font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors"
-                          >
-                            Histórico
-                          </button>
+                          <div className="flex gap-1.5 sm:gap-2">
+                            <button
+                              onClick={() => setViewingTasks(user)}
+                              className="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors whitespace-nowrap"
+                            >
+                              Tarefas
+                            </button>
+                            <button
+                              onClick={() => setViewingTransactions(user)}
+                              className="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors whitespace-nowrap"
+                            >
+                              Histórico
+                            </button>
+                          </div>
                         </div>
                       </td>
                     </motion.tr>
