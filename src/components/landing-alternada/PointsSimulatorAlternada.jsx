@@ -56,11 +56,11 @@ export function PointsSimulatorAlternada() {
             Simulador
           </span>
           <h2 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-deep-purple mb-3">
-            Quanto voce pode ganhar
+            Quanto você pode ganhar
           </h2>
           <GoldLine width="60px" centered className="mb-3" />
           <p className="text-deep-purple/70 max-w-md mx-auto text-sm">
-            Arraste o controle e veja suas experiencias se aproximando.
+            Arraste o controle e veja suas experiências se aproximando.
           </p>
         </motion.div>
 
@@ -77,7 +77,7 @@ export function PointsSimulatorAlternada() {
             {/* Label do valor - TEXTO ESCURO */}
             <div className="text-center mb-6">
               <p className="text-sm text-deep-purple/70 mb-2">
-                Se voce gastar em viagens:
+                Se você gastar em viagens:
               </p>
               <div className="text-3xl md:text-4xl font-display font-bold text-antique-gold">
                 {valorFormatado}
@@ -104,7 +104,7 @@ export function PointsSimulatorAlternada() {
 
             {/* Resultado: PONTOS - Caixa roxa com texto claro */}
             <div className="text-center p-5 rounded-xl bg-deep-purple border border-deep-purple mb-6">
-              <p className="text-sm text-ice-white mb-1">Voce acumularia</p>
+              <p className="text-sm text-ice-white mb-1">Você acumularia</p>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-3xl md:text-4xl font-display font-bold text-antique-gold">
                   {formatPoints(pontosAcumulados)}
@@ -122,7 +122,7 @@ export function PointsSimulatorAlternada() {
                     <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 flex-shrink-0 text-antique-gold">
                       <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    Voce ja alcanca:
+                    Você já alcança:
                   </p>
                   <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {experienciasDesbloqueadas.map((exp) => (
@@ -150,7 +150,7 @@ export function PointsSimulatorAlternada() {
               {proximaExperiencia && (
                 <div className="pt-4 border-t border-deep-purple/10">
                   <p className="text-sm text-deep-purple/70 mb-2">
-                    E esta a caminho de:
+                    E está a caminho de:
                   </p>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-xl bg-deep-purple/5 border border-deep-purple/10">
                     <span className="font-heading font-medium text-deep-purple text-sm sm:text-base">
@@ -167,7 +167,7 @@ export function PointsSimulatorAlternada() {
               {!proximaExperiencia && experienciasDesbloqueadas.length > 0 && (
                 <div className="pt-4 border-t border-deep-purple/20">
                   <p className="text-sm text-deep-purple text-center font-heading font-semibold">
-                    Voce alcanca todas as experiencias do clube!
+                    Você alcança todas as experiências do clube!
                   </p>
                 </div>
               )}

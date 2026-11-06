@@ -25,9 +25,9 @@ const waysToEarn = [
   {
     id: 'referral',
     badge: 'Indicando',
-    title: 'Cada indicacao rende',
+    title: 'Cada indicação rende',
     highlight: `+${formatPoints(PONTOS_POR_INDICACAO)} pts`,
-    description: 'Indicou alguem e a pessoa viajou? Os pontos sao seus.',
+    description: 'Indicou alguém e a pessoa viajou? Os pontos são seus.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -62,7 +62,7 @@ export function HowItWorksAlternada() {
           </h2>
           <GoldLine width="60px" centered className="mb-3" />
           <p className="text-deep-purple/70 max-w-md mx-auto text-sm">
-            Viaje com a Me,up ou indique amigos. Nos dois casos, voce acumula.
+            Viaje com a Me,up ou indique amigos. Nos dois casos, você acumula.
           </p>
         </motion.div>
 

@@ -12,9 +12,9 @@ import { PlaneIcon, StarIcon, BriefcaseIcon, CrownIcon, DiamondIcon } from '@/co
 const classLevels = [
   {
     id: 1,
-    name: 'Economica',
-    shortName: 'Economica',
-    benefit: 'Acesso ao clube e acumulo de pontos',
+    name: 'Econômica',
+    shortName: 'Econômica',
+    benefit: 'Acesso ao clube e acúmulo de pontos',
     icon: PlaneIcon,
     gradient: 'from-slate-400 to-slate-500',
     // Cores para fundo ESCURO - texto claro
@@ -23,9 +23,9 @@ const classLevels = [
   },
   {
     id: 2,
-    name: 'Economica Premium',
+    name: 'Econômica Premium',
     shortName: 'Premium',
-    benefit: 'Experiencias exclusivas desbloqueadas',
+    benefit: 'Experiências exclusivas desbloqueadas',
     icon: StarIcon,
     gradient: 'from-blue-400 to-blue-500',
     bgColor: 'bg-blue-500/20 border-blue-400/40',
@@ -45,7 +45,7 @@ const classLevels = [
     id: 4,
     name: 'Primeira Classe',
     shortName: 'Primeira',
-    benefit: 'Acesso a experiencias premium',
+    benefit: 'Acesso a experiências premium',
     icon: CrownIcon,
     gradient: 'from-amber-400 to-yellow-500',
     bgColor: 'bg-amber-500/20 border-amber-400/40',
@@ -55,7 +55,7 @@ const classLevels = [
     id: 5,
     name: 'Meup Exclusive',
     shortName: 'Exclusive',
-    benefit: 'Beneficios maximos do clube',
+    benefit: 'Benefícios máximos do clube',
     icon: DiamondIcon,
     gradient: 'from-slate-200 to-slate-300',
     bgColor: 'bg-antique-gold/20 border-antique-gold/40',
@@ -85,14 +85,14 @@ export function RankingAlternada() {
           className="text-center mb-8"
         >
           <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold font-semibold mb-3">
-            Evolucao
+            Evolução
           </span>
           <h2 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-ice-white mb-3">
             Suba de classe
           </h2>
           <GoldLine width="60px" centered className="mb-3" />
           <p className="text-ice-white/70 max-w-md mx-auto text-sm">
-            Quanto mais voce viaja, mais alto chega. Cada nivel traz novos beneficios.
+            Quanto mais você viaja, mais alto chega. Cada nível traz novos benefícios.
           </p>
         </motion.div>
 
@@ -166,7 +166,7 @@ export function RankingAlternada() {
             className="mt-6 p-4 rounded-xl border border-antique-gold/30 bg-antique-gold/10 text-center"
           >
             <p className="text-sm text-ice-white">
-              Voce comeca na <span className="text-antique-gold font-medium">Economica</span> e sobe conforme acumula pontos.
+              Você começa na <span className="text-antique-gold font-medium">Econômica</span> e sobe conforme acumula pontos.
             </p>
             <p className="text-xs text-ice-white/70 mt-1">
               Sua jornada, seu ritmo.

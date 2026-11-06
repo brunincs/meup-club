@@ -11,8 +11,8 @@ import { PONTOS_POR_INDICACAO, formatPoints } from '@/config/experiences'
 const steps = [
   {
     number: '01',
-    title: 'Voce viaja ou indica',
-    description: `Viajou com a Me,up? Acumula pontos. Indicou alguem que viajou? +${formatPoints(PONTOS_POR_INDICACAO)} pontos.`,
+    title: 'Você viaja ou indica',
+    description: `Viajou com a Me,up? Acumula pontos. Indicou alguém que viajou? +${formatPoints(PONTOS_POR_INDICACAO)} pontos.`,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
@@ -22,7 +22,7 @@ const steps = [
   {
     number: '02',
     title: 'Seus pontos crescem',
-    description: 'Quanto mais voce viaja, mais pontos acumula — e mais perto fica das experiencias.',
+    description: 'Quanto mais você viaja, mais pontos acumula — e mais perto fica das experiências.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" strokeLinecap="round" strokeLinejoin="round" />
@@ -32,8 +32,8 @@ const steps = [
   },
   {
     number: '03',
-    title: 'Troque por experiencias',
-    description: 'Use seus pontos em upgrades, lounges, jantares e experiencias inesqueciveis.',
+    title: 'Troque por experiências',
+    description: 'Use seus pontos em upgrades, lounges, jantares e experiências inesquecíveis.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" strokeLinecap="round" strokeLinejoin="round" />

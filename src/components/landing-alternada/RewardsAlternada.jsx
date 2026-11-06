@@ -49,17 +49,17 @@ export function RewardsAlternada() {
           className="text-center mb-6"
         >
           <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-deep-purple font-semibold mb-4">
-            Experiencias
+            Experiências
           </span>
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-deep-purple mb-4">
             Transforme pontos em viagens melhores
           </h2>
           <GoldLine width="80px" centered className="mb-4" />
           <p className="text-deep-purple/70 max-w-lg mx-auto text-base">
-            Upgrades, lounges, jantares, stopovers. Escolha sua proxima experiencia.
+            Upgrades, lounges, jantares, stopovers. Escolha sua próxima experiência.
           </p>
           <p className="text-deep-purple/60 text-sm mt-2">
-            Novas experiencias toda temporada. Algumas por tempo limitado.
+            Novas experiências toda temporada. Algumas por tempo limitado.
           </p>
         </motion.div>
 
@@ -171,7 +171,7 @@ export function RewardsAlternada() {
             Topo do Clube
           </span>
           <h3 className="text-xl md:text-2xl font-display font-bold text-deep-purple mt-4 mb-2">
-            Experiencias dos Sonhos
+            Experiências dos Sonhos
           </h3>
           <p className="text-deep-purple/70 text-sm max-w-md mx-auto">
             As recompensas mais exclusivas para quem acumula no longo prazo.

@@ -34,7 +34,7 @@ export function FinalCTAAlternada() {
           >
             <div className="inline-flex items-center gap-3 text-antique-gold">
               <span className="w-8 h-px bg-antique-gold/50" />
-              <span className="text-[10px] uppercase tracking-[0.3em] font-heading font-medium">Decisao</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-heading font-medium">Decisão</span>
               <span className="w-8 h-px bg-antique-gold/50" />
             </div>
           </motion.div>
@@ -47,7 +47,7 @@ export function FinalCTAAlternada() {
             transition={{ delay: 0.1, duration: 0.6 }}
           >
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold leading-tight mb-4 text-ice-white">
-              Sua proxima experiencia de viagem comeca aqui.
+              Sua próxima experiência de viagem começa aqui.
             </h2>
             <GoldLine width="80px" centered className="mb-6" />
           </motion.div>
@@ -88,7 +88,7 @@ export function FinalCTAAlternada() {
                   transition={{ duration: 0.6 }}
                 />
 
-                <span className="relative z-10">Comecar agora</span>
+                <span className="relative z-10">Começar agora</span>
                 <motion.span
                   className="relative z-10 text-lg"
                   animate={{ x: [0, 5, 0] }}
@@ -124,7 +124,7 @@ export function FinalCTAAlternada() {
               <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-antique-gold flex-shrink-0">
                 <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span>Pontos nao expiram</span>
+              <span>Pontos não expiram</span>
             </div>
           </motion.div>
         </div>

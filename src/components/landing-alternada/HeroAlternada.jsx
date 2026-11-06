@@ -107,11 +107,11 @@ export function HeroAlternada() {
             variants={lineVariants}
             className="text-sm md:text-base text-ice-white/80 max-w-xl mx-auto mb-4 leading-relaxed px-2"
           >
-            O clube da Me,up Viagens: voce ganha pontos
+            O clube da Me,up Viagens: você ganha pontos
             <span className="text-antique-gold font-medium"> indicando amigos </span>
             e
             <span className="text-antique-gold font-medium"> viajando com a gente</span>.
-            Troque por upgrades, lounges e experiencias.
+            Troque por upgrades, lounges e experiências.
           </motion.p>
 
           {/* Subheadline */}
@@ -184,7 +184,7 @@ export function HeroAlternada() {
                 <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="1.5" />
               </svg>
-              <span>Pontos nao expiram</span>
+              <span>Pontos não expiram</span>
             </div>
           </motion.div>
         </div>
