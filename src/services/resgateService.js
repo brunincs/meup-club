@@ -253,16 +253,30 @@ export async function contarResgatesPendentes() {
  */
 export async function aprovarResgate(solicitacaoId) {
   console.log('[aprovarResgate] Iniciando aprovação para:', solicitacaoId)
+  console.log('[aprovarResgate] Tipo do ID:', typeof solicitacaoId)
 
   if (!solicitacaoId) {
     console.error('[aprovarResgate] ID inválido')
     return { success: false, error: 'ID da solicitação é obrigatório' }
   }
 
+  // Garantir que o ID é string
+  const requestId = String(solicitacaoId)
+  console.log('[aprovarResgate] Request ID normalizado:', requestId)
+
   try {
+    // Verificar sessão do usuário
+    const { data: sessionData } = await supabase.auth.getSession()
+    console.log('[aprovarResgate] Sessão ativa:', !!sessionData?.session)
+
+    if (!sessionData?.session) {
+      console.error('[aprovarResgate] Usuário não autenticado')
+      return { success: false, error: 'Você precisa estar logado como admin' }
+    }
+
     console.log('[aprovarResgate] Chamando RPC admin_approve_redemption...')
     const { data, error } = await supabase.rpc('admin_approve_redemption', {
-      p_request_id: solicitacaoId
+      p_request_id: requestId
     })
 
     console.log('[aprovarResgate] Resposta RPC - data:', data, 'error:', error)
