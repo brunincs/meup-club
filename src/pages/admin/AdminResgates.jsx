@@ -135,13 +135,29 @@ export function AdminResgates() {
 
   // Rejeitar resgate
   const handleRejeitar = async (id, motivo) => {
-    const result = await rejeitarResgate(id, motivo)
-    if (result.success) {
-      toast.success('Resgate rejeitado.')
-      setRejectingItem(null)
-      loadData()
-    } else {
-      toast.error(result.error || 'Erro ao rejeitar')
+    console.log('[AdminResgates] handleRejeitar chamado com id:', id, 'motivo:', motivo)
+
+    if (!id) {
+      console.error('[AdminResgates] ID inválido para rejeição:', id)
+      toast.error('Erro: ID da solicitação inválido')
+      return
+    }
+
+    try {
+      console.log('[AdminResgates] Chamando rejeitarResgate...')
+      const result = await rejeitarResgate(id, motivo)
+      console.log('[AdminResgates] Resultado rejeição:', result)
+
+      if (result.success) {
+        toast.success('Resgate rejeitado.')
+        setRejectingItem(null)
+        loadData()
+      } else {
+        toast.error(result.error || 'Erro ao rejeitar')
+      }
+    } catch (err) {
+      console.error('[AdminResgates] Exceção na rejeição:', err)
+      toast.error('Erro inesperado ao rejeitar: ' + (err.message || 'Tente novamente'))
     }
   }
 
@@ -278,7 +294,14 @@ export function AdminResgates() {
                     {sol.status === 'pendente' && (
                       <div className="flex gap-2 flex-shrink-0">
                         <button
-                          onClick={() => handleAprovar(sol.id)}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            console.log('[CLICK] Botão Aprovar clicado, sol.id:', sol.id, 'isProcessing:', isProcessing)
+                            if (!isProcessing) {
+                              handleAprovar(sol.id)
+                            }
+                          }}
                           disabled={isProcessing}
                           className="px-4 py-2 rounded-xl bg-green-500 text-white text-xs font-heading font-medium hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center gap-1.5"
                         >
@@ -294,7 +317,14 @@ export function AdminResgates() {
                           Aprovar
                         </button>
                         <button
-                          onClick={() => setRejectingItem(sol)}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            console.log('[CLICK] Botão Rejeitar clicado, sol:', sol.id)
+                            if (!isProcessing) {
+                              setRejectingItem(sol)
+                            }
+                          }}
                           disabled={isProcessing}
                           className="px-4 py-2 rounded-xl bg-ice-white border border-red-200 text-red-600 text-xs font-heading font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
                         >
