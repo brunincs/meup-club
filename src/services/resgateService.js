@@ -252,28 +252,45 @@ export async function contarResgatesPendentes() {
  * @param {string} solicitacaoId
  */
 export async function aprovarResgate(solicitacaoId) {
+  console.log('[aprovarResgate] Iniciando aprovação para:', solicitacaoId)
+
+  if (!solicitacaoId) {
+    console.error('[aprovarResgate] ID inválido')
+    return { success: false, error: 'ID da solicitação é obrigatório' }
+  }
+
   try {
+    console.log('[aprovarResgate] Chamando RPC admin_approve_redemption...')
     const { data, error } = await supabase.rpc('admin_approve_redemption', {
       p_request_id: solicitacaoId
     })
 
+    console.log('[aprovarResgate] Resposta RPC - data:', data, 'error:', error)
+
     if (error) {
-      console.error('Erro ao aprovar resgate:', error)
-      return { success: false, error: error.message }
+      console.error('[aprovarResgate] Erro RPC:', error)
+      return { success: false, error: error.message || 'Erro ao chamar função de aprovação' }
+    }
+
+    if (!data) {
+      console.error('[aprovarResgate] Data é null/undefined')
+      return { success: false, error: 'Resposta vazia do servidor' }
     }
 
     if (!data.success) {
-      return { success: false, error: data.error }
+      console.log('[aprovarResgate] Função retornou erro:', data.error)
+      return { success: false, error: data.error || 'Erro desconhecido na aprovação' }
     }
 
+    console.log('[aprovarResgate] Sucesso! Pontos debitados:', data.points_debited)
     return {
       success: true,
       pointsDebited: data.points_debited,
       newBalance: data.new_balance
     }
   } catch (error) {
-    console.error('Erro inesperado ao aprovar:', error)
-    return { success: false, error: 'Erro inesperado. Tente novamente.' }
+    console.error('[aprovarResgate] Exceção:', error)
+    return { success: false, error: 'Erro inesperado: ' + (error.message || 'Tente novamente') }
   }
 }
 
@@ -283,25 +300,42 @@ export async function aprovarResgate(solicitacaoId) {
  * @param {string} motivo - Motivo da rejeição (opcional)
  */
 export async function rejeitarResgate(solicitacaoId, motivo = null) {
+  console.log('[rejeitarResgate] Iniciando rejeição para:', solicitacaoId, 'motivo:', motivo)
+
+  if (!solicitacaoId) {
+    console.error('[rejeitarResgate] ID inválido')
+    return { success: false, error: 'ID da solicitação é obrigatório' }
+  }
+
   try {
+    console.log('[rejeitarResgate] Chamando RPC admin_reject_redemption...')
     const { data, error } = await supabase.rpc('admin_reject_redemption', {
       p_request_id: solicitacaoId,
       p_reason: motivo
     })
 
+    console.log('[rejeitarResgate] Resposta RPC - data:', data, 'error:', error)
+
     if (error) {
-      console.error('Erro ao rejeitar resgate:', error)
-      return { success: false, error: error.message }
+      console.error('[rejeitarResgate] Erro RPC:', error)
+      return { success: false, error: error.message || 'Erro ao chamar função de rejeição' }
+    }
+
+    if (!data) {
+      console.error('[rejeitarResgate] Data é null/undefined')
+      return { success: false, error: 'Resposta vazia do servidor' }
     }
 
     if (!data.success) {
-      return { success: false, error: data.error }
+      console.log('[rejeitarResgate] Função retornou erro:', data.error)
+      return { success: false, error: data.error || 'Erro desconhecido na rejeição' }
     }
 
+    console.log('[rejeitarResgate] Sucesso!')
     return { success: true }
   } catch (error) {
-    console.error('Erro inesperado ao rejeitar:', error)
-    return { success: false, error: 'Erro inesperado. Tente novamente.' }
+    console.error('[rejeitarResgate] Exceção:', error)
+    return { success: false, error: 'Erro inesperado: ' + (error.message || 'Tente novamente') }
   }
 }
 

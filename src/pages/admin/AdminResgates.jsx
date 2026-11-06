@@ -104,15 +104,33 @@ export function AdminResgates() {
 
   // Aprovar resgate
   const handleAprovar = async (id) => {
-    setProcessing(id)
-    const result = await aprovarResgate(id)
-    if (result.success) {
-      toast.success(`Resgate aprovado! ${result.pointsDebited} pontos debitados.`)
-      loadData()
-    } else {
-      toast.error(result.error || 'Erro ao aprovar')
+    console.log('[AdminResgates] handleAprovar chamado com id:', id)
+
+    if (!id) {
+      console.error('[AdminResgates] ID inválido:', id)
+      toast.error('Erro: ID da solicitação inválido')
+      return
     }
-    setProcessing(null)
+
+    setProcessing(id)
+
+    try {
+      console.log('[AdminResgates] Chamando aprovarResgate...')
+      const result = await aprovarResgate(id)
+      console.log('[AdminResgates] Resultado:', result)
+
+      if (result.success) {
+        toast.success(`Resgate aprovado! ${result.pointsDebited} pontos debitados.`)
+        loadData()
+      } else {
+        toast.error(result.error || 'Erro ao aprovar')
+      }
+    } catch (err) {
+      console.error('[AdminResgates] Exceção:', err)
+      toast.error('Erro inesperado ao aprovar: ' + (err.message || 'Tente novamente'))
+    } finally {
+      setProcessing(null)
+    }
   }
 
   // Rejeitar resgate
