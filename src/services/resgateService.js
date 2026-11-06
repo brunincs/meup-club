@@ -15,17 +15,19 @@ import { supabase } from '@/lib/supabase'
  *
  * @param {string} experienciaId - ID da experiência
  * @param {string} experienciaNome - Nome da experiência
- * @param {number} pontosNecessarios - Custo em pontos
+ * @param {number} pontosUnitarios - Custo unitário em pontos
  * @param {number} classeMinima - Classe mínima exigida (1-4)
- * @returns {Object} { success, error, requestId }
+ * @param {number} quantidade - Quantidade a resgatar (default: 1)
+ * @returns {Object} { success, error, requestId, quantity, totalPoints }
  */
-export async function solicitarResgate(experienciaId, experienciaNome, pontosNecessarios, classeMinima = 1) {
+export async function solicitarResgate(experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1) {
   try {
     const { data, error } = await supabase.rpc('client_request_redemption', {
       p_experience_id: experienciaId,
       p_experience_name: experienciaNome,
-      p_points_cost: pontosNecessarios,
-      p_min_class: classeMinima
+      p_points_cost: pontosUnitarios,
+      p_min_class: classeMinima,
+      p_quantity: quantidade
     })
 
     if (error) {
@@ -40,6 +42,8 @@ export async function solicitarResgate(experienciaId, experienciaNome, pontosNec
     return {
       success: true,
       requestId: data.request_id,
+      quantity: data.quantity || quantidade,
+      totalPoints: data.total_points || (pontosUnitarios * quantidade),
       message: data.message || 'Solicitação enviada! Aguarde a aprovação.'
     }
   } catch (error) {
@@ -167,7 +171,7 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
   try {
     let query = supabase
       .from('resgate_solicitacoes')
-      .select('id, user_id, experiencia_id, experiencia_nome, pontos, status, admin_comentario, created_at, processed_at')
+      .select('id, user_id, experiencia_id, experiencia_nome, pontos, quantidade, status, admin_comentario, created_at, processed_at')
       .order('created_at', { ascending: false })
 
     if (statusFilter) {
@@ -201,6 +205,7 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
     }
 
     const solicitacoes = (data || []).map(s => {
+      const quantidade = s.quantidade || 1
       const mapped = {
         id: s.id,
         userId: s.user_id,
@@ -210,6 +215,11 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
         experienciaId: s.experiencia_id,
         experienciaNome: s.experiencia_nome,
         pontos: s.pontos,
+        quantidade: quantidade,
+        // Display name com quantidade (ex: "3× Crédito R$100")
+        displayName: quantidade > 1
+          ? `${quantidade}× ${s.experiencia_nome}`
+          : s.experiencia_nome,
         status: s.status,
         adminComentario: s.admin_comentario,
         createdAt: new Date(s.created_at).toLocaleDateString('pt-BR', {
@@ -218,7 +228,7 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
         }),
         processedAt: s.processed_at ? new Date(s.processed_at).toLocaleDateString('pt-BR') : null
       }
-      console.log('[fetchSolicitacoesResgate] Solicitação mapeada:', mapped.id, mapped.status, mapped.experienciaNome)
+      console.log('[fetchSolicitacoesResgate] Solicitação mapeada:', mapped.id, mapped.status, mapped.displayName)
       return mapped
     })
 

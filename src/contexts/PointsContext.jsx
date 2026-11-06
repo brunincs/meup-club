@@ -64,33 +64,37 @@ export function PointsProvider({ children }) {
   /**
    * Solicita resgate de uma experiência
    * NÃO debita imediatamente - cria pedido PENDENTE
+   * Suporta quantidade múltipla (ex: 3× Crédito R$100)
    *
    * @param {string} experienciaId - ID da experiência
    * @param {string} experienciaNome - Nome da experiência
-   * @param {number} pontosNecessarios - Custo em pontos
+   * @param {number} pontosUnitarios - Custo UNITÁRIO em pontos
    * @param {number} classeMinima - Classe mínima exigida
-   * @returns {Object} { success, error, message }
+   * @param {number} quantidade - Quantidade a resgatar (default: 1)
+   * @returns {Object} { success, error, message, quantity, totalPoints }
    */
-  const resgatar = useCallback(async (experienciaId, experienciaNome, pontosNecessarios, classeMinima = 1) => {
+  const resgatar = useCallback(async (experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1) => {
+    const totalPoints = pontosUnitarios * quantidade
+
     if (useMock) {
       // Modo demo: simula solicitação
-      if (points < pontosNecessarios) {
+      if (points < totalPoints) {
         return { success: false, error: 'Saldo insuficiente.' }
       }
-      setPendingIds(prev => [...prev, experienciaId])
-      return { success: true, message: 'Solicitação enviada! Aguarde aprovação.' }
+      // Não bloqueia mais por experiência - são repetíveis
+      return {
+        success: true,
+        quantity: quantidade,
+        totalPoints: totalPoints,
+        message: 'Solicitação enviada! Aguarde aprovação.'
+      }
     }
 
     // Modo real: chama o serviço Supabase
     setIsLoading(true)
     try {
-      const result = await solicitarResgate(experienciaId, experienciaNome, pontosNecessarios, classeMinima)
-
-      if (result.success) {
-        // Marca como pendente (NÃO como resgatado ainda)
-        setPendingIds(prev => [...prev, experienciaId])
-      }
-
+      const result = await solicitarResgate(experienciaId, experienciaNome, pontosUnitarios, classeMinima, quantidade)
+      // Não adiciona mais a pendingIds - experiências são repetíveis
       return result
     } finally {
       setIsLoading(false)

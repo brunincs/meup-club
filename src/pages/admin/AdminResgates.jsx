@@ -41,8 +41,13 @@ function RejectModal({ solicitacao, onClose, onConfirm }) {
           <p className="text-sm text-graphite font-heading">
             <span className="font-semibold">{solicitacao.userName}</span> solicitou:
           </p>
-          <p className="text-sm text-graphite/70">{solicitacao.experienciaNome}</p>
-          <p className="text-xs text-graphite/60 mt-1">{solicitacao.pontos.toLocaleString('pt-BR')} pontos</p>
+          <p className="text-sm text-graphite/70">
+            {solicitacao.displayName || solicitacao.experienciaNome}
+          </p>
+          <p className="text-xs text-graphite/60 mt-1">
+            {solicitacao.pontos.toLocaleString('pt-BR')} pontos
+            {solicitacao.quantidade > 1 && ' (total)'}
+          </p>
         </div>
 
         <div className="mb-6">
@@ -258,17 +263,28 @@ export function AdminResgates() {
                         <span className={`px-2 py-0.5 rounded-full text-xs font-heading ${config.bg} ${config.color}`}>
                           {config.label}
                         </span>
+                        {/* Badge de quantidade se > 1 */}
+                        {sol.quantidade > 1 && (
+                          <span className="px-2 py-0.5 rounded-full bg-deep-purple/10 text-deep-purple text-xs font-heading font-semibold">
+                            {sol.quantidade}×
+                          </span>
+                        )}
                       </div>
 
-                      {/* Experiência */}
+                      {/* Experiência (com quantidade no nome se > 1) */}
                       <p className="text-sm text-graphite/80 font-heading mb-1">
-                        {sol.experienciaNome}
+                        {sol.displayName || sol.experienciaNome}
                       </p>
 
                       {/* Meta */}
                       <div className="flex flex-wrap items-center gap-3 text-xs text-graphite/60 font-heading">
                         <span className="font-mono font-semibold text-deep-purple">
                           {sol.pontos.toLocaleString('pt-BR')} pts
+                          {sol.quantidade > 1 && (
+                            <span className="text-graphite/50 font-normal ml-1">
+                              (total)
+                            </span>
+                          )}
                         </span>
                         <span>•</span>
                         <span>{sol.createdAt}</span>

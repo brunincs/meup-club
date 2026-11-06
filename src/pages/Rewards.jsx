@@ -38,21 +38,33 @@ const badgeConfig = {
 }
 
 /**
- * Modal de confirmação de resgate
- *
- * Correções aplicadas:
- * - Bug 1: Modal fecha corretamente após confirmar
- * - Bug 3: Botão desabilitado durante loading com spinner
- * - Bug 4: Tecla Escape fecha o modal
- * - Bug 5: Focus trap - foco fica preso dentro do modal
+ * Modal de confirmação de resgate COM QUANTIDADE
+ * Permite escolher quantidade múltipla (ex: 3× Crédito R$100)
  */
 function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
   const modalRef = useRef(null)
   const confirmButtonRef = useRef(null)
   const cancelButtonRef = useRef(null)
-  const remainingPoints = userPoints - reward.points_required
 
-  // Bug 4: Fechar com Escape (mas não durante loading)
+  // Estado de quantidade
+  const [quantity, setQuantity] = useState(1)
+
+  // Cálculos
+  const unitCost = reward.points_required
+  const totalCost = unitCost * quantity
+  const remainingPoints = userPoints - totalCost
+  const maxQuantity = Math.floor(userPoints / unitCost)
+
+  // Reset quantidade ao abrir
+  useEffect(() => {
+    setQuantity(1)
+  }, [reward.id])
+
+  // Handlers de quantidade
+  const decreaseQuantity = () => setQuantity(q => Math.max(1, q - 1))
+  const increaseQuantity = () => setQuantity(q => Math.min(maxQuantity, q + 1))
+
+  // Fechar com Escape (mas não durante loading)
   useEffect(() => {
     function handleKeyDown(e) {
       if (e.key === 'Escape' && !isLoading) {
@@ -63,21 +75,16 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [onCancel, isLoading])
 
-  // Bug 5: Mover foco para o modal ao abrir
+  // Mover foco para o modal ao abrir
   useEffect(() => {
-    // Salvar elemento que tinha foco antes
     const previouslyFocused = document.activeElement
-
-    // Focar no botão de cancelar (mais seguro) ao abrir
     cancelButtonRef.current?.focus()
-
-    // Devolver foco ao fechar
     return () => {
       previouslyFocused?.focus?.()
     }
   }, [])
 
-  // Bug 5: Focus trap - Tab circula só dentro do modal
+  // Focus trap - Tab circula só dentro do modal
   useEffect(() => {
     function handleTab(e) {
       if (e.key !== 'Tab') return
@@ -90,13 +97,10 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
       const firstElement = focusableElements[0]
       const lastElement = focusableElements[focusableElements.length - 1]
 
-      // Shift+Tab no primeiro elemento vai para o último
       if (e.shiftKey && document.activeElement === firstElement) {
         e.preventDefault()
         lastElement.focus()
-      }
-      // Tab no último elemento vai para o primeiro
-      else if (!e.shiftKey && document.activeElement === lastElement) {
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
         e.preventDefault()
         firstElement.focus()
       }
@@ -106,12 +110,17 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
     return () => document.removeEventListener('keydown', handleTab)
   }, [])
 
-  // Bug 4: Clicar no backdrop fecha (mas não durante loading)
+  // Clicar no backdrop fecha (mas não durante loading)
   const handleBackdropClick = useCallback(() => {
     if (!isLoading) {
       onCancel()
     }
   }, [isLoading, onCancel])
+
+  // Confirmar com quantidade
+  const handleConfirm = () => {
+    onConfirm(quantity)
+  }
 
   return (
     <motion.div
@@ -158,16 +167,68 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
             )}
           </div>
 
+          {/* Seletor de Quantidade */}
+          <div className="p-4 rounded-xl bg-dusty-rose/5 border border-dusty-rose/10 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-dusty-rose">Quantidade</span>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={decreaseQuantity}
+                  disabled={quantity <= 1 || isLoading}
+                  className="w-8 h-8 rounded-lg bg-dusty-rose/10 text-ice-white flex items-center justify-center hover:bg-dusty-rose/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Diminuir quantidade"
+                >
+                  −
+                </button>
+                <span className="text-xl font-heading font-semibold text-antique-gold w-8 text-center">
+                  {quantity}
+                </span>
+                <button
+                  onClick={increaseQuantity}
+                  disabled={quantity >= maxQuantity || isLoading}
+                  className="w-8 h-8 rounded-lg bg-dusty-rose/10 text-ice-white flex items-center justify-center hover:bg-dusty-rose/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Aumentar quantidade"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <p className="text-[10px] text-dusty-rose/60 text-right">
+              Máximo: {maxQuantity} unidades
+            </p>
+          </div>
+
+          {/* Cálculo do Total */}
           <div className="space-y-3 mb-4">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-dusty-rose">Custo</span>
-              <span className="text-antique-gold font-medium">
-                {format.pointsShort(reward.points_required)} pontos
+              <span className="text-dusty-rose">Custo unitário</span>
+              <span className="text-dusty-rose/80">
+                {format.pointsShort(unitCost)} pontos
+              </span>
+            </div>
+            {quantity > 1 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-dusty-rose">Cálculo</span>
+                <span className="text-dusty-rose/80">
+                  {quantity} × {format.pointsShort(unitCost)}
+                </span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-sm pt-2 border-t border-dusty-rose/10">
+              <span className="text-ice-white font-medium">Total</span>
+              <span className="text-antique-gold font-semibold text-lg">
+                {format.pointsShort(totalCost)} pontos
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-dusty-rose">Seu saldo</span>
               <span className="text-ice-white">{format.pointsShort(userPoints)} pontos</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-dusty-rose">Saldo após</span>
+              <span className={remainingPoints >= 0 ? 'text-game-green' : 'text-red-400'}>
+                {format.pointsShort(remainingPoints)} pontos
+              </span>
             </div>
           </div>
 
@@ -190,8 +251,8 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
           </button>
           <button
             ref={confirmButtonRef}
-            onClick={onConfirm}
-            disabled={isLoading}
+            onClick={handleConfirm}
+            disabled={isLoading || remainingPoints < 0}
             className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium bg-antique-gold text-deep-purple hover:bg-accent-light transition-colors disabled:opacity-50 disabled:cursor-wait"
           >
             {isLoading ? (
@@ -204,7 +265,7 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
                 Enviando...
               </span>
             ) : (
-              'Enviar Solicitação'
+              quantity > 1 ? `Solicitar ${quantity}×` : 'Enviar Solicitação'
             )}
           </button>
         </div>
@@ -708,7 +769,8 @@ export function Rewards() {
 
   const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId, rewardsTable)
 
-  const availableCount = rewardsWithProgress.filter(r => r.canRedeem && !redeemedIds.includes(r.id)).length
+  // Experiências são repetíveis - não filtrar por redeemedIds
+  const availableCount = rewardsWithProgress.filter(r => r.canRedeem).length
   const ClassIcon = getClassIcon(userLevelId)
 
   useEffect(() => {
@@ -798,12 +860,14 @@ export function Rewards() {
   }
 
   // Handler para confirmar resgate - INTEGRAÇÃO REAL COM SUPABASE
-  async function handleConfirmRedeem() {
+  async function handleConfirmRedeem(quantity = 1) {
     // Prevenir duplo clique
     if (!selectedReward || isRedeeming) return
 
+    const totalCost = selectedReward.points_required * quantity
+
     // Verificar saldo ANTES de processar (validação extra de segurança)
-    if (userPoints < selectedReward.points_required) {
+    if (userPoints < totalCost) {
       toast.error('Saldo insuficiente para este resgate.', {
         style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' }
       })
@@ -813,11 +877,13 @@ export function Rewards() {
     setIsRedeeming(true)
 
     try {
-      // Chamar serviço REAL de resgate (debita no Supabase)
+      // Chamar serviço REAL de resgate com quantidade
       const result = await resgatar(
         selectedReward.id,
         selectedReward.name,
-        selectedReward.points_required
+        selectedReward.points_required, // custo unitário
+        1, // classe mínima (será validada no banco)
+        quantity // quantidade
       )
 
       if (!result.success) {
@@ -829,17 +895,20 @@ export function Rewards() {
         return
       }
 
-      // Guardar nome antes de fechar
+      // Guardar dados antes de fechar
       const rewardName = selectedReward.name
+      const rewardQty = quantity
 
       // FECHAR MODAL PRIMEIRO
       closeModal()
 
-      // Mostrar toast de sucesso (agora é solicitação, não resgate imediato)
+      // Mostrar toast de sucesso com quantidade
       toast.success(
         <div>
           <strong>Solicitação enviada!</strong>
-          <div className="text-sm opacity-80">{rewardName}</div>
+          <div className="text-sm opacity-80">
+            {rewardQty > 1 ? `${rewardQty}× ${rewardName}` : rewardName}
+          </div>
           <div className="text-xs opacity-60 mt-1">Aguarde a aprovação</div>
         </div>,
         {
@@ -871,8 +940,9 @@ export function Rewards() {
 
   if (!user) return null
 
+  // Experiências são repetíveis - não filtrar por redeemedIds
   const displayRewards = viewMode === 'available'
-    ? rewardsWithProgress.filter(r => r.canRedeem && !redeemedIds.includes(r.id))
+    ? rewardsWithProgress.filter(r => r.canRedeem)
     : rewardsWithProgress
 
   return (
