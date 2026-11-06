@@ -250,134 +250,68 @@ export async function getPendingReferrals() {
 
 /**
  * Aprova uma indicação e credita os pontos
+ * USA FUNÇÃO RPC SEGURA com verificação de admin no banco
+ *
  * @param {string} referralId - ID da indicação
  * @returns {Promise<{success: boolean, points_awarded: number}>}
  */
 export async function approveReferral(referralId) {
   try {
-    // Buscar a indicação
-    const { data: referral, error: fetchError } = await supabase
-      .from('referrals')
-      .select('*, referrer:referrer_id(id, name, points)')
-      .eq('id', referralId)
-      .single()
+    // Chamar função RPC segura (verifica admin no banco)
+    const { data, error } = await supabase.rpc('approve_referral', {
+      p_referral_id: referralId
+    })
 
-    if (fetchError) throw fetchError
-
-    if (!referral) {
-      return { success: false, error: 'Indicação não encontrada' }
+    if (error) {
+      console.error('Erro ao aprovar indicação:', error)
+      return { success: false, error: error.message }
     }
 
-    if (referral.status !== 'pending') {
-      return { success: false, error: 'Indicação já foi processada' }
-    }
-
-    // 1. Atualizar a indicação para aprovada
-    const { error: updateError } = await supabase
-      .from('referrals')
-      .update({
-        status: 'approved',
-        points_awarded: PONTOS_POR_INDICACAO,
-        processed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', referralId)
-
-    if (updateError) throw updateError
-
-    // 2. Creditar pontos ao indicador
-    // Primeiro buscar o valor atual de total_referrals
-    const { data: referrerProfile } = await supabase
-      .from('profiles')
-      .select('points, total_referrals')
-      .eq('id', referral.referrer_id)
-      .single()
-
-    const currentPoints = referrerProfile?.points || 0
-    const currentReferrals = referrerProfile?.total_referrals || 0
-
-    const { error: pointsError } = await supabase
-      .from('profiles')
-      .update({
-        points: currentPoints + PONTOS_POR_INDICACAO,
-        total_referrals: currentReferrals + 1,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', referral.referrer_id)
-
-    if (pointsError) throw pointsError
-
-    const newPoints = currentPoints + PONTOS_POR_INDICACAO
-
-    // 3. Registrar no histórico de transações (com balance obrigatório)
-    const { error: txError } = await supabase
-      .from('point_transactions')
-      .insert({
-        user_id: referral.referrer_id,
-        amount: PONTOS_POR_INDICACAO,
-        type: 'referral',
-        reason: 'Indicação aprovada',
-        balance_before: currentPoints,
-        balance_after: newPoints
-      })
-
-    if (txError) {
-      console.error('Erro ao registrar transação:', txError)
-      // Continua mesmo com erro para não bloquear a aprovação
+    // A função retorna JSONB com success/error
+    if (!data.success) {
+      return { success: false, error: data.error }
     }
 
     return {
       success: true,
-      points_awarded: PONTOS_POR_INDICACAO,
-      referrer_id: referral.referrer_id,
-      new_balance: newPoints
+      points_awarded: data.points_awarded,
+      referrer_id: data.referrer_id,
+      new_balance: data.new_balance
     }
   } catch (error) {
     console.error('Erro ao aprovar indicação:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Erro ao processar aprovação. Tente novamente.' }
   }
 }
 
 /**
  * Rejeita uma indicação (não credita pontos)
+ * USA FUNÇÃO RPC SEGURA com verificação de admin no banco
+ *
  * @param {string} referralId - ID da indicação
  * @returns {Promise<{success: boolean}>}
  */
 export async function rejectReferral(referralId) {
   try {
-    // Buscar a indicação
-    const { data: referral, error: fetchError } = await supabase
-      .from('referrals')
-      .select('status')
-      .eq('id', referralId)
-      .single()
+    // Chamar função RPC segura (verifica admin no banco)
+    const { data, error } = await supabase.rpc('reject_referral', {
+      p_referral_id: referralId
+    })
 
-    if (fetchError) throw fetchError
-
-    if (!referral) {
-      return { success: false, error: 'Indicação não encontrada' }
+    if (error) {
+      console.error('Erro ao rejeitar indicação:', error)
+      return { success: false, error: error.message }
     }
 
-    if (referral.status !== 'pending') {
-      return { success: false, error: 'Indicação já foi processada' }
+    // A função retorna JSONB com success/error
+    if (!data.success) {
+      return { success: false, error: data.error }
     }
-
-    // Atualizar para rejeitada
-    const { error: updateError } = await supabase
-      .from('referrals')
-      .update({
-        status: 'rejected',
-        processed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', referralId)
-
-    if (updateError) throw updateError
 
     return { success: true }
   } catch (error) {
     console.error('Erro ao rejeitar indicação:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Erro ao processar rejeição. Tente novamente.' }
   }
 }
 

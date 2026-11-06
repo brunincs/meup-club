@@ -22,6 +22,20 @@ function calculateLevelFromPoints(points) {
 // ============================================
 
 /**
+ * Sanitiza input de busca para prevenir injeção
+ * @param {string} input - Texto a sanitizar
+ * @returns {string} - Texto sanitizado
+ */
+function sanitizeSearchInput(input) {
+  if (!input) return ''
+  // Remove caracteres especiais do PostgREST/SQL
+  return input
+    .replace(/[%_\\'"(){}[\]<>]/g, '')
+    .trim()
+    .slice(0, 100) // Limita tamanho
+}
+
+/**
  * Busca todos os usuários (clientes) do sistema
  * @param {string} searchQuery - Filtro por nome ou email
  */
@@ -31,8 +45,9 @@ export async function fetchAllUsers(searchQuery = '') {
     .select('id, name, email, points, role, created_at')
     .order('created_at', { ascending: false })
 
-  if (searchQuery.trim()) {
-    query = query.or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
+  const sanitizedQuery = sanitizeSearchInput(searchQuery)
+  if (sanitizedQuery) {
+    query = query.or(`name.ilike.%${sanitizedQuery}%,email.ilike.%${sanitizedQuery}%`)
   }
 
   const { data, error } = await query
