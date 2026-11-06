@@ -162,6 +162,8 @@ export async function buscarStatusResgates() {
  * @param {string} statusFilter - 'pendente', 'aprovado', 'rejeitado' ou null para todas
  */
 export async function fetchSolicitacoesResgate(statusFilter = null) {
+  console.log('[fetchSolicitacoesResgate] Buscando com filtro:', statusFilter)
+
   try {
     let query = supabase
       .from('resgate_solicitacoes')
@@ -173,9 +175,10 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
     }
 
     const { data, error } = await query
+    console.log('[fetchSolicitacoesResgate] Dados brutos:', data?.length, 'registros')
 
     if (error) {
-      console.error('Erro ao buscar solicitações:', error)
+      console.error('[fetchSolicitacoesResgate] Erro:', error)
       return { success: false, error: error.message, solicitacoes: [] }
     }
 
@@ -197,23 +200,27 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
       }
     }
 
-    const solicitacoes = (data || []).map(s => ({
-      id: s.id,
-      userId: s.user_id,
-      userName: usersMap[s.user_id]?.name || 'Usuário',
-      userEmail: usersMap[s.user_id]?.email || '',
-      userPoints: usersMap[s.user_id]?.points || 0,
-      experienciaId: s.experiencia_id,
-      experienciaNome: s.experiencia_nome,
-      pontos: s.pontos,
-      status: s.status,
-      adminComentario: s.admin_comentario,
-      createdAt: new Date(s.created_at).toLocaleDateString('pt-BR', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      }),
-      processedAt: s.processed_at ? new Date(s.processed_at).toLocaleDateString('pt-BR') : null
-    }))
+    const solicitacoes = (data || []).map(s => {
+      const mapped = {
+        id: s.id,
+        userId: s.user_id,
+        userName: usersMap[s.user_id]?.name || 'Usuário',
+        userEmail: usersMap[s.user_id]?.email || '',
+        userPoints: usersMap[s.user_id]?.points || 0,
+        experienciaId: s.experiencia_id,
+        experienciaNome: s.experiencia_nome,
+        pontos: s.pontos,
+        status: s.status,
+        adminComentario: s.admin_comentario,
+        createdAt: new Date(s.created_at).toLocaleDateString('pt-BR', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        }),
+        processedAt: s.processed_at ? new Date(s.processed_at).toLocaleDateString('pt-BR') : null
+      }
+      console.log('[fetchSolicitacoesResgate] Solicitação mapeada:', mapped.id, mapped.status, mapped.experienciaNome)
+      return mapped
+    })
 
     // Estatísticas
     const stats = {
