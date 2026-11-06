@@ -3,6 +3,12 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 
 const AuthContext = createContext({})
 
+// Desabilitar logs em produção
+const isDev = import.meta.env.DEV
+const log = isDev ? console.log.bind(console) : () => {}
+const logWarn = isDev ? console.warn.bind(console) : () => {}
+const logError = isDev ? console.error.bind(console) : () => {}
+
 // Dados mock para modo demonstração
 const mockUser = {
   id: 'mock-user-1',
@@ -49,7 +55,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Se Supabase não está configurado, usar modo mock
     if (!isSupabaseConfigured()) {
-      console.warn('⚠️ Supabase não configurado. Usando modo demonstração.')
+      logWarn('⚠️ Supabase não configurado. Usando modo demonstração.')
       setUseMock(true)
       setLoading(false)
       return
@@ -68,7 +74,7 @@ export function AuthProvider({ children }) {
     // Listener para mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth event:', event)
+        log('Auth event:', event)
         setUser(session?.user ?? null)
 
         if (session?.user) {
@@ -95,7 +101,7 @@ export function AuthProvider({ children }) {
 
       if (error) {
         // Perfil não existe - criar automaticamente
-        console.warn('Perfil não encontrado, criando automaticamente...')
+        logWarn('Perfil não encontrado, criando automaticamente...')
 
         // Buscar dados do usuário autenticado
         const { data: { user: authUser } } = await supabase.auth.getUser()
@@ -120,7 +126,7 @@ export function AuthProvider({ children }) {
             .single()
 
           if (createError) {
-            console.error('Erro ao criar perfil:', createError)
+            logError('Erro ao criar perfil:', createError)
             // Usar dados do Auth como fallback temporário
             setProfile({
               id: userId,
@@ -130,7 +136,7 @@ export function AuthProvider({ children }) {
               level_id: 1
             })
           } else {
-            console.log('Perfil criado com sucesso!')
+            log('Perfil criado com sucesso!')
             setProfile(createdProfile)
           }
         } else {
@@ -140,7 +146,7 @@ export function AuthProvider({ children }) {
         setProfile(data)
       }
     } catch (error) {
-      console.error('Erro ao buscar perfil:', error)
+      logError('Erro ao buscar perfil:', error)
       setProfile(null)
     } finally {
       setLoading(false)
@@ -244,7 +250,7 @@ export function AuthProvider({ children }) {
       setUser(null)
       setProfile(null)
     } catch (error) {
-      console.error('Erro ao sair:', error)
+      logError('Erro ao sair:', error)
     }
   }
 
