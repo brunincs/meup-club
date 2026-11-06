@@ -50,14 +50,20 @@ export function useExperiencias() {
     const mapped = experiencias.map(exp => ({
       id: exp.id,
       title: exp.nome,
+      name: exp.nome, // Alias para compatibilidade
       description: exp.descricao,
       image: exp.imagem_url || getPlaceholderImage(exp.nome),
       points: exp.pontos,
+      points_required: exp.pontos, // Alias para compatibilidade
       featured: exp.selo === 'popular',
       tempoLimitado: exp.selo === 'limitado',
       isDream: exp.selo === 'sonhos',
       classeMinima: exp.classe_minima,
-      ordem: exp.ordem
+      requiredLevelId: exp.classe_minima, // Alias para compatibilidade
+      ordem: exp.ordem,
+      categoria: exp.categoria || 'servico',
+      oQueInclui: exp.o_que_inclui || '',
+      regras: exp.regras || ''
     }))
 
     // Separar regulares e sonhos

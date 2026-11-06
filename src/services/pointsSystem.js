@@ -664,22 +664,28 @@ export function getRequiredLevel(reward) {
  * Calcula progresso para cada recompensa (com verificação de nível)
  * @param {number} userPoints - Pontos do usuário
  * @param {number} userLevelId - ID do nível do usuário (opcional, calculado se não fornecido)
+ * @param {array} customRewardsTable - Tabela customizada de experiências (opcional, usa rewardsTable padrão)
  * @returns {array} - Recompensas com status de progresso e desbloqueio
  */
-export function calculateRewardsProgress(userPoints, userLevelId = null) {
+export function calculateRewardsProgress(userPoints, userLevelId = null, customRewardsTable = null) {
   // Se não foi passado o nível, calcular
   if (userLevelId === null) {
     const levelData = calculateLevel(userPoints)
     userLevelId = levelData.current.id
   }
 
-  return rewardsTable.map(reward => {
+  // Usar tabela customizada ou a padrão
+  const tableToUse = customRewardsTable || rewardsTable
+
+  return tableToUse.map(reward => {
     const progress = Math.min((userPoints / reward.points_required) * 100, 100)
     const pointsNeeded = Math.max(reward.points_required - userPoints, 0)
     const hasEnoughPoints = userPoints >= reward.points_required
-    const isUnlockedByLevel = userLevelId >= reward.requiredLevel
+    // Suporta tanto requiredLevel quanto requiredLevelId
+    const requiredLevel = reward.requiredLevel || reward.requiredLevelId || 1
+    const isUnlockedByLevel = userLevelId >= requiredLevel
     const canRedeem = hasEnoughPoints && isUnlockedByLevel
-    const requiredLevelData = getRequiredLevel(reward)
+    const requiredLevelData = levels.find(l => l.id === requiredLevel) || levels[0]
 
     let status = 'locked_level' // Bloqueado por nível
     if (!isUnlockedByLevel) {
@@ -703,7 +709,7 @@ export function calculateRewardsProgress(userPoints, userLevelId = null) {
       canRedeem,
       status,
       requiredLevelName: requiredLevelData.name,
-      requiredLevelId: reward.requiredLevel
+      requiredLevelId: requiredLevel
     }
   })
 }

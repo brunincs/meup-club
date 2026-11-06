@@ -6,10 +6,11 @@ import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
 import { DashboardHeader } from '@/components/dashboard'
 import {
-  rewardsTable,
   calculateRewardsProgress,
   calculateLevel
 } from '@/services/pointsSystem'
+import { useExperiencias } from '@/hooks/useExperiencias'
+import { ExperienceDetailModal } from '@/components/experiences/ExperienceDetailModal'
 import { registrarVisitaExperiencias } from '@/services/supabaseData'
 import { format, levels as levelCopy } from '@/services/copy'
 import { getClassIcon, GiftIcon } from '@/components/ui/Icons'
@@ -667,14 +668,36 @@ export function Rewards() {
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState('all')
   const [selectedReward, setSelectedReward] = useState(null)
+  const [detailExperience, setDetailExperience] = useState(null)
   const [isRedeeming, setIsRedeeming] = useState(false)
+
+  // Hook para carregar experiências do Supabase
+  const { allExperiences, loading: experienciasLoading, error: experienciasError } = useExperiencias()
 
   // Ref para devolver foco após fechar modal (Bug 5)
   const triggerButtonRef = useRef(null)
 
   const levelData = calculateLevel(userPoints)
   const userLevelId = levelData?.current?.id ?? 1
-  const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
+
+  // Transformar experiências do Supabase para o formato esperado
+  const rewardsTable = allExperiences.map(exp => ({
+    id: exp.id,
+    name: exp.name || exp.title,
+    subtitle: '',
+    description: exp.description,
+    points_required: exp.points,
+    requiredLevelId: exp.classeMinima || 1,
+    category: exp.categoria === 'credito' ? 'travel' : 'experience',
+    badge: exp.featured ? 'hot' : exp.tempoLimitado ? 'limited' : null,
+    image: exp.image,
+    isDream: exp.isDream,
+    oQueInclui: exp.oQueInclui,
+    regras: exp.regras,
+    categoria: exp.categoria
+  }))
+
+  const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId, rewardsTable)
 
   const availableCount = rewardsWithProgress.filter(r => r.canRedeem && !redeemedIds.includes(r.id)).length
   const ClassIcon = getClassIcon(userLevelId)
@@ -709,22 +732,54 @@ export function Rewards() {
     }
   }, [user?.id])
 
-  // Handler para iniciar resgate (abre modal)
+  // Handler para abrir modal de detalhe
   const handleActivate = useCallback((reward) => {
-    if (!reward.isUnlockedByLevel) {
-      toast.error(`Disponível a partir da ${levelCopy.names[reward.requiredLevelId]}`, {
+    // Abrir modal de detalhe (não verifica pontos aqui, mostra detalhes primeiro)
+    setDetailExperience({
+      id: reward.id,
+      name: reward.name,
+      description: reward.description,
+      image: reward.image,
+      points: reward.points_required,
+      oQueInclui: reward.oQueInclui || '',
+      regras: reward.regras || '',
+      categoria: reward.categoria,
+      requiredLevelId: reward.requiredLevelId,
+      isUnlockedByLevel: reward.isUnlockedByLevel,
+      canRedeem: reward.canRedeem
+    })
+  }, [])
+
+  // Handler para fechar modal de detalhe
+  function closeDetailModal() {
+    setDetailExperience(null)
+  }
+
+  // Handler para iniciar resgate (do modal de detalhe para o modal de confirmação)
+  const handleStartRedeem = useCallback((experience) => {
+    // Verificações de segurança
+    if (!experience.isUnlockedByLevel) {
+      toast.error(`Disponível a partir da ${levelCopy.names[experience.requiredLevelId]}`, {
         style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(163, 150, 149, 0.3)' }
       })
       return
     }
-    if (userPoints < reward.points_required) {
-      toast.error(`Faltam ${format.pointsShort(reward.pointsNeeded)} pontos`, {
+    if (userPoints < experience.points) {
+      toast.error(`Faltam ${format.pointsShort(experience.points - userPoints)} pontos`, {
         style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(163, 150, 149, 0.3)' }
       })
       return
     }
-    // Abre modal de confirmação
-    setSelectedReward(reward)
+
+    // Fechar modal de detalhe e abrir modal de confirmação
+    setDetailExperience(null)
+    setSelectedReward({
+      id: experience.id,
+      name: experience.name,
+      description: experience.description,
+      points_required: experience.points,
+      category: experience.categoria === 'credito' ? 'travel' : 'experience'
+    })
   }, [userPoints])
 
   // Handler para fechar modal
@@ -793,7 +848,7 @@ export function Rewards() {
     }
   }
 
-  if (loading) {
+  if (loading || experienciasLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-deep-purple">
         <motion.div
@@ -823,7 +878,20 @@ export function Rewards() {
 
       <DashboardHeader />
 
-      {/* Modal de confirmação */}
+      {/* Modal de detalhe da experiência */}
+      <AnimatePresence>
+        {detailExperience && (
+          <ExperienceDetailModal
+            experience={detailExperience}
+            userPoints={userPoints}
+            onRedeem={handleStartRedeem}
+            onClose={closeDetailModal}
+            canRedeem={detailExperience.canRedeem && !redeemedIds.includes(detailExperience.id) && !pendingIds.includes(detailExperience.id)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal de confirmação de resgate */}
       <AnimatePresence>
         {selectedReward && (
           <RedeemModal
@@ -941,7 +1009,7 @@ export function Rewards() {
             className="flex items-center justify-between mb-8"
           >
             <p className="text-sm text-graphite/70">
-              {rewardsTable.length} experiências no catálogo
+              {experienciasLoading ? 'Carregando...' : `${rewardsTable.length} experiências no catálogo`}
             </p>
             <div
               className="flex items-center gap-1 p-1 rounded-xl bg-white border border-graphite/10 shadow-sm"
