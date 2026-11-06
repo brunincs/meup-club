@@ -196,13 +196,13 @@ export async function fetchPointsBreakdown(userId) {
 }
 
 /**
- * Busca histórico recente de atividades
+ * Busca histórico recente de atividades (para preview)
  */
-export async function fetchRecentActivity(userId, limit = 10) {
+export async function fetchRecentActivity(userId, limit = 5) {
   try {
     const { data, error } = await supabase
       .from('point_transactions')
-      .select('id, amount, type, reason, created_at')
+      .select('id, amount, type, reason, created_at, balance_after')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(limit)
@@ -213,6 +213,27 @@ export async function fetchRecentActivity(userId, limit = 10) {
   } catch (error) {
     console.error('Erro ao buscar atividades:', error)
     return { success: false, activities: [] }
+  }
+}
+
+/**
+ * Busca TODAS as transações do usuário (extrato completo)
+ * Inclui balance_after para mostrar saldo após cada transação
+ */
+export async function fetchAllTransactions(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('point_transactions')
+      .select('id, amount, type, reason, created_at, balance_after')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    return { success: true, transactions: data || [] }
+  } catch (error) {
+    console.error('Erro ao buscar extrato:', error)
+    return { success: false, transactions: [] }
   }
 }
 

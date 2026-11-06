@@ -10,6 +10,7 @@ import {
   fetchApprovedTasks,
   fetchRedeemedExperiences,
   fetchRecentActivity,
+  fetchAllTransactions,
   maskCPF,
   formatCPF,
   formatPhone,
@@ -515,68 +516,189 @@ function EditProfileForm({ profile, onSave, saving }) {
 // COMPONENTE: HISTÓRICO RECENTE
 // ══════════════════════════════════════════════════════════════════════════════
 
-function RecentActivity({ activities }) {
-  // FUNDO ESCURO - alternância visual com seções claras acima
+function RecentActivity({ activities, userId }) {
+  const [expanded, setExpanded] = useState(false)
+  const [allTransactions, setAllTransactions] = useState([])
+  const [loadingAll, setLoadingAll] = useState(false)
+  const [filter, setFilter] = useState('all')
+
+  // Carregar todas as transações quando expandir
+  const handleExpand = async () => {
+    if (!expanded && allTransactions.length === 0) {
+      setLoadingAll(true)
+      const res = await fetchAllTransactions(userId)
+      if (res.success) {
+        setAllTransactions(res.transactions)
+      }
+      setLoadingAll(false)
+    }
+    setExpanded(!expanded)
+  }
+
+  const typeConfig = {
+    credit: { icon: '+', color: 'text-green-400', bg: 'bg-green-400/20', label: 'Crédito' },
+    debit: { icon: '-', color: 'text-red-400', bg: 'bg-red-400/20', label: 'Débito' },
+    task: { icon: '✓', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20', label: 'Missão' },
+    referral: { icon: '◇', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20', label: 'Indicação' },
+    welcome_referral: { icon: '🎁', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20', label: 'Boas-vindas' },
+    redemption: { icon: '★', color: 'text-purple-400', bg: 'bg-purple-400/20', label: 'Resgate' },
+    adjustment: { icon: '⚙', color: 'text-blue-400', bg: 'bg-blue-400/20', label: 'Ajuste' },
+    admin: { icon: '⚡', color: 'text-blue-400', bg: 'bg-blue-400/20', label: 'Admin' }
+  }
+
+  // Filtros disponíveis
+  const filters = [
+    { id: 'all', label: 'Todos' },
+    { id: 'gains', label: 'Ganhos', check: (t) => t.amount > 0 },
+    { id: 'redemption', label: 'Resgates', check: (t) => t.type === 'redemption' },
+    { id: 'referral', label: 'Indicações', check: (t) => t.type === 'referral' || t.type === 'welcome_referral' },
+    { id: 'task', label: 'Missões', check: (t) => t.type === 'task' }
+  ]
+
+  // Transações a mostrar
+  const displayTransactions = expanded ? allTransactions : (activities || [])
+  const filteredTransactions = displayTransactions.filter(t => {
+    if (filter === 'all') return true
+    const filterObj = filters.find(f => f.id === filter)
+    return filterObj?.check ? filterObj.check(t) : true
+  })
+
+  // Formatar data e hora
+  const formatDateTime = (dateStr) => {
+    const date = new Date(dateStr)
+    return {
+      date: date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' }),
+      time: date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    }
+  }
+
   if (!activities || activities.length === 0) {
     return (
       <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
         <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium flex items-center gap-2">
-          <span>📋</span> Atividades Recentes
+          <span>📋</span> Extrato de Pontos
         </h3>
         <p className="text-sm text-[#ddd1d0]/60 text-center py-8">
-          Nenhuma atividade registrada ainda.
+          Nenhuma transação registrada ainda.
         </p>
       </div>
     )
   }
 
-  const typeConfig = {
-    credit: { icon: '+', color: 'text-green-400', bg: 'bg-green-400/20' },
-    debit: { icon: '-', color: 'text-red-400', bg: 'bg-red-400/20' },
-    task: { icon: '✓', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20' },
-    referral: { icon: '◇', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20' },
-    redemption: { icon: '★', color: 'text-purple-400', bg: 'bg-purple-400/20' },
-    admin: { icon: '⚡', color: 'text-blue-400', bg: 'bg-blue-400/20' }
-  }
-
   return (
     <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
-      <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium flex items-center gap-2">
-        <span>📋</span> Atividades Recentes
-      </h3>
-
-      <div className="space-y-2">
-        {activities.slice(0, 5).map((activity, index) => {
-          const config = typeConfig[activity.type] || { icon: '•', color: 'text-[#ddd1d0]', bg: 'bg-white/10' }
-          const date = new Date(activity.created_at)
-          const isPositive = activity.amount > 0
-
-          return (
-            <motion.div
-              key={activity.id || index}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-white/5 border border-white/10"
-            >
-              <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center ${config.color}`}>
-                {config.icon}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-[#edf0f1] truncate">
-                  {activity.reason || 'Transação'}
-                </p>
-                <p className="text-[10px] text-[#ddd1d0]/60">
-                  {date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-                </p>
-              </div>
-              <span className={`text-sm font-semibold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-                {isPositive ? '+' : ''}{format.pointsShort(activity.amount)}
-              </span>
-            </motion.div>
-          )
-        })}
+      {/* Cabeçalho */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] font-medium flex items-center gap-2">
+          <span>📋</span> {expanded ? 'Extrato Completo' : 'Atividades Recentes'}
+        </h3>
+        <button
+          onClick={handleExpand}
+          className="text-[10px] text-[#a27937] hover:text-[#a27937]/80 transition-colors flex items-center gap-1"
+        >
+          {loadingAll ? (
+            <span className="animate-pulse">Carregando...</span>
+          ) : (
+            <>
+              {expanded ? 'Recolher' : 'Ver tudo'}
+              <span className={`transition-transform ${expanded ? 'rotate-180' : ''}`}>▼</span>
+            </>
+          )}
+        </button>
       </div>
+
+      {/* Filtros (só quando expandido) */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4 overflow-hidden"
+          >
+            <div className="flex flex-wrap gap-2">
+              {filters.map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setFilter(f.id)}
+                  className={`px-3 py-1.5 rounded-full text-[10px] font-medium transition-all ${
+                    filter === f.id
+                      ? 'bg-[#a27937] text-white'
+                      : 'bg-white/10 text-[#ddd1d0]/80 hover:bg-white/20'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lista de transações */}
+      <div className={`space-y-2 ${expanded ? 'max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent' : ''}`}>
+        {filteredTransactions.length === 0 ? (
+          <p className="text-sm text-[#ddd1d0]/60 text-center py-4">
+            Nenhuma transação encontrada com este filtro.
+          </p>
+        ) : (
+          filteredTransactions.slice(0, expanded ? undefined : 5).map((activity, index) => {
+            const config = typeConfig[activity.type] || { icon: '•', color: 'text-[#ddd1d0]', bg: 'bg-white/10', label: 'Outro' }
+            const { date, time } = formatDateTime(activity.created_at)
+            const isPositive = activity.amount > 0
+
+            return (
+              <motion.div
+                key={activity.id || index}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: Math.min(index * 0.03, 0.3) }}
+                className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-white/5 border border-white/10"
+              >
+                {/* Ícone do tipo */}
+                <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center ${config.color} flex-shrink-0`}>
+                  {config.icon}
+                </div>
+
+                {/* Descrição e data */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-[#edf0f1] truncate">
+                    {activity.reason || config.label}
+                  </p>
+                  <p className="text-[10px] text-[#ddd1d0]/60">
+                    {date} às {time}
+                  </p>
+                </div>
+
+                {/* Valor e saldo */}
+                <div className="text-right flex-shrink-0">
+                  <span className={`text-sm font-semibold block ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                    {isPositive ? '+' : ''}{format.pointsShort(activity.amount)}
+                  </span>
+                  {expanded && activity.balance_after !== undefined && (
+                    <span className="text-[9px] text-[#ddd1d0]/50">
+                      saldo: {format.pointsShort(activity.balance_after)}
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            )
+          })
+        )}
+      </div>
+
+      {/* Total de transações quando expandido */}
+      {expanded && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mt-4 pt-3 border-t border-white/10 text-center"
+        >
+          <span className="text-[10px] text-[#ddd1d0]/50">
+            {filteredTransactions.length} transaç{filteredTransactions.length === 1 ? 'ão' : 'ões'} {filter !== 'all' && 'encontradas'}
+          </span>
+        </motion.div>
+      )}
     </div>
   )
 }
@@ -754,7 +876,7 @@ export function Profile() {
             transition={{ delay: 0.3 }}
             className="space-y-6"
           >
-            <RecentActivity activities={activities} />
+            <RecentActivity activities={activities} userId={user?.id} />
 
             {/* Próxima classe */}
             {levelData?.next && (
