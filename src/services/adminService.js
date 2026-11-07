@@ -286,6 +286,46 @@ export async function fetchAllTransactions(filters = {}) {
 }
 
 // ============================================
+// PERFIL DO CLIENTE (ADMIN)
+// ============================================
+
+/**
+ * Busca perfil completo do cliente (admin-only)
+ * CPF retorna MASCARADO (ex: ***.***.**9-21)
+ * @param {string} userId - ID do cliente
+ */
+export async function fetchClientProfile(userId) {
+  const { data, error } = await supabase.rpc('admin_get_client_profile', {
+    p_user_id: userId
+  })
+
+  if (error) {
+    console.error('Erro ao buscar perfil do cliente:', error)
+    return { success: false, error: error.message }
+  }
+
+  return data
+}
+
+/**
+ * Revela CPF completo do cliente (admin-only)
+ * Registra no audit log para conformidade
+ * @param {string} userId - ID do cliente
+ */
+export async function revealClientCpf(userId) {
+  const { data, error } = await supabase.rpc('admin_reveal_cpf', {
+    p_user_id: userId
+  })
+
+  if (error) {
+    console.error('Erro ao revelar CPF:', error)
+    return { success: false, error: error.message }
+  }
+
+  return data
+}
+
+// ============================================
 // ESTATÍSTICAS
 // ============================================
 

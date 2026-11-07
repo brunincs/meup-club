@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { CreditAdjustModal } from '@/components/admin/CreditAdjustModal'
-import { fetchAllUsers, creditPoints, fetchUserTransactions } from '@/services/adminService'
+import { fetchAllUsers, creditPoints, fetchUserTransactions, fetchClientProfile, revealClientCpf } from '@/services/adminService'
 import { fetchSolicitacoesCliente } from '@/services/experienciasService'
 import { levels } from '@/services/pointsSystem'
 import { format } from '@/services/copy'
@@ -227,6 +227,245 @@ function TasksModal({ user, onClose }) {
 }
 
 // ============================================
+// MODAL DE PERFIL DO CLIENTE (READ-ONLY)
+// ============================================
+function ProfileModal({ user, onClose, onViewTransactions, onViewTasks }) {
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [revealedCpf, setRevealedCpf] = useState(null)
+  const [revealingCpf, setRevealingCpf] = useState(false)
+
+  useEffect(() => {
+    async function load() {
+      const result = await fetchClientProfile(user.id)
+      if (result.success) {
+        setProfile(result.profile)
+      } else {
+        toast.error(result.error || 'Erro ao carregar perfil')
+      }
+      setLoading(false)
+    }
+    load()
+  }, [user.id])
+
+  const handleRevealCpf = async () => {
+    if (revealingCpf) return
+
+    const confirmed = window.confirm(
+      'Você está prestes a revelar o CPF completo deste cliente.\n\n' +
+      'Esta ação será registrada no log de auditoria.\n\n' +
+      'Continuar?'
+    )
+
+    if (!confirmed) return
+
+    setRevealingCpf(true)
+    const result = await revealClientCpf(user.id)
+
+    if (result.success) {
+      setRevealedCpf(result.cpf)
+      toast.success('CPF revelado. Ação registrada no audit log.')
+    } else {
+      toast.error(result.error || 'Erro ao revelar CPF')
+    }
+    setRevealingCpf(false)
+  }
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—'
+    return new Date(dateStr).toLocaleDateString('pt-BR')
+  }
+
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '—'
+    return new Date(dateStr).toLocaleString('pt-BR')
+  }
+
+  return (
+    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-2xl bg-white rounded-2xl border border-dusty-rose/20 shadow-xl max-h-[90vh] overflow-hidden flex flex-col"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-dusty-rose/20">
+          <div className="flex items-center gap-4">
+            {profile?.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={profile.name}
+                className="w-14 h-14 rounded-full object-cover border-2 border-antique-gold/30"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-full bg-deep-purple/10 flex items-center justify-center text-deep-purple text-xl font-bold">
+                {profile?.name?.charAt(0) || '?'}
+              </div>
+            )}
+            <div>
+              <h3 className="text-lg font-display font-bold text-graphite">
+                {loading ? 'Carregando...' : profile?.name || 'Cliente'}
+              </h3>
+              <p className="text-sm text-graphite/70 font-heading">{profile?.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-graphite/50 hover:text-graphite transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {loading ? (
+            <div className="text-center py-8 text-graphite/70">Carregando perfil...</div>
+          ) : profile ? (
+            <div className="space-y-6">
+              {/* Classe e Pontos */}
+              <div className="flex items-center gap-4 p-4 bg-deep-purple/5 rounded-xl">
+                <div className="flex-1">
+                  <p className="text-xs text-graphite/60 font-heading uppercase tracking-wide">Classe</p>
+                  <p className="text-lg font-display font-bold text-deep-purple">{profile.level_name}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-graphite/60 font-heading uppercase tracking-wide">Saldo</p>
+                  <p className="text-2xl font-mono font-bold text-antique-gold">
+                    {profile.points?.toLocaleString('pt-BR')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Dados Pessoais */}
+              <div>
+                <h4 className="text-sm font-heading font-semibold text-graphite/70 uppercase tracking-wide mb-3">
+                  Dados Pessoais
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-graphite/60">Telefone</p>
+                    <p className="text-sm text-graphite font-heading">{profile.phone || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-graphite/60">Cidade/Estado</p>
+                    <p className="text-sm text-graphite font-heading">
+                      {profile.city && profile.state ? `${profile.city}/${profile.state}` : profile.city || profile.state || '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-graphite/60">Data de Nascimento</p>
+                    <p className="text-sm text-graphite font-heading">{formatDate(profile.birth_date)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-graphite/60">Cliente desde</p>
+                    <p className="text-sm text-graphite font-heading">{formatDate(profile.created_at)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* CPF */}
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-amber-700 font-heading uppercase tracking-wide mb-1">CPF</p>
+                    <p className="text-lg font-mono text-graphite">
+                      {revealedCpf || profile.cpf_masked || '—'}
+                    </p>
+                  </div>
+                  {profile.has_cpf && !revealedCpf && (
+                    <button
+                      onClick={handleRevealCpf}
+                      disabled={revealingCpf}
+                      className="px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {revealingCpf ? 'Revelando...' : '🔓 Ver CPF para emissão'}
+                    </button>
+                  )}
+                  {revealedCpf && (
+                    <span className="text-xs text-amber-700 font-heading">
+                      ✓ Registrado no audit log
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Indicações */}
+              <div>
+                <h4 className="text-sm font-heading font-semibold text-graphite/70 uppercase tracking-wide mb-3">
+                  Indicações
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-graphite/60">Código de Indicação</p>
+                    <p className="text-sm text-graphite font-mono">{profile.referral_code || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-graphite/60">Total de Indicações</p>
+                    <p className="text-sm text-graphite font-heading">{profile.total_referrals || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Preferências de Viagem */}
+              {(profile.dream_destinations || profile.travel_preferences) && (
+                <div>
+                  <h4 className="text-sm font-heading font-semibold text-graphite/70 uppercase tracking-wide mb-3">
+                    Preferências de Viagem
+                  </h4>
+                  <div className="space-y-3">
+                    {profile.dream_destinations && (
+                      <div>
+                        <p className="text-xs text-graphite/60">Destinos dos Sonhos</p>
+                        <p className="text-sm text-graphite font-heading">{profile.dream_destinations}</p>
+                      </div>
+                    )}
+                    {profile.travel_preferences && (
+                      <div>
+                        <p className="text-xs text-graphite/60">Preferências</p>
+                        <p className="text-sm text-graphite font-heading">{profile.travel_preferences}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Ações Rápidas */}
+              <div className="flex gap-3 pt-4 border-t border-dusty-rose/20">
+                <button
+                  onClick={() => { onClose(); onViewTransactions(user); }}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors border border-dusty-rose/30"
+                >
+                  Ver Histórico de Pontos
+                </button>
+                <button
+                  onClick={() => { onClose(); onViewTasks(user); }}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors border border-dusty-rose/30"
+                >
+                  Ver Tarefas
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-graphite/70">Perfil não encontrado</div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-dusty-rose/20">
+          <button
+            onClick={onClose}
+            className="w-full px-4 py-2.5 rounded-xl border border-dusty-rose/30 text-graphite/70 hover:text-graphite hover:border-dusty-rose/50 transition-colors font-heading"
+          >
+            Fechar
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+// ============================================
 // PÁGINA ADMIN USERS
 // ============================================
 export function AdminUsers() {
@@ -236,6 +475,7 @@ export function AdminUsers() {
   const [adjustingUser, setAdjustingUser] = useState(null)
   const [viewingTransactions, setViewingTransactions] = useState(null)
   const [viewingTasks, setViewingTasks] = useState(null)
+  const [viewingProfile, setViewingProfile] = useState(null)
 
   // Buscar usuários do Supabase
   const loadUsers = useCallback(async () => {
@@ -360,6 +600,12 @@ export function AdminUsers() {
                           </button>
                           <div className="flex gap-1.5 sm:gap-2">
                             <button
+                              onClick={() => setViewingProfile(user)}
+                              className="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-medium text-deep-purple hover:text-deep-purple/80 hover:bg-deep-purple/10 transition-colors whitespace-nowrap"
+                            >
+                              Perfil
+                            </button>
+                            <button
                               onClick={() => setViewingTasks(user)}
                               className="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors whitespace-nowrap"
                             >
@@ -418,6 +664,16 @@ export function AdminUsers() {
         <TasksModal
           user={viewingTasks}
           onClose={() => setViewingTasks(null)}
+        />
+      )}
+
+      {/* Modal de Perfil Completo */}
+      {viewingProfile && (
+        <ProfileModal
+          user={viewingProfile}
+          onClose={() => setViewingProfile(null)}
+          onViewTransactions={setViewingTransactions}
+          onViewTasks={setViewingTasks}
         />
       )}
     </AdminLayout>
