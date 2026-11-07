@@ -1105,10 +1105,11 @@ export async function createNotification(userId, title, message, type = 'info', 
 
 /**
  * Faz check-in diário do usuário
+ * Usa auth.uid() no backend (não passa userId)
  * Retorna { success, pontos, proximo_checkin } ou { success: false, error, proximo_checkin, horas_restantes }
  */
-export async function fazerCheckin(userId) {
-  const { data, error } = await supabase.rpc('fazer_checkin', { p_user_id: userId })
+export async function fazerCheckin() {
+  const { data, error } = await supabase.rpc('fazer_checkin')
 
   if (error) {
     console.error('Erro ao fazer check-in:', error)
@@ -1120,10 +1121,11 @@ export async function fazerCheckin(userId) {
 
 /**
  * Verifica se usuário pode fazer check-in
+ * Usa auth.uid() no backend (não passa userId)
  * Retorna { pode_fazer, ultimo_checkin, proximo_checkin }
  */
-export async function podeFazerCheckin(userId) {
-  const { data, error } = await supabase.rpc('pode_fazer_checkin', { p_user_id: userId })
+export async function podeFazerCheckin() {
+  const { data, error } = await supabase.rpc('pode_fazer_checkin')
 
   if (error) {
     console.error('Erro ao verificar check-in:', error)

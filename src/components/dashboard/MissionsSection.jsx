@@ -61,8 +61,8 @@ export function MissionsSection({ variant = 'dark' }) {
           setStatusMap(statusResult.statusMap)
         }
 
-        // Verificar status do check-in
-        const checkinResult = await podeFazerCheckin(user.id)
+        // Verificar status do check-in (usa auth.uid() no backend)
+        const checkinResult = await podeFazerCheckin()
         setCheckinStatus({
           podeFazer: checkinResult.pode_fazer,
           proximoCheckin: checkinResult.proximo_checkin,
@@ -379,7 +379,7 @@ export function MissionsSection({ variant = 'dark' }) {
     setCheckinStatus(prev => ({ ...prev, isLoading: true }))
 
     try {
-      const result = await fazerCheckin(user.id)
+      const result = await fazerCheckin()
 
       if (result.success) {
         fireConfetti({ x: '50%', y: '30%' })
