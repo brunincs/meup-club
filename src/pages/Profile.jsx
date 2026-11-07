@@ -124,7 +124,7 @@ function PassportHeader({ profile, levelData, userPoints }) {
                 <p className="text-[9px] uppercase tracking-wider text-[#a39695] mb-1">
                   Membro desde / Member since
                 </p>
-                <p className="text-sm text-[#ddd1d0] capitalize">{memberSince}</p>
+                <p className="text-sm text-[#ddd1d0] first-letter:uppercase">{memberSince}</p>
               </div>
             </div>
           </div>
