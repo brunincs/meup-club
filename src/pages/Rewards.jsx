@@ -734,7 +734,7 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
 
 export function Rewards() {
   const { user, loading } = useAuth()
-  const { points: userPoints, resgatar, redeemedIds, pendingIds, isLoading: contextLoading } = usePoints()
+  const { points: userPoints, resgatar, refreshPoints, redeemedIds, pendingIds, isLoading: contextLoading } = usePoints()
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState('all')
   const [selectedReward, setSelectedReward] = useState(null)
@@ -895,17 +895,21 @@ export function Rewards() {
         return
       }
 
+      // Atualizar saldo NA HORA (pontos foram reservados no banco)
+      await refreshPoints()
+
       // Guardar dados antes de fechar
       const rewardName = selectedReward.name
       const rewardQty = quantity
+      const newBalance = result.balance_after
 
       // FECHAR MODAL PRIMEIRO
       closeModal()
 
-      // Mostrar toast de sucesso com quantidade
+      // Mostrar toast de sucesso com quantidade e novo saldo
       toast.success(
         <div>
-          <strong>Solicitação enviada!</strong>
+          <strong>Pontos reservados!</strong>
           <div className="text-sm opacity-80">
             {rewardQty > 1 ? `${rewardQty}× ${rewardName}` : rewardName}
           </div>
