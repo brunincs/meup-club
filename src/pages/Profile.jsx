@@ -662,7 +662,7 @@ function RecentActivity({ activities, userId }) {
 
                 {/* Descrição e data */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[#edf0f1] truncate">
+                  <p className="text-sm text-[#edf0f1] line-clamp-2">
                     {activity.reason || config.label}
                   </p>
                   <p className="text-[10px] text-[#ddd1d0]/60">
