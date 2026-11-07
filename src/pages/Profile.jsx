@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePoints } from '@/contexts/PointsContext'
 import { DashboardHeader } from '@/components/dashboard'
 import { calculateLevel } from '@/services/pointsSystem'
 import {
@@ -709,6 +710,7 @@ function RecentActivity({ activities, userId }) {
 
 export function Profile() {
   const { user, profile, loading, refreshProfile } = useAuth()
+  const { points: userPoints } = usePoints()
   const navigate = useNavigate()
 
   const [stats, setStats] = useState({
@@ -795,7 +797,7 @@ export function Profile() {
 
   if (!user) return null
 
-  const userPoints = profile?.points || 0
+  // userPoints vem do PointsContext (atualiza em tempo real)
   const levelData = calculateLevel(userPoints)
 
   return (

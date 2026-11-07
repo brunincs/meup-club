@@ -6,6 +6,7 @@ import { ProgressRing } from '@/components/effects/ProgressRing'
 import { useConfetti } from '@/components/effects/ConfettiEffect'
 import { TargetIcon, CalendarIcon } from '@/components/ui/Icons'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePoints } from '@/contexts/PointsContext'
 import {
   fetchTarefas,
   fetchStatusSolicitacoes,
@@ -22,6 +23,7 @@ import toast from 'react-hot-toast'
 
 export function MissionsSection({ variant = 'dark' }) {
   const { user, profile } = useAuth()
+  const { refreshPoints } = usePoints()
   const navigate = useNavigate()
   const { fire: fireConfetti, ConfettiComponent } = useConfetti()
 
@@ -247,8 +249,11 @@ export function MissionsSection({ variant = 'dark' }) {
 
       // Registrar compartilhamento no banco (credita pontos na primeira vez)
       if (user?.id) {
-        registrarCompartilhamento(user.id).then(result => {
+        registrarCompartilhamento(user.id).then(async (result) => {
           if (result.creditou) {
+            // Atualizar saldo NA HORA (sem precisar recarregar)
+            await refreshPoints()
+
             fireConfetti({ x: '50%', y: '50%' })
             toast.success(
               <div>
@@ -290,7 +295,7 @@ export function MissionsSection({ variant = 'dark' }) {
       // Navega para rota interna
       navigate(action.route)
     }
-  }, [navigate, profile, user, fireConfetti])
+  }, [navigate, profile, user, fireConfetti, refreshPoints])
 
   // Handler para completar/solicitar missão
   const handleCompleteMission = useCallback(async (mission) => {
@@ -382,6 +387,9 @@ export function MissionsSection({ variant = 'dark' }) {
       const result = await fazerCheckin()
 
       if (result.success) {
+        // Atualizar saldo NA HORA (sem precisar recarregar)
+        await refreshPoints()
+
         fireConfetti({ x: '50%', y: '30%' })
         toast.success(
           <div>
@@ -408,7 +416,7 @@ export function MissionsSection({ variant = 'dark' }) {
           proximoCheckin: result.proximo_checkin,
           isLoading: false
         })
-        toast('Volte amanha para o proximo check-in!', {
+        toast('Volte amanhã para o próximo check-in!', {
           icon: '⏰',
           style: { background: '#32113f', color: '#edf0f1' }
         })
@@ -532,7 +540,7 @@ export function MissionsSection({ variant = 'dark' }) {
             </div>
             <div>
               <h3 className={`text-base font-heading font-medium ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
-                Check-in Diario
+                Check-in Diário
               </h3>
               <p className={`text-sm ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
                 {checkinStatus.podeFazer
@@ -573,7 +581,7 @@ export function MissionsSection({ variant = 'dark' }) {
               ) : checkinStatus.podeFazer ? (
                 <>Fazer Check-in</>
               ) : (
-                <>Volte amanha</>
+                <>Volte amanhã</>
               )}
             </motion.button>
           </div>
