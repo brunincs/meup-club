@@ -401,7 +401,7 @@ function ProfileModal({ user, onClose, onViewTransactions, onViewTasks }) {
                     <p className="text-sm text-graphite font-mono">{profile.referral_code || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-graphite/60">Total de Indicações</p>
+                    <p className="text-xs text-graphite/60">Indicações Aprovadas</p>
                     <p className="text-sm text-graphite font-heading">{profile.total_referrals || 0}</p>
                   </div>
                 </div>

@@ -114,25 +114,39 @@ export async function fetchReferralStats(userId) {
 }
 
 /**
- * Busca tarefas aprovadas do usuário
+ * Busca missões concluídas do usuário
+ * Inclui tanto tarefas manuais (tarefa_solicitacoes) quanto missões automáticas
  */
 export async function fetchApprovedTasks(userId) {
   try {
-    const { data, error, count } = await supabase
+    // 1. Buscar tarefas manuais aprovadas
+    const { data: manualTasks, error: manualError, count: manualCount } = await supabase
       .from('tarefa_solicitacoes')
       .select('id, pontos_concedidos, created_at', { count: 'exact' })
       .eq('user_id', userId)
       .eq('status', 'aprovada')
 
-    if (error) throw error
+    if (manualError) throw manualError
 
-    const totalPoints = (data || []).reduce((sum, t) => sum + (t.pontos_concedidos || 0), 0)
+    // 2. Buscar missões automáticas concluídas
+    const { data: autoMissions, error: autoError, count: autoCount } = await supabase
+      .from('missoes_automaticas_concluidas')
+      .select('id, pontos_concedidos, created_at', { count: 'exact' })
+      .eq('user_id', userId)
+
+    if (autoError) {
+      // Tabela pode não existir em alguns ambientes, continue apenas com manuais
+      console.warn('Erro ao buscar missões automáticas:', autoError)
+    }
+
+    const manualPoints = (manualTasks || []).reduce((sum, t) => sum + (t.pontos_concedidos || 0), 0)
+    const autoPoints = (autoMissions || []).reduce((sum, t) => sum + (t.pontos_concedidos || 0), 0)
 
     return {
       success: true,
       stats: {
-        total: count || 0,
-        points: totalPoints
+        total: (manualCount || 0) + (autoCount || 0),
+        points: manualPoints + autoPoints
       }
     }
   } catch (error) {
