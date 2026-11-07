@@ -14,9 +14,10 @@ import { supabase } from '@/lib/supabase'
  * Quando logado com conta real: usa pontos do profile (Supabase)
  * Quando em modo demo: usa pontos do demoUser
  *
- * RESGATE: Agora com fluxo de APROVAÇÃO!
- * - Cliente solicita → pendente
- * - Admin aprova → só então debita
+ * RESGATE (modelo de reserva):
+ * - Cliente solicita → pontos RESERVADOS na hora (débito imediato)
+ * - Admin aprova → finaliza (sem novo débito)
+ * - Admin rejeita → pontos ESTORNADOS
  */
 
 const PointsContext = createContext(null)
@@ -63,15 +64,15 @@ export function PointsProvider({ children }) {
 
   /**
    * Solicita resgate de uma experiência
-   * NÃO debita imediatamente - cria pedido PENDENTE
-   * Suporta quantidade múltipla (ex: 3× Crédito R$100)
+   * DEBITA NA HORA (modelo de reserva) - pontos são reservados imediatamente
+   * Se rejeitado, pontos são estornados. Suporta quantidade múltipla.
    *
    * @param {string} experienciaId - ID da experiência
    * @param {string} experienciaNome - Nome da experiência
    * @param {number} pontosUnitarios - Custo UNITÁRIO em pontos
    * @param {number} classeMinima - Classe mínima exigida
    * @param {number} quantidade - Quantidade a resgatar (default: 1)
-   * @returns {Object} { success, error, message, quantity, totalPoints }
+   * @returns {Object} { success, error, message, quantity, totalPoints, balance_after }
    */
   const resgatar = useCallback(async (experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1) => {
     const totalPoints = pontosUnitarios * quantidade
@@ -86,7 +87,7 @@ export function PointsProvider({ children }) {
         success: true,
         quantity: quantidade,
         totalPoints: totalPoints,
-        message: 'Solicitação enviada! Aguarde aprovação.'
+        message: 'Pontos reservados! Aguardando aprovação.'
       }
     }
 

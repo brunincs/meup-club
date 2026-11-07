@@ -125,7 +125,7 @@ export function AdminResgates() {
       console.log('[AdminResgates] Resultado:', result)
 
       if (result.success) {
-        toast.success(`Resgate aprovado! ${result.pointsDebited} pontos debitados.`)
+        toast.success('Resgate aprovado!')
         loadData()
       } else {
         toast.error(result.error || 'Erro ao aprovar')

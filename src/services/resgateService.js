@@ -10,15 +10,16 @@ import { supabase } from '@/lib/supabase'
 // ============================================
 
 /**
- * Solicita resgate de uma experiência (NÃO debita ainda!)
- * Cria uma solicitação PENDENTE para aprovação do admin
+ * Solicita resgate de uma experiência (DEBITA NA HORA!)
+ * Modelo de reserva: pontos são debitados imediatamente.
+ * Se rejeitado, pontos são estornados ao cliente.
  *
  * @param {string} experienciaId - ID da experiência
  * @param {string} experienciaNome - Nome da experiência
  * @param {number} pontosUnitarios - Custo unitário em pontos
  * @param {number} classeMinima - Classe mínima exigida (1-4)
  * @param {number} quantidade - Quantidade a resgatar (default: 1)
- * @returns {Object} { success, error, requestId, quantity, totalPoints }
+ * @returns {Object} { success, error, requestId, quantity, totalPoints, balance_after }
  */
 export async function solicitarResgate(experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1) {
   try {
@@ -44,7 +45,8 @@ export async function solicitarResgate(experienciaId, experienciaNome, pontosUni
       requestId: data.request_id,
       quantity: data.quantity || quantidade,
       totalPoints: data.total_points || (pontosUnitarios * quantidade),
-      message: data.message || 'Solicitação enviada! Aguarde a aprovação.'
+      balance_after: data.balance_after,
+      message: data.message || 'Pontos reservados! Aguardando aprovação.'
     }
   } catch (error) {
     console.error('Erro inesperado na solicitação:', error)
@@ -313,11 +315,11 @@ export async function aprovarResgate(solicitacaoId) {
       return { success: false, error: data.error || 'Erro desconhecido na aprovação' }
     }
 
-    console.log('[aprovarResgate] Sucesso! Pontos debitados:', data.points_debited)
+    console.log('[aprovarResgate] Sucesso! Resgate aprovado (pontos já haviam sido reservados)')
     return {
       success: true,
-      pointsDebited: data.points_debited,
-      newBalance: data.new_balance
+      quantity: data.quantity,
+      message: data.message
     }
   } catch (error) {
     console.error('[aprovarResgate] Exceção:', error)

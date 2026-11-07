@@ -232,10 +232,10 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
             </div>
           </div>
 
-          {/* Aviso sobre aprovação */}
+          {/* Aviso sobre reserva de pontos */}
           <div className="p-3 rounded-xl bg-antique-gold/10 border border-antique-gold/20 mb-4">
             <p className="text-xs text-antique-gold/90 text-center">
-              Os pontos serão debitados após aprovação da equipe Me,up.
+              Os pontos são reservados agora. Se o resgate for recusado, voltam para o seu saldo.
             </p>
           </div>
         </div>
@@ -913,7 +913,7 @@ export function Rewards() {
           <div className="text-sm opacity-80">
             {rewardQty > 1 ? `${rewardQty}× ${rewardName}` : rewardName}
           </div>
-          <div className="text-xs opacity-60 mt-1">Aguarde a aprovação</div>
+          <div className="text-xs opacity-60 mt-1">Aguardando aprovação</div>
         </div>,
         {
           duration: 5000,
