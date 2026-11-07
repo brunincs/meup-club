@@ -426,7 +426,7 @@ export function MissionsSection({ variant = 'dark' }) {
       toast.error('Erro ao fazer check-in')
       setCheckinStatus(prev => ({ ...prev, isLoading: false }))
     }
-  }, [user, checkinStatus.podeFazer, checkinStatus.isLoading, fireConfetti])
+  }, [user, checkinStatus.podeFazer, checkinStatus.isLoading, fireConfetti, refreshPoints])
 
   // Calcular tempo restante para próximo check-in
   const getTempoRestante = useCallback(() => {
