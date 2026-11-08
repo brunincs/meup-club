@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchMySubscription, fetchPlanosConfig, formatCiclo } from '@/services/subscriptionService'
 import { isPaymentEnabled, iniciarAssinaturaWhatsApp, iniciarUpgradeAnualWhatsApp } from '@/services/paymentAdapter'
+import { formatPrice } from '@/config/contact'
 import toast from 'react-hot-toast'
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -237,7 +238,7 @@ export function Plans() {
               {cicloSelecionado === 'anual' || isPrimeAnual ? (
                 <>
                   <p className="text-4xl font-display font-bold text-white">
-                    R${precoAnual}<span className="text-lg text-dusty-rose/60">/ano</span>
+                    R${formatPrice(precoAnual, false)}<span className="text-lg text-dusty-rose/60">/ano</span>
                   </p>
                   <p className="text-sm text-amber-300 mt-1">
                     Economize R${economiaAnual} + multiplicador 1.5x
@@ -246,10 +247,10 @@ export function Plans() {
               ) : (
                 <>
                   <p className="text-4xl font-display font-bold text-white">
-                    R${precoMensal.toFixed(2).replace('.', ',')}<span className="text-lg text-dusty-rose/60">/mês</span>
+                    R${formatPrice(precoMensal)}<span className="text-lg text-dusty-rose/60">/mês</span>
                   </p>
                   <p className="text-sm text-dusty-rose/60 mt-1">
-                    ou R${precoAnual}/ano com multiplicador 1.5x
+                    ou R${formatPrice(precoAnual, false)}/ano com multiplicador 1.5x
                   </p>
                 </>
               )}

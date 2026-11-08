@@ -7,7 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { ativarPrime, cancelarPrime, fetchPlanosConfig } from './subscriptionService'
-import { getWhatsAppUrl } from '@/config/contact'
+import { getWhatsAppUrl, formatPrice } from '@/config/contact'
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CONFIGURAÇÃO
@@ -251,9 +251,12 @@ export async function iniciarAssinaturaWhatsApp(ciclo) {
   const config = await fetchPlanosConfig()
   const primeConfig = config.planos?.prime
 
+  const precoAnual = primeConfig?.precoAnual || 497
+  const precoMensal = primeConfig?.precoMensal || 49.90
+
   const preco = ciclo === 'anual'
-    ? `R$${primeConfig?.precoAnual || 497}/ano`
-    : `R$${primeConfig?.precoMensal || 49.90}/mês`
+    ? `R$${formatPrice(precoAnual, false)}/ano`
+    : `R$${formatPrice(precoMensal)}/mês`
 
   const message = `Olá! Quero assinar o Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
   const url = getWhatsAppUrl(message)

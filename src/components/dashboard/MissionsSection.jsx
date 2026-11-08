@@ -18,6 +18,7 @@ import {
   podeFazerCheckin,
   registrarCompartilhamento
 } from '@/services/supabaseData'
+import { fetchUserBenefits } from '@/services/subscriptionService'
 import { getMissionAction, isExternalMission, requiresApproval, isAutomaticMission, shouldHideFromList } from '@/services/missionActions'
 import toast from 'react-hot-toast'
 
@@ -41,6 +42,9 @@ export function MissionsSection({ variant = 'dark' }) {
     proximoCheckin: null,
     isLoading: false
   })
+
+  // Pontos de check-in do plano do usuário
+  const [pontosCheckin, setPontosCheckin] = useState(10)
 
   // Carregar tarefas e status do usuário
   useEffect(() => {
@@ -70,6 +74,12 @@ export function MissionsSection({ variant = 'dark' }) {
           proximoCheckin: checkinResult.proximo_checkin,
           isLoading: false
         })
+
+        // Buscar benefícios do plano para saber pontos de check-in
+        const benefitsResult = await fetchUserBenefits(user.id)
+        if (benefitsResult.success) {
+          setPontosCheckin(benefitsResult.benefits.pontosCheckin || 10)
+        }
       } catch (error) {
         console.error('Erro ao carregar missões:', error)
       } finally {
@@ -544,7 +554,7 @@ export function MissionsSection({ variant = 'dark' }) {
               </h3>
               <p className={`text-sm ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
                 {checkinStatus.podeFazer
-                  ? 'Ganhe 50 pontos por dia!'
+                  ? `Ganhe ${pontosCheckin} pontos por dia!`
                   : `Volte em ${getTempoRestante() || 'algumas horas'}`
                 }
               </p>
@@ -554,7 +564,7 @@ export function MissionsSection({ variant = 'dark' }) {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <span className={`text-lg font-bold ${checkinStatus.podeFazer ? 'text-game-green' : 'text-graphite/40'}`}>
-                +50
+                +{pontosCheckin}
               </span>
               <span className={`text-xs block ${isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>pontos</span>
             </div>

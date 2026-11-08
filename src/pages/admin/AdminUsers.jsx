@@ -4,7 +4,8 @@ import { AdminLayout } from '@/components/admin/AdminLayout'
 import { CreditAdjustModal } from '@/components/admin/CreditAdjustModal'
 import { fetchAllUsers, creditPoints, fetchUserTransactions, fetchClientProfile, revealClientCpf } from '@/services/adminService'
 import { fetchSolicitacoesCliente } from '@/services/experienciasService'
-import { ativarPrime, cancelarPrime, fetchSubscriptionStatus, formatCiclo } from '@/services/subscriptionService'
+import { ativarPrime, cancelarPrime, fetchSubscriptionStatus, formatCiclo, fetchPlanosConfig } from '@/services/subscriptionService'
+import { formatPrice } from '@/config/contact'
 import { levels } from '@/services/pointsSystem'
 import { format } from '@/services/copy'
 import toast from 'react-hot-toast'
@@ -234,17 +235,28 @@ function PrimeModal({ user, onClose, onSuccess }) {
   const [status, setStatus] = useState(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
+  const [planosConfig, setPlanosConfig] = useState(null)
 
   useEffect(() => {
     async function load() {
-      const result = await fetchSubscriptionStatus(user.id)
-      if (result.success) {
-        setStatus(result.status)
+      const [statusResult, configResult] = await Promise.all([
+        fetchSubscriptionStatus(user.id),
+        fetchPlanosConfig()
+      ])
+      if (statusResult.success) {
+        setStatus(statusResult.status)
+      }
+      if (configResult.success) {
+        setPlanosConfig(configResult.planos)
       }
       setLoading(false)
     }
     load()
   }, [user.id])
+
+  const primeConfig = planosConfig?.prime || {}
+  const precoMensal = primeConfig.precoMensal || 49.90
+  const precoAnual = primeConfig.precoAnual || 497
 
   const handleAtivar = async (ciclo) => {
     setProcessing(true)
@@ -325,13 +337,44 @@ function PrimeModal({ user, onClose, onSuccess }) {
 
             {/* Ações */}
             {status?.isPrime ? (
-              <button
-                onClick={handleCancelar}
-                disabled={processing}
-                className="w-full px-4 py-3 rounded-xl border border-red-300 text-red-600 font-heading font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
-              >
-                {processing ? 'Processando...' : 'Cancelar Prime (voltar para Free)'}
-              </button>
+              <div className="space-y-3">
+                {/* Trocar ciclo */}
+                <p className="text-xs text-graphite/60 font-heading text-center">Trocar ciclo:</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleAtivar('mensal')}
+                    disabled={processing || status.ciclo === 'mensal'}
+                    className={`px-4 py-3 rounded-xl font-heading font-semibold transition-colors disabled:opacity-50 ${
+                      status.ciclo === 'mensal'
+                        ? 'bg-deep-purple/20 text-deep-purple border-2 border-deep-purple'
+                        : 'bg-deep-purple text-white hover:bg-deep-purple/90'
+                    }`}
+                  >
+                    {status.ciclo === 'mensal' ? '✓ Mensal' : 'Mensal'}
+                    <span className="block text-xs font-normal opacity-80">R${formatPrice(precoMensal)}/mês</span>
+                  </button>
+                  <button
+                    onClick={() => handleAtivar('anual')}
+                    disabled={processing || status.ciclo === 'anual'}
+                    className={`px-4 py-3 rounded-xl font-heading font-semibold transition-colors disabled:opacity-50 ${
+                      status.ciclo === 'anual'
+                        ? 'bg-amber-100 text-amber-700 border-2 border-amber-500'
+                        : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700'
+                    }`}
+                  >
+                    {status.ciclo === 'anual' ? '✓ Anual' : 'Anual'}
+                    <span className="block text-xs font-normal opacity-80">R${formatPrice(precoAnual, false)}/ano (1.5x)</span>
+                  </button>
+                </div>
+                {/* Cancelar */}
+                <button
+                  onClick={handleCancelar}
+                  disabled={processing}
+                  className="w-full px-4 py-3 rounded-xl border border-red-300 text-red-600 font-heading font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+                >
+                  {processing ? 'Processando...' : 'Cancelar Prime (voltar para Free)'}
+                </button>
+              </div>
             ) : (
               <div className="space-y-3">
                 <p className="text-xs text-graphite/60 font-heading text-center">Ativar Meup Prime:</p>
@@ -342,7 +385,7 @@ function PrimeModal({ user, onClose, onSuccess }) {
                     className="px-4 py-3 rounded-xl bg-deep-purple text-white font-heading font-semibold hover:bg-deep-purple/90 transition-colors disabled:opacity-50"
                   >
                     {processing ? '...' : 'Mensal'}
-                    <span className="block text-xs font-normal opacity-80">R$49,90/mês</span>
+                    <span className="block text-xs font-normal opacity-80">R${formatPrice(precoMensal)}/mês</span>
                   </button>
                   <button
                     onClick={() => handleAtivar('anual')}
@@ -350,7 +393,7 @@ function PrimeModal({ user, onClose, onSuccess }) {
                     className="px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
                   >
                     {processing ? '...' : 'Anual'}
-                    <span className="block text-xs font-normal opacity-80">R$497/ano (1.5x)</span>
+                    <span className="block text-xs font-normal opacity-80">R${formatPrice(precoAnual, false)}/ano (1.5x)</span>
                   </button>
                 </div>
               </div>

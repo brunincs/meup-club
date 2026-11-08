@@ -119,7 +119,7 @@ export function PlanStatusCard() {
             Acelere sua jornada
           </p>
           <p className="text-xs text-dusty-rose/70">
-            Ganhe 3x mais pontos com o Meup Prime
+            Multiplicador 1.5x nas viagens + check-in triplo
           </p>
         </div>
         <Link
