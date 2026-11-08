@@ -120,10 +120,21 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
   const newBalance = user.points + calculatedPoints
   const isPositive = calculatedPoints > 0
   const isNegative = calculatedPoints < 0
-  // Aniversário não precisa de input (é fixo), outros precisam
-  const hasValidInput = creditType === 'aniversario'
-    ? (preview?.finalAmount > 0)
-    : (inputValue !== '' && calculatedPoints !== 0)
+
+  // Validação de input por tipo
+  const hasValidInput = useMemo(() => {
+    if (creditType === 'aniversario') {
+      // Aniversário: precisa que preview carregou E tem valor > 0
+      // Free tem 0, então não pode creditar
+      return preview !== null && preview.finalAmount > 0
+    }
+    if (creditType === 'ajuste') {
+      // Ajuste: precisa de input não-vazio e não-zero
+      return inputValue !== '' && calculatedPoints !== 0
+    }
+    // Viagem e Indicação: precisa de input não-vazio e pontos > 0
+    return inputValue !== '' && calculatedPoints > 0
+  }, [creditType, preview, inputValue, calculatedPoints])
 
   // Gerar reason automático se não preenchido
   const autoReason = useMemo(() => {
@@ -145,7 +156,15 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!hasValidInput) return
+    // Para aniversário, verificar que preview carregou e tem valor > 0
+    if (creditType === 'aniversario') {
+      if (!preview || preview.finalAmount <= 0) {
+        console.warn('Aniversário: preview não carregado ou valor 0')
+        return
+      }
+    } else if (!hasValidInput) {
+      return
+    }
 
     const finalReason = reason.trim() || autoReason
     if (!finalReason && creditType === 'ajuste') return
@@ -155,13 +174,18 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
     // IMPORTANTE: Backend aplica valores do plano
     // - viagem: passa basePoints (R$ * 1), backend aplica multiplicador
     // - indicacao: passa COUNT de indicações, backend multiplica pelo valor do plano
-    // - aniversario: passa 1, backend usa valor do plano
+    // - aniversario: passa 1, backend usa valor do plano (5000 Prime, 0 Free)
     // - ajuste: passa valor direto
-    const amountToSend = inputNumber
+    const amountToSend = creditType === 'aniversario' ? 1 : inputNumber
     const typeToSend = selectedType.backendType
 
-    await onAdjust(user.id, amountToSend, finalReason || autoReason, typeToSend)
-    setIsSubmitting(false)
+    try {
+      await onAdjust(user.id, amountToSend, finalReason || autoReason, typeToSend)
+    } catch (err) {
+      console.error('Erro ao creditar:', err)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   // Reset input quando muda o tipo
@@ -367,7 +391,7 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !hasValidInput || (creditType === 'ajuste' && !reason.trim())}
+              disabled={isSubmitting || isLoadingPreview || !hasValidInput || (creditType === 'ajuste' && !reason.trim())}
               className={`flex-1 px-4 py-3 rounded-xl font-heading font-semibold transition-colors disabled:opacity-50 shadow-sm ${
                 isPositive
                   ? 'bg-green-500 text-white hover:bg-green-600'
