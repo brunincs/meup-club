@@ -156,33 +156,66 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // Para aniversário, verificar que preview carregou e tem valor > 0
+    console.log('[CreditModal] handleSubmit called', { creditType, preview, hasValidInput, inputNumber })
+
+    // Validação unificada para TODOS os tipos
     if (creditType === 'aniversario') {
-      if (!preview || preview.finalAmount <= 0) {
-        console.warn('Aniversário: preview não carregado ou valor 0')
+      // Aniversário: só precisa de preview com valor > 0
+      if (!preview) {
+        console.warn('[CreditModal] Aniversário: preview não carregado')
         return
       }
-    } else if (!hasValidInput) {
-      return
+      if (preview.finalAmount <= 0) {
+        console.warn('[CreditModal] Aniversário: finalAmount <= 0', preview.finalAmount)
+        return
+      }
+    } else if (creditType === 'ajuste') {
+      // Ajuste: precisa de input válido E motivo
+      if (!inputValue || calculatedPoints === 0) {
+        console.warn('[CreditModal] Ajuste: input inválido')
+        return
+      }
+      if (!reason.trim()) {
+        console.warn('[CreditModal] Ajuste: motivo obrigatório')
+        return
+      }
+    } else {
+      // Viagem e Indicação: precisa de input válido
+      if (!inputValue || calculatedPoints <= 0) {
+        console.warn('[CreditModal] Viagem/Indicação: input inválido')
+        return
+      }
     }
 
     const finalReason = reason.trim() || autoReason
-    if (!finalReason && creditType === 'ajuste') return
+    console.log('[CreditModal] Preparando envio', { finalReason, autoReason })
 
     setIsSubmitting(true)
 
-    // IMPORTANTE: Backend aplica valores do plano
-    // - viagem: passa basePoints (R$ * 1), backend aplica multiplicador
-    // - indicacao: passa COUNT de indicações, backend multiplica pelo valor do plano
-    // - aniversario: passa 1, backend usa valor do plano (5000 Prime, 0 Free)
-    // - ajuste: passa valor direto
-    const amountToSend = creditType === 'aniversario' ? 1 : inputNumber
+    // Calcular amount baseado no tipo
+    let amountToSend
+    if (creditType === 'aniversario') {
+      amountToSend = 1  // Backend vai usar pontos_aniversario do plano
+    } else if (creditType === 'indicacao') {
+      amountToSend = Math.floor(parseFloat(inputValue) || 0)  // Número de indicações
+    } else {
+      amountToSend = inputNumber
+    }
+
     const typeToSend = selectedType.backendType
 
+    console.log('[CreditModal] Chamando onAdjust', {
+      userId: user.id,
+      amountToSend,
+      finalReason,
+      typeToSend
+    })
+
     try {
-      await onAdjust(user.id, amountToSend, finalReason || autoReason, typeToSend)
+      await onAdjust(user.id, amountToSend, finalReason, typeToSend)
+      console.log('[CreditModal] onAdjust completou com sucesso')
     } catch (err) {
-      console.error('Erro ao creditar:', err)
+      console.error('[CreditModal] Erro ao creditar:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -390,7 +423,8 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
               Cancelar
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={isSubmitting || isLoadingPreview || !hasValidInput || (creditType === 'ajuste' && !reason.trim())}
               className={`flex-1 px-4 py-3 rounded-xl font-heading font-semibold transition-colors disabled:opacity-50 shadow-sm ${
                 isPositive
