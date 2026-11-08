@@ -4,7 +4,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { PointsProvider } from '@/contexts/PointsContext'
 import { ProtectedRoute, AdminRoute } from '@/components/auth'
 import { RootLayout } from '@/layouts'
-import { Home, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade } from '@/pages'
+import { Home, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans } from '@/pages'
 import {
   AdminDashboard,
   AdminReferrals,
@@ -122,6 +122,7 @@ function App() {
           <Route path="/tarefas" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/missoes" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/planos" element={<ProtectedRoute><Plans /></ProtectedRoute>} />
 
           {/* Referral redirect */}
           <Route
