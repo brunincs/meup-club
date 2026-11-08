@@ -190,3 +190,110 @@ export function getDaysRemaining(periodEnd) {
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
   return Math.max(0, diffDays)
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ADMIN: ATIVAÇÃO MANUAL
+// ══════════════════════════════════════════════════════════════════════════════
+// IMPORTANTE: Estas mesmas funções serão chamadas pelo webhook do gateway.
+
+/**
+ * Ativa Meup Prime para um usuário (admin only)
+ * @param {string} userId - ID do usuário
+ * @param {string} ciclo - 'mensal' ou 'anual'
+ * @param {string} origem - 'manual' (padrão), 'webhook', 'migration'
+ * @param {string} origemRef - Referência adicional (admin_id, webhook_id, etc.)
+ */
+export async function ativarPrime(userId, ciclo, origem = 'manual', origemRef = null) {
+  try {
+    const { data, error } = await supabase.rpc('ativar_prime', {
+      p_user_id: userId,
+      p_ciclo: ciclo,
+      p_origem: origem,
+      p_origem_ref: origemRef,
+      p_provider: null,
+      p_provider_subscription_id: null
+    })
+
+    if (error) throw error
+
+    if (!data.success) {
+      return { success: false, error: data.error }
+    }
+
+    return {
+      success: true,
+      subscriptionId: data.subscription_id,
+      plano: data.plano,
+      ciclo: data.ciclo,
+      periodEnd: data.period_end
+    }
+  } catch (error) {
+    console.error('Erro ao ativar Prime:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Cancela Meup Prime (volta para Free)
+ * @param {string} userId - ID do usuário
+ * @param {string} origem - 'manual' (padrão), 'webhook'
+ * @param {string} origemRef - Referência adicional
+ */
+export async function cancelarPrime(userId, origem = 'manual', origemRef = null) {
+  try {
+    const { data, error } = await supabase.rpc('cancelar_prime', {
+      p_user_id: userId,
+      p_origem: origem,
+      p_origem_ref: origemRef
+    })
+
+    if (error) throw error
+
+    if (!data.success) {
+      return { success: false, error: data.error }
+    }
+
+    return {
+      success: true,
+      plano: data.plano,
+      previousCiclo: data.previous_ciclo
+    }
+  } catch (error) {
+    console.error('Erro ao cancelar Prime:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Busca status completo da assinatura de um usuário (admin)
+ */
+export async function fetchSubscriptionStatus(userId) {
+  try {
+    const { data, error } = await supabase.rpc('get_subscription_status', {
+      p_user_id: userId
+    })
+
+    if (error) throw error
+
+    return {
+      success: true,
+      status: {
+        plano: data.plano,
+        ciclo: data.ciclo,
+        status: data.status,
+        startedAt: data.started_at,
+        periodEnd: data.period_end,
+        daysRemaining: data.days_remaining,
+        isPrime: data.is_prime,
+        isAnual: data.is_anual,
+        multiplicadorViagem: parseFloat(data.multiplicador_viagem || '1'),
+        pontosCheckin: data.pontos_checkin,
+        pontosIndicacao: data.pontos_indicacao,
+        pontosAniversario: data.pontos_aniversario
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao buscar status da assinatura:', error)
+    return { success: false, error: error.message, status: null }
+  }
+}

@@ -4,6 +4,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout'
 import { CreditAdjustModal } from '@/components/admin/CreditAdjustModal'
 import { fetchAllUsers, creditPoints, fetchUserTransactions, fetchClientProfile, revealClientCpf } from '@/services/adminService'
 import { fetchSolicitacoesCliente } from '@/services/experienciasService'
+import { ativarPrime, cancelarPrime, fetchSubscriptionStatus, formatCiclo } from '@/services/subscriptionService'
 import { levels } from '@/services/pointsSystem'
 import { format } from '@/services/copy'
 import toast from 'react-hot-toast'
@@ -221,6 +222,148 @@ function TasksModal({ user, onClose }) {
             Fechar
           </button>
         </div>
+      </motion.div>
+    </div>
+  )
+}
+
+// ============================================
+// MODAL DE ASSINATURA PRIME
+// ============================================
+function PrimeModal({ user, onClose, onSuccess }) {
+  const [status, setStatus] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [processing, setProcessing] = useState(false)
+
+  useEffect(() => {
+    async function load() {
+      const result = await fetchSubscriptionStatus(user.id)
+      if (result.success) {
+        setStatus(result.status)
+      }
+      setLoading(false)
+    }
+    load()
+  }, [user.id])
+
+  const handleAtivar = async (ciclo) => {
+    setProcessing(true)
+    const result = await ativarPrime(user.id, ciclo)
+    if (result.success) {
+      toast.success(`Prime ${formatCiclo(ciclo)} ativado para ${user.name}!`)
+      onSuccess()
+      onClose()
+    } else {
+      toast.error(result.error || 'Erro ao ativar Prime')
+    }
+    setProcessing(false)
+  }
+
+  const handleCancelar = async () => {
+    if (!window.confirm(`Cancelar Prime de ${user.name}?\n\nO cliente voltará para o plano Free.`)) return
+
+    setProcessing(true)
+    const result = await cancelarPrime(user.id)
+    if (result.success) {
+      toast.success(`Prime cancelado. ${user.name} voltou para Free.`)
+      onSuccess()
+      onClose()
+    } else {
+      toast.error(result.error || 'Erro ao cancelar Prime')
+    }
+    setProcessing(false)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md bg-white rounded-2xl border border-dusty-rose/20 shadow-xl p-6"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-display font-bold text-graphite">Gerenciar Assinatura</h3>
+            <p className="text-sm text-graphite/70 font-heading">{user.name}</p>
+          </div>
+          <button onClick={onClose} className="p-2 text-graphite/50 hover:text-graphite transition-colors">✕</button>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-8 text-graphite/70">Carregando...</div>
+        ) : (
+          <div className="space-y-6">
+            {/* Status Atual */}
+            <div className={`p-4 rounded-xl ${status?.isPrime ? 'bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200' : 'bg-gray-50 border border-gray-200'}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-graphite/60 uppercase tracking-wide">Plano Atual</p>
+                  <p className={`text-xl font-display font-bold ${status?.isPrime ? 'text-amber-700' : 'text-graphite'}`}>
+                    {status?.isPrime ? `Meup Prime ${formatCiclo(status.ciclo)}` : 'Free'}
+                  </p>
+                </div>
+                {status?.isPrime && (
+                  <span className="text-3xl">👑</span>
+                )}
+              </div>
+              {status?.isPrime && status?.daysRemaining !== null && (
+                <p className="text-xs text-amber-700 mt-2">
+                  {status.daysRemaining} dias restantes
+                </p>
+              )}
+            </div>
+
+            {/* Benefícios */}
+            <div className="text-xs space-y-1.5 text-graphite/70">
+              <p>• Check-in: <span className="font-semibold text-graphite">{status?.pontosCheckin || 10} pts/dia</span></p>
+              <p>• Indicação: <span className="font-semibold text-graphite">{status?.pontosIndicacao?.toLocaleString('pt-BR') || '3.000'} pts</span></p>
+              <p>• Aniversário: <span className="font-semibold text-graphite">{status?.pontosAniversario?.toLocaleString('pt-BR') || 0} pts</span></p>
+              <p>• Multiplicador viagem: <span className="font-semibold text-graphite">{status?.multiplicadorViagem || 1}x</span>
+                {status?.isAnual && <span className="text-amber-600 ml-1">(Prime Anual)</span>}
+              </p>
+            </div>
+
+            {/* Ações */}
+            {status?.isPrime ? (
+              <button
+                onClick={handleCancelar}
+                disabled={processing}
+                className="w-full px-4 py-3 rounded-xl border border-red-300 text-red-600 font-heading font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+              >
+                {processing ? 'Processando...' : 'Cancelar Prime (voltar para Free)'}
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-xs text-graphite/60 font-heading text-center">Ativar Meup Prime:</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleAtivar('mensal')}
+                    disabled={processing}
+                    className="px-4 py-3 rounded-xl bg-deep-purple text-white font-heading font-semibold hover:bg-deep-purple/90 transition-colors disabled:opacity-50"
+                  >
+                    {processing ? '...' : 'Mensal'}
+                    <span className="block text-xs font-normal opacity-80">R$49,90/mês</span>
+                  </button>
+                  <button
+                    onClick={() => handleAtivar('anual')}
+                    disabled={processing}
+                    className="px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
+                  >
+                    {processing ? '...' : 'Anual'}
+                    <span className="block text-xs font-normal opacity-80">R$497/ano (1.5x)</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={onClose}
+              className="w-full px-4 py-2.5 rounded-xl border border-dusty-rose/30 text-graphite/70 hover:text-graphite transition-colors font-heading"
+            >
+              Fechar
+            </button>
+          </div>
+        )}
       </motion.div>
     </div>
   )
@@ -476,6 +619,7 @@ export function AdminUsers() {
   const [viewingTransactions, setViewingTransactions] = useState(null)
   const [viewingTasks, setViewingTasks] = useState(null)
   const [viewingProfile, setViewingProfile] = useState(null)
+  const [managingPrime, setManagingPrime] = useState(null)
 
   // Buscar usuários do Supabase
   const loadUsers = useCallback(async () => {
@@ -600,6 +744,12 @@ export function AdminUsers() {
                           </button>
                           <div className="flex gap-1.5 sm:gap-2">
                             <button
+                              onClick={() => setManagingPrime(user)}
+                              className="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-semibold text-amber-700 hover:text-amber-800 hover:bg-amber-50 transition-colors whitespace-nowrap"
+                            >
+                              Prime
+                            </button>
+                            <button
                               onClick={() => setViewingProfile(user)}
                               className="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-medium text-deep-purple hover:text-deep-purple/80 hover:bg-deep-purple/10 transition-colors whitespace-nowrap"
                             >
@@ -674,6 +824,15 @@ export function AdminUsers() {
           onClose={() => setViewingProfile(null)}
           onViewTransactions={setViewingTransactions}
           onViewTasks={setViewingTasks}
+        />
+      )}
+
+      {/* Modal de Assinatura Prime */}
+      {managingPrime && (
+        <PrimeModal
+          user={managingPrime}
+          onClose={() => setManagingPrime(null)}
+          onSuccess={loadUsers}
         />
       )}
     </AdminLayout>
