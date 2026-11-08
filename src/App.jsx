@@ -117,13 +117,20 @@ function App() {
               </RootLayout>
             }
           />
+          <Route
+            path="/planos"
+            element={
+              <RootLayout>
+                <Plans />
+              </RootLayout>
+            }
+          />
                     {/* Protected routes - só acessíveis para quem está logado */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/recompensas" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
           <Route path="/tarefas" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/missoes" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/planos" element={<ProtectedRoute><Plans /></ProtectedRoute>} />
 
           {/* Referral redirect */}
           <Route
