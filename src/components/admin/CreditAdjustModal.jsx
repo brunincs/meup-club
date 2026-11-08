@@ -156,6 +156,9 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    // Proteção contra double-click (além do disabled no botão)
+    if (isSubmitting) return
+
     // Validação por tipo
     if (creditType === 'aniversario') {
       if (!preview || preview.finalAmount <= 0) return
