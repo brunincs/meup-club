@@ -154,10 +154,52 @@ export async function creditPoints(userId, amount, reason, type = 'credit') {
       id: data.transaction_id,
       userId: data.user_id,
       userName: data.user_name,
-      amount: data.amount,
+      baseAmount: data.base_amount,
+      multiplier: parseFloat(data.multiplier),
+      finalAmount: data.final_amount,
       balanceBefore: data.balance_before,
       balanceAfter: data.balance_after,
       reason: data.reason
+    }
+  }
+}
+
+/**
+ * Busca preview do crédito com multiplicador aplicado
+ * Usado pelo modal para mostrar o valor correto antes de confirmar
+ */
+export async function getCreditPreview(userId, baseAmount, type = 'credit') {
+  try {
+    const { data, error } = await supabase.rpc('get_credit_preview', {
+      p_user_id: userId,
+      p_base_amount: baseAmount,
+      p_type: type
+    })
+
+    if (error) throw error
+
+    return {
+      success: true,
+      preview: {
+        plano: data.plano,
+        ciclo: data.ciclo,
+        isPrime: data.is_prime,
+        baseAmount: data.base_amount,
+        multiplier: parseFloat(data.multiplier),
+        finalAmount: data.final_amount,
+        hasBonus: data.has_bonus
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao buscar preview:', error)
+    return {
+      success: false,
+      preview: {
+        baseAmount,
+        multiplier: 1.0,
+        finalAmount: baseAmount,
+        hasBonus: false
+      }
     }
   }
 }

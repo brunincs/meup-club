@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format } from '@/services/copy'
 import { PONTOS_POR_REAL, PONTOS_POR_INDICACAO } from '@/config/experiences'
+import { getCreditPreview } from '@/services/adminService'
 
 // Tipos de crédito disponíveis
 const CREDIT_TYPES = [
@@ -39,17 +40,18 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
   const [inputValue, setInputValue] = useState('')
   const [reason, setReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [preview, setPreview] = useState(null)
 
   // Configuração do tipo selecionado
   const selectedType = CREDIT_TYPES.find(t => t.id === creditType)
 
-  // Cálculo de pontos baseado no tipo
-  const calculatedPoints = useMemo(() => {
+  // Cálculo de pontos BASE (antes do multiplicador)
+  const basePoints = useMemo(() => {
     const numValue = parseFloat(inputValue) || 0
 
     switch (creditType) {
       case 'viagem':
-        // R$ → pontos (1:1)
+        // R$ → pontos (1:1) - multiplicador aplicado no backend
         return Math.floor(numValue * PONTOS_POR_REAL)
       case 'indicacao':
         // Número de indicações × pontos fixos
@@ -61,6 +63,27 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
         return 0
     }
   }, [creditType, inputValue])
+
+  // Buscar preview com multiplicador quando viagem
+  useEffect(() => {
+    if (creditType === 'viagem' && basePoints > 0) {
+      getCreditPreview(user.id, basePoints, 'credit').then(result => {
+        if (result.success) {
+          setPreview(result.preview)
+        }
+      })
+    } else {
+      setPreview(null)
+    }
+  }, [user.id, creditType, basePoints])
+
+  // Pontos finais considerando multiplicador
+  const calculatedPoints = useMemo(() => {
+    if (creditType === 'viagem' && preview?.hasBonus) {
+      return preview.finalAmount
+    }
+    return basePoints
+  }, [creditType, basePoints, preview])
 
   const newBalance = user.points + calculatedPoints
   const isPositive = calculatedPoints > 0
@@ -91,8 +114,10 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
     if (!finalReason) return
 
     setIsSubmitting(true)
-    // IMPORTANTE: Passa apenas PONTOS, nunca o valor em reais
-    await onAdjust(user.id, calculatedPoints, finalReason)
+    // IMPORTANTE: Para viagem, passa basePoints - o backend aplica o multiplicador
+    // Para outros tipos, passa o valor calculado normalmente
+    const amountToSend = creditType === 'viagem' ? basePoints : calculatedPoints
+    await onAdjust(user.id, amountToSend, finalReason)
     setIsSubmitting(false)
   }
 
@@ -226,7 +251,13 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
                   {/* Info sobre a regra aplicada */}
                   <div className="mt-3 pt-3 border-t border-current/10">
                     <p className="text-xs text-graphite/50 font-heading text-center">
-                      {creditType === 'viagem' && `Taxa: ${PONTOS_POR_REAL} ponto por R$1`}
+                      {creditType === 'viagem' && (
+                        preview?.hasBonus
+                          ? <span className="text-amber-600 font-semibold">
+                              👑 Prime {preview.ciclo === 'anual' ? 'Anual' : 'Mensal'}: {basePoints.toLocaleString('pt-BR')} × {preview.multiplier}x = {preview.finalAmount.toLocaleString('pt-BR')} pts
+                            </span>
+                          : `Taxa: ${PONTOS_POR_REAL} ponto por R$1`
+                      )}
                       {creditType === 'indicacao' && `Taxa: ${PONTOS_POR_INDICACAO.toLocaleString('pt-BR')} pontos por indicação`}
                       {creditType === 'ajuste' && 'Ajuste direto de pontos'}
                     </p>
