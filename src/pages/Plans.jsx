@@ -95,7 +95,10 @@ export function Plans() {
   const precoMensalCheio = primeConfig.precoMensalCheio || 99.90
   const precoAnualCheio = primeConfig.precoAnualCheio || 997
   const ofertaFundador = primeConfig.ofertaFundadorAtiva ?? false
-  const economiaAnual = (precoMensal * 12 - precoAnual).toFixed(2).replace('.', ',')
+
+  // Economia de fundador (âncora - oferta)
+  const economiaFundadorAnual = (precoAnualCheio - precoAnual).toFixed(0)
+  const economiaFundadorMensal = (precoMensalCheio - precoMensal).toFixed(0)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-deep-purple to-graphite py-12 px-4">
@@ -254,7 +257,10 @@ export function Plans() {
                     R${formatPrice(precoAnual, false)}<span className="text-lg text-dusty-rose/60">/ano</span>
                   </p>
                   <p className="text-sm text-amber-300 mt-1">
-                    {ofertaFundador && !isPrime ? 'Preço de fundador · ' : ''}Economize R${economiaAnual} + multiplicador 1.5x
+                    {ofertaFundador && !isPrime
+                      ? `Economize R$${economiaFundadorAnual} + multiplicador 1.5x`
+                      : 'Multiplicador 1.5x em viagens'
+                    }
                   </p>
                 </>
               ) : (
@@ -354,8 +360,8 @@ export function Plans() {
                 <div className="text-xs text-dusty-rose/80">Grátis (12 pelo preço de 10)</div>
               </div>
               <div className="p-3">
-                <div className="text-2xl mb-1">R${economiaAnual}</div>
-                <div className="text-xs text-dusty-rose/80">Economia garantida</div>
+                <div className="text-2xl mb-1">R${ofertaFundador ? economiaFundadorAnual : '100'}</div>
+                <div className="text-xs text-dusty-rose/80">{ofertaFundador ? 'Economia de fundador' : 'Economia garantida'}</div>
               </div>
             </div>
           </motion.div>

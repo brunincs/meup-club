@@ -39,8 +39,9 @@ export function PrimeOfferAlternada() {
   const precoAnualCheio = prime.precoAnualCheio || 997
   const ofertaFundador = prime.ofertaFundadorAtiva ?? true
 
-  // Economia
-  const economiaAnual = ((precoMensal * 12) - precoAnual).toFixed(2).replace('.', ',')
+  // Economia de FUNDADOR (âncora - oferta)
+  const economiaFundadorAnual = (precoAnualCheio - precoAnual).toFixed(0)
+  const economiaFundadorMensal = (precoMensalCheio - precoMensal).toFixed(0).replace('.', ',')
 
   return (
     <section id="prime-offer" className="relative py-16 md:py-24 bg-deep-purple overflow-hidden">
@@ -194,7 +195,10 @@ export function PrimeOfferAlternada() {
                     R${formatPrice(precoAnual, false)}<span className="text-lg text-dusty-rose/60">/ano</span>
                   </p>
                   <p className="text-sm text-amber-300 mt-1">
-                    Economize R${economiaAnual} + multiplicador 1.5x
+                    {ofertaFundador
+                      ? `Economize R$${economiaFundadorAnual} + multiplicador 1.5x`
+                      : 'Multiplicador 1.5x em viagens'
+                    }
                   </p>
                 </>
               ) : (
@@ -207,8 +211,11 @@ export function PrimeOfferAlternada() {
                   <p className="text-3xl font-display font-bold text-white">
                     R${formatPrice(precoMensal)}<span className="text-lg text-dusty-rose/60">/mês</span>
                   </p>
-                  <p className="text-sm text-dusty-rose/60 mt-1">
-                    ou R${formatPrice(precoAnual, false)}/ano com 1.5x
+                  <p className="text-sm text-amber-300 mt-1">
+                    {ofertaFundador
+                      ? `Economize R$${economiaFundadorMensal}/mês`
+                      : `ou R$${formatPrice(precoAnual, false)}/ano com 1.5x`
+                    }
                   </p>
                 </>
               )}

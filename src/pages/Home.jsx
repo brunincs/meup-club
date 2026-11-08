@@ -1,15 +1,13 @@
 import {
   Header,
   Hero,
+  SocialProofStrip,
   HowItWorks,
-  HowPointsWork,
   PointsSimulator,
-  Ranking,
-  Rewards,
-  Statement,
-  Founder,
   PrimeOffer,
   Testimonials,
+  Ranking,
+  Rewards,
   FAQ,
   FinalCTA,
   Footer
@@ -17,37 +15,48 @@ import {
 
 /**
  * Landing OFICIAL do Meup Club
- * Esquema de cores alternado (escuro/claro se revezando)
+ * ARQUITETURA DE FUNIL - Focada em conversão para oferta de fundador
  *
- * Fluxo de seções:
- * 1. Hero (escuro) - Impacto inicial
- * 2. HowItWorks (claro) - Como funciona o clube
- * 3. HowPointsWork (escuro) - Sistema de pontos
- * 4. PointsSimulator (claro) - Simulador interativo
- * 5. PrimeOffer (escuro) - Oferta de fundador Free vs Prime
- * 6. Ranking (claro) - Classes e benefícios
- * 7. Rewards (escuro) - Catálogo de recompensas
- * 8. Testimonials (claro) - Depoimentos (placeholders)
- * 9. Statement (escuro) - Manifesto
- * 10. FAQ (escuro) - Perguntas frequentes
- * 11. Founder (claro) - Sobre a fundadora
- * 12. FinalCTA (escuro) - CTA final
+ * Fluxo das seções:
+ * 1. Hero (escuro) - Gancho + Oferta de fundador acima da dobra
+ * 2. SocialProofStrip (claro) - Credenciais rápidas (Cadastur, Instagram, WhatsApp)
+ * 3. HowItWorks (claro) - Como funciona o clube (valor)
+ * 4. PointsSimulator (escuro) - "Quanto você pode ganhar" (valor tangível)
+ * 5. PrimeOffer (escuro) - A OFERTA CENTRAL - Free vs Prime com preço fundador
+ * 6. Testimonials (claro) - Prova social perto da decisão (placeholders)
+ * 7. Ranking (claro) - Classes e benefícios (detalhe)
+ * 8. Rewards (escuro) - Experiências disponíveis (detalhe)
+ * 9. FAQ (escuro) - Objeções e dúvidas
+ * 10. FinalCTA (escuro) - Repete a oferta de fundador
+ * 11. Footer
  */
 export function Home() {
   return (
     <div className="bg-deep-purple min-h-screen">
       <Header />
+
+      {/* TOPO DO FUNIL - Atenção */}
       <Hero />
+      <SocialProofStrip />
+
+      {/* MEIO DO FUNIL - Interesse/Desejo */}
       <HowItWorks />
-      <HowPointsWork />
       <PointsSimulator />
+
+      {/* A OFERTA - Peça central */}
       <PrimeOffer />
+
+      {/* PROVA - Perto da decisão */}
+      <Testimonials />
+
+      {/* DETALHE - Para quem quer saber mais */}
       <Ranking />
       <Rewards />
-      <Testimonials />
-      <Statement />
+
+      {/* OBJEÇÕES */}
       <FAQ />
-      <Founder />
+
+      {/* FUNDO DO FUNIL - Ação */}
       <FinalCTA />
       <Footer />
     </div>
