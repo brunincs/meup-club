@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format } from '@/services/copy'
-import { PONTOS_POR_REAL, PONTOS_POR_INDICACAO } from '@/config/experiences'
+import { PONTOS_POR_REAL } from '@/config/experiences'
 import { getCreditPreview } from '@/services/adminService'
 
 // Tipos de crédito disponíveis
+// NOTA: Valores de pontos vêm do backend (plano_config), não hardcoded
 const CREDIT_TYPES = [
   {
     id: 'viagem',
@@ -13,25 +14,38 @@ const CREDIT_TYPES = [
     description: 'Calcula pontos pelo valor gasto em reais',
     inputLabel: 'Valor da viagem (R$)',
     inputPlaceholder: 'Ex: 5000',
-    inputType: 'currency'
+    inputType: 'currency',
+    backendType: 'credit'
   },
   {
     id: 'indicacao',
     label: 'Indicação',
     icon: '→',
-    description: 'Pontos fixos por indicação convertida',
+    description: 'Pontos por indicação (valor do plano)',
     inputLabel: 'Número de indicações',
     inputPlaceholder: 'Ex: 1',
-    inputType: 'count'
+    inputType: 'count',
+    backendType: 'referral'
+  },
+  {
+    id: 'aniversario',
+    label: 'Aniversário',
+    icon: '🎂',
+    description: 'Bônus anual (só Prime)',
+    inputLabel: 'Confirmar bônus',
+    inputPlaceholder: '1',
+    inputType: 'fixed',
+    backendType: 'birthday'
   },
   {
     id: 'ajuste',
-    label: 'Ajuste Manual',
+    label: 'Ajuste',
     icon: '±',
     description: 'Inserir pontos diretamente',
     inputLabel: 'Quantidade de pontos',
     inputPlaceholder: 'Ex: 500 ou -200',
-    inputType: 'points'
+    inputType: 'points',
+    backendType: 'debit'
   }
 ]
 
@@ -41,69 +55,92 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
   const [reason, setReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [preview, setPreview] = useState(null)
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
 
   // Configuração do tipo selecionado
   const selectedType = CREDIT_TYPES.find(t => t.id === creditType)
 
-  // Cálculo de pontos BASE (antes do multiplicador)
-  const basePoints = useMemo(() => {
+  // Valor de entrada (número de indicações, valor em R$, ou pontos diretos)
+  const inputNumber = useMemo(() => {
     const numValue = parseFloat(inputValue) || 0
-
     switch (creditType) {
       case 'viagem':
-        // R$ → pontos (1:1) - multiplicador aplicado no backend
         return Math.floor(numValue * PONTOS_POR_REAL)
       case 'indicacao':
-        // Número de indicações × pontos fixos
-        return Math.floor(numValue) * PONTOS_POR_INDICACAO
+        return Math.floor(numValue) // Número de indicações
+      case 'aniversario':
+        return 1 // Sempre 1
       case 'ajuste':
-        // Valor direto em pontos (permite negativo)
-        return Math.floor(numValue)
+        return Math.floor(numValue) // Pontos diretos
       default:
         return 0
     }
   }, [creditType, inputValue])
 
-  // Buscar preview com multiplicador quando viagem
+  // Buscar preview do backend para TODOS os tipos (exceto ajuste)
   useEffect(() => {
-    if (creditType === 'viagem' && basePoints > 0) {
-      getCreditPreview(user.id, basePoints, 'credit').then(result => {
-        if (result.success) {
-          setPreview(result.preview)
-        }
-      })
-    } else {
-      setPreview(null)
-    }
-  }, [user.id, creditType, basePoints])
+    const fetchPreview = async () => {
+      // Ajuste não precisa de preview (valor direto)
+      if (creditType === 'ajuste') {
+        setPreview(null)
+        return
+      }
 
-  // Pontos finais considerando multiplicador
-  const calculatedPoints = useMemo(() => {
-    if (creditType === 'viagem' && preview?.hasBonus) {
-      return preview.finalAmount
+      // Precisa de valor válido
+      const needsInput = creditType !== 'aniversario'
+      if (needsInput && inputNumber <= 0) {
+        setPreview(null)
+        return
+      }
+
+      setIsLoadingPreview(true)
+      const result = await getCreditPreview(
+        user.id,
+        creditType === 'aniversario' ? 1 : inputNumber,
+        selectedType.backendType
+      )
+      setIsLoadingPreview(false)
+
+      if (result.success) {
+        setPreview(result.preview)
+      }
     }
-    return basePoints
-  }, [creditType, basePoints, preview])
+
+    fetchPreview()
+  }, [user.id, creditType, inputNumber, selectedType?.backendType])
+
+  // Pontos finais (vem do preview ou inputNumber para ajuste)
+  const calculatedPoints = useMemo(() => {
+    if (creditType === 'ajuste') {
+      return inputNumber
+    }
+    return preview?.finalAmount || 0
+  }, [creditType, inputNumber, preview])
 
   const newBalance = user.points + calculatedPoints
   const isPositive = calculatedPoints > 0
   const isNegative = calculatedPoints < 0
-  const hasValidInput = inputValue !== '' && calculatedPoints !== 0
+  // Aniversário não precisa de input (é fixo), outros precisam
+  const hasValidInput = creditType === 'aniversario'
+    ? (preview?.finalAmount > 0)
+    : (inputValue !== '' && calculatedPoints !== 0)
 
   // Gerar reason automático se não preenchido
   const autoReason = useMemo(() => {
     const numValue = parseFloat(inputValue) || 0
     switch (creditType) {
       case 'viagem':
-        return `Viagem (valor base: ${calculatedPoints} pontos)`
+        return `Viagem R$${numValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
       case 'indicacao':
         return `${Math.floor(numValue)} indicação(ões) convertida(s)`
+      case 'aniversario':
+        return 'Bônus de aniversário'
       case 'ajuste':
         return ''
       default:
         return ''
     }
-  }, [creditType, inputValue, calculatedPoints])
+  }, [creditType, inputValue])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -111,13 +148,19 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
     if (!hasValidInput) return
 
     const finalReason = reason.trim() || autoReason
-    if (!finalReason) return
+    if (!finalReason && creditType === 'ajuste') return
 
     setIsSubmitting(true)
-    // IMPORTANTE: Para viagem, passa basePoints - o backend aplica o multiplicador
-    // Para outros tipos, passa o valor calculado normalmente
-    const amountToSend = creditType === 'viagem' ? basePoints : calculatedPoints
-    await onAdjust(user.id, amountToSend, finalReason)
+
+    // IMPORTANTE: Backend aplica valores do plano
+    // - viagem: passa basePoints (R$ * 1), backend aplica multiplicador
+    // - indicacao: passa COUNT de indicações, backend multiplica pelo valor do plano
+    // - aniversario: passa 1, backend usa valor do plano
+    // - ajuste: passa valor direto
+    const amountToSend = inputNumber
+    const typeToSend = selectedType.backendType
+
+    await onAdjust(user.id, amountToSend, finalReason || autoReason, typeToSend)
     setIsSubmitting(false)
   }
 
@@ -148,7 +191,7 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
           <label className="block text-xs text-graphite/60 font-heading mb-3 uppercase tracking-wide">
             Tipo de crédito
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {CREDIT_TYPES.map(type => (
               <button
                 key={type.id}
@@ -172,30 +215,44 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Input baseado no tipo */}
-          <div>
-            <label className="block text-xs text-graphite/60 font-heading mb-1.5">
-              {selectedType.inputLabel}
-            </label>
-            <div className="relative">
-              {creditType === 'viagem' && (
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-graphite/50 font-heading">
-                  R$
-                </span>
-              )}
-              <input
-                type="number"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder={selectedType.inputPlaceholder}
-                step={creditType === 'viagem' ? '0.01' : '1'}
-                min={creditType === 'ajuste' ? undefined : '0'}
-                className={`w-full py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading ${
-                  creditType === 'viagem' ? 'pl-12 pr-4' : 'px-4'
-                }`}
-                required
-              />
+          {creditType !== 'aniversario' ? (
+            <div>
+              <label className="block text-xs text-graphite/60 font-heading mb-1.5">
+                {selectedType.inputLabel}
+              </label>
+              <div className="relative">
+                {creditType === 'viagem' && (
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-graphite/50 font-heading">
+                    R$
+                  </span>
+                )}
+                <input
+                  type="number"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder={selectedType.inputPlaceholder}
+                  step={creditType === 'viagem' ? '0.01' : '1'}
+                  min={creditType === 'ajuste' ? undefined : '0'}
+                  className={`w-full py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading ${
+                    creditType === 'viagem' ? 'pl-12 pr-4' : 'px-4'
+                  }`}
+                  required
+                />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-4">
+              {isLoadingPreview ? (
+                <p className="text-graphite/50 font-heading">Verificando plano...</p>
+              ) : preview?.finalAmount > 0 ? (
+                <p className="text-lg font-heading">
+                  <span className="text-amber-600 font-bold">{preview.finalAmount.toLocaleString('pt-BR')}</span> pontos de bônus
+                </p>
+              ) : (
+                <p className="text-red-500 font-heading">Cliente Free não tem bônus de aniversário</p>
+              )}
+            </div>
+          )}
 
           {/* Preview da conversão */}
           <AnimatePresence mode="wait">
@@ -252,13 +309,26 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
                   <div className="mt-3 pt-3 border-t border-current/10">
                     <p className="text-xs text-graphite/50 font-heading text-center">
                       {creditType === 'viagem' && (
-                        preview?.hasBonus
+                        preview?.hasBonus && preview?.multiplier > 1
                           ? <span className="text-amber-600 font-semibold">
-                              👑 Prime {preview.ciclo === 'anual' ? 'Anual' : 'Mensal'}: {basePoints.toLocaleString('pt-BR')} × {preview.multiplier}x = {preview.finalAmount.toLocaleString('pt-BR')} pts
+                              👑 Prime {preview.ciclo === 'anual' ? 'Anual' : 'Mensal'}: {inputNumber.toLocaleString('pt-BR')} × {preview.multiplier}x = {preview.finalAmount.toLocaleString('pt-BR')} pts
                             </span>
                           : `Taxa: ${PONTOS_POR_REAL} ponto por R$1`
                       )}
-                      {creditType === 'indicacao' && `Taxa: ${PONTOS_POR_INDICACAO.toLocaleString('pt-BR')} pontos por indicação`}
+                      {creditType === 'indicacao' && (
+                        preview?.hasBonus
+                          ? <span className="text-amber-600 font-semibold">
+                              👑 Prime: {preview.unitValue?.toLocaleString('pt-BR') || preview.pontos_indicacao?.toLocaleString('pt-BR')} pts/indicação
+                            </span>
+                          : `Free: ${preview?.pontos_indicacao?.toLocaleString('pt-BR') || '3.000'} pts/indicação`
+                      )}
+                      {creditType === 'aniversario' && (
+                        preview?.hasBonus
+                          ? <span className="text-amber-600 font-semibold">
+                              👑 Prime: {preview.finalAmount?.toLocaleString('pt-BR')} pts de bônus
+                            </span>
+                          : <span className="text-red-500">Plano Free não tem bônus de aniversário</span>
+                      )}
                       {creditType === 'ajuste' && 'Ajuste direto de pontos'}
                     </p>
                   </div>

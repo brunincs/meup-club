@@ -165,8 +165,12 @@ export async function creditPoints(userId, amount, reason, type = 'credit') {
 }
 
 /**
- * Busca preview do crédito com multiplicador aplicado
+ * Busca preview do crédito com valores do plano
  * Usado pelo modal para mostrar o valor correto antes de confirmar
+ *
+ * @param {string} userId - ID do usuário
+ * @param {number} baseAmount - Valor base (R$ para viagem, count para indicação)
+ * @param {string} type - Tipo: 'credit' (viagem), 'referral' (indicação), 'birthday', 'task'
  */
 export async function getCreditPreview(userId, baseAmount, type = 'credit') {
   try {
@@ -185,9 +189,14 @@ export async function getCreditPreview(userId, baseAmount, type = 'credit') {
         ciclo: data.ciclo,
         isPrime: data.is_prime,
         baseAmount: data.base_amount,
-        multiplier: parseFloat(data.multiplier),
+        unitValue: data.unit_value,
+        multiplier: parseFloat(data.multiplier || 1),
         finalAmount: data.final_amount,
-        hasBonus: data.has_bonus
+        hasBonus: data.has_bonus,
+        // Valores do plano para referência
+        pontos_indicacao: data.pontos_indicacao,
+        pontos_checkin: data.pontos_checkin,
+        pontos_aniversario: data.pontos_aniversario
       }
     }
   } catch (error) {

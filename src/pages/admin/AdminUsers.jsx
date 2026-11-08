@@ -646,14 +646,16 @@ export function AdminUsers() {
   }, [searchQuery])
 
   // Ajustar créditos (chama o banco via RPC seguro)
-  const handleAdjustCredits = async (userId, amount, reason) => {
-    const type = amount > 0 ? 'credit' : 'debit'
-    const result = await creditPoints(userId, amount, reason, type)
+  // type: 'credit' (viagem), 'referral' (indicação), 'birthday', 'debit', 'task'
+  const handleAdjustCredits = async (userId, amount, reason, type = null) => {
+    // Se type não foi passado, inferir pelo sinal do amount
+    const finalType = type || (amount > 0 ? 'credit' : 'debit')
+    const result = await creditPoints(userId, amount, reason, finalType)
 
     if (result.success) {
-      toast.success(
-        `${amount > 0 ? 'Crédito' : 'Débito'} de ${Math.abs(amount)} pontos registrado!`
-      )
+      const transaction = result.transaction
+      const pointsText = transaction?.finalAmount || Math.abs(amount)
+      toast.success(`+${pointsText.toLocaleString('pt-BR')} pontos creditados!`)
       setAdjustingUser(null)
       loadUsers() // Recarregar lista
     } else {
