@@ -278,6 +278,35 @@ export async function iniciarUpgradeAnualWhatsApp() {
   return { success: true, method: 'whatsapp' }
 }
 
+/**
+ * Inicia processo de renovação via WhatsApp
+ *
+ * @param {string} ciclo - 'mensal' | 'anual'
+ * @param {number} daysRemaining - Dias restantes até expiração
+ * @returns {Promise<{success: boolean, method: string}>}
+ */
+export async function iniciarRenovacaoWhatsApp(ciclo, daysRemaining) {
+  const config = await fetchPlanosConfig()
+  const primeConfig = config.planos?.prime
+
+  const precoAnual = primeConfig?.precoAnual || 497
+  const precoMensal = primeConfig?.precoMensal || 49.90
+
+  const preco = ciclo === 'anual'
+    ? `R$${formatPrice(precoAnual, false)}/ano`
+    : `R$${formatPrice(precoMensal)}/mês`
+
+  const urgencia = daysRemaining <= 3
+    ? `Minha assinatura expira em ${daysRemaining} dia${daysRemaining > 1 ? 's' : ''}!`
+    : `Minha assinatura expira em ${daysRemaining} dias.`
+
+  const message = `Olá! ${urgencia} Quero renovar meu Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
+  const url = getWhatsAppUrl(message)
+
+  window.open(url, '_blank')
+  return { success: true, method: 'whatsapp' }
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // DOCUMENTAÇÃO: COMO INTEGRAR O GATEWAY
 // ══════════════════════════════════════════════════════════════════════════════

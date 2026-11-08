@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { fetchAllSubscriptions } from '@/services/adminService'
 import { formatCiclo, getDaysRemaining } from '@/services/subscriptionService'
+import { getWhatsAppUrl } from '@/config/contact'
 import toast from 'react-hot-toast'
 
 // ============================================
@@ -51,6 +52,16 @@ export function AdminSubscriptions() {
   const formatDate = (dateStr) => {
     if (!dateStr) return '—'
     return new Date(dateStr).toLocaleDateString('pt-BR')
+  }
+
+  const handleEnviarLembrete = (sub) => {
+    const daysRemaining = getDaysRemaining(sub.current_period_end)
+    const firstName = sub.profiles?.name?.split(' ')[0] || ''
+    const cicloLabel = sub.ciclo === 'anual' ? 'Anual' : 'Mensal'
+    const message = `Olá ${firstName}! Passando para lembrar que seu Meup Prime ${cicloLabel} expira em ${daysRemaining} dia${daysRemaining !== 1 ? 's' : ''}. Renove e continue aproveitando seus benefícios exclusivos!`
+    const url = getWhatsAppUrl(message)
+    window.open(url, '_blank')
+    toast.success('WhatsApp aberto para lembrete')
   }
 
   return (
@@ -139,6 +150,9 @@ export function AdminSubscriptions() {
                     <th className="text-right text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">
                       Status
                     </th>
+                    <th className="text-center text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">
+                      Ações
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-dusty-rose/10">
@@ -202,6 +216,22 @@ export function AdminSubscriptions() {
                             </span>
                           ) : (
                             <span className="text-xs text-graphite/50">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          {daysRemaining !== null && daysRemaining <= 14 && daysRemaining > 0 ? (
+                            <button
+                              onClick={() => handleEnviarLembrete(sub)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-heading font-medium transition-colors ${
+                                daysRemaining <= 3
+                                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                                  : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                              }`}
+                            >
+                              Lembrar
+                            </button>
+                          ) : (
+                            <span className="text-xs text-graphite/30">—</span>
                           )}
                         </td>
                       </motion.tr>
