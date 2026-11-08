@@ -228,6 +228,16 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
     setReason('')
   }
 
+  // Debug: Log button state on every render
+  console.log('[CreditModal] Render state:', {
+    creditType,
+    hasValidInput,
+    isSubmitting,
+    isLoadingPreview,
+    preview: preview ? { finalAmount: preview.finalAmount, plano: preview.plano } : null,
+    buttonDisabled: isSubmitting || isLoadingPreview || !hasValidInput || (creditType === 'ajuste' && !reason.trim())
+  })
+
   return (
     <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div
@@ -424,7 +434,10 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
             </button>
             <button
               type="button"
-              onClick={handleSubmit}
+              onClick={(e) => {
+                console.log('[CreditModal] BUTTON CLICKED!', { creditType, hasValidInput, isSubmitting, isLoadingPreview })
+                handleSubmit(e)
+              }}
               disabled={isSubmitting || isLoadingPreview || !hasValidInput || (creditType === 'ajuste' && !reason.trim())}
               className={`flex-1 px-4 py-3 rounded-xl font-heading font-semibold transition-colors disabled:opacity-50 shadow-sm ${
                 isPositive
