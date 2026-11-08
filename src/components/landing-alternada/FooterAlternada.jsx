@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { GoldLineGradient } from '@/components/ui/GoldLine'
+import { WHATSAPP_NUMBER, WHATSAPP_DISPLAY, getWhatsAppUrl } from '@/config/contact'
 
 /**
  * Footer - SECAO ESCURA
@@ -41,7 +42,7 @@ export function FooterAlternada() {
             className="text-center"
           >
             <p className="text-sm text-ice-white/80">
-              Me,up Viagens · <a href="https://instagram.com/meup.viagens" target="_blank" rel="noopener noreferrer" className="text-antique-gold hover:text-antique-gold/80 hover:underline">@meup.viagens</a> · <a href="tel:+5516988126568" className="text-antique-gold hover:text-antique-gold/80 hover:underline">(16) 98812-6568</a>
+              Me,up Viagens · <a href="https://instagram.com/meup.viagens" target="_blank" rel="noopener noreferrer" className="text-antique-gold hover:text-antique-gold/80 hover:underline">@meup.viagens</a> · <a href={`tel:+${WHATSAPP_NUMBER}`} className="text-antique-gold hover:text-antique-gold/80 hover:underline">{WHATSAPP_DISPLAY}</a>
             </p>
           </motion.div>
 
@@ -72,7 +73,7 @@ export function FooterAlternada() {
               FAQ
             </a>
             <a
-              href="https://wa.me/5516988126568"
+              href={getWhatsAppUrl()}
               target="_blank"
               rel="noopener noreferrer"
               className="text-ice-white/70 hover:text-antique-gold transition-colors"

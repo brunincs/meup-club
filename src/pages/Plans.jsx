@@ -1,98 +1,80 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchMySubscription, fetchPlanosConfig, formatCiclo } from '@/services/subscriptionService'
-import { isPaymentEnabled, isTestMode, PRICES, ativarPrimeTest, cancelarPrimeTest } from '@/services/paymentAdapter'
+import { isPaymentEnabled, iniciarAssinaturaWhatsApp, iniciarUpgradeAnualWhatsApp } from '@/services/paymentAdapter'
 import toast from 'react-hot-toast'
 
 // ══════════════════════════════════════════════════════════════════════════════
-// PÁGINA DE PLANOS
+// PÁGINA DE PLANOS - Pública e Protegida
 // ══════════════════════════════════════════════════════════════════════════════
 
 export function Plans() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const [subscription, setSubscription] = useState(null)
   const [planosConfig, setPlanosConfig] = useState(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
+  const [cicloSelecionado, setCicloSelecionado] = useState('anual') // default anual
 
   useEffect(() => {
     async function load() {
-      const [subResult, configResult] = await Promise.all([
-        fetchMySubscription(),
-        fetchPlanosConfig(),
-      ])
-
-      if (subResult.success) {
-        setSubscription(subResult)
-      }
+      const configResult = await fetchPlanosConfig()
       if (configResult.success) {
         setPlanosConfig(configResult.planos)
+      }
+
+      // Só busca subscription se estiver logado
+      if (user) {
+        const subResult = await fetchMySubscription()
+        if (subResult.success) {
+          setSubscription(subResult)
+        }
       }
       setLoading(false)
     }
     load()
-  }, [])
+  }, [user])
 
   const isPrime = subscription?.plano === 'prime'
+  const isPrimeAnual = isPrime && subscription?.ciclo === 'anual'
+  const isPrimeMensal = isPrime && subscription?.ciclo === 'mensal'
   const paymentEnabled = isPaymentEnabled()
-  const testMode = isTestMode()
 
   const handleAssinar = async (ciclo) => {
+    // Se não estiver logado, redireciona para login
     if (!user) {
-      toast.error('Faça login para assinar')
+      toast('Faça login para continuar')
+      navigate('/login', { state: { from: '/planos' } })
       return
     }
 
     setProcessing(true)
 
     if (paymentEnabled) {
-      // TODO: Redirecionar para checkout do gateway
+      // SEAM: Quando gateway integrar, usar criarAssinatura()
       toast('Redirecionando para pagamento...')
       // const result = await criarAssinatura(user.id, ciclo)
-      // if (result.success) {
-      //   window.location.href = result.checkoutUrl
-      // }
-    } else if (testMode) {
-      // Modo de teste: ativar direto
-      const result = await ativarPrimeTest(user.id, ciclo)
-      if (result.success) {
-        toast.success(`Prime ${formatCiclo(ciclo)} ativado! (modo teste)`)
-        // Recarregar
-        const subResult = await fetchMySubscription()
-        if (subResult.success) setSubscription(subResult)
-      } else {
-        toast.error(result.error || 'Erro ao ativar')
-      }
+      // if (result.success) window.location.href = result.checkoutUrl
     } else {
-      toast('Em breve! Pagamento ainda não disponível.')
+      // Abre WhatsApp com mensagem pré-preenchida
+      await iniciarAssinaturaWhatsApp(ciclo)
+      toast.success('WhatsApp aberto! Finalize sua assinatura por lá.')
     }
 
     setProcessing(false)
   }
 
-  const handleCancelar = async () => {
-    if (!window.confirm('Tem certeza que deseja cancelar sua assinatura Prime?')) return
-
+  const handleUpgradeAnual = async () => {
     setProcessing(true)
-
-    if (testMode) {
-      const result = await cancelarPrimeTest(user.id)
-      if (result.success) {
-        toast.success('Assinatura cancelada (modo teste)')
-        const subResult = await fetchMySubscription()
-        if (subResult.success) setSubscription(subResult)
-      } else {
-        toast.error(result.error || 'Erro ao cancelar')
-      }
-    } else {
-      toast('Entre em contato para cancelar sua assinatura.')
-    }
-
+    await iniciarUpgradeAnualWhatsApp()
+    toast.success('WhatsApp aberto! Solicite seu upgrade.')
     setProcessing(false)
   }
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-deep-purple to-graphite flex items-center justify-center">
         <motion.div
@@ -104,20 +86,58 @@ export function Plans() {
     )
   }
 
+  // Valores do plano
+  const primeConfig = planosConfig?.prime || {}
+  const freeConfig = planosConfig?.free || {}
+  const precoMensal = primeConfig.precoMensal || 49.90
+  const precoAnual = primeConfig.precoAnual || 497
+  const economiaAnual = (precoMensal * 12 - precoAnual).toFixed(2).replace('.', ',')
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-deep-purple to-graphite py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">
-            Escolha seu plano
+            Meup Prime
           </h1>
           <p className="text-dusty-rose/80 font-heading max-w-lg mx-auto">
-            Ganhe mais pontos, multiplicadores exclusivos e benefícios premium com o Meup Prime.
+            Multiplique seus pontos, desbloqueie benefícios exclusivos e acelere sua jornada.
           </p>
         </div>
 
-        {/* Status atual */}
+        {/* Toggle Anual/Mensal */}
+        {!isPrime && (
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white/10 border border-white/20">
+              <button
+                onClick={() => setCicloSelecionado('mensal')}
+                className={`px-5 py-2 rounded-full text-sm font-heading font-medium transition-all ${
+                  cicloSelecionado === 'mensal'
+                    ? 'bg-white/20 text-white'
+                    : 'text-dusty-rose hover:text-white'
+                }`}
+              >
+                Mensal
+              </button>
+              <button
+                onClick={() => setCicloSelecionado('anual')}
+                className={`px-5 py-2 rounded-full text-sm font-heading font-medium transition-all flex items-center gap-2 ${
+                  cicloSelecionado === 'anual'
+                    ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'
+                    : 'text-dusty-rose hover:text-white'
+                }`}
+              >
+                Anual
+                <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs">
+                  1.5x
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Status atual (se logado e Prime) */}
         {isPrime && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -125,12 +145,12 @@ export function Plans() {
             className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/30 text-center"
           >
             <p className="text-amber-200 font-heading">
-              👑 Você é <span className="font-bold">Meup Prime {formatCiclo(subscription?.ciclo)}</span>
+              Você é <span className="font-bold">Meup Prime {formatCiclo(subscription?.ciclo)}</span>
             </p>
           </motion.div>
         )}
 
-        {/* Cards de planos */}
+        {/* Comparativo de planos */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Free */}
           <motion.div
@@ -142,7 +162,12 @@ export function Plans() {
                 : 'bg-white/5 border-white/10 opacity-60'
             }`}
           >
-            {!isPrime && (
+            {!user && (
+              <div className="absolute -top-3 left-6 px-3 py-1 bg-white/20 rounded-full text-xs text-white font-heading">
+                Plano gratuito
+              </div>
+            )}
+            {user && !isPrime && (
               <div className="absolute -top-3 left-6 px-3 py-1 bg-white/20 rounded-full text-xs text-white font-heading">
                 Seu plano atual
               </div>
@@ -156,39 +181,29 @@ export function Plans() {
             <ul className="space-y-3 text-sm text-dusty-rose/80 mb-8">
               <li className="flex items-center gap-2">
                 <span className="text-green-400">✓</span>
-                Check-in: {planosConfig?.free?.pontosCheckin || 10} pts/dia
+                Check-in: {freeConfig.pontosCheckin || 10} pts/dia
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-green-400">✓</span>
-                Indicação: {(planosConfig?.free?.pontosIndicacao || 3000).toLocaleString('pt-BR')} pts
+                Indicação: {(freeConfig.pontosIndicacao || 3000).toLocaleString('pt-BR')} pts
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-dusty-rose/40">−</span>
+                <span className="text-dusty-rose/40">-</span>
                 <span className="text-dusty-rose/40">Bônus aniversário: 0 pts</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-dusty-rose/40">−</span>
+                <span className="text-dusty-rose/40">-</span>
                 <span className="text-dusty-rose/40">Multiplicador: 1x</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-dusty-rose/40">−</span>
+                <span className="text-dusty-rose/40">-</span>
                 <span className="text-dusty-rose/40">Lançamento manual</span>
               </li>
             </ul>
 
-            {!isPrime ? (
-              <div className="py-3 text-center text-dusty-rose/60 font-heading text-sm">
-                Plano atual
-              </div>
-            ) : (
-              <button
-                onClick={handleCancelar}
-                disabled={processing}
-                className="w-full py-3 rounded-xl border border-white/20 text-white/60 font-heading hover:bg-white/5 transition-colors disabled:opacity-50"
-              >
-                {processing ? 'Processando...' : 'Voltar para Free'}
-              </button>
-            )}
+            <div className="py-3 text-center text-dusty-rose/60 font-heading text-sm">
+              {!user ? 'Crie sua conta gratuitamente' : (isPrime ? '' : 'Plano atual')}
+            </div>
           </motion.div>
 
           {/* Prime */}
@@ -201,42 +216,64 @@ export function Plans() {
                 : 'bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/30'
             }`}
           >
+            {/* Badge recomendado */}
+            {!isPrime && cicloSelecionado === 'anual' && (
+              <div className="absolute -top-3 right-6 px-3 py-1 bg-amber-500 rounded-full text-xs text-white font-heading font-bold">
+                Recomendado
+              </div>
+            )}
             {isPrime && (
               <div className="absolute -top-3 left-6 px-3 py-1 bg-amber-500 rounded-full text-xs text-white font-heading font-bold">
-                👑 Seu plano atual
+                Seu plano atual
               </div>
             )}
 
             <div className="flex items-center gap-2 mb-2">
               <h2 className="text-2xl font-display font-bold text-white">Meup Prime</h2>
-              <span className="text-2xl">👑</span>
             </div>
 
+            {/* Preço baseado no toggle */}
             <div className="mb-6">
-              <p className="text-4xl font-display font-bold text-white">
-                R$49,90<span className="text-lg text-dusty-rose/60">/mês</span>
-              </p>
-              <p className="text-sm text-amber-300 mt-1">
-                ou R$497/ano (economize R$101,80 + multiplicador 1.5x)
-              </p>
+              {cicloSelecionado === 'anual' || isPrimeAnual ? (
+                <>
+                  <p className="text-4xl font-display font-bold text-white">
+                    R${precoAnual}<span className="text-lg text-dusty-rose/60">/ano</span>
+                  </p>
+                  <p className="text-sm text-amber-300 mt-1">
+                    Economize R${economiaAnual} + multiplicador 1.5x
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-4xl font-display font-bold text-white">
+                    R${precoMensal.toFixed(2).replace('.', ',')}<span className="text-lg text-dusty-rose/60">/mês</span>
+                  </p>
+                  <p className="text-sm text-dusty-rose/60 mt-1">
+                    ou R${precoAnual}/ano com multiplicador 1.5x
+                  </p>
+                </>
+              )}
             </div>
 
             <ul className="space-y-3 text-sm text-dusty-rose/80 mb-8">
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">★</span>
-                Check-in: <span className="text-white font-semibold">{planosConfig?.prime?.pontosCheckin || 30} pts/dia</span>
+                Check-in: <span className="text-white font-semibold">{primeConfig.pontosCheckin || 30} pts/dia</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">★</span>
-                Indicação: <span className="text-white font-semibold">{(planosConfig?.prime?.pontosIndicacao || 5000).toLocaleString('pt-BR')} pts</span>
+                Indicação: <span className="text-white font-semibold">{(primeConfig.pontosIndicacao || 5000).toLocaleString('pt-BR')} pts</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">★</span>
-                Bônus aniversário: <span className="text-white font-semibold">{(planosConfig?.prime?.pontosAniversario || 5000).toLocaleString('pt-BR')} pts</span>
+                Bônus aniversário: <span className="text-white font-semibold">{(primeConfig.pontosAniversario || 5000).toLocaleString('pt-BR')} pts</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">★</span>
-                Multiplicador viagem: <span className="text-white font-semibold">1.5x (anual)</span>
+                Multiplicador viagem:{' '}
+                <span className="text-white font-semibold">
+                  {cicloSelecionado === 'anual' || isPrimeAnual ? '1.5x' : '1x (1.5x no anual)'}
+                </span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">★</span>
@@ -244,37 +281,61 @@ export function Plans() {
               </li>
             </ul>
 
+            {/* CTAs */}
             {isPrime ? (
-              <div className="py-3 text-center text-amber-300 font-heading font-semibold">
-                ✓ Você é Prime {formatCiclo(subscription?.ciclo)}
+              <div className="space-y-3">
+                <div className="py-3 text-center text-amber-300 font-heading font-semibold">
+                  ✓ Você é Prime {formatCiclo(subscription?.ciclo)}
+                </div>
+                {/* Nudge para upgrade se mensal */}
+                {isPrimeMensal && (
+                  <button
+                    onClick={handleUpgradeAnual}
+                    disabled={processing}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
+                  >
+                    {processing ? 'Abrindo...' : 'Upgrade para Anual (1.5x)'}
+                  </button>
+                )}
               </div>
             ) : (
-              <div className="space-y-3">
-                {!paymentEnabled && (
-                  <p className="text-xs text-center text-amber-300/60 font-heading">
-                    {testMode ? '🧪 Modo de teste ativo' : 'Em breve!'}
-                  </p>
-                )}
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handleAssinar('mensal')}
-                    disabled={processing}
-                    className="py-3 rounded-xl bg-white/10 text-white font-heading font-semibold hover:bg-white/20 transition-colors disabled:opacity-50"
-                  >
-                    {processing ? '...' : 'Mensal'}
-                  </button>
-                  <button
-                    onClick={() => handleAssinar('anual')}
-                    disabled={processing}
-                    className="py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
-                  >
-                    {processing ? '...' : 'Anual (1.5x)'}
-                  </button>
-                </div>
-              </div>
+              <button
+                onClick={() => handleAssinar(cicloSelecionado)}
+                disabled={processing}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
+              >
+                {processing ? 'Abrindo WhatsApp...' : `Assinar ${cicloSelecionado === 'anual' ? 'Anual' : 'Mensal'}`}
+              </button>
             )}
           </motion.div>
         </div>
+
+        {/* Benefícios do anual em destaque */}
+        {!isPrime && cicloSelecionado === 'anual' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-8 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20"
+          >
+            <h3 className="text-amber-300 font-heading font-semibold mb-3 text-center">
+              Exclusivo no plano Anual
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div className="p-3">
+                <div className="text-2xl mb-1">1.5x</div>
+                <div className="text-xs text-dusty-rose/80">Multiplicador em viagens</div>
+              </div>
+              <div className="p-3">
+                <div className="text-2xl mb-1">2 meses</div>
+                <div className="text-xs text-dusty-rose/80">Grátis (12 pelo preço de 10)</div>
+              </div>
+              <div className="p-3">
+                <div className="text-2xl mb-1">R${economiaAnual}</div>
+                <div className="text-xs text-dusty-rose/80">Economia garantida</div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Nota */}
         <p className="text-center text-xs text-dusty-rose/40 mt-8 font-heading">

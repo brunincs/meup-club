@@ -6,7 +6,8 @@
 // Todas as operações de pagamento passam por aqui.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { ativarPrime, cancelarPrime } from './subscriptionService'
+import { ativarPrime, cancelarPrime, fetchPlanosConfig } from './subscriptionService'
+import { getWhatsAppUrl } from '@/config/contact'
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CONFIGURAÇÃO
@@ -219,6 +220,59 @@ export async function cancelarPrimeTest(userId) {
   }
 
   return cancelarPrime(userId, 'test', 'test-cancellation')
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ASSINATURA VIA WHATSAPP (FASE ATUAL)
+// ══════════════════════════════════════════════════════════════════════════════
+// SEAM PARA GATEWAY DE PAGAMENTO
+// ══════════════════════════════════════════════════════════════════════════════
+//
+// ATUAL: iniciarAssinaturaWhatsApp() abre WhatsApp com mensagem pré-preenchida
+// FUTURO: Substituir por criarAssinatura() que redireciona para checkout
+//
+// Para integrar gateway:
+// 1. Implementar criarAssinatura() com redirect para checkout
+// 2. Mudar PAYMENT_CONFIG.enabled = true
+// 3. Plans.jsx já chama handleAssinar() que verificará isPaymentEnabled()
+// 4. Se enabled, usa criarAssinatura(); senão, usa iniciarAssinaturaWhatsApp()
+//
+// Nenhuma mudança necessária na UI - apenas no adapter.
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Inicia processo de assinatura via WhatsApp
+ * O admin ativará manualmente após confirmação de pagamento
+ *
+ * @param {string} ciclo - 'mensal' | 'anual'
+ * @returns {Promise<{success: boolean, method: string}>}
+ */
+export async function iniciarAssinaturaWhatsApp(ciclo) {
+  const config = await fetchPlanosConfig()
+  const primeConfig = config.planos?.prime
+
+  const preco = ciclo === 'anual'
+    ? `R$${primeConfig?.precoAnual || 497}/ano`
+    : `R$${primeConfig?.precoMensal || 49.90}/mês`
+
+  const message = `Olá! Quero assinar o Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
+  const url = getWhatsAppUrl(message)
+
+  window.open(url, '_blank')
+  return { success: true, method: 'whatsapp' }
+}
+
+/**
+ * Inicia processo de upgrade de mensal para anual via WhatsApp
+ *
+ * @returns {Promise<{success: boolean, method: string}>}
+ */
+export async function iniciarUpgradeAnualWhatsApp() {
+  const message = 'Olá! Quero fazer upgrade do meu Meup Prime mensal para anual e desbloquear o multiplicador 1.5x!'
+  const url = getWhatsAppUrl(message)
+
+  window.open(url, '_blank')
+  return { success: true, method: 'whatsapp' }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

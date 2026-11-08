@@ -15,7 +15,8 @@ import {
   AdminHistory,
   AdminExperiencias,
   AdminTarefasNew,
-  AdminResgates
+  AdminResgates,
+  AdminSubscriptions
 } from '@/pages/admin'
 
 function App() {
@@ -145,6 +146,7 @@ function App() {
           <Route path="/admin/experiencias" element={<AdminRoute><AdminExperiencias /></AdminRoute>} />
           <Route path="/admin/resgates" element={<AdminRoute><AdminResgates /></AdminRoute>} />
           <Route path="/admin/missoes" element={<AdminRoute><AdminTarefasNew /></AdminRoute>} />
+          <Route path="/admin/assinaturas" element={<AdminRoute><AdminSubscriptions /></AdminRoute>} />
         </Routes>
         </PointsProvider>
       </AuthProvider>

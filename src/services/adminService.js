@@ -380,6 +380,32 @@ export async function revealClientCpf(userId) {
 // ESTATÍSTICAS
 // ============================================
 
+// ============================================
+// ASSINATURAS
+// ============================================
+
+/**
+ * Busca todas as assinaturas Prime ativas
+ */
+export async function fetchAllSubscriptions() {
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*, profiles(name, email)')
+    .eq('status', 'active')
+    .order('current_period_end', { ascending: true })
+
+  if (error) {
+    console.error('Erro ao buscar assinaturas:', error)
+    return { success: false, error: error.message, subscriptions: [] }
+  }
+
+  return { success: true, subscriptions: data || [] }
+}
+
+// ============================================
+// ESTATÍSTICAS
+// ============================================
+
 /**
  * Busca estatísticas gerais para o dashboard admin
  */

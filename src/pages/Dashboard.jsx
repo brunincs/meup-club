@@ -11,7 +11,8 @@ import {
   RewardsSection,
   TasksWidget,
   HeroSection,
-  MissionsSection
+  MissionsSection,
+  PlanStatusCard
 } from '@/components/dashboard'
 import { EvolutionCard } from '@/components/dashboard/EvolutionCard'
 import { getMyReferrals } from '@/services/referralService'
@@ -77,6 +78,10 @@ export function Dashboard() {
       <section className="bg-deep-purple pt-12 pb-8">
         <div className="container-premium">
           <HeroSection />
+          {/* Status do plano */}
+          <div className="mt-6">
+            <PlanStatusCard />
+          </div>
         </div>
       </section>
 

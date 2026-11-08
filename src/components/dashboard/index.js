@@ -18,3 +18,4 @@ export { AlmostThereCard, AlmostThereMini, AlmostThereWidget } from './AlmostThe
 export { ExperiencesCarousel } from './ExperiencesCarousel'
 export { ClassExplorer } from './ClassExplorer'
 export { PointsSimulatorCompact } from './PointsSimulatorCompact'
+export { PlanStatusCard } from './PlanStatusCard'
