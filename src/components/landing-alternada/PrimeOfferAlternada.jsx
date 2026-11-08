@@ -4,6 +4,7 @@ import { GoldLine } from '@/components/ui/GoldLine'
 import { fetchPlanosConfig } from '@/services/subscriptionService'
 import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 import { formatPrice } from '@/config/contact'
+import { siteConfig } from '@/config/siteConfig'
 
 /**
  * PrimeOfferAlternada - Seção de oferta do Prime com preço de fundador
@@ -87,7 +88,7 @@ export function PrimeOfferAlternada() {
             transition={{ delay: 0.2 }}
             className="text-ice-white/70 max-w-xl mx-auto"
           >
-            100 vagas de fundador com preço especial de lançamento. Garanta a sua antes que acabe.
+            Turma inicial de {siteConfig.fundador.vagas} fundadores com preço especial de lançamento.
           </motion.p>
         </div>
 
@@ -255,46 +256,53 @@ export function PrimeOfferAlternada() {
           </motion.div>
         </div>
 
-        {/* Escassez com motivo real */}
+        {/* Escassez com motivo genuíno (convite, não pressão) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mt-8 max-w-lg mx-auto"
+          className="text-center mt-8 max-w-xl mx-auto"
         >
-          <p className="text-sm text-amber-300/90 font-heading mb-1">
-            100 vagas de fundador com preço especial
+          <p className="text-sm text-ice-white/80 leading-relaxed">
+            O clube está começando. As <span className="text-amber-300 font-semibold">{siteConfig.fundador.vagas} primeiras vagas</span> são
+            de fundador: entram no preço de lançamento e ajudam a moldar o clube com a gente.
           </p>
-          <p className="text-xs text-ice-white/50">
-            Turma inicial para testar e ajustar o clube junto com a gente.
-            Quem entrar agora mantém o preço enquanto renovar.
+          <p className="text-xs text-ice-white/50 mt-2">
+            Depois dessa turma, o preço sobe para R$997. Quem entrar agora mantém o valor enquanto renovar.
           </p>
         </motion.div>
 
-        {/* Âncora de valor dos pontos */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-10 p-4 rounded-xl bg-white/5 border border-white/10 max-w-md mx-auto"
-        >
-          <p className="text-xs text-ice-white/60 text-center mb-3 font-heading uppercase tracking-wide">
-            Quanto vale um ponto?
-          </p>
-          <div className="grid grid-cols-2 gap-3 text-center">
-            <div className="p-2">
-              <p className="text-lg font-display font-bold text-antique-gold">5.000 pts</p>
-              <p className="text-xs text-ice-white/60">≈ upgrade de classe</p>
+        {/* Âncora de valor dos pontos - usa siteConfig */}
+        {siteConfig.valorPontos.filter(item => item.pontos && item.descricao).length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-10 p-4 rounded-xl bg-white/5 border border-white/10 max-w-md mx-auto"
+          >
+            <p className="text-xs text-ice-white/60 text-center mb-3 font-heading uppercase tracking-wide">
+              Quanto vale um ponto?
+            </p>
+            <div className={`grid grid-cols-${Math.min(siteConfig.valorPontos.filter(item => item.pontos && item.descricao).length, 3)} gap-3 text-center`}>
+              {siteConfig.valorPontos
+                .filter(item => item.pontos && item.descricao)
+                .map((item, index) => (
+                  <div key={index} className="p-2">
+                    <p className="text-lg font-display font-bold text-antique-gold">
+                      {item.pontos.toLocaleString('pt-BR')} pts
+                    </p>
+                    <p className="text-xs text-ice-white/60">≈ {item.descricao}</p>
+                  </div>
+                ))
+              }
             </div>
-            <div className="p-2">
-              <p className="text-lg font-display font-bold text-antique-gold">10.000 pts</p>
-              <p className="text-xs text-ice-white/60">≈ acesso a lounge VIP</p>
-            </div>
-          </div>
-          <p className="text-[10px] text-ice-white/40 text-center mt-2">
-            Valores de referência. Catálogo completo após o cadastro.
-          </p>
-        </motion.div>
+            {siteConfig.valorPontosNota && (
+              <p className="text-[10px] text-ice-white/40 text-center mt-2">
+                {siteConfig.valorPontosNota}
+              </p>
+            )}
+          </motion.div>
+        )}
       </div>
     </section>
   )
