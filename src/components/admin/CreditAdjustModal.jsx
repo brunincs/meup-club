@@ -434,11 +434,42 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
             </button>
             <button
               type="button"
-              onClick={(e) => {
-                console.log('[CreditModal] BUTTON CLICKED!', { creditType, hasValidInput, isSubmitting, isLoadingPreview })
+              onClick={async (e) => {
+                e.preventDefault()
+                console.log('[CreditModal] BUTTON CLICKED!', { creditType, hasValidInput, isSubmitting, isLoadingPreview, preview })
+
+                // BYPASS TOTAL PARA ANIVERSÁRIO - enviar direto
+                if (creditType === 'aniversario') {
+                  console.log('[CreditModal] Aniversário: bypass direto', { preview: preview?.finalAmount })
+                  if (isSubmitting || !preview || preview.finalAmount <= 0) {
+                    console.log('[CreditModal] Aniversário: condição inválida, ignorando', {
+                      isSubmitting,
+                      previewExists: !!preview,
+                      finalAmount: preview?.finalAmount
+                    })
+                    return
+                  }
+                  setIsSubmitting(true)
+                  try {
+                    console.log('[CreditModal] Chamando onAdjust para aniversário...')
+                    await onAdjust(user.id, 1, 'Bônus de aniversário', 'birthday')
+                    console.log('[CreditModal] Aniversário creditado com sucesso!')
+                  } catch (err) {
+                    console.error('[CreditModal] Erro aniversário:', err)
+                  } finally {
+                    setIsSubmitting(false)
+                  }
+                  return
+                }
+
+                // Para outros tipos, usar o handler normal
                 handleSubmit(e)
               }}
-              disabled={isSubmitting || isLoadingPreview || !hasValidInput || (creditType === 'ajuste' && !reason.trim())}
+              disabled={
+                isSubmitting ||
+                (creditType === 'aniversario' ? (isLoadingPreview || !preview || preview.finalAmount <= 0) : (isLoadingPreview || !hasValidInput)) ||
+                (creditType === 'ajuste' && !reason.trim())
+              }
               className={`flex-1 px-4 py-3 rounded-xl font-heading font-semibold transition-colors disabled:opacity-50 shadow-sm ${
                 isPositive
                   ? 'bg-green-500 text-white hover:bg-green-600'
