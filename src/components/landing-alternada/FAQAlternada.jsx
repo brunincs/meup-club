@@ -1,0 +1,192 @@
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { GoldLine } from '@/components/ui/GoldLine'
+
+/**
+ * FAQAlternada - Seção de perguntas frequentes
+ * ESCURO - fundo deep-purple
+ */
+
+const FAQ_ITEMS = [
+  {
+    id: 1,
+    question: 'Como funciona o pagamento?',
+    answer: 'O pagamento é feito via Pix ou transferência. Após o contato pelo WhatsApp, você recebe os dados para pagamento e sua assinatura é ativada em até 24h úteis. Sem cartão de crédito, sem burocracia.'
+  },
+  {
+    id: 2,
+    question: 'Posso cancelar quando quiser?',
+    answer: 'Sim! Você pode cancelar a qualquer momento pelo WhatsApp. No plano mensal, o cancelamento é imediato. No anual, você continua com acesso até o fim do período pago. Sem multas ou taxas de cancelamento.'
+  },
+  {
+    id: 3,
+    question: 'Os pontos expiram?',
+    answer: 'Não! Seus pontos nunca expiram. Você acumula no seu ritmo e troca quando quiser. Isso vale tanto para o plano Free quanto para o Prime.'
+  },
+  {
+    id: 4,
+    question: 'Qual a diferença entre plano e classe?',
+    answer: 'Plano é sua assinatura (Free ou Prime) — define os benefícios que você tem. Classe é seu nível no ranking (Econômica, Executiva, Primeira Classe) — definida pelos pontos acumulados. Você pode ser Free na Primeira Classe ou Prime na Econômica.'
+  },
+  {
+    id: 5,
+    question: 'O que acontece se eu não renovar?',
+    answer: 'Você volta automaticamente para o plano Free. Seus pontos continuam intactos, mas você perde os benefícios Prime (check-in triplo, bônus de aniversário, multiplicador 1.5x no anual). Pode voltar para o Prime quando quiser.'
+  },
+  {
+    id: 6,
+    question: 'Como funciona o multiplicador 1.5x?',
+    answer: 'No plano Prime Anual, toda viagem que você faz com a Me,up rende 50% mais pontos. Uma viagem que daria 10.000 pontos passa a dar 15.000. O multiplicador é exclusivo do ciclo anual.'
+  },
+  {
+    id: 7,
+    question: 'Preciso viajar para acumular pontos?',
+    answer: 'Não! Você ganha pontos de várias formas: check-in diário (só abrir o app), indicar amigos, fazer aniversário (Prime), e claro, viajando. Dá para acumular sem sair de casa.'
+  },
+  {
+    id: 8,
+    question: 'O preço de fundador é por tempo limitado?',
+    answer: 'Sim. Estamos com 100 vagas de fundador no preço de lançamento (50% de desconto). Quando encerrarem, o preço volta ao valor cheio. Quem entrar como fundador mantém o preço enquanto renovar.'
+  }
+]
+
+function FAQItem({ item, isOpen, onToggle }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="border-b border-white/10 last:border-b-0"
+    >
+      <button
+        onClick={onToggle}
+        className="w-full py-5 flex items-center justify-between text-left group"
+      >
+        <span className="text-sm md:text-base font-heading font-medium text-ice-white group-hover:text-antique-gold transition-colors pr-4">
+          {item.question}
+        </span>
+        <motion.span
+          animate={{ rotate: isOpen ? 45 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-antique-gold text-xl flex-shrink-0"
+        >
+          +
+        </motion.span>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <p className="pb-5 text-sm text-ice-white/70 leading-relaxed">
+              {item.answer}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
+export function FAQAlternada() {
+  const [openId, setOpenId] = useState(null)
+
+  const handleToggle = (id) => {
+    setOpenId(openId === id ? null : id)
+  }
+
+  // Dividir em duas colunas
+  const midpoint = Math.ceil(FAQ_ITEMS.length / 2)
+  const leftColumn = FAQ_ITEMS.slice(0, midpoint)
+  const rightColumn = FAQ_ITEMS.slice(midpoint)
+
+  return (
+    <section className="relative py-16 md:py-24 bg-deep-purple overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute bottom-0 left-1/4 w-[600px] h-[400px] rounded-full blur-[150px] opacity-15"
+          style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.3) 0%, transparent 60%)' }}
+        />
+      </div>
+
+      <div className="container-premium relative z-10 px-4">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-4"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-heading font-medium tracking-wider uppercase bg-white/5 border border-white/20 text-ice-white/80">
+              Dúvidas frequentes
+            </span>
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-2xl md:text-4xl font-display font-bold text-ice-white mb-4"
+          >
+            Tudo o que você precisa <span className="text-antique-gold">saber</span>
+          </motion.h2>
+
+          <GoldLine width="80px" centered className="mb-4" />
+        </div>
+
+        {/* FAQ Grid - 2 colunas em desktop */}
+        <div className="grid md:grid-cols-2 gap-x-8 gap-y-0 max-w-4xl mx-auto">
+          <div className="bg-white/5 rounded-2xl px-6 border border-white/10">
+            {leftColumn.map((item) => (
+              <FAQItem
+                key={item.id}
+                item={item}
+                isOpen={openId === item.id}
+                onToggle={() => handleToggle(item.id)}
+              />
+            ))}
+          </div>
+
+          <div className="bg-white/5 rounded-2xl px-6 border border-white/10 mt-6 md:mt-0">
+            {rightColumn.map((item) => (
+              <FAQItem
+                key={item.id}
+                item={item}
+                isOpen={openId === item.id}
+                onToggle={() => handleToggle(item.id)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* CTA adicional */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mt-10"
+        >
+          <p className="text-sm text-ice-white/60 font-heading">
+            Ainda tem dúvidas?{' '}
+            <a
+              href="https://wa.me/5516988126568?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20o%20Meup%20Club."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-antique-gold hover:underline"
+            >
+              Fale conosco no WhatsApp
+            </a>
+          </p>
+        </motion.div>
+      </div>
+    </section>
+  )
+}

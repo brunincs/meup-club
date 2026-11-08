@@ -21,21 +21,23 @@ const PAYMENT_CONFIG = {
   webhookSecret: null, // Segredo para validar webhooks
 }
 
-// Preços configurados (devem bater com plano_config no banco)
-export const PRICES = {
-  prime: {
-    mensal: {
-      amount: 4990, // centavos
-      display: 'R$49,90/mês',
-      interval: 'month',
-    },
-    anual: {
-      amount: 49700, // centavos
-      display: 'R$497/ano',
-      interval: 'year',
-      savings: 'Economize R$101,80 + multiplicador 1.5x',
-    },
-  },
+// ══════════════════════════════════════════════════════════════════════════════
+// PREÇOS - SEMPRE do banco via fetchPlanosConfig()
+// ══════════════════════════════════════════════════════════════════════════════
+// NÃO usar valores hardcoded. Todos os preços vêm da tabela plano_config.
+// Campos disponíveis:
+//   - precoMensal / precoAnual: preço de oferta (cobrado)
+//   - precoMensalCheio / precoAnualCheio: preço âncora (exibido riscado)
+//   - ofertaFundadorAtiva: se true, mostra desconto de fundador
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Fallback APENAS se o banco falhar (não deve acontecer em produção)
+const FALLBACK_PRICES = {
+  precoMensal: 49.90,
+  precoAnual: 497,
+  precoMensalCheio: 99.90,
+  precoAnualCheio: 997,
+  ofertaFundadorAtiva: true
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -249,16 +251,21 @@ export async function cancelarPrimeTest(userId) {
  */
 export async function iniciarAssinaturaWhatsApp(ciclo) {
   const config = await fetchPlanosConfig()
-  const primeConfig = config.planos?.prime
+  const primeConfig = config.planos?.prime || FALLBACK_PRICES
 
-  const precoAnual = primeConfig?.precoAnual || 497
-  const precoMensal = primeConfig?.precoMensal || 49.90
+  const precoAnual = primeConfig.precoAnual || FALLBACK_PRICES.precoAnual
+  const precoMensal = primeConfig.precoMensal || FALLBACK_PRICES.precoMensal
+  const ofertaFundador = primeConfig.ofertaFundadorAtiva ?? FALLBACK_PRICES.ofertaFundadorAtiva
 
   const preco = ciclo === 'anual'
     ? `R$${formatPrice(precoAnual, false)}/ano`
     : `R$${formatPrice(precoMensal)}/mês`
 
-  const message = `Olá! Quero assinar o Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
+  // Se oferta de fundador ativa, usar mensagem específica
+  const message = ofertaFundador
+    ? `Olá! Quero garantir minha vaga de fundador no Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
+    : `Olá! Quero assinar o Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
+
   const url = getWhatsAppUrl(message)
 
   window.open(url, '_blank')
@@ -271,7 +278,39 @@ export async function iniciarAssinaturaWhatsApp(ciclo) {
  * @returns {Promise<{success: boolean, method: string}>}
  */
 export async function iniciarUpgradeAnualWhatsApp() {
-  const message = 'Olá! Quero fazer upgrade do meu Meup Prime mensal para anual e desbloquear o multiplicador 1.5x!'
+  const config = await fetchPlanosConfig()
+  const primeConfig = config.planos?.prime || FALLBACK_PRICES
+  const ofertaFundador = primeConfig.ofertaFundadorAtiva ?? FALLBACK_PRICES.ofertaFundadorAtiva
+  const precoAnual = primeConfig.precoAnual || FALLBACK_PRICES.precoAnual
+
+  const message = ofertaFundador
+    ? `Olá! Quero fazer upgrade para o Meup Prime Anual com preço de fundador (R$${formatPrice(precoAnual, false)}/ano) e desbloquear o multiplicador 1.5x!`
+    : 'Olá! Quero fazer upgrade do meu Meup Prime mensal para anual e desbloquear o multiplicador 1.5x!'
+
+  const url = getWhatsAppUrl(message)
+
+  window.open(url, '_blank')
+  return { success: true, method: 'whatsapp' }
+}
+
+/**
+ * Abre WhatsApp para garantir vaga de fundador (CTA da landing page)
+ *
+ * @param {string} ciclo - 'mensal' | 'anual'
+ * @returns {Promise<{success: boolean, method: string}>}
+ */
+export async function garantirVagaFundadorWhatsApp(ciclo = 'anual') {
+  const config = await fetchPlanosConfig()
+  const primeConfig = config.planos?.prime || FALLBACK_PRICES
+
+  const precoAnual = primeConfig.precoAnual || FALLBACK_PRICES.precoAnual
+  const precoMensal = primeConfig.precoMensal || FALLBACK_PRICES.precoMensal
+
+  const preco = ciclo === 'anual'
+    ? `R$${formatPrice(precoAnual, false)}/ano`
+    : `R$${formatPrice(precoMensal)}/mês`
+
+  const message = `Olá! Quero garantir minha vaga de fundador no Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
   const url = getWhatsAppUrl(message)
 
   window.open(url, '_blank')
@@ -287,10 +326,11 @@ export async function iniciarUpgradeAnualWhatsApp() {
  */
 export async function iniciarRenovacaoWhatsApp(ciclo, daysRemaining) {
   const config = await fetchPlanosConfig()
-  const primeConfig = config.planos?.prime
+  const primeConfig = config.planos?.prime || FALLBACK_PRICES
 
-  const precoAnual = primeConfig?.precoAnual || 497
-  const precoMensal = primeConfig?.precoMensal || 49.90
+  const precoAnual = primeConfig.precoAnual || FALLBACK_PRICES.precoAnual
+  const precoMensal = primeConfig.precoMensal || FALLBACK_PRICES.precoMensal
+  const ofertaFundador = primeConfig.ofertaFundadorAtiva ?? FALLBACK_PRICES.ofertaFundadorAtiva
 
   const preco = ciclo === 'anual'
     ? `R$${formatPrice(precoAnual, false)}/ano`
@@ -300,7 +340,8 @@ export async function iniciarRenovacaoWhatsApp(ciclo, daysRemaining) {
     ? `Minha assinatura expira em ${daysRemaining} dia${daysRemaining > 1 ? 's' : ''}!`
     : `Minha assinatura expira em ${daysRemaining} dias.`
 
-  const message = `Olá! ${urgencia} Quero renovar meu Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
+  const tipoPreco = ofertaFundador ? 'com preço de fundador ' : ''
+  const message = `Olá! ${urgencia} Quero renovar meu Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} ${tipoPreco}(${preco}).`
   const url = getWhatsAppUrl(message)
 
   window.open(url, '_blank')

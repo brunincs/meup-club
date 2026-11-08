@@ -125,8 +125,15 @@ export async function fetchPlanosConfig() {
       planos[p.plano] = {
         nome: p.nome_exibicao,
         descricao: p.descricao,
+        // Preços de oferta (cobrados atualmente)
         precoMensal: p.preco_mensal,
         precoAnual: p.preco_anual,
+        // Preços âncora (cheios, para mostrar riscado)
+        precoMensalCheio: p.preco_mensal_cheio,
+        precoAnualCheio: p.preco_anual_cheio,
+        // Flag de oferta de fundador
+        ofertaFundadorAtiva: p.oferta_fundador_ativa ?? false,
+        // Benefícios
         multiplicadorViagem: parseFloat(p.multiplicador_viagem),
         multiplicadorSoAnual: p.multiplicador_viagem_so_anual,
         pontosIndicacao: p.pontos_indicacao,

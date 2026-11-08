@@ -92,6 +92,9 @@ export function Plans() {
   const freeConfig = planosConfig?.free || {}
   const precoMensal = primeConfig.precoMensal || 49.90
   const precoAnual = primeConfig.precoAnual || 497
+  const precoMensalCheio = primeConfig.precoMensalCheio || 99.90
+  const precoAnualCheio = primeConfig.precoAnualCheio || 997
+  const ofertaFundador = primeConfig.ofertaFundadorAtiva ?? false
   const economiaAnual = (precoMensal * 12 - precoAnual).toFixed(2).replace('.', ',')
 
   return (
@@ -217,8 +220,13 @@ export function Plans() {
                 : 'bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/30'
             }`}
           >
-            {/* Badge recomendado */}
-            {!isPrime && cicloSelecionado === 'anual' && (
+            {/* Badge Fundador ou Recomendado */}
+            {!isPrime && ofertaFundador && (
+              <div className="absolute -top-3 right-6 px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 rounded-full text-xs text-white font-heading font-bold shadow-lg">
+                50% OFF · Fundador
+              </div>
+            )}
+            {!isPrime && !ofertaFundador && cicloSelecionado === 'anual' && (
               <div className="absolute -top-3 right-6 px-3 py-1 bg-amber-500 rounded-full text-xs text-white font-heading font-bold">
                 Recomendado
               </div>
@@ -237,15 +245,25 @@ export function Plans() {
             <div className="mb-6">
               {cicloSelecionado === 'anual' || isPrimeAnual ? (
                 <>
+                  {ofertaFundador && !isPrime && (
+                    <p className="text-dusty-rose/50 line-through text-lg">
+                      R${formatPrice(precoAnualCheio, false)}/ano
+                    </p>
+                  )}
                   <p className="text-4xl font-display font-bold text-white">
                     R${formatPrice(precoAnual, false)}<span className="text-lg text-dusty-rose/60">/ano</span>
                   </p>
                   <p className="text-sm text-amber-300 mt-1">
-                    Economize R${economiaAnual} + multiplicador 1.5x
+                    {ofertaFundador && !isPrime ? 'Preço de fundador · ' : ''}Economize R${economiaAnual} + multiplicador 1.5x
                   </p>
                 </>
               ) : (
                 <>
+                  {ofertaFundador && !isPrime && (
+                    <p className="text-dusty-rose/50 line-through text-lg">
+                      R${formatPrice(precoMensalCheio)}/mês
+                    </p>
+                  )}
                   <p className="text-4xl font-display font-bold text-white">
                     R${formatPrice(precoMensal)}<span className="text-lg text-dusty-rose/60">/mês</span>
                   </p>
@@ -305,7 +323,12 @@ export function Plans() {
                 disabled={processing}
                 className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
               >
-                {processing ? 'Abrindo WhatsApp...' : `Assinar ${cicloSelecionado === 'anual' ? 'Anual' : 'Mensal'}`}
+                {processing
+                  ? 'Abrindo WhatsApp...'
+                  : ofertaFundador
+                    ? 'Garantir vaga de fundador'
+                    : `Assinar ${cicloSelecionado === 'anual' ? 'Anual' : 'Mensal'}`
+                }
               </button>
             )}
           </motion.div>
@@ -338,8 +361,19 @@ export function Plans() {
           </motion.div>
         )}
 
+        {/* Nota sobre fundador */}
+        {ofertaFundador && !isPrime && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-sm text-amber-300/80 mt-8 font-heading"
+          >
+            100 vagas de fundador · Preço de lançamento por tempo limitado
+          </motion.p>
+        )}
+
         {/* Nota */}
-        <p className="text-center text-xs text-dusty-rose/40 mt-8 font-heading">
+        <p className="text-center text-xs text-dusty-rose/40 mt-4 font-heading">
           Plano é diferente de classe. Sua classe é determinada pelos pontos acumulados.
         </p>
       </div>

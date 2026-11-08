@@ -1,12 +1,17 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { GoldLine } from '@/components/ui/GoldLine'
+import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 
 /**
  * CTA Final - SECAO ESCURA (fecha com forca)
  * Texto claro sobre fundo roxo profundo (contraste garantido)
  */
 export function FinalCTAAlternada() {
+  const handleGarantirVaga = () => {
+    garantirVagaFundadorWhatsApp('anual')
+  }
+
   return (
     <section className="relative py-14 md:py-20 overflow-hidden bg-deep-purple">
       {/* Background */}
@@ -63,39 +68,50 @@ export function FinalCTAAlternada() {
             Indique, acumule pontos e troque por upgrades, lounges e jantares exclusivos.
           </motion.p>
 
-          {/* CTA Button */}
+          {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="mb-8"
+            className="mb-8 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
+            {/* CTA Fundador - Principal */}
+            <motion.button
+              onClick={handleGarantirVaga}
+              whileHover={{
+                scale: 1.02,
+                boxShadow: '0 0 50px rgba(162, 121, 55, 0.4)'
+              }}
+              whileTap={{ scale: 0.98 }}
+              className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-xl text-base font-heading font-semibold bg-antique-gold text-deep-purple overflow-hidden transition-all duration-300 shadow-lg shadow-antique-gold/25"
+            >
+              {/* Shine effect */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                initial={{ x: '-100%' }}
+                whileHover={{ x: '100%' }}
+                transition={{ duration: 0.6 }}
+              />
+
+              <span className="relative z-10">Garantir minha vaga de fundador</span>
+              <motion.span
+                className="relative z-10 text-lg"
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1.2, repeat: Infinity }}
+              >
+                →
+              </motion.span>
+            </motion.button>
+
+            {/* CTA Secundário - Começar grátis */}
             <Link to="/login">
               <motion.button
-                whileHover={{
-                  scale: 1.02,
-                  boxShadow: '0 0 50px rgba(162, 121, 55, 0.4)'
-                }}
+                whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-xl text-base font-heading font-semibold bg-antique-gold text-deep-purple overflow-hidden transition-all duration-300 shadow-lg shadow-antique-gold/25"
+                className="inline-flex items-center gap-2 px-6 py-4 rounded-xl text-sm font-heading font-medium text-ice-white/80 border border-white/20 hover:border-white/40 transition-colors"
               >
-                {/* Shine effect */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
-                  initial={{ x: '-100%' }}
-                  whileHover={{ x: '100%' }}
-                  transition={{ duration: 0.6 }}
-                />
-
-                <span className="relative z-10">Começar agora</span>
-                <motion.span
-                  className="relative z-10 text-lg"
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.2, repeat: Infinity }}
-                >
-                  →
-                </motion.span>
+                Começar grátis
               </motion.button>
             </Link>
           </motion.div>
