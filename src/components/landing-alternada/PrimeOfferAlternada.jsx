@@ -255,15 +255,44 @@ export function PrimeOfferAlternada() {
           </motion.div>
         </div>
 
-        {/* Escassez honesta */}
+        {/* Escassez com motivo real */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mt-8"
+          className="text-center mt-8 max-w-lg mx-auto"
         >
-          <p className="text-sm text-amber-300/80 font-heading">
-            100 vagas de fundador · Preço de lançamento por tempo limitado
+          <p className="text-sm text-amber-300/90 font-heading mb-1">
+            100 vagas de fundador com preço especial
+          </p>
+          <p className="text-xs text-ice-white/50">
+            Turma inicial para testar e ajustar o clube junto com a gente.
+            Quem entrar agora mantém o preço enquanto renovar.
+          </p>
+        </motion.div>
+
+        {/* Âncora de valor dos pontos */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-10 p-4 rounded-xl bg-white/5 border border-white/10 max-w-md mx-auto"
+        >
+          <p className="text-xs text-ice-white/60 text-center mb-3 font-heading uppercase tracking-wide">
+            Quanto vale um ponto?
+          </p>
+          <div className="grid grid-cols-2 gap-3 text-center">
+            <div className="p-2">
+              <p className="text-lg font-display font-bold text-antique-gold">5.000 pts</p>
+              <p className="text-xs text-ice-white/60">≈ upgrade de classe</p>
+            </div>
+            <div className="p-2">
+              <p className="text-lg font-display font-bold text-antique-gold">10.000 pts</p>
+              <p className="text-xs text-ice-white/60">≈ acesso a lounge VIP</p>
+            </div>
+          </div>
+          <p className="text-[10px] text-ice-white/40 text-center mt-2">
+            Valores de referência. Catálogo completo após o cadastro.
           </p>
         </motion.div>
       </div>

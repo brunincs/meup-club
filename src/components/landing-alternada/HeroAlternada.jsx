@@ -111,7 +111,7 @@ export function HeroAlternada() {
             <GoldLine width="80px" centered animated={false} />
           </motion.div>
 
-          {/* Subheadline com gancho de fundador */}
+          {/* Subheadline - clareza que é a Me,up lançando */}
           <motion.p
             custom={1}
             initial="hidden"
@@ -119,9 +119,9 @@ export function HeroAlternada() {
             variants={lineVariants}
             className="text-base md:text-lg text-ice-white/85 max-w-xl mx-auto mb-6 leading-relaxed"
           >
-            Acumule pontos indicando amigos e viajando. Troque por
-            <span className="text-antique-gold font-medium"> lounges VIP, upgrades de classe </span>
-            e experiências exclusivas.
+            A <span className="text-antique-gold font-medium">Me,up Viagens</span> está lançando
+            seu clube de fidelidade. Indique amigos, viaje com a gente e troque pontos por
+            <span className="text-antique-gold font-medium"> upgrades, lounges e experiências</span>.
           </motion.p>
 
           {/* Oferta de fundador inline */}
