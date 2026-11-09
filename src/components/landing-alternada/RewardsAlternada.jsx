@@ -57,11 +57,11 @@ export function RewardsAlternada() {
             Experiências
           </span>
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-ice-white mb-4">
-            Transforme pontos em viagens melhores
+            O que seus pontos desbloqueiam
           </h2>
           <GoldLine width="80px" centered className="mb-4" />
           <p className="text-ice-white/70 max-w-lg mx-auto text-base">
-            Novas experiências toda temporada — algumas por tempo limitado.
+            Novas experiências todos os meses — algumas por tempo limitado.
           </p>
         </motion.div>
 
