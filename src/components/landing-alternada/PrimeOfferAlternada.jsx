@@ -197,42 +197,41 @@ export function PrimeOfferAlternada() {
             )}
 
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-4">
                 <span className="text-xl">👑</span>
                 <h3 className="text-xl font-display font-bold text-white">Meup Prime</h3>
               </div>
-              <p className="text-sm text-antique-gold/80 mb-4">Tudo do Free, mais:</p>
 
               {/* Preço */}
               <div className="mb-6">
                 {ciclo === 'anual' ? (
                   <>
                     {ofertaFundador && (
-                      <p className="text-dusty-rose/50 line-through text-lg">
+                      <p className="text-ice-white/60 line-through text-lg">
                         R${formatPrice(precoAnualCheio, false)}/ano
                       </p>
                     )}
                     <p className="text-3xl font-display font-bold text-white">
-                      R${formatPrice(precoAnual, false)}<span className="text-lg text-dusty-rose/50">/ano</span>
+                      R${formatPrice(precoAnual, false)}<span className="text-lg text-ice-white/60">/ano</span>
                     </p>
                     {ofertaFundador && (
                       <p className="text-sm text-amber-300 mt-1">
                         Economia de R${economiaFundadorAnual} · preço de fundador
                       </p>
                     )}
-                    <p className="text-xs text-dusty-rose/50 mt-1">
+                    <p className="text-xs text-ice-white/60 mt-1">
                       Equivale a R$41,42/mês
                     </p>
                   </>
                 ) : (
                   <>
                     {ofertaFundador && (
-                      <p className="text-dusty-rose/50 line-through text-lg">
+                      <p className="text-ice-white/60 line-through text-lg">
                         R${formatPrice(precoMensalCheio)}/mês
                       </p>
                     )}
                     <p className="text-3xl font-display font-bold text-white">
-                      R${formatPrice(precoMensal)}<span className="text-lg text-dusty-rose/50">/mês</span>
+                      R${formatPrice(precoMensal)}<span className="text-lg text-ice-white/60">/mês</span>
                     </p>
                     {ofertaFundador && (
                       <p className="text-sm text-amber-300 mt-1">
@@ -249,11 +248,11 @@ export function PrimeOfferAlternada() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Pontos em viagens: <strong className="text-antique-gold">{ciclo === 'anual' ? '1,5x' : '1x'}</strong>{ciclo === 'mensal' && <span className="text-dusty-rose/50 text-xs ml-1">(1,5x no anual)</span>}</span>
+                    <span className="text-white">Pontos em viagens: <strong className="text-antique-gold">{ciclo === 'anual' ? '1,5x' : '1x'}</strong>{ciclo === 'mensal' && <span className="text-ice-white/60 text-xs ml-1">(1,5x no anual)</span>}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Check-in: <strong className="text-antique-gold">{prime.pontosCheckin || 30} pts</strong> <span className="text-dusty-rose/50 text-xs">(3x)</span></span>
+                    <span className="text-white">Check-in: <strong className="text-antique-gold">{prime.pontosCheckin || 30} pts</strong> <span className="text-ice-white/60 text-xs">(3x)</span></span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
@@ -272,7 +271,7 @@ export function PrimeOfferAlternada() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Prioridade na cotação <span className="text-dusty-rose/50 text-xs">(até 4h)</span></span>
+                    <span className="text-white">Prioridade na cotação <span className="text-ice-white/60 text-xs">(até 4h)</span></span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
@@ -280,7 +279,7 @@ export function PrimeOfferAlternada() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Roteiros em PDF {ciclo === 'mensal' && <span className="text-dusty-rose/50 text-xs">(no anual)</span>}</span>
+                    <span className="text-white">Roteiros em PDF {ciclo === 'mensal' && <span className="text-ice-white/60 text-xs">(no anual)</span>}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
