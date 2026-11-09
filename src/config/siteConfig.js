@@ -69,6 +69,44 @@ export const siteConfig = {
   },
 
   // ════════════════════════════════════════════════════════════════════════════
+  // CLASSES DO CLUBE (níveis de evolução)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  classes: [
+    {
+      nome: 'Econômica',
+      pontosMinimos: 0,
+      requisito: 'início',
+      beneficio: 'Entrada no clube: acumula pontos e troca por recompensas.',
+    },
+    {
+      nome: 'Econômica Premium',
+      pontosMinimos: 5000,
+      requisito: 'a partir de 5.000 pts',
+      beneficio: 'Bônus de 1.000 pts ao subir · 5% de desconto em experiências.',
+    },
+    {
+      nome: 'Executiva',
+      pontosMinimos: 20000,
+      requisito: 'a partir de 20.000 pts',
+      beneficio: 'Bônus de 3.000 pts · 10% de desconto em upgrades e experiências · prioridade no atendimento.',
+    },
+    {
+      nome: 'Primeira Classe',
+      pontosMinimos: 50000,
+      requisito: 'a partir de 50.000 pts',
+      beneficio: 'Bônus de 5.000 pts · 15% de desconto · acesso a experiências exclusivas.',
+    },
+    {
+      nome: 'Meup Exclusive',
+      pontosMinimos: 100000,
+      requisito: 'a partir de 100.000 pts',
+      beneficio: 'Bônus de 10.000 pts · maior desconto · atendimento VIP / consultor dedicado.',
+      isTopo: true,
+    },
+  ],
+
+  // ════════════════════════════════════════════════════════════════════════════
   // BENEFÍCIOS DOS PLANOS (qualitativos)
   // ════════════════════════════════════════════════════════════════════════════
 
