@@ -43,63 +43,63 @@ export const multipliers = {
 
 // ============================================
 // SISTEMA DE CLASSES (NÍVEIS)
-// Inspirado nas classes de voo para experiência premium
+// ALINHADO COM siteConfig.classes da landing
 // ============================================
 export const levels = [
   {
     id: 1,
-    name: 'Classe Econômica',
+    name: 'Econômica',
     shortName: 'Econômica',
     minPoints: 0,
-    maxPoints: 599,
+    maxPoints: 4999,
     bonusMultiplier: 1,
     icon: '✈️',
     color: 'slate',
-    perks: ['Acesso ao clube', 'Código de indicação exclusivo', 'Catálogo de experiências']
+    perks: ['Entrada no clube', 'Acumula pontos', 'Troca por recompensas']
   },
   {
     id: 2,
     name: 'Econômica Premium',
     shortName: 'Premium',
-    minPoints: 600,
-    maxPoints: 1799,
+    minPoints: 5000,
+    maxPoints: 19999,
     bonusMultiplier: 1.05,
     icon: '🌟',
     color: 'blue',
-    perks: ['5% bônus em pontos', 'Atendimento prioritário', 'Experiências exclusivas']
+    perks: ['Bônus de 1.000 pts ao subir', '5% de desconto em experiências']
   },
   {
     id: 3,
-    name: 'Classe Executiva',
+    name: 'Executiva',
     shortName: 'Executiva',
-    minPoints: 1800,
-    maxPoints: 3999,
+    minPoints: 20000,
+    maxPoints: 49999,
     bonusMultiplier: 1.1,
     icon: '💼',
     color: 'violet',
-    perks: ['10% bônus em pontos', 'Ofertas antecipadas', 'Concierge de viagem']
+    perks: ['Bônus de 3.000 pts ao subir', '10% de desconto em upgrades e experiências', 'Prioridade no atendimento']
   },
   {
     id: 4,
     name: 'Primeira Classe',
     shortName: 'Primeira',
-    minPoints: 4000,
-    maxPoints: 7999,
+    minPoints: 50000,
+    maxPoints: 99999,
     bonusMultiplier: 1.15,
     icon: '👑',
     color: 'amber',
-    perks: ['15% bônus em pontos', 'Suporte VIP dedicado', 'Upgrades preferenciais']
+    perks: ['Bônus de 5.000 pts ao subir', '15% de desconto', 'Acesso a experiências exclusivas']
   },
   {
     id: 5,
     name: 'Meup Exclusive',
     shortName: 'Exclusive',
-    minPoints: 8000,
+    minPoints: 100000,
     maxPoints: Infinity,
     bonusMultiplier: 1.25,
     icon: '💎',
     color: 'slate-900',
-    perks: ['25% bônus em pontos', 'Gerente pessoal', 'Experiências sob medida', 'Eventos privados']
+    perks: ['Bônus de 10.000 pts ao subir', 'Maior desconto', 'Atendimento VIP', 'Consultor dedicado']
   }
 ]
 

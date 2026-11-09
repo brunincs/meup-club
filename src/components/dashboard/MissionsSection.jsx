@@ -200,18 +200,18 @@ export function MissionsSection({ variant = 'dark' }) {
     })
   }, [tarefas, statusMap, userStats])
 
-  // Missões em destaque (3 principais para o dashboard)
+  // Missões em destaque (2 principais para o dashboard - sem semanais)
   const featuredMissions = useMemo(() => {
-    // Pegar uma de cada tipo para mostrar variedade
+    // Pegar missões diárias e únicas (sem semanais)
     const daily = processedTasks.find(t => t.tipo === 'diaria' && !t.completed)
-    const weekly = processedTasks.find(t => t.tipo === 'semanal' && !t.completed)
     const oneTime = processedTasks.find(t => t.tipo === 'unica' && !t.completed)
+    const oneTime2 = processedTasks.find(t => t.tipo === 'unica' && !t.completed && t.id !== oneTime?.id)
 
     // Se não tiver pendentes, pega as primeiras
     return {
       share: daily || processedTasks.find(t => t.tipo === 'diaria'),
-      referral: weekly || processedTasks.find(t => t.tipo === 'semanal'),
-      convert: oneTime || processedTasks.find(t => t.tipo === 'unica')
+      convert: oneTime || processedTasks.find(t => t.tipo === 'unica'),
+      convert2: oneTime2 || null
     }
   }, [processedTasks])
 
@@ -599,7 +599,7 @@ export function MissionsSection({ variant = 'dark' }) {
       </motion.div>
 
       {/* Main Missions Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Missão 1: Ação diária */}
         {featuredMissions.share && (
           <div className="lg:col-span-1">
@@ -615,22 +615,7 @@ export function MissionsSection({ variant = 'dark' }) {
           </div>
         )}
 
-        {/* Missão 2: Semanal */}
-        {featuredMissions.referral && (
-          <div className="lg:col-span-1">
-            <MissionCard
-              mission={featuredMissions.referral}
-              type="weekly"
-              variant={variant}
-              onStart={handleGoToMission}
-              onComplete={handleCompleteMission}
-              onClaim={handleClaimMission}
-              isLoading={loadingTaskId === featuredMissions.referral.id}
-            />
-          </div>
-        )}
-
-        {/* Missão 3: Conquista */}
+        {/* Missão 2: Conquista */}
         {featuredMissions.convert && (
           <div className="lg:col-span-1">
             <MissionCard

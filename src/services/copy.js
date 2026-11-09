@@ -7,9 +7,9 @@
 // ============================================
 export const levels = {
   names: {
-    1: 'Classe Econômica',
+    1: 'Econômica',
     2: 'Econômica Premium',
-    3: 'Classe Executiva',
+    3: 'Executiva',
     4: 'Primeira Classe',
     5: 'Meup Exclusive'  // Nome de marca - mantido em inglês propositalmente
   },
@@ -27,12 +27,13 @@ export const levels = {
     4: '👑',
     5: '💎'
   },
+  // Alinhado com siteConfig.classes
   descriptions: {
-    1: 'Início da sua jornada',
-    2: 'Conforto elevado',
-    3: 'Experiência refinada',
-    4: 'Exclusividade absoluta',
-    5: 'O ápice do privilégio'
+    1: 'Entrada no clube: acumula pontos e troca por recompensas',
+    2: 'Bônus de 1.000 pts ao subir · 5% de desconto em experiências',
+    3: 'Bônus de 3.000 pts · 10% de desconto · prioridade no atendimento',
+    4: 'Bônus de 5.000 pts · 15% de desconto · experiências exclusivas',
+    5: 'Bônus de 10.000 pts · maior desconto · atendimento VIP'
   },
   unlockNew: 'Desbloqueia novas experiências',
   current: 'Sua classe',

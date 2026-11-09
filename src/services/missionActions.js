@@ -72,7 +72,8 @@ export const MISSION_ACTIONS = {
     route: null,
     label: 'Compartilhar',
     requiresApproval: false,
-    isAutomatic: false // Credita via RPC ao compartilhar
+    isAutomatic: false,
+    hideFromList: true // Removido - fácil demais, gameável
   },
 
   // === INDICAÇÕES (sistema verifica automaticamente) ===

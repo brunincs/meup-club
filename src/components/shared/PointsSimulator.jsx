@@ -8,6 +8,8 @@ import {
   getNextExperience,
 } from '@/hooks/useExperiencias'
 import { fetchPlanosConfig } from '@/services/subscriptionService'
+import { useAuth } from '@/contexts/AuthContext'
+import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 
 /**
  * Simulador de Pontos Unificado
@@ -249,13 +251,19 @@ export function PointsSimulator({
 
 /**
  * Wrapper com abas para alternar entre modos E planos
- * Usado na landing para mostrar diferença Free vs Prime
+ * Condicional por plano do usuário:
+ * - Prime: só mostra ganhos do Prime (sem comparação)
+ * - Free: mostra comparação Free vs Prime + CTA para upgrade
  */
 export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
+  const { profile } = useAuth()
   const [activeMode, setActiveMode] = useState('travel')
   const [activePlano, setActivePlano] = useState('prime')
   const [config, setConfig] = useState(null)
   const isLight = variant === 'light'
+
+  // Verificar se usuário é Prime
+  const userIsPrime = profile?.subscription_status === 'active' || profile?.plano === 'prime'
 
   // Carregar config dos planos
   useEffect(() => {
@@ -267,6 +275,13 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
     }
     load()
   }, [])
+
+  // Se Prime, sempre mostrar só Prime
+  useEffect(() => {
+    if (userIsPrime) {
+      setActivePlano('prime')
+    }
+  }, [userIsPrime])
 
   const tabClass = (isActive) => {
     if (isActive) {
@@ -292,26 +307,43 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
   const freeConfig = config?.free || { pontosIndicacao: 3000 }
   const primeConfig = config?.prime || { pontosIndicacao: 5000 }
 
+  const handleUpgrade = () => {
+    garantirVagaFundadorWhatsApp('anual')
+  }
+
   return (
     <div>
-      {/* Toggle Free / Prime */}
-      <div className="flex items-center justify-center gap-2 mb-4">
-        <button
-          onClick={() => setActivePlano('free')}
-          className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${planoTabClass(activePlano === 'free')}`}
-        >
-          Free
-        </button>
-        <button
-          onClick={() => setActivePlano('prime')}
-          className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${planoTabClass(activePlano === 'prime')}`}
-        >
-          👑 Prime
-        </button>
-      </div>
+      {/* Toggle Free / Prime - só mostra se NÃO é Prime */}
+      {!userIsPrime && (
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <button
+            onClick={() => setActivePlano('free')}
+            className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${planoTabClass(activePlano === 'free')}`}
+          >
+            Free
+          </button>
+          <button
+            onClick={() => setActivePlano('prime')}
+            className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${planoTabClass(activePlano === 'prime')}`}
+          >
+            👑 Prime
+          </button>
+        </div>
+      )}
 
-      {/* Indicador de vantagem */}
-      {activePlano === 'prime' && (
+      {/* Badge Prime para usuários Prime */}
+      {userIsPrime && (
+        <div className="text-center mb-4">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-heading ${
+            isLight ? 'bg-antique-gold/20 text-antique-gold' : 'bg-antique-gold/20 text-antique-gold'
+          }`}>
+            👑 Seus ganhos como Prime
+          </span>
+        </div>
+      )}
+
+      {/* Indicador de vantagem - só para Free simulando Prime */}
+      {!userIsPrime && activePlano === 'prime' && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -357,27 +389,34 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
           mode={activeMode}
           variant={variant}
           compact={compact}
-          plano={activePlano}
+          plano={userIsPrime ? 'prime' : activePlano}
           config={config}
         />
       </motion.div>
 
-      {/* Comparativo rápido */}
-      {activePlano === 'free' && (
+      {/* CTA para upgrade - só para Free */}
+      {!userIsPrime && activePlano === 'free' && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className={`mt-4 p-3 rounded-xl text-center ${
+          className={`mt-4 p-4 rounded-xl text-center ${
             isLight ? 'bg-antique-gold/10 border border-antique-gold/20' : 'bg-antique-gold/5 border border-antique-gold/20'
           }`}
         >
-          <p className={`text-sm ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
+          <p className={`text-sm mb-3 ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
             Com o <span className="text-antique-gold font-semibold">Prime</span>, você ganharia{' '}
             <span className="text-antique-gold font-bold">
               {activeMode === 'travel' ? '50% mais' : `+${formatPoints(primeConfig.pontosIndicacao - freeConfig.pontosIndicacao)}`}
             </span>{' '}
             {activeMode === 'travel' ? 'pontos' : 'pts por indicação'}
           </p>
+          <button
+            onClick={handleUpgrade}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-antique-gold text-deep-purple text-sm font-heading font-semibold hover:bg-accent-light transition-colors"
+          >
+            Assine o Prime e ganhe mais pontos
+            <span>→</span>
+          </button>
         </motion.div>
       )}
     </div>
