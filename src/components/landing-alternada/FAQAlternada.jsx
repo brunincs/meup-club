@@ -26,7 +26,7 @@ const FAQ_ITEMS = [
   {
     id: 4,
     question: 'Qual a diferença entre plano e classe?',
-    answer: 'Plano é sua assinatura (Free ou Prime) — define os benefícios que você tem. Classe é seu nível no ranking (Econômica, Executiva, Primeira Classe) — definida pelos pontos acumulados. Você pode ser Free na Primeira Classe ou Prime na Econômica.'
+    answer: 'Plano é sua assinatura (Free ou Prime) — define os benefícios que você tem. Classe é seu nível no ranking (5 níveis, da Econômica à Meup Exclusive) — definida pelos pontos acumulados. Você pode ser Free na Primeira Classe ou Prime na Econômica.'
   },
   {
     id: 5,
@@ -41,7 +41,7 @@ const FAQ_ITEMS = [
   {
     id: 7,
     question: 'Preciso viajar para acumular pontos?',
-    answer: 'Não! Você ganha pontos de várias formas: check-in diário (só abrir o app), indicar amigos, fazer aniversário (Prime), e claro, viajando. Dá para acumular sem sair de casa.'
+    answer: 'Não! Você ganha pontos de várias formas: check-in diário (fazer check-in diário no clube), indicar amigos, fazer aniversário (Prime), e claro, viajando. Dá para acumular sem sair de casa.'
   },
   {
     id: 8,
