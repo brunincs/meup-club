@@ -61,7 +61,7 @@ export function RewardsAlternada() {
           </h2>
           <GoldLine width="80px" centered className="mb-4" />
           <p className="text-ice-white/70 max-w-lg mx-auto text-base">
-            Upgrades, lounges, jantares, stopovers. Escolha sua próxima experiência.
+            Upgrades, lounges, stopovers. Escolha sua próxima experiência.
           </p>
           <p className="text-ice-white/60 text-sm mt-2">
             Novas experiências toda temporada. Algumas por tempo limitado.
