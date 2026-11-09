@@ -3,6 +3,7 @@ import {
   Hero,
   CredibilitySection,
   RealProofSection,
+  TestimonialsReal,
   HowItWorks,
   PointsSimulator,
   PrimeOffer,
@@ -21,17 +22,18 @@ import {
  * credibilidade da agência (que já existe), não o desconto.
  *
  * Fluxo das seções:
- * 1. Hero (escuro) - Gancho + badge fundador + mini-card preço
- * 2. CredibilitySection (claro) - Quem é a Me,up: Cadastur, anos, clientes, Instagram
- * 3. RealProofSection (claro) - Prova real: links para verificar (Instagram, Cadastur, WhatsApp)
- * 4. HowItWorks (claro) - Como funciona o clube
- * 5. PointsSimulator (escuro) - "Quanto você pode ganhar"
- * 6. PrimeOffer (escuro) - A OFERTA (agora que já confia) + âncora valor dos pontos
- * 7. Ranking (claro) - Evolução / classes
- * 8. Rewards (escuro) - Experiências disponíveis
- * 9. FAQ (escuro) - Objeções
- * 10. FinalCTA (escuro) - Repete a oferta
- * 11. Footer
+ * 1. Hero (escuro) - Gancho limpo + CTA que rola até oferta (sem preço no topo)
+ * 2. CredibilitySection (claro) - Quem é a Me,up: Cadastur, Instagram
+ * 3. RealProofSection (claro) - Prova real: links para verificar
+ * 4. TestimonialsReal (claro) - Depoimentos reais de clientes
+ * 5. HowItWorks (claro) - Como funciona o clube
+ * 6. PointsSimulator (escuro) - "Quanto você pode ganhar"
+ * 7. PrimeOffer (escuro) - A OFERTA (agora que já confia) + âncora valor dos pontos
+ * 8. Ranking (claro) - Evolução / classes
+ * 9. Rewards (escuro) - Experiências disponíveis
+ * 10. FAQ (escuro) - Objeções
+ * 11. FinalCTA (escuro) - Repete a oferta
+ * 12. Footer
  */
 export function Home() {
   return (
@@ -44,6 +46,7 @@ export function Home() {
       {/* CONFIANÇA - Transferir credibilidade da Me,up */}
       <CredibilitySection />
       <RealProofSection />
+      <TestimonialsReal />
 
       {/* VALOR - Como funciona + Simulador */}
       <HowItWorks />

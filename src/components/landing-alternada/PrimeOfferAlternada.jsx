@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { fetchPlanosConfig } from '@/services/subscriptionService'
 import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
@@ -8,7 +9,7 @@ import { siteConfig } from '@/config/siteConfig'
 
 /**
  * PrimeOfferAlternada - Seção de oferta do Prime com preço de fundador
- * ESCURO - Free vs Prime side by side
+ * Layout limpo: Free discreto (claro) + Prime destacado (escuro premium)
  */
 export function PrimeOfferAlternada() {
   const [config, setConfig] = useState(null)
@@ -88,7 +89,7 @@ export function PrimeOfferAlternada() {
             transition={{ delay: 0.2 }}
             className="text-ice-white/70 max-w-xl mx-auto"
           >
-            Turma inicial de {siteConfig.fundador.vagas} fundadores com preço especial de lançamento.
+            Compare os planos e escolha o seu.
           </motion.p>
         </div>
 
@@ -120,56 +121,73 @@ export function PrimeOfferAlternada() {
             >
               Anual
               <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs">
-                1.5x
+                2 meses grátis
               </span>
             </button>
           </div>
         </motion.div>
 
         {/* Cards Grid */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {/* Free Card */}
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
+
+          {/* Free Card - Fundo CLARO/neutro (recuado) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="p-6 rounded-2xl bg-white/5 border border-white/10"
+            className="p-6 rounded-2xl bg-ice-white/95 border border-deep-purple/10 shadow-sm flex flex-col"
           >
-            <h3 className="text-xl font-display font-bold text-white mb-2">Free</h3>
-            <p className="text-3xl font-display font-bold text-white mb-6">
-              R$0<span className="text-lg text-dusty-rose/60">/sempre</span>
-            </p>
+            <div className="flex-1">
+              <h3 className="text-xl font-display font-bold text-deep-purple mb-1">Free</h3>
+              <p className="text-sm text-deep-purple/60 mb-4">Entre de graça</p>
 
-            <ul className="space-y-3 text-sm text-dusty-rose/80 mb-8">
-              <li className="flex items-center gap-2">
-                <span className="text-green-400">✓</span>
-                Check-in: {free.pontosCheckin || 10} pts/dia
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-400">✓</span>
-                Indicação: {(free.pontosIndicacao || 3000).toLocaleString('pt-BR')} pts
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-dusty-rose/40">-</span>
-                <span className="text-dusty-rose/40">Bônus aniversário: 0 pts</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-dusty-rose/40">-</span>
-                <span className="text-dusty-rose/40">Multiplicador: 1x</span>
-              </li>
-            </ul>
+              <p className="text-3xl font-display font-bold text-deep-purple mb-6">
+                R$0<span className="text-lg text-deep-purple/40">/sempre</span>
+              </p>
 
-            <div className="py-3 text-center text-dusty-rose/50 font-heading text-sm border-t border-white/10">
-              Crie sua conta gratuitamente
+              {/* Lista do Free - só benefícios reais */}
+              <ul className="space-y-2.5 text-sm mb-6">
+                <li className="flex items-start gap-2 text-deep-purple/80">
+                  <span className="text-green-600 mt-0.5">✓</span>
+                  <span>Pontos em viagens: <strong>1x</strong></span>
+                </li>
+                <li className="flex items-start gap-2 text-deep-purple/80">
+                  <span className="text-green-600 mt-0.5">✓</span>
+                  <span>Check-in diário: <strong>{free.pontosCheckin || 10} pts</strong></span>
+                </li>
+                <li className="flex items-start gap-2 text-deep-purple/80">
+                  <span className="text-green-600 mt-0.5">✓</span>
+                  <span>Indicação: <strong>{(free.pontosIndicacao || 3000).toLocaleString('pt-BR')} pts</strong></span>
+                </li>
+                <li className="flex items-start gap-2 text-deep-purple/80">
+                  <span className="text-green-600 mt-0.5">✓</span>
+                  <span>Cotação ilimitada</span>
+                </li>
+                <li className="flex items-start gap-2 text-deep-purple/80">
+                  <span className="text-green-600 mt-0.5">✓</span>
+                  <span>Lançamento manual (com aprovação)</span>
+                </li>
+                <li className="flex items-start gap-2 text-deep-purple/80">
+                  <span className="text-green-600 mt-0.5">✓</span>
+                  <span>Pontos válidos por 12 meses</span>
+                </li>
+              </ul>
             </div>
+
+            <Link
+              to="/cadastro"
+              className="block w-full py-3 text-center text-deep-purple font-heading font-medium text-sm border border-deep-purple/20 rounded-xl hover:bg-deep-purple/5 transition-colors"
+            >
+              Criar conta grátis
+            </Link>
           </motion.div>
 
-          {/* Prime Card */}
+          {/* Prime Card - Fundo ESCURO premium (destacado) */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="relative p-6 rounded-2xl bg-gradient-to-br from-amber-500/15 to-amber-600/5 border-2 border-amber-500/40"
+            className="relative p-6 rounded-2xl bg-gradient-to-br from-[#4a2259] via-[#3d1a4a] to-[#2d1237] border-2 border-antique-gold/70 shadow-2xl shadow-antique-gold/25 flex flex-col ring-1 ring-antique-gold/20"
           >
             {/* Badge Fundador */}
             {ofertaFundador && (
@@ -178,72 +196,111 @@ export function PrimeOfferAlternada() {
               </div>
             )}
 
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">👑</span>
-              <h3 className="text-xl font-display font-bold text-white">Meup Prime</h3>
-            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl">👑</span>
+                <h3 className="text-xl font-display font-bold text-white">Meup Prime</h3>
+              </div>
+              <p className="text-sm text-antique-gold/80 mb-4">Tudo do Free, mais:</p>
 
-            {/* Preço */}
-            <div className="mb-6">
-              {ciclo === 'anual' ? (
-                <>
-                  {ofertaFundador && (
-                    <p className="text-dusty-rose/60 line-through text-lg">
-                      R${formatPrice(precoAnualCheio, false)}/ano
+              {/* Preço */}
+              <div className="mb-6">
+                {ciclo === 'anual' ? (
+                  <>
+                    {ofertaFundador && (
+                      <p className="text-dusty-rose/50 line-through text-lg">
+                        R${formatPrice(precoAnualCheio, false)}/ano
+                      </p>
+                    )}
+                    <p className="text-3xl font-display font-bold text-white">
+                      R${formatPrice(precoAnual, false)}<span className="text-lg text-dusty-rose/50">/ano</span>
                     </p>
-                  )}
-                  <p className="text-3xl font-display font-bold text-white">
-                    R${formatPrice(precoAnual, false)}<span className="text-lg text-dusty-rose/60">/ano</span>
-                  </p>
-                  <p className="text-sm text-amber-300 mt-1">
-                    {ofertaFundador
-                      ? `Economize R$${economiaFundadorAnual} + multiplicador 1.5x`
-                      : 'Multiplicador 1.5x em viagens'
-                    }
-                  </p>
-                </>
-              ) : (
-                <>
-                  {ofertaFundador && (
-                    <p className="text-dusty-rose/60 line-through text-lg">
-                      R${formatPrice(precoMensalCheio)}/mês
+                    {ofertaFundador && (
+                      <p className="text-sm text-amber-300 mt-1">
+                        Economia de R${economiaFundadorAnual} · preço de fundador
+                      </p>
+                    )}
+                    <p className="text-xs text-dusty-rose/50 mt-1">
+                      Equivale a R$41,42/mês
                     </p>
-                  )}
-                  <p className="text-3xl font-display font-bold text-white">
-                    R${formatPrice(precoMensal)}<span className="text-lg text-dusty-rose/60">/mês</span>
-                  </p>
-                  <p className="text-sm text-amber-300 mt-1">
-                    {ofertaFundador
-                      ? `Economize R$${economiaFundadorMensal}/mês`
-                      : `ou R$${formatPrice(precoAnual, false)}/ano com 1.5x`
-                    }
-                  </p>
-                </>
-              )}
-            </div>
+                  </>
+                ) : (
+                  <>
+                    {ofertaFundador && (
+                      <p className="text-dusty-rose/50 line-through text-lg">
+                        R${formatPrice(precoMensalCheio)}/mês
+                      </p>
+                    )}
+                    <p className="text-3xl font-display font-bold text-white">
+                      R${formatPrice(precoMensal)}<span className="text-lg text-dusty-rose/50">/mês</span>
+                    </p>
+                    {ofertaFundador && (
+                      <p className="text-sm text-amber-300 mt-1">
+                        Economia de R${economiaFundadorMensal}/mês · preço de fundador
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
 
-            <ul className="space-y-3 text-sm text-dusty-rose/80 mb-8">
-              <li className="flex items-center gap-2">
-                <span className="text-amber-400">★</span>
-                Check-in: <span className="text-white font-semibold">{prime.pontosCheckin || 30} pts/dia</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-amber-400">★</span>
-                Indicação: <span className="text-white font-semibold">{(prime.pontosIndicacao || 5000).toLocaleString('pt-BR')} pts</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-amber-400">★</span>
-                Bônus aniversário: <span className="text-white font-semibold">{(prime.pontosAniversario || 5000).toLocaleString('pt-BR')} pts</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-amber-400">★</span>
-                Multiplicador: <span className="text-white font-semibold">{ciclo === 'anual' ? '1.5x' : '1x (1.5x no anual)'}</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-amber-400">★</span>
-                <span className="text-white font-semibold">Lançamento automático</span>
-              </li>
-            </ul>
+              {/* Bloco 1: Mais pontos */}
+              <div className="mb-4">
+                <p className="text-[10px] uppercase tracking-wider text-antique-gold/60 mb-2 font-heading">Mais pontos</p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Pontos em viagens: <strong className="text-antique-gold">{ciclo === 'anual' ? '1,5x' : '1x'}</strong>{ciclo === 'mensal' && <span className="text-dusty-rose/50 text-xs ml-1">(1,5x no anual)</span>}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Check-in: <strong className="text-antique-gold">{prime.pontosCheckin || 30} pts</strong> <span className="text-dusty-rose/50 text-xs">(3x)</span></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Indicação: <strong className="text-antique-gold">{(prime.pontosIndicacao || 5000).toLocaleString('pt-BR')} pts</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Bônus aniversário: <strong className="text-antique-gold">{(prime.pontosAniversario || 5000).toLocaleString('pt-BR')} pts</strong></span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Bloco 2: Benefícios exclusivos */}
+              <div className="mb-6">
+                <p className="text-[10px] uppercase tracking-wider text-antique-gold/60 mb-2 font-heading">Benefícios exclusivos</p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Prioridade na cotação <span className="text-dusty-rose/50 text-xs">(até 4h)</span></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Lançamento automático de pontos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Roteiros em PDF {ciclo === 'mensal' && <span className="text-dusty-rose/50 text-xs">(no anual)</span>}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Cupons de parceiros</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Acesso antecipado e desconto em experiências</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Selo de fundador</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Pontos não expiram</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
 
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -256,7 +313,7 @@ export function PrimeOfferAlternada() {
           </motion.div>
         </div>
 
-        {/* Escassez com motivo genuíno (convite, não pressão) */}
+        {/* Escassez honesta */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -264,45 +321,14 @@ export function PrimeOfferAlternada() {
           className="text-center mt-8 max-w-xl mx-auto"
         >
           <p className="text-sm text-ice-white/80 leading-relaxed">
-            O clube está começando. As <span className="text-amber-300 font-semibold">{siteConfig.fundador.vagas} primeiras vagas</span> são
-            de fundador: entram no preço de lançamento e ajudam a moldar o clube com a gente.
+            Preço de fundador para os <span className="text-amber-300 font-semibold">{siteConfig.fundador.vagas} primeiros</span>.
+            Quando encerrar, volta para R$997.
           </p>
           <p className="text-xs text-ice-white/50 mt-2">
-            Depois dessa turma, o preço sobe para R$997. Quem entrar agora mantém o valor enquanto renovar.
+            Quem entrar agora mantém o valor enquanto renovar.
           </p>
         </motion.div>
 
-        {/* Âncora de valor dos pontos - usa siteConfig */}
-        {siteConfig.valorPontos.filter(item => item.pontos && item.descricao).length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-10 p-4 rounded-xl bg-white/5 border border-white/10 max-w-md mx-auto"
-          >
-            <p className="text-xs text-ice-white/60 text-center mb-3 font-heading uppercase tracking-wide">
-              Quanto vale um ponto?
-            </p>
-            <div className={`grid grid-cols-${Math.min(siteConfig.valorPontos.filter(item => item.pontos && item.descricao).length, 3)} gap-3 text-center`}>
-              {siteConfig.valorPontos
-                .filter(item => item.pontos && item.descricao)
-                .map((item, index) => (
-                  <div key={index} className="p-2">
-                    <p className="text-lg font-display font-bold text-antique-gold">
-                      {item.pontos.toLocaleString('pt-BR')} pts
-                    </p>
-                    <p className="text-xs text-ice-white/60">≈ {item.descricao}</p>
-                  </div>
-                ))
-              }
-            </div>
-            {siteConfig.valorPontosNota && (
-              <p className="text-[10px] text-ice-white/40 text-center mt-2">
-                {siteConfig.valorPontosNota}
-              </p>
-            )}
-          </motion.div>
-        )}
       </div>
     </section>
   )

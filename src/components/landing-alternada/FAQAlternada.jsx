@@ -50,19 +50,25 @@ const FAQ_ITEMS = [
   }
 ]
 
-function FAQItem({ item, isOpen, onToggle }) {
+function FAQItem({ item, isOpen, onToggle, variant = 'dark' }) {
+  const isLight = variant === 'light'
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="border-b border-white/10 last:border-b-0"
+      className={`border-b last:border-b-0 ${isLight ? 'border-dusty-rose/20' : 'border-white/10'}`}
     >
       <button
         onClick={onToggle}
         className="w-full py-5 flex items-center justify-between text-left group"
       >
-        <span className="text-sm md:text-base font-heading font-medium text-ice-white group-hover:text-antique-gold transition-colors pr-4">
+        <span className={`text-sm md:text-base font-heading font-medium transition-colors pr-4 ${
+          isLight
+            ? 'text-deep-purple group-hover:text-antique-gold'
+            : 'text-ice-white group-hover:text-antique-gold'
+        }`}>
           {item.question}
         </span>
         <motion.span
@@ -83,7 +89,7 @@ function FAQItem({ item, isOpen, onToggle }) {
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <p className="pb-5 text-sm text-ice-white/70 leading-relaxed">
+            <p className={`pb-5 text-sm leading-relaxed ${isLight ? 'text-deep-purple/70' : 'text-ice-white/70'}`}>
               {item.answer}
             </p>
           </motion.div>
@@ -106,12 +112,12 @@ export function FAQAlternada() {
   const rightColumn = FAQ_ITEMS.slice(midpoint)
 
   return (
-    <section className="relative py-16 md:py-24 bg-deep-purple overflow-hidden">
+    <section className="relative py-16 md:py-24 bg-ice-white overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute bottom-0 left-1/4 w-[600px] h-[400px] rounded-full blur-[150px] opacity-15"
-          style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.3) 0%, transparent 60%)' }}
+          className="absolute bottom-0 left-1/4 w-[600px] h-[400px] rounded-full blur-[150px] opacity-10"
+          style={{ background: 'radial-gradient(circle, rgba(50, 17, 63, 0.15) 0%, transparent 60%)' }}
         />
       </div>
 
@@ -124,7 +130,7 @@ export function FAQAlternada() {
             viewport={{ once: true }}
             className="mb-4"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-heading font-medium tracking-wider uppercase bg-white/5 border border-white/20 text-ice-white/80">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-heading font-medium tracking-wider uppercase bg-deep-purple/5 border border-deep-purple/20 text-deep-purple">
               Dúvidas frequentes
             </span>
           </motion.div>
@@ -134,7 +140,7 @@ export function FAQAlternada() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-2xl md:text-4xl font-display font-bold text-ice-white mb-4"
+            className="text-2xl md:text-4xl font-display font-bold text-deep-purple mb-4"
           >
             Tudo o que você precisa <span className="text-antique-gold">saber</span>
           </motion.h2>
@@ -144,24 +150,26 @@ export function FAQAlternada() {
 
         {/* FAQ Grid - 2 colunas em desktop */}
         <div className="grid md:grid-cols-2 gap-x-8 gap-y-0 max-w-4xl mx-auto">
-          <div className="bg-white/5 rounded-2xl px-6 border border-white/10">
+          <div className="bg-white rounded-2xl px-6 border border-dusty-rose/20 shadow-sm">
             {leftColumn.map((item) => (
               <FAQItem
                 key={item.id}
                 item={item}
                 isOpen={openId === item.id}
                 onToggle={() => handleToggle(item.id)}
+                variant="light"
               />
             ))}
           </div>
 
-          <div className="bg-white/5 rounded-2xl px-6 border border-white/10 mt-6 md:mt-0">
+          <div className="bg-white rounded-2xl px-6 border border-dusty-rose/20 shadow-sm mt-6 md:mt-0">
             {rightColumn.map((item) => (
               <FAQItem
                 key={item.id}
                 item={item}
                 isOpen={openId === item.id}
                 onToggle={() => handleToggle(item.id)}
+                variant="light"
               />
             ))}
           </div>
@@ -174,7 +182,7 @@ export function FAQAlternada() {
           viewport={{ once: true }}
           className="text-center mt-10"
         >
-          <p className="text-sm text-ice-white/60 font-heading">
+          <p className="text-sm text-deep-purple/60 font-heading">
             Ainda tem dúvidas?{' '}
             <a
               href="https://wa.me/5516988126568?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20o%20Meup%20Club."

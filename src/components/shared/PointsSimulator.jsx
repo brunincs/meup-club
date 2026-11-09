@@ -1,69 +1,82 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   useExperiencias,
   PONTOS_POR_REAL,
-  PONTOS_POR_INDICACAO,
   formatPoints,
   getUnlockedExperiences,
   getNextExperience,
 } from '@/hooks/useExperiencias'
+import { fetchPlanosConfig } from '@/services/subscriptionService'
 
 /**
  * Simulador de Pontos Unificado
  *
- * Dois modos:
+ * Dois modos de simulação:
  * - "travel": quanto VOCÊ ganha viajando (slider de valor em R$)
  * - "referral": quanto você ganha indicando (slider de número de amigos)
+ *
+ * Agora com alternância Free/Prime para mostrar a diferença de ganhos.
  *
  * Props:
  * - mode: "travel" | "referral"
  * - variant: "light" | "dark" (para ajustar cores ao fundo)
  * - compact: boolean (versão menor para dashboard)
+ * - plano: "free" | "prime" (qual plano simular)
+ * - showPlanToggle: boolean (mostrar toggle Free/Prime)
  */
-
-// Configurações por modo
-const CONFIG = {
-  travel: {
-    title: 'Viajando',
-    subtitle: 'Ganhe pontos com suas viagens',
-    inputLabel: 'Se você gastar em viagens:',
-    sliderMin: 2000,
-    sliderMax: 50000,
-    sliderStep: 500,
-    sliderInitial: 8000,
-    formatInput: (value) => new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 0,
-    }).format(value),
-    formatMinMax: (min, max) => ({ min: 'R$ 2.000', max: 'R$ 50.000' }),
-    calculatePoints: (value) => value * PONTOS_POR_REAL,
-  },
-  referral: {
-    title: 'Indicando',
-    subtitle: 'Ganhe pontos indicando amigos',
-    inputLabel: 'Se você indicar amigos que viajam:',
-    sliderMin: 1,
-    sliderMax: 10,
-    sliderStep: 1,
-    sliderInitial: 3,
-    formatInput: (value) => `${value} ${value === 1 ? 'amigo' : 'amigos'}`,
-    formatMinMax: (min, max) => ({ min: '1 amigo', max: '10 amigos' }),
-    calculatePoints: (value) => value * PONTOS_POR_INDICACAO,
-  },
-}
 
 export function PointsSimulator({
   mode = 'travel',
   variant = 'light',
-  compact = false
+  compact = false,
+  plano = 'prime',
+  config = null,
 }) {
-  const config = CONFIG[mode]
-  const [inputValue, setInputValue] = useState(config.sliderInitial)
-  const { allExperiences, loading } = useExperiencias()
+  // Config padrão (fallback)
+  const freeConfig = config?.free || { pontosCheckin: 10, pontosIndicacao: 3000 }
+  const primeConfig = config?.prime || { pontosCheckin: 30, pontosIndicacao: 5000 }
 
-  const pontosAcumulados = config.calculatePoints(inputValue)
+  const planoConfig = plano === 'prime' ? primeConfig : freeConfig
+  const multiplicador = plano === 'prime' ? 1.5 : 1 // Prime anual tem 1.5x
+
+  // Configurações por modo
+  const CONFIG = {
+    travel: {
+      title: 'Viajando',
+      subtitle: 'Ganhe pontos com suas viagens',
+      inputLabel: 'Se você gastar em viagens:',
+      sliderMin: 2000,
+      sliderMax: 50000,
+      sliderStep: 500,
+      sliderInitial: 8000,
+      formatInput: (value) => new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 0,
+      }).format(value),
+      formatMinMax: () => ({ min: 'R$ 2.000', max: 'R$ 50.000' }),
+      calculatePoints: (value) => Math.floor(value * PONTOS_POR_REAL * multiplicador),
+    },
+    referral: {
+      title: 'Indicando',
+      subtitle: 'Ganhe pontos indicando amigos',
+      inputLabel: 'Se você indicar amigos que viajam:',
+      sliderMin: 1,
+      sliderMax: 10,
+      sliderStep: 1,
+      sliderInitial: 3,
+      formatInput: (value) => `${value} ${value === 1 ? 'amigo' : 'amigos'}`,
+      formatMinMax: () => ({ min: '1 amigo', max: '10 amigos' }),
+      calculatePoints: (value) => value * planoConfig.pontosIndicacao,
+    },
+  }
+
+  const modeConfig = CONFIG[mode]
+  const [inputValue, setInputValue] = useState(modeConfig.sliderInitial)
+  const { allExperiences } = useExperiencias()
+
+  const pontosAcumulados = modeConfig.calculatePoints(inputValue)
   const experienciasDesbloqueadas = getUnlockedExperiences(allExperiences, pontosAcumulados)
   const proximaExperiencia = getNextExperience(allExperiences, pontosAcumulados)
   const pontosFaltando = proximaExperiencia
@@ -71,16 +84,16 @@ export function PointsSimulator({
     : 0
 
   const isLight = variant === 'light'
-  const minMaxLabels = config.formatMinMax(config.sliderMin, config.sliderMax)
+  const minMaxLabels = modeConfig.formatMinMax()
 
   // Classes baseadas na variante
   const cardClass = isLight
     ? 'border-deep-purple/20 bg-white shadow-lg'
     : 'border-dusty-rose/20 bg-deep-purple/30'
 
-  const textPrimaryClass = isLight ? 'text-deep-purple' : 'text-ice-white'
   const textSecondaryClass = isLight ? 'text-deep-purple/70' : 'text-dusty-rose'
   const textMutedClass = isLight ? 'text-deep-purple/60' : 'text-dusty-rose/60'
+  const textPrimaryClass = isLight ? 'text-deep-purple' : 'text-ice-white'
 
   const resultBoxClass = isLight
     ? 'bg-deep-purple'
@@ -99,10 +112,10 @@ export function PointsSimulator({
       {/* Input label */}
       <div className="text-center mb-5">
         <p className={`text-sm ${textSecondaryClass} mb-1`}>
-          {config.inputLabel}
+          {modeConfig.inputLabel}
         </p>
         <div className="text-2xl md:text-3xl font-display font-bold text-antique-gold">
-          {config.formatInput(inputValue)}
+          {modeConfig.formatInput(inputValue)}
         </div>
       </div>
 
@@ -110,9 +123,9 @@ export function PointsSimulator({
       <div className="mb-5">
         <input
           type="range"
-          min={config.sliderMin}
-          max={config.sliderMax}
-          step={config.sliderStep}
+          min={modeConfig.sliderMin}
+          max={modeConfig.sliderMax}
+          step={modeConfig.sliderStep}
           value={inputValue}
           onChange={(e) => setInputValue(Number(e.target.value))}
           className={`${sliderClass} w-full`}
@@ -132,6 +145,11 @@ export function PointsSimulator({
           </span>
           <span className={`text-sm ${resultTextClass}`}>pontos</span>
         </div>
+        {plano === 'prime' && mode === 'travel' && (
+          <p className="text-xs text-antique-gold/80 mt-1">
+            (inclui multiplicador 1.5x do Prime Anual)
+          </p>
+        )}
       </div>
 
       {/* Experiências desbloqueadas */}
@@ -230,12 +248,25 @@ export function PointsSimulator({
 }
 
 /**
- * Wrapper com abas para alternar entre os dois modos
- * Usado tanto na landing quanto no dashboard
+ * Wrapper com abas para alternar entre modos E planos
+ * Usado na landing para mostrar diferença Free vs Prime
  */
 export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
   const [activeMode, setActiveMode] = useState('travel')
+  const [activePlano, setActivePlano] = useState('prime')
+  const [config, setConfig] = useState(null)
   const isLight = variant === 'light'
+
+  // Carregar config dos planos
+  useEffect(() => {
+    async function load() {
+      const result = await fetchPlanosConfig()
+      if (result.success) {
+        setConfig(result.planos)
+      }
+    }
+    load()
+  }, [])
 
   const tabClass = (isActive) => {
     if (isActive) {
@@ -248,9 +279,56 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
       : 'text-dusty-rose hover:text-ice-white'
   }
 
+  const planoTabClass = (isActive) => {
+    if (isActive) {
+      return 'bg-antique-gold text-deep-purple font-semibold'
+    }
+    return isLight
+      ? 'text-deep-purple/60 hover:text-deep-purple border border-deep-purple/20'
+      : 'text-dusty-rose/60 hover:text-dusty-rose border border-dusty-rose/20'
+  }
+
+  // Calcular diferença para mostrar vantagem do Prime
+  const freeConfig = config?.free || { pontosIndicacao: 3000 }
+  const primeConfig = config?.prime || { pontosIndicacao: 5000 }
+
   return (
     <div>
-      {/* Tabs */}
+      {/* Toggle Free / Prime */}
+      <div className="flex items-center justify-center gap-2 mb-4">
+        <button
+          onClick={() => setActivePlano('free')}
+          className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${planoTabClass(activePlano === 'free')}`}
+        >
+          Free
+        </button>
+        <button
+          onClick={() => setActivePlano('prime')}
+          className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${planoTabClass(activePlano === 'prime')}`}
+        >
+          👑 Prime
+        </button>
+      </div>
+
+      {/* Indicador de vantagem */}
+      {activePlano === 'prime' && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-4"
+        >
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-heading ${
+            isLight ? 'bg-green-100 text-green-700' : 'bg-green-500/20 text-green-400'
+          }`}>
+            <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5">
+              <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Prime rende até 67% mais pontos
+          </span>
+        </motion.div>
+      )}
+
+      {/* Tabs de modo */}
       <div className={`flex items-center justify-center gap-1 p-1 rounded-xl mb-4 w-fit mx-auto ${
         isLight ? 'bg-deep-purple/10' : 'bg-deep-purple/50'
       }`}>
@@ -270,13 +348,38 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
 
       {/* Simulador ativo */}
       <motion.div
-        key={activeMode}
+        key={`${activeMode}-${activePlano}`}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <PointsSimulator mode={activeMode} variant={variant} compact={compact} />
+        <PointsSimulator
+          mode={activeMode}
+          variant={variant}
+          compact={compact}
+          plano={activePlano}
+          config={config}
+        />
       </motion.div>
+
+      {/* Comparativo rápido */}
+      {activePlano === 'free' && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className={`mt-4 p-3 rounded-xl text-center ${
+            isLight ? 'bg-antique-gold/10 border border-antique-gold/20' : 'bg-antique-gold/5 border border-antique-gold/20'
+          }`}
+        >
+          <p className={`text-sm ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
+            Com o <span className="text-antique-gold font-semibold">Prime</span>, você ganharia{' '}
+            <span className="text-antique-gold font-bold">
+              {activeMode === 'travel' ? '50% mais' : `+${formatPoints(primeConfig.pontosIndicacao - freeConfig.pontosIndicacao)}`}
+            </span>{' '}
+            {activeMode === 'travel' ? 'pontos' : 'pts por indicação'}
+          </p>
+        </motion.div>
+      )}
     </div>
   )
 }

@@ -16,24 +16,35 @@ export const siteConfig = {
   // Se um valor for null/vazio, o card correspondente não aparece na landing.
 
   credibilidade: {
-    // Anos de operação da agência (ex: "8", "mais de 5", "desde 2016")
-    anosAgencia: null,
+    // Anos de operação da agência
+    anosAgencia: '3',
+    anosLabel: 'anos de estrada',
 
-    // Número de clientes/viagens (ex: "500+", "centenas", "mais de 300 famílias")
-    clientesAtendidos: null,
+    // Número de clientes atendidos
+    clientesAtendidos: '+1.000',
+    clientesLabel: 'clientes atendidos',
 
-    // Instagram (deixe como está - é real)
-    instagram: '@meup.viagens',
+    // Número de emissões
+    emissoes: '+5.000',
+    emissoesLabel: 'emissões',
 
     // Cadastur (deixe como está - é real)
     cadastur: true,
+
+    // Google Reviews
+    googleReviews: {
+      nota: '5,0',
+      avaliacoes: '29',
+      link: 'https://share.google/MU2IMoaN3h1hR7870',
+    },
+
+    // Instagram (usado na seção "em ação", sem link externo)
+    instagram: '@meup.viagens',
   },
 
   // ════════════════════════════════════════════════════════════════════════════
   // VALOR DOS PONTOS (referência)
   // ════════════════════════════════════════════════════════════════════════════
-  // Valores de referência para ancorar quanto vale um ponto.
-  // Se um item tiver pontos ou descricao null/vazio, ele não aparece.
 
   valorPontos: [
     {
@@ -44,11 +55,8 @@ export const siteConfig = {
       pontos: 10000,
       descricao: 'acesso a lounge VIP',
     },
-    // Adicione mais itens se quiser:
-    // { pontos: 15000, descricao: 'jantar exclusivo' },
   ],
 
-  // Nota de rodapé do "quanto vale um ponto"
   valorPontosNota: 'Valores de referência. Catálogo completo após o cadastro.',
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -56,11 +64,30 @@ export const siteConfig = {
   // ════════════════════════════════════════════════════════════════════════════
 
   fundador: {
-    // Número de vagas (verdadeiro)
     vagas: 100,
-
-    // Preço cheio (âncora) - vem do banco, mas pode sobrescrever aqui se precisar
-    // Se null, usa o valor do banco
     precoAnualCheioOverride: null,
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // BENEFÍCIOS DOS PLANOS (qualitativos)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  planos: {
+    free: {
+      perks: [
+        'Cotação ilimitada',
+        'Lançamento manual (com aprovação)',
+      ],
+    },
+    prime: {
+      perks: [
+        'Prioridade na cotação (até 4h)',
+        '1 roteiro em PDF por ano (no anual)',
+        'Cupons de parceiros',
+        'Acesso antecipado a experiências',
+        'Selo de fundador',
+        'Lançamento automático pelo time Me,up',
+      ],
+    },
   },
 }

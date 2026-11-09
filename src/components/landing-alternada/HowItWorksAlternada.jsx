@@ -1,11 +1,10 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
-import { PONTOS_POR_INDICACAO, PONTOS_POR_REAL, formatPoints } from '@/config/experiences'
 
 /**
- * Como Funciona - SECAO CLARA
- * Texto escuro sobre fundo claro (contraste garantido)
+ * Como Funciona - SECAO ESCURA
+ * Texto claro sobre fundo escuro (contraste garantido)
  */
 
 const waysToEarn = [
@@ -13,8 +12,8 @@ const waysToEarn = [
     id: 'travel',
     badge: 'Viajando',
     title: 'Suas viagens rendem',
-    highlight: `${PONTOS_POR_REAL} pt / R$ 1`,
-    description: 'Comprou passagem com a Me,up? Os pontos entram automaticamente.',
+    highlight: 'R$ 1 = 1 ponto',
+    description: 'No Prime, os pontos entram automático. No Free, é só cadastrar e aguardar aprovação.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
@@ -26,8 +25,8 @@ const waysToEarn = [
     id: 'referral',
     badge: 'Indicando',
     title: 'Cada indicação rende',
-    highlight: `+${formatPoints(PONTOS_POR_INDICACAO)} pts`,
-    description: 'Indicou alguém e a pessoa viajou? Os pontos são seus.',
+    highlight: '+3.000 a +5.000 pts',
+    description: 'Indicou alguém e a pessoa viajou? Os pontos são seus. Prime ganha mais.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -41,12 +40,17 @@ const waysToEarn = [
 
 export function HowItWorksAlternada() {
   return (
-    <section className="relative py-10 md:py-12 bg-ice-white">
-      {/* Linha decorativa superior */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-deep-purple/15 to-transparent mb-6" />
+    <section className="relative py-10 md:py-12 bg-deep-purple overflow-hidden">
+      {/* Background sutil */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full blur-[150px] opacity-15"
+          style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.3) 0%, transparent 60%)' }}
+        />
+      </div>
 
-      <div className="container-premium">
-        {/* Header da secao - TEXTO ESCURO sobre fundo claro */}
+      <div className="container-premium relative z-10">
+        {/* Header da secao - TEXTO CLARO sobre fundo escuro */}
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -54,14 +58,14 @@ export function HowItWorksAlternada() {
           variants={fadeUp}
           className="text-center mb-6"
         >
-          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-deep-purple font-semibold mb-3">
+          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold font-semibold mb-3">
             Como funciona
           </span>
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-deep-purple mb-2">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-ice-white mb-2">
             Duas formas de ganhar pontos
           </h2>
           <GoldLine width="60px" centered className="mb-3" />
-          <p className="text-deep-purple/70 max-w-md mx-auto text-sm">
+          <p className="text-ice-white/70 max-w-md mx-auto text-sm">
             Viaje com a Me,up ou indique amigos. Nos dois casos, você acumula.
           </p>
         </motion.div>
@@ -82,42 +86,42 @@ export function HowItWorksAlternada() {
                 y: -4,
                 transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
               }}
-              className={`group relative p-5 md:p-6 rounded-2xl border transition-all duration-500 bg-white shadow-sm ${
+              className={`group relative p-5 md:p-6 rounded-2xl border transition-all duration-500 bg-white/5 ${
                 way.color === 'gold'
-                  ? 'border-antique-gold/30 hover:border-antique-gold/50 hover:shadow-md hover:shadow-antique-gold/10'
-                  : 'border-deep-purple/20 hover:border-deep-purple/40 hover:shadow-md hover:shadow-deep-purple/5'
+                  ? 'border-antique-gold/30 hover:border-antique-gold/50 hover:bg-white/10'
+                  : 'border-white/10 hover:border-white/20 hover:bg-white/10'
               }`}
             >
               {/* Badge */}
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-heading font-semibold mb-4 ${
                 way.color === 'gold'
-                  ? 'bg-antique-gold/10 text-antique-gold border border-antique-gold/30'
-                  : 'bg-deep-purple/10 text-deep-purple border border-deep-purple/30'
+                  ? 'bg-antique-gold/20 text-antique-gold border border-antique-gold/30'
+                  : 'bg-white/10 text-ice-white border border-white/20'
               }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${way.color === 'gold' ? 'bg-antique-gold' : 'bg-deep-purple'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${way.color === 'gold' ? 'bg-antique-gold' : 'bg-ice-white'}`} />
                 {way.badge}
               </span>
 
               {/* Icone */}
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 ${
                 way.color === 'gold'
-                  ? 'bg-antique-gold/10 text-antique-gold border border-antique-gold/20'
-                  : 'bg-deep-purple/10 text-deep-purple border border-deep-purple/20'
+                  ? 'bg-antique-gold/20 text-antique-gold border border-antique-gold/30'
+                  : 'bg-white/10 text-ice-white border border-white/20'
               }`}>
                 {way.icon}
               </div>
 
-              {/* Conteudo - TEXTO ESCURO */}
-              <p className="text-xs text-deep-purple/80 uppercase tracking-wider font-heading font-medium mb-1">
+              {/* Conteudo - TEXTO CLARO */}
+              <p className="text-xs text-ice-white/70 uppercase tracking-wider font-heading font-medium mb-1">
                 {way.title}
               </p>
 
               {/* Destaque do valor */}
-              <div className="text-2xl md:text-3xl font-display font-bold text-deep-purple mb-2">
+              <div className="text-2xl md:text-3xl font-display font-bold text-ice-white mb-2">
                 {way.highlight}
               </div>
 
-              <p className="text-sm text-deep-purple/70 leading-relaxed">
+              <p className="text-sm text-ice-white/70 leading-relaxed">
                 {way.description}
               </p>
             </motion.div>

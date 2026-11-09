@@ -13,7 +13,7 @@ export function FinalCTAAlternada() {
   }
 
   return (
-    <section className="relative py-14 md:py-20 overflow-hidden bg-deep-purple">
+    <section className="relative py-10 md:py-14 overflow-hidden bg-deep-purple">
       {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
         <div
@@ -134,13 +134,13 @@ export function FinalCTAAlternada() {
               <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-antique-gold flex-shrink-0">
                 <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span>Sem mensalidade</span>
+              <span>Grátis para começar</span>
             </div>
             <div className="flex items-center gap-2">
               <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-antique-gold flex-shrink-0">
                 <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span>Pontos não expiram</span>
+              <span>Suporte humano real</span>
             </div>
           </motion.div>
         </div>

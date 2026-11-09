@@ -4,8 +4,8 @@ import { GoldLine } from '@/components/ui/GoldLine'
 import { useExperiencias, formatPoints } from '@/hooks/useExperiencias'
 
 /**
- * Catalogo de Experiencias - SECAO CLARA
- * Texto escuro sobre fundo claro (contraste garantido)
+ * Catalogo de Experiencias - SECAO ESCURA
+ * Texto claro sobre fundo escuro (contraste garantido)
  * Dados do Supabase (tabela: experiencias)
  */
 
@@ -15,13 +15,13 @@ export function RewardsAlternada() {
   // Loading state
   if (loading) {
     return (
-      <section className="relative py-10 md:py-12 overflow-hidden bg-ice-white">
+      <section className="relative py-10 md:py-12 overflow-hidden bg-deep-purple">
         <div className="container-premium">
           <div className="text-center">
             <div className="animate-pulse">
-              <div className="h-4 w-24 bg-deep-purple/20 rounded mx-auto mb-4" />
-              <div className="h-8 w-64 bg-deep-purple/20 rounded mx-auto mb-4" />
-              <div className="h-4 w-48 bg-deep-purple/20 rounded mx-auto" />
+              <div className="h-4 w-24 bg-white/10 rounded mx-auto mb-4" />
+              <div className="h-8 w-64 bg-white/10 rounded mx-auto mb-4" />
+              <div className="h-4 w-48 bg-white/10 rounded mx-auto" />
             </div>
           </div>
         </div>
@@ -35,12 +35,17 @@ export function RewardsAlternada() {
   }
 
   return (
-    <section className="relative py-10 md:py-12 overflow-hidden bg-ice-white">
-      {/* Divider */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-deep-purple/15 to-transparent mb-6" />
+    <section className="relative py-10 md:py-12 overflow-hidden bg-deep-purple">
+      {/* Background sutil */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full blur-[150px] opacity-15"
+          style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.3) 0%, transparent 60%)' }}
+        />
+      </div>
 
-      <div className="container-premium">
-        {/* Header - TEXTO ESCURO sobre fundo claro */}
+      <div className="container-premium relative z-10">
+        {/* Header - TEXTO CLARO sobre fundo escuro */}
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -48,17 +53,17 @@ export function RewardsAlternada() {
           variants={fadeUp}
           className="text-center mb-6"
         >
-          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-deep-purple font-semibold mb-4">
+          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold font-semibold mb-4">
             Experiências
           </span>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-deep-purple mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-ice-white mb-4">
             Transforme pontos em viagens melhores
           </h2>
           <GoldLine width="80px" centered className="mb-4" />
-          <p className="text-deep-purple/70 max-w-lg mx-auto text-base">
+          <p className="text-ice-white/70 max-w-lg mx-auto text-base">
             Upgrades, lounges, jantares, stopovers. Escolha sua próxima experiência.
           </p>
-          <p className="text-deep-purple/60 text-sm mt-2">
+          <p className="text-ice-white/60 text-sm mt-2">
             Novas experiências toda temporada. Algumas por tempo limitado.
           </p>
         </motion.div>
@@ -79,10 +84,10 @@ export function RewardsAlternada() {
                 y: -6,
                 transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
               }}
-              className={`group relative rounded-2xl border overflow-hidden transition-all duration-500 cursor-pointer bg-white shadow-sm ${
+              className={`group relative rounded-2xl border overflow-hidden transition-all duration-500 cursor-pointer bg-white/5 backdrop-blur-sm ${
                 reward.featured
                   ? 'border-antique-gold/40 ring-1 ring-antique-gold/20'
-                  : 'border-deep-purple/15 hover:border-antique-gold/30'
+                  : 'border-white/10 hover:border-antique-gold/30'
               }`}
             >
               {/* Featured badge */}
@@ -117,38 +122,30 @@ export function RewardsAlternada() {
                 <div
                   className="absolute inset-0 transition-opacity duration-500"
                   style={{
-                    background: 'linear-gradient(to bottom, rgba(50, 17, 63, 0.3) 0%, rgba(50, 17, 63, 0.7) 100%)'
-                  }}
-                />
-                <div
-                  className="absolute bottom-0 left-0 right-0 h-16"
-                  style={{
-                    background: 'linear-gradient(to top, rgba(255, 255, 255, 1) 0%, transparent 100%)'
+                    background: 'linear-gradient(to bottom, rgba(50, 17, 63, 0.3) 0%, rgba(50, 17, 63, 0.8) 100%)'
                   }}
                 />
               </div>
 
-              {/* Content - TEXTO ESCURO */}
-              <div className="relative p-5 pt-2 bg-white">
-                <h3 className="text-base font-heading font-semibold text-deep-purple mb-1.5 group-hover:text-deep-purple/80 transition-colors">
+              {/* Content - TEXTO CLARO */}
+              <div className="relative p-5 pt-4">
+                <h3 className="text-base font-heading font-semibold text-ice-white mb-1.5 group-hover:text-antique-gold transition-colors">
                   {reward.title}
                 </h3>
-                <p className="text-sm leading-relaxed text-deep-purple/70 mb-4">
+                <p className="text-sm leading-relaxed text-ice-white/70 mb-4">
                   {reward.description}
                 </p>
 
                 {/* Points footer */}
-                <div className="flex items-center justify-between pt-3 border-t border-deep-purple/10">
-                  <span className="text-[10px] uppercase tracking-wider text-deep-purple/50">
+                <div className="flex items-center justify-between pt-3 border-t border-white/10">
+                  <span className="text-[10px] uppercase tracking-wider text-ice-white/50">
                     A partir de
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <span className={`font-heading text-sm font-semibold ${
-                      reward.featured ? 'text-antique-gold' : 'text-deep-purple'
-                    }`}>
+                    <span className="font-heading text-sm font-semibold text-antique-gold">
                       {formatPoints(reward.points)}
                     </span>
-                    <span className="text-deep-purple/50 text-xs">pts</span>
+                    <span className="text-ice-white/50 text-xs">pts</span>
                   </div>
                 </div>
               </div>
@@ -170,10 +167,10 @@ export function RewardsAlternada() {
             </svg>
             Topo do Clube
           </span>
-          <h3 className="text-xl md:text-2xl font-display font-bold text-deep-purple mt-4 mb-2">
+          <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mt-4 mb-2">
             Experiências dos Sonhos
           </h3>
-          <p className="text-deep-purple/70 text-sm max-w-md mx-auto">
+          <p className="text-ice-white/70 text-sm max-w-md mx-auto">
             As recompensas mais exclusivas para quem acumula no longo prazo.
           </p>
         </motion.div>
@@ -193,7 +190,7 @@ export function RewardsAlternada() {
                 y: -6,
                 transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
               }}
-              className="group relative rounded-2xl border-2 border-antique-gold/50 ring-2 ring-antique-gold/20 overflow-hidden transition-all duration-500 cursor-pointer hover:ring-antique-gold/40 bg-white"
+              className="group relative rounded-2xl border-2 border-antique-gold/50 ring-2 ring-antique-gold/20 overflow-hidden transition-all duration-500 cursor-pointer hover:ring-antique-gold/40 bg-white/5 backdrop-blur-sm"
             >
               {/* Dream badge */}
               <div className="absolute top-3 left-3 z-20 max-w-[calc(100%-1.5rem)]">
@@ -227,29 +224,23 @@ export function RewardsAlternada() {
                 <div
                   className="absolute inset-0 transition-opacity duration-500"
                   style={{
-                    background: 'linear-gradient(to bottom, rgba(162, 121, 55, 0.1) 0%, rgba(50, 17, 63, 0.8) 100%)'
-                  }}
-                />
-                <div
-                  className="absolute bottom-0 left-0 right-0 h-20"
-                  style={{
-                    background: 'linear-gradient(to top, rgba(255, 255, 255, 1) 0%, transparent 100%)'
+                    background: 'linear-gradient(to bottom, rgba(162, 121, 55, 0.1) 0%, rgba(50, 17, 63, 0.85) 100%)'
                   }}
                 />
               </div>
 
-              {/* Content - TEXTO ESCURO */}
-              <div className="relative p-5 pt-2 bg-white">
+              {/* Content - TEXTO CLARO */}
+              <div className="relative p-5 pt-4">
                 <h3 className="text-lg font-heading font-semibold text-antique-gold mb-1.5 group-hover:text-antique-gold/80 transition-colors">
                   {reward.title}
                 </h3>
-                <p className="text-sm leading-relaxed text-deep-purple/70 mb-4">
+                <p className="text-sm leading-relaxed text-ice-white/70 mb-4">
                   {reward.description}
                 </p>
 
                 {/* Points footer */}
                 <div className="flex items-center justify-between pt-3 border-t border-antique-gold/20">
-                  <span className="text-[10px] uppercase tracking-wider text-deep-purple/50">
+                  <span className="text-[10px] uppercase tracking-wider text-ice-white/50">
                     A partir de
                   </span>
                   <div className="flex items-center gap-1.5">

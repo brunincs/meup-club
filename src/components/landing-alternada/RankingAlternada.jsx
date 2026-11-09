@@ -4,9 +4,8 @@ import { GoldLine } from '@/components/ui/GoldLine'
 import { PlaneIcon, StarIcon, BriefcaseIcon, CrownIcon, DiamondIcon } from '@/components/ui/Icons'
 
 /**
- * Suba de Classe - SECAO ESCURA
- * Texto claro sobre fundo roxo profundo (contraste garantido)
- * ATENCAO: nomes das classes devem ser legiveis
+ * Suba de Classe - SECAO CLARA
+ * Texto escuro sobre fundo claro (para alternar com PrimeOffer escuro)
  */
 
 const classLevels = [
@@ -17,9 +16,8 @@ const classLevels = [
     benefit: 'Acesso ao clube e acúmulo de pontos',
     icon: PlaneIcon,
     gradient: 'from-slate-400 to-slate-500',
-    // Cores para fundo ESCURO - texto claro
-    bgColor: 'bg-slate-500/20 border-slate-400/40',
-    textColor: 'text-slate-200',
+    bgColor: 'bg-slate-100 border-slate-300',
+    textColor: 'text-slate-600',
   },
   {
     id: 2,
@@ -28,8 +26,8 @@ const classLevels = [
     benefit: 'Experiências exclusivas desbloqueadas',
     icon: StarIcon,
     gradient: 'from-blue-400 to-blue-500',
-    bgColor: 'bg-blue-500/20 border-blue-400/40',
-    textColor: 'text-blue-300',
+    bgColor: 'bg-blue-50 border-blue-200',
+    textColor: 'text-blue-600',
   },
   {
     id: 3,
@@ -38,8 +36,8 @@ const classLevels = [
     benefit: 'Upgrades e lounges com desconto',
     icon: BriefcaseIcon,
     gradient: 'from-violet-400 to-purple-500',
-    bgColor: 'bg-violet-500/20 border-violet-400/40',
-    textColor: 'text-violet-300',
+    bgColor: 'bg-violet-50 border-violet-200',
+    textColor: 'text-violet-600',
   },
   {
     id: 4,
@@ -48,8 +46,8 @@ const classLevels = [
     benefit: 'Acesso a experiências premium',
     icon: CrownIcon,
     gradient: 'from-amber-400 to-yellow-500',
-    bgColor: 'bg-amber-500/20 border-amber-400/40',
-    textColor: 'text-amber-300',
+    bgColor: 'bg-amber-50 border-amber-200',
+    textColor: 'text-amber-600',
   },
   {
     id: 5,
@@ -58,7 +56,7 @@ const classLevels = [
     benefit: 'Benefícios máximos do clube',
     icon: DiamondIcon,
     gradient: 'from-slate-200 to-slate-300',
-    bgColor: 'bg-antique-gold/20 border-antique-gold/40',
+    bgColor: 'bg-antique-gold/10 border-antique-gold/30',
     textColor: 'text-antique-gold',
     isTop: true,
   },
@@ -66,12 +64,12 @@ const classLevels = [
 
 export function RankingAlternada() {
   return (
-    <section className="relative py-10 md:py-12 overflow-hidden bg-deep-purple">
+    <section className="relative py-10 md:py-12 overflow-hidden bg-ice-white">
       {/* Background gradient */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[150px] opacity-15"
-          style={{ background: 'radial-gradient(circle, rgba(162, 121, 55, 0.25) 0%, transparent 60%)' }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[150px] opacity-10"
+          style={{ background: 'radial-gradient(circle, rgba(50, 17, 63, 0.15) 0%, transparent 60%)' }}
         />
       </div>
 
@@ -84,14 +82,14 @@ export function RankingAlternada() {
           variants={fadeUp}
           className="text-center mb-8"
         >
-          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-antique-gold font-semibold mb-3">
+          <span className="inline-block text-xs font-heading uppercase tracking-[0.3em] text-deep-purple font-semibold mb-3">
             Evolução
           </span>
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-ice-white mb-3">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-deep-purple mb-3">
             Suba de classe
           </h2>
           <GoldLine width="60px" centered className="mb-3" />
-          <p className="text-ice-white/70 max-w-md mx-auto text-sm">
+          <p className="text-deep-purple/70 max-w-md mx-auto text-sm">
             Quanto mais você viaja, mais alto chega. Cada nível traz novos benefícios.
           </p>
         </motion.div>
@@ -150,8 +148,8 @@ export function RankingAlternada() {
                         </span>
                       )}
                     </div>
-                    {/* Beneficio - texto claro */}
-                    <p className="text-sm text-ice-white/70">
+                    {/* Beneficio - texto escuro */}
+                    <p className="text-sm text-deep-purple/60">
                       {level.benefit}
                     </p>
                   </motion.div>
@@ -163,12 +161,12 @@ export function RankingAlternada() {
           {/* Mensagem de incentivo */}
           <motion.div
             variants={staggerItem}
-            className="mt-6 p-4 rounded-xl border border-antique-gold/30 bg-antique-gold/10 text-center"
+            className="mt-6 p-4 rounded-xl border border-deep-purple/20 bg-deep-purple/5 text-center"
           >
-            <p className="text-sm text-ice-white">
+            <p className="text-sm text-deep-purple">
               Você começa na <span className="text-antique-gold font-medium">Econômica</span> e sobe conforme acumula pontos.
             </p>
-            <p className="text-xs text-ice-white/70 mt-1">
+            <p className="text-xs text-deep-purple/60 mt-1">
               Sua jornada, seu ritmo.
             </p>
           </motion.div>

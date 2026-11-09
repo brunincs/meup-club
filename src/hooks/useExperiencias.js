@@ -46,8 +46,13 @@ export function useExperiencias() {
   }, [])
 
   // Transformar dados do Supabase para o formato esperado pelos componentes
+  // Filtrar experiências excluídas (ex: Uber)
+  const experienciasExcluidas = ['uber'] // nomes parciais a excluir
+
   const { experiences, dreamExperiences, allExperiences } = useMemo(() => {
-    const mapped = experiencias.map(exp => ({
+    const mapped = experiencias
+      .filter(exp => !experienciasExcluidas.some(excl => exp.nome.toLowerCase().includes(excl)))
+      .map(exp => ({
       id: exp.id,
       title: exp.nome,
       name: exp.nome, // Alias para compatibilidade
