@@ -12,7 +12,8 @@ import {
   TasksWidget,
   HeroSection,
   MissionsSection,
-  PlanStatusCard
+  PlanStatusCard,
+  TripSubmitCard
 } from '@/components/dashboard'
 import { EvolutionCard } from '@/components/dashboard/EvolutionCard'
 import { getMyReferrals } from '@/services/referralService'
@@ -86,11 +87,20 @@ export function Dashboard() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO 2 - CLARA: Missões e tarefas (área de leitura)
+          SEÇÃO 2 - CLARA: Missões e Lançar Viagem (área de leitura)
           ══════════════════════════════════════════════════════════════ */}
       <section className="bg-ice-white py-10">
         <div className="container-premium">
-          <MissionsSection variant="light" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Missões - ocupa 2 colunas */}
+            <div className="lg:col-span-2">
+              <MissionsSection variant="light" />
+            </div>
+            {/* Lançar Viagem - ocupa 1 coluna */}
+            <div>
+              <TripSubmitCard variant="light" />
+            </div>
+          </div>
         </div>
       </section>
 
