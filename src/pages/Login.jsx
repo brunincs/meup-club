@@ -17,7 +17,7 @@ export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signIn, loginAsDemo, user, loading: authLoading } = useAuth()
+  const { signIn, user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -44,12 +44,6 @@ export function Login() {
     }
 
     toast.success('Bem-vindo ao clube')
-    navigate(from, { replace: true })
-  }
-
-  function handleDemoLogin() {
-    loginAsDemo()
-    toast.success('Bem-vindo ao modo demonstração')
     navigate(from, { replace: true })
   }
 
@@ -179,23 +173,6 @@ export function Login() {
               {loading ? 'Entrando...' : 'Entrar'}
             </motion.button>
           </form>
-
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-dusty-rose/20" />
-            <span className="text-xs text-dusty-rose/60 uppercase tracking-wider">ou</span>
-            <div className="flex-1 h-px bg-dusty-rose/20" />
-          </div>
-
-          {/* Demo Login */}
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            onClick={handleDemoLogin}
-            className="w-full py-3.5 rounded-xl bg-transparent text-dusty-rose border border-dusty-rose/30 font-heading font-medium hover:bg-dusty-rose/5 hover:border-dusty-rose/50 hover:text-ice-white transition-all"
-          >
-            Modo demonstração
-          </motion.button>
 
           {/* Link para cadastro */}
           <p className="text-center text-sm text-dusty-rose mt-8">
