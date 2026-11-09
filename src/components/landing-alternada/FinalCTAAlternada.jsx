@@ -39,7 +39,7 @@ export function FinalCTAAlternada() {
           >
             <div className="inline-flex items-center gap-3 text-antique-gold">
               <span className="w-8 h-px bg-antique-gold/50" />
-              <span className="text-[10px] uppercase tracking-[0.3em] font-heading font-medium">Decisão</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-heading font-medium">Comece Agora</span>
               <span className="w-8 h-px bg-antique-gold/50" />
             </div>
           </motion.div>
@@ -52,7 +52,7 @@ export function FinalCTAAlternada() {
             transition={{ delay: 0.1, duration: 0.6 }}
           >
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold leading-tight mb-4 text-ice-white">
-              Sua próxima experiência de viagem começa aqui.
+              O clube está começando. Entre como fundador.
             </h2>
             <GoldLine width="80px" centered className="mb-6" />
           </motion.div>
@@ -65,7 +65,7 @@ export function FinalCTAAlternada() {
             transition={{ delay: 0.2 }}
             className="text-base md:text-lg text-ice-white/80 mb-8 max-w-xl mx-auto"
           >
-            Indique, acumule pontos e troque por upgrades, lounges e jantares exclusivos.
+            Crie sua conta grátis e comece a juntar pontos hoje — ou garanta o Meup Prime no preço de fundador, enquanto há vaga.
           </motion.p>
 
           {/* CTA Buttons */}
