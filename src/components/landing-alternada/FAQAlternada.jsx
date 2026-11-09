@@ -11,7 +11,7 @@ const FAQ_ITEMS = [
   {
     id: 1,
     question: 'Como funciona o pagamento?',
-    answer: 'O pagamento é feito via Pix ou transferência. Após o contato pelo WhatsApp, você recebe os dados para pagamento e sua assinatura é ativada em até 24h úteis. Sem cartão de crédito, sem burocracia.'
+    answer: 'O pagamento é feito via Pix ou cartão de crédito. Após o contato pelo WhatsApp, você recebe os dados para pagamento e sua assinatura é ativada em até 24h úteis. Sem burocracia.'
   },
   {
     id: 2,
@@ -21,7 +21,7 @@ const FAQ_ITEMS = [
   {
     id: 3,
     question: 'Os pontos expiram?',
-    answer: 'Não! Seus pontos nunca expiram. Você acumula no seu ritmo e troca quando quiser. Isso vale tanto para o plano Free quanto para o Prime.'
+    answer: 'Depende do plano: no Free, os pontos valem 12 meses. No Prime, não expiram. Você acumula no seu ritmo e troca quando quiser.'
   },
   {
     id: 4,
