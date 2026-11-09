@@ -61,7 +61,7 @@ export function HeroAlternada() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            className="mb-1.5"
+            className="mb-3"
           >
             <span className="text-xs font-heading font-medium tracking-widest uppercase text-ice-white">
               Meup Club · Clube da Me,up Viagens
@@ -149,21 +149,6 @@ export function HeroAlternada() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:block"
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-6 h-10 rounded-full border-2 border-ice-white/20 flex items-start justify-center p-2"
-        >
-          <div className="w-1 h-2 bg-antique-gold/60 rounded-full" />
-        </motion.div>
-      </motion.div>
     </section>
   )
 }
