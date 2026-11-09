@@ -61,7 +61,7 @@ export function HeroAlternada() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            className="mb-0"
+            className="mb-1.5"
           >
             <span className="text-xs font-heading font-medium tracking-widest uppercase text-ice-white">
               Meup Club · Clube da Me,up Viagens
@@ -146,35 +146,6 @@ export function HeroAlternada() {
             </Link>
           </motion.div>
 
-          {/* Microtrust - provas reais */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm"
-          >
-            <div className="flex items-center gap-2 text-ice-white/70">
-              <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-antique-gold flex-shrink-0">
-                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="1.5" />
-              </svg>
-              <span>Cadastur</span>
-            </div>
-            <div className="flex items-center gap-2 text-ice-white/70">
-              <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-antique-gold flex-shrink-0">
-                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="1.5" />
-              </svg>
-              <span>@meup.viagens</span>
-            </div>
-            <div className="flex items-center gap-2 text-ice-white/70">
-              <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-antique-gold flex-shrink-0">
-                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="1.5" />
-              </svg>
-              <span>Grátis para começar</span>
-            </div>
-          </motion.div>
         </div>
       </div>
 
