@@ -41,7 +41,7 @@ const FAQ_ITEMS = [
   {
     id: 7,
     question: 'Preciso viajar para acumular pontos?',
-    answer: 'Não! Você ganha pontos de várias formas: check-in diário (fazer check-in diário no clube), indicar amigos, fazer aniversário (Prime), e claro, viajando. Dá para acumular sem sair de casa.'
+    answer: 'Não! Você ganha pontos de várias formas: check-in diário (direto no clube), indicar amigos, fazer aniversário (Prime), e claro, viajando. Dá para acumular sem sair de casa.'
   },
   {
     id: 8,
