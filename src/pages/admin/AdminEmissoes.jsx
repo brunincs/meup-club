@@ -15,7 +15,9 @@ import {
   buscarClientes,
   lancarEmissaoEquipe,
   uploadCardMeup,
-  calcularPontos
+  calcularPontos,
+  getSignedCardUrl,
+  downloadCardMeup
 } from '@/services/emissaoService'
 import {
   reabrirEmissao,
@@ -25,10 +27,46 @@ import { ReversalModal } from '@/components/admin/ReversalModal'
 import toast from 'react-hot-toast'
 
 // ============================================
-// MODAL DE VISUALIZAR CARD
+// MODAL DE VISUALIZAR CARD (usa Signed URL)
 // ============================================
-function CardPreviewModal({ url, onClose }) {
-  const isPdf = url?.toLowerCase().endsWith('.pdf')
+function CardPreviewModal({ cardPath, onClose }) {
+  const [loading, setLoading] = useState(true)
+  const [signedUrl, setSignedUrl] = useState(null)
+  const [error, setError] = useState(null)
+  const [downloading, setDownloading] = useState(false)
+
+  const isPdf = cardPath?.toLowerCase().endsWith('.pdf')
+  const filename = cardPath?.split('/').pop() || 'card-meup'
+
+  // Gerar signed URL ao abrir
+  useEffect(() => {
+    async function loadSignedUrl() {
+      setLoading(true)
+      setError(null)
+      const result = await getSignedCardUrl(cardPath)
+      if (result.success) {
+        setSignedUrl(result.url)
+      } else {
+        setError(result.error || 'Erro ao carregar arquivo')
+      }
+      setLoading(false)
+    }
+    if (cardPath) {
+      loadSignedUrl()
+    }
+  }, [cardPath])
+
+  const handleDownload = async () => {
+    setDownloading(true)
+    await downloadCardMeup(cardPath, filename)
+    setDownloading(false)
+  }
+
+  const handleOpenInNewTab = () => {
+    if (signedUrl) {
+      window.open(signedUrl, '_blank')
+    }
+  }
 
   return (
     <div
@@ -39,29 +77,122 @@ function CardPreviewModal({ url, onClose }) {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative max-w-3xl max-h-[80vh] overflow-hidden rounded-2xl bg-white shadow-xl"
+        className="relative max-w-3xl max-h-[85vh] overflow-hidden rounded-2xl bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-graphite/80 text-white flex items-center justify-center hover:bg-graphite z-10"
-        >
-          ×
-        </button>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-dusty-rose/20 bg-ice-white">
+          <h3 className="text-sm font-heading font-semibold text-graphite flex items-center gap-2">
+            {isPdf ? '📄' : '🖼️'} Card Meup
+          </h3>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-graphite/10 text-graphite flex items-center justify-center hover:bg-graphite/20 transition-colors"
+          >
+            ×
+          </button>
+        </div>
 
-        {isPdf ? (
-          <iframe
-            src={url}
-            className="w-full h-[70vh] min-w-[600px]"
-            title="Card Meup"
-          />
-        ) : (
-          <img
-            src={url}
-            alt="Card Meup"
-            className="max-w-full max-h-[80vh] object-contain"
-          />
-        )}
+        {/* Content */}
+        <div className="p-5">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className="w-8 h-8 border-2 border-dusty-rose/30 border-t-antique-gold rounded-full mb-4"
+              />
+              <p className="text-sm text-graphite/60 font-heading">Carregando...</p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <span className="text-4xl mb-4">⚠️</span>
+              <p className="text-sm text-red-600 font-heading">{error}</p>
+            </div>
+          ) : isPdf ? (
+            // PDF: botões para abrir/baixar (sem iframe)
+            <div className="flex flex-col items-center justify-center py-12">
+              <span className="text-6xl mb-6">📄</span>
+              <p className="text-lg font-heading font-semibold text-graphite mb-2">
+                Documento PDF
+              </p>
+              <p className="text-sm text-graphite/60 font-heading mb-6">
+                {filename}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleOpenInNewTab}
+                  className="px-6 py-3 rounded-xl bg-deep-purple text-white font-heading font-semibold hover:bg-deep-purple/90 transition-colors shadow-sm flex items-center gap-2"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M15 3h6v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M10 14L21 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Abrir PDF
+                </button>
+                <button
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="px-6 py-3 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold hover:bg-accent-light transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50"
+                >
+                  {downloading ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="w-5 h-5 border-2 border-deep-purple/30 border-t-deep-purple rounded-full"
+                    />
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  Baixar
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Imagem: exibir com <img>
+            <div className="flex flex-col items-center">
+              <img
+                src={signedUrl}
+                alt="Card Meup"
+                className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-sm"
+                onError={(e) => {
+                  e.target.style.display = 'none'
+                  setError('Não foi possível carregar a imagem')
+                }}
+              />
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={handleOpenInNewTab}
+                  className="px-4 py-2 rounded-xl bg-graphite/10 text-graphite font-heading text-sm hover:bg-graphite/20 transition-colors flex items-center gap-2"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M15 3h6v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M10 14L21 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Abrir em nova aba
+                </button>
+                <button
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="px-4 py-2 rounded-xl bg-antique-gold/20 text-antique-gold font-heading text-sm hover:bg-antique-gold/30 transition-colors flex items-center gap-2 disabled:opacity-50"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Baixar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </motion.div>
     </div>
   )
@@ -447,7 +578,7 @@ export function AdminEmissoes() {
   const [emissoes, setEmissoes] = useState([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('pendentes') // 'pendentes', 'todas', 'aprovadas', 'recusadas', 'revertidas'
-  const [previewUrl, setPreviewUrl] = useState(null)
+  const [previewPath, setPreviewPath] = useState(null)
   const [recusarEmissaoData, setRecusarEmissaoData] = useState(null)
   const [showLancarModal, setShowLancarModal] = useState(false)
   const [reversalModal, setReversalModal] = useState(null) // { emissao, type: 'reabrir' | 'reverter' }
@@ -640,21 +771,16 @@ export function AdminEmissoes() {
                   <div className="flex items-start gap-4">
                     {/* Thumbnail do Card */}
                     <button
-                      onClick={() => setPreviewUrl(emissao.cardUrl)}
+                      onClick={() => setPreviewPath(emissao.cardPath)}
                       className="w-16 h-16 rounded-xl bg-deep-purple/10 flex items-center justify-center flex-shrink-0 hover:bg-deep-purple/20 transition-colors overflow-hidden"
+                      title="Visualizar card"
                     >
-                      {emissao.cardUrl?.toLowerCase().endsWith('.pdf') ? (
+                      {emissao.cardPath?.toLowerCase().endsWith('.pdf') ? (
                         <span className="text-2xl">📄</span>
+                      ) : emissao.cardPath ? (
+                        <span className="text-2xl">🖼️</span>
                       ) : (
-                        <img
-                          src={emissao.cardUrl}
-                          alt="Card"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.style.display = 'none'
-                            e.target.parentElement.innerHTML = '📎'
-                          }}
-                        />
+                        <span className="text-2xl">📎</span>
                       )}
                     </button>
 
@@ -752,10 +878,10 @@ export function AdminEmissoes() {
 
       {/* Modal de Preview */}
       <AnimatePresence>
-        {previewUrl && (
+        {previewPath && (
           <CardPreviewModal
-            url={previewUrl}
-            onClose={() => setPreviewUrl(null)}
+            cardPath={previewPath}
+            onClose={() => setPreviewPath(null)}
           />
         )}
       </AnimatePresence>

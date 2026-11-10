@@ -547,6 +547,63 @@ export async function lancarEmissaoEquipe({
 }
 
 // ============================================
+// SIGNED URL PARA VISUALIZAÇÃO SEGURA
+// ============================================
+
+/**
+ * Gera URL assinada para acessar arquivo privado
+ * Expira em 5 minutos
+ * @param {string} path - Caminho do arquivo no bucket (ex: emissoes/userId/timestamp.pdf)
+ * @returns {Promise<{success: boolean, url?: string, error?: string}>}
+ */
+export async function getSignedCardUrl(path) {
+  try {
+    if (!path) return { success: false, error: 'Caminho não informado' }
+
+    const { data, error } = await supabase.storage
+      .from('cards-meup')
+      .createSignedUrl(path, 300) // 5 minutos
+
+    if (error) throw error
+
+    return { success: true, url: data.signedUrl }
+  } catch (error) {
+    console.error('Erro ao gerar signed URL:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Baixar arquivo do card Meup
+ * @param {string} path - Caminho do arquivo no bucket
+ * @param {string} filename - Nome do arquivo para download
+ */
+export async function downloadCardMeup(path, filename = 'card-meup') {
+  try {
+    const { data, error } = await supabase.storage
+      .from('cards-meup')
+      .download(path)
+
+    if (error) throw error
+
+    // Criar link de download
+    const url = URL.createObjectURL(data)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+
+    return { success: true }
+  } catch (error) {
+    console.error('Erro ao baixar arquivo:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// ============================================
 // HELPERS
 // ============================================
 
