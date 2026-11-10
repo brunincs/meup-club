@@ -33,7 +33,7 @@ export function ClassExplorer() {
           Explore as Classes
         </h3>
         <p className="text-sm text-dusty-rose">
-          Deslize para ver os beneficios de cada nivel
+          Deslize para ver os benefícios de cada nível
         </p>
       </div>
 
@@ -59,10 +59,10 @@ export function ClassExplorer() {
                     : 'bg-deep-purple/30 border-dusty-rose/20 hover:border-dusty-rose/40'
               }`}
             >
-              {/* Badge de nivel atual */}
+              {/* Badge de nível atual */}
               {isUserLevel && (
                 <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[8px] uppercase tracking-wider bg-antique-gold text-deep-purple rounded-full font-bold">
-                  Voce
+                  Você
                 </span>
               )}
 
@@ -155,10 +155,10 @@ export function ClassExplorer() {
               )}
             </div>
 
-            {/* Experiencias da classe */}
+            {/* Experiências da classe */}
             <div className="lg:w-64">
               <p className="text-[10px] uppercase tracking-wider text-dusty-rose mb-3">
-                Experiencias desta classe
+                Experiências desta classe
               </p>
               <div className="space-y-2">
                 {classRewards.length > 0 ? (
@@ -183,7 +183,7 @@ export function ClassExplorer() {
                   ))
                 ) : (
                   <p className="text-xs text-dusty-rose/60 italic">
-                    Experiencias premium disponiveis
+                    Experiências premium disponíveis
                   </p>
                 )}
               </div>

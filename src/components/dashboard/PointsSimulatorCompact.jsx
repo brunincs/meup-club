@@ -46,7 +46,7 @@ export function PointsSimulatorCompact() {
         </h3>
         <GoldLine width="60px" centered className="mb-2" />
         <p className="text-sm text-deep-purple/70">
-          Veja quanto voce pode acumular indicando viagens
+          Veja quanto você pode acumular indicando viagens
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export function PointsSimulatorCompact() {
         {/* Valor */}
         <div className="text-center mb-6">
           <p className="text-sm text-deep-purple/70 mb-1">
-            Se suas indicacoes gastarem:
+            Se suas indicações gastarem:
           </p>
           <div className="text-3xl font-display font-bold text-antique-gold">
             {valorFormatado}
@@ -81,7 +81,7 @@ export function PointsSimulatorCompact() {
 
         {/* Resultado */}
         <div className="text-center p-4 rounded-xl bg-deep-purple mb-4">
-          <p className="text-sm text-ice-white mb-1">Voce ganha</p>
+          <p className="text-sm text-ice-white mb-1">Você ganha</p>
           <div className="flex items-center justify-center gap-2">
             <span className="text-2xl font-display font-bold text-antique-gold">
               {formatPoints(pontosAcumulados)}

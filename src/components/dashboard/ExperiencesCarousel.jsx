@@ -107,7 +107,7 @@ export function ExperiencesCarousel() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-display font-semibold text-ice-white">
-            Experiencias do Clube
+            Experiências do Clube
           </h3>
           <p className="text-sm text-dusty-rose">
             Arraste para explorar
@@ -223,7 +223,7 @@ export function ExperiencesCarousel() {
 
                     {canRedeem && (
                       <span className="px-3 py-1 text-xs font-heading font-medium bg-antique-gold text-deep-purple rounded-lg">
-                        Disponivel
+                        Disponível
                       </span>
                     )}
                   </div>
