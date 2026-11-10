@@ -26,7 +26,8 @@ const HERO_IMAGE = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828
 
 const categoryTabs = [
   { id: 'daily', label: 'Ações', icon: <CalendarIcon size={14} color="currentColor" /> },
-  { id: 'weekly', label: 'Semanais', icon: <TargetIcon size={14} color="currentColor" /> },
+  // Semanais removidas - todas inativas no momento
+  // { id: 'weekly', label: 'Semanais', icon: <TargetIcon size={14} color="currentColor" /> },
   { id: 'oneTime', label: 'Conquistas', icon: <SparkleIcon size={14} color="currentColor" /> }
 ]
 

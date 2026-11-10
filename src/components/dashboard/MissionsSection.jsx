@@ -117,9 +117,13 @@ export function MissionsSection({ variant = 'dark' }) {
   // Processar tarefas com status real
   const processedTasks = useMemo(() => {
     return tarefas
-      // Filtrar check-in (tem card dedicado) e outras que devem ser escondidas
+      // Filtrar check-in (tem card dedicado), semanais e outras que devem ser escondidas
       .filter(tarefa => {
         const nomeLower = tarefa.nome.toLowerCase()
+        // Esconder missões semanais (não exibir no dashboard)
+        if (tarefa.tipo === 'semanal') {
+          return false
+        }
         // Esconder check-in da lista
         if (nomeLower.includes('check-in') || nomeLower.includes('checkin')) {
           return false
@@ -387,7 +391,9 @@ export function MissionsSection({ variant = 'dark' }) {
 
   // Handler para check-in diário
   const handleCheckin = useCallback(async () => {
-    if (!user?.id || !checkinStatus.podeFazer || checkinStatus.isLoading) return
+    if (!user?.id || !checkinStatus.podeFazer || checkinStatus.isLoading) {
+      return
+    }
 
     setCheckinStatus(prev => ({ ...prev, isLoading: true }))
 
@@ -395,7 +401,7 @@ export function MissionsSection({ variant = 'dark' }) {
       const result = await fazerCheckin()
 
       if (result.success) {
-        // Atualizar saldo NA HORA (sem precisar recarregar)
+        // SUCESSO: Atualizar saldo e mostrar celebração
         await refreshPoints()
 
         fireConfetti({ x: '50%', y: '30%' })
@@ -418,7 +424,8 @@ export function MissionsSection({ variant = 'dark' }) {
           proximoCheckin: result.proximo_checkin,
           isLoading: false
         })
-      } else {
+      } else if (result.error === 'already_checked_in') {
+        // Já fez check-in hoje - setar cooldown
         setCheckinStatus({
           podeFazer: false,
           proximoCheckin: result.proximo_checkin,
@@ -428,6 +435,10 @@ export function MissionsSection({ variant = 'dark' }) {
           icon: '⏰',
           style: { background: '#32113f', color: '#edf0f1' }
         })
+      } else {
+        // ERRO: NÃO setar cooldown, mostrar erro real
+        setCheckinStatus(prev => ({ ...prev, isLoading: false }))
+        toast.error(result.message || 'Erro ao fazer check-in. Tente novamente.')
       }
     } catch (error) {
       console.error('Erro no check-in:', error)

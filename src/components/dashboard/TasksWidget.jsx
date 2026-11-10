@@ -10,8 +10,9 @@ export function TasksWidget() {
   const summary = getTasksSummary()
   const tasksPoints = calculateTasksPoints()
 
-  const totalCompleted = summary.daily.completed + summary.weekly.completed + summary.oneTime.completed
-  const totalTasks = summary.daily.total + summary.weekly.total + summary.oneTime.total
+  // Semanais removidas do cálculo
+  const totalCompleted = summary.daily.completed + summary.oneTime.completed
+  const totalTasks = summary.daily.total + summary.oneTime.total
 
   function handleCompleteTask(task) {
     if (task.completed) return
@@ -132,7 +133,7 @@ export function TasksWidget() {
       <Link to="/tarefas">
         <div className="px-5 py-4 border-t border-dusty-rose/20 hover:bg-deep-purple/50 transition-colors">
           <p className="text-center text-xs text-dusty-rose">
-            Ver missões semanais e especiais
+            Ver todas as conquistas
           </p>
         </div>
       </Link>
