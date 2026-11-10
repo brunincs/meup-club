@@ -7,7 +7,8 @@ import { usePoints } from '@/contexts/PointsContext'
 import { DashboardHeader } from '@/components/dashboard'
 import {
   calculateRewardsProgress,
-  calculateLevel
+  calculateLevel,
+  levels as levelThresholds
 } from '@/services/pointsSystem'
 import { useExperiencias } from '@/hooks/useExperiencias'
 import { ExperienceDetailModal } from '@/components/experiences/ExperienceDetailModal'
@@ -542,6 +543,15 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
   const isUnlockedByLevel = reward.isUnlockedByLevel
   const progress = reward.progress
 
+  // Calcular pontos que faltam para desbloquear a classe
+  const getPointsToUnlockClass = () => {
+    const classConfig = levelThresholds.find(l => l.id === reward.requiredLevelId)
+    if (!classConfig) return 0
+    return Math.max(0, classConfig.minPoints - userPoints)
+  }
+
+  const pointsToUnlock = getPointsToUnlockClass()
+
   const getButtonText = () => {
     if (isRedeemed) return 'Resgatada'
     if (isPending) return 'Aguardando...'
@@ -557,6 +567,8 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
   const handleCardClick = (e) => {
     // Não abrir se clicou no botão
     if (e.target.closest('button')) return
+    // Não abrir detalhes se bloqueado
+    if (!isUnlockedByLevel) return
     onViewDetails(reward)
   }
 
@@ -567,25 +579,25 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={handleCardClick}
-      className={`group relative rounded-2xl border overflow-hidden transition-all duration-300 cursor-pointer ${
+      className={`group relative rounded-2xl border overflow-hidden transition-all duration-300 ${
         isRedeemed
-          ? 'border-game-green/30 bg-game-green/5'
+          ? 'border-game-green/30 bg-game-green/5 cursor-pointer'
           : isPending
-          ? 'border-amber-300 bg-amber-50/50'
+          ? 'border-amber-300 bg-amber-50/50 cursor-pointer'
           : !isUnlockedByLevel
-          ? 'border-graphite/20 bg-white'
+          ? 'border-graphite/20 bg-white/80'
           : canRedeem
-          ? 'border-antique-gold/30 bg-white hover:shadow-lg shadow-sm'
-          : 'border-graphite/10 bg-white hover:shadow-md shadow-sm'
+          ? 'border-antique-gold/30 bg-white hover:shadow-lg shadow-sm cursor-pointer'
+          : 'border-graphite/10 bg-white hover:shadow-md shadow-sm cursor-pointer'
       }`}
     >
-      {/* Imagem com overlay */}
-      <div className={`relative h-36 overflow-hidden ${!isUnlockedByLevel ? 'grayscale' : ''}`}>
+      {/* Imagem com overlay - grayscale + opacidade para bloqueados */}
+      <div className={`relative h-36 overflow-hidden ${!isUnlockedByLevel ? 'grayscale opacity-60' : ''}`}>
         {reward.image && (
           <img
             src={reward.image}
             alt={reward.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className={`w-full h-full object-cover transition-transform duration-300 ${isUnlockedByLevel ? 'group-hover:scale-105' : ''}`}
           />
         )}
         {/* Overlay escuro para legibilidade */}
@@ -594,20 +606,31 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
         {/* Badges sobre a imagem */}
         <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
           <div className="flex gap-2">
-            {reward.badge && !isRedeemed && (
+            {/* Badge de bloqueio com cadeado */}
+            {!isUnlockedByLevel && (
+              <span className="text-[10px] px-2 py-1 rounded-lg bg-graphite/80 text-ice-white font-medium flex items-center gap-1">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+                Desbloqueia na {levelCopy.names[reward.requiredLevelId]}
+              </span>
+            )}
+            {isUnlockedByLevel && reward.badge && !isRedeemed && (
               <span className={`text-[10px] px-2 py-1 rounded-lg border backdrop-blur-sm ${badgeConfig[reward.badge].color}`}>
                 {badgeConfig[reward.badge].label}
               </span>
             )}
-            {reward.isDream && (
+            {isUnlockedByLevel && reward.isDream && (
               <span className="text-[10px] px-2 py-1 rounded-lg bg-antique-gold/90 text-deep-purple font-medium">
                 Sonho
               </span>
             )}
           </div>
-          <span className="text-[10px] uppercase tracking-wider text-ice-white/80 bg-deep-purple/60 backdrop-blur-sm px-2 py-1 rounded-lg">
-            {levelCopy.names[reward.requiredLevelId]}
-          </span>
+          {isUnlockedByLevel && (
+            <span className="text-[10px] uppercase tracking-wider text-ice-white/80 bg-deep-purple/60 backdrop-blur-sm px-2 py-1 rounded-lg">
+              {levelCopy.names[reward.requiredLevelId]}
+            </span>
+          )}
         </div>
 
         {/* Redeemed Badge */}
@@ -625,32 +648,31 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
         )}
       </div>
 
-      {/* Locked Overlay - mais legível */}
-      {!isUnlockedByLevel && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm z-10">
-          <div className="text-center p-4">
-            <span className="text-xs text-graphite mb-1 block">Disponível em</span>
-            <span className="text-base font-heading font-semibold text-deep-purple">{levelCopy.names[reward.requiredLevelId]}</span>
-          </div>
-        </div>
-      )}
-
-      <div className="p-5">
-        {/* Content */}
+      <div className={`p-5 ${!isUnlockedByLevel ? 'opacity-80' : ''}`}>
+        {/* Content - legível mesmo bloqueado */}
         <h3 className={`text-lg font-heading font-medium mb-1 ${
-          isRedeemed ? 'text-game-green' : canRedeem ? 'text-deep-purple' : 'text-graphite'
+          isRedeemed ? 'text-game-green' : !isUnlockedByLevel ? 'text-graphite/80' : canRedeem ? 'text-deep-purple' : 'text-graphite'
         }`}>
           {reward.name}
         </h3>
         {reward.subtitle && (
-          <p className="text-sm text-graphite/70 mb-1">{reward.subtitle}</p>
+          <p className={`text-sm mb-1 ${!isUnlockedByLevel ? 'text-graphite/50' : 'text-graphite/70'}`}>{reward.subtitle}</p>
         )}
-        <p className="text-sm text-graphite/60 mb-4 leading-relaxed line-clamp-2">
+        <p className={`text-sm mb-4 leading-relaxed line-clamp-2 ${!isUnlockedByLevel ? 'text-graphite/50' : 'text-graphite/60'}`}>
           {reward.description}
         </p>
 
-        {/* Progress Bar */}
-        {isUnlockedByLevel && !canRedeem && !isRedeemed && (
+        {/* Info de progresso para BLOQUEADOS - "Faltam X pontos" */}
+        {!isUnlockedByLevel && pointsToUnlock > 0 && (
+          <div className="mb-4 p-2 rounded-lg bg-graphite/5 border border-graphite/10">
+            <p className="text-xs text-graphite/70 text-center">
+              Faltam <span className="font-semibold text-deep-purple">{format.pointsShort(pointsToUnlock)}</span> pontos para a {levelCopy.names[reward.requiredLevelId]}
+            </p>
+          </div>
+        )}
+
+        {/* Progress Bar - apenas para desbloqueados sem pontos suficientes */}
+        {isUnlockedByLevel && !canRedeem && !isRedeemed && !isPending && (
           <div className="mb-4">
             <div
               className="h-1.5 bg-graphite/10 rounded-full overflow-hidden"
@@ -680,11 +702,11 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
         <div className="flex items-center justify-between">
           <div>
             <span className={`text-xl font-display font-light ${
-              isRedeemed ? 'text-game-green' : canRedeem ? 'text-antique-gold' : 'text-graphite/70'
+              isRedeemed ? 'text-game-green' : !isUnlockedByLevel ? 'text-graphite/60' : canRedeem ? 'text-antique-gold' : 'text-graphite/70'
             }`}>
               {format.pointsShort(reward.points_required)}
             </span>
-            <span className="text-xs text-graphite/60 ml-1">pontos</span>
+            <span className={`text-xs ml-1 ${!isUnlockedByLevel ? 'text-graphite/40' : 'text-graphite/60'}`}>pontos</span>
           </div>
 
           {/* Botão para cards desbloqueados */}
@@ -721,9 +743,9 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
             <button
               disabled
               aria-label={getLockedAriaLabel()}
-              className="px-5 py-2.5 rounded-xl text-sm font-heading font-medium bg-graphite/10 text-graphite/60 cursor-not-allowed"
+              className="px-5 py-2.5 rounded-xl text-sm font-heading font-medium bg-graphite/10 text-graphite/50 cursor-not-allowed"
             >
-              {levelCopy.names[reward.requiredLevelId]}
+              Disponível na {levelCopy.names[reward.requiredLevelId]}
             </button>
           )}
         </div>
