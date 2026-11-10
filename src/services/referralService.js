@@ -5,10 +5,12 @@
 
 import { supabase } from '@/lib/supabase'
 
-// Constantes de pontos (também estão no banco, mas mantemos aqui para referência)
-export const PONTOS_POR_INDICACAO = 3000      // Aprovação manual (viagem fechada)
-export const PONTOS_BOAS_VINDAS = 500         // Automático no cadastro por indicação
-export const LIMITE_INDICACOES_AUTO = 20      // Máximo de indicações automáticas por pessoa
+// Constantes de pontos (fallback - valores reais vêm do plano_config)
+export const PONTOS_POR_INDICACAO_FREE = 3000   // Free: 3.000 pontos
+export const PONTOS_POR_INDICACAO_PRIME = 5000  // Prime: 5.000 pontos
+export const PONTOS_POR_INDICACAO = 3000        // Fallback genérico
+export const PONTOS_BOAS_VINDAS = 500           // Automático no cadastro por indicação
+export const LIMITE_INDICACOES_AUTO = 20        // Máximo de indicações automáticas por pessoa
 
 // ============================================
 // FUNÇÕES PARA O CLIENTE (PORTAL)
@@ -312,6 +314,36 @@ export async function rejectReferral(referralId) {
   } catch (error) {
     console.error('Erro ao rejeitar indicação:', error)
     return { success: false, error: 'Erro ao processar rejeição. Tente novamente.' }
+  }
+}
+
+// ============================================
+// BUSCAR PONTOS DE INDICAÇÃO PELO PLANO DO INDICADOR
+// ============================================
+
+/**
+ * Busca os pontos que o indicador vai receber baseado no seu plano ATUAL
+ * @param {string} referrerId - ID do indicador
+ * @returns {Promise<{plano: string, pontos: number}>}
+ */
+export async function getReferralPointsPreview(referrerId) {
+  try {
+    const { data, error } = await supabase.rpc('get_referral_points_preview', {
+      p_referrer_id: referrerId
+    })
+
+    if (error) {
+      console.error('Erro ao buscar preview de pontos:', error)
+      return { plano: 'free', pontos: PONTOS_POR_INDICACAO_FREE }
+    }
+
+    return {
+      plano: data.plano || 'free',
+      pontos: data.pontos || PONTOS_POR_INDICACAO_FREE
+    }
+  } catch (error) {
+    console.error('Erro ao buscar preview de pontos:', error)
+    return { plano: 'free', pontos: PONTOS_POR_INDICACAO_FREE }
   }
 }
 

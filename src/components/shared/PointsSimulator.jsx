@@ -7,7 +7,7 @@ import {
   getUnlockedExperiences,
   getNextExperience,
 } from '@/hooks/useExperiencias'
-import { fetchPlanosConfig } from '@/services/subscriptionService'
+import { fetchPlanosConfig, fetchUserBenefits } from '@/services/subscriptionService'
 import { useAuth } from '@/contexts/AuthContext'
 import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 
@@ -33,6 +33,7 @@ export function PointsSimulator({
   variant = 'light',
   compact = false,
   plano = 'prime',
+  ciclo = null, // 'anual' | 'mensal' | null
   config = null,
 }) {
   // Config padrão (fallback)
@@ -40,7 +41,8 @@ export function PointsSimulator({
   const primeConfig = config?.prime || { pontosCheckin: 30, pontosIndicacao: 5000 }
 
   const planoConfig = plano === 'prime' ? primeConfig : freeConfig
-  const multiplicador = plano === 'prime' ? 1.5 : 1 // Prime anual tem 1.5x
+  // Multiplicador 1.5x APENAS para Prime ANUAL
+  const multiplicador = (plano === 'prime' && ciclo === 'anual') ? 1.5 : 1
 
   // Configurações por modo
   const CONFIG = {
@@ -147,9 +149,9 @@ export function PointsSimulator({
           </span>
           <span className={`text-sm ${resultTextClass}`}>pontos</span>
         </div>
-        {plano === 'prime' && mode === 'travel' && (
+        {plano === 'prime' && mode === 'travel' && ciclo === 'anual' && (
           <p className="text-xs text-antique-gold/80 mt-1">
-            (inclui multiplicador 1.5x do Prime Anual)
+            (inclui multiplicador 1.5x do seu Prime Anual)
           </p>
         )}
       </div>
@@ -256,25 +258,35 @@ export function PointsSimulator({
  * - Free: mostra comparação Free vs Prime + CTA para upgrade
  */
 export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const [activeMode, setActiveMode] = useState('travel')
   const [activePlano, setActivePlano] = useState('prime')
   const [config, setConfig] = useState(null)
+  const [userBenefits, setUserBenefits] = useState(null)
   const isLight = variant === 'light'
 
-  // Verificar se usuário é Prime
-  const userIsPrime = profile?.subscription_status === 'active' || profile?.plano === 'prime'
+  // Verificar se usuário é Prime e qual o ciclo
+  const userIsPrime = userBenefits?.isPrime || false
+  const userCiclo = userBenefits?.ciclo || null // 'anual' | 'mensal' | null
 
-  // Carregar config dos planos
+  // Carregar config dos planos e benefícios do usuário
   useEffect(() => {
     async function load() {
       const result = await fetchPlanosConfig()
       if (result.success) {
         setConfig(result.planos)
       }
+
+      // Buscar benefícios reais do usuário
+      if (user?.id) {
+        const benefitsResult = await fetchUserBenefits(user.id)
+        if (benefitsResult.success) {
+          setUserBenefits(benefitsResult.benefits)
+        }
+      }
     }
     load()
-  }, [])
+  }, [user?.id])
 
   // Se Prime, sempre mostrar só Prime
   useEffect(() => {
@@ -337,7 +349,7 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-heading ${
             isLight ? 'bg-antique-gold/20 text-antique-gold' : 'bg-antique-gold/20 text-antique-gold'
           }`}>
-            👑 Seus ganhos como Prime
+            👑 Seus ganhos como Prime {userCiclo === 'anual' ? 'Anual' : 'Mensal'}
           </span>
         </div>
       )}
@@ -390,6 +402,7 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
           variant={variant}
           compact={compact}
           plano={userIsPrime ? 'prime' : activePlano}
+          ciclo={userIsPrime ? userCiclo : (activePlano === 'prime' ? 'anual' : null)}
           config={config}
         />
       </motion.div>

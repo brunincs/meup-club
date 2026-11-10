@@ -12,7 +12,7 @@ import {
   rejectReferral,
   formatReferralStatus,
   formatReferralDate,
-  PONTOS_POR_INDICACAO
+  getReferralPointsPreview
 } from '@/services/referralService'
 import { format } from '@/services/copy'
 import toast from 'react-hot-toast'
@@ -20,8 +20,10 @@ import toast from 'react-hot-toast'
 // ============================================
 // MODAL DE CONFIRMAÇÃO
 // ============================================
-function ConfirmModal({ referral, type, onClose, onConfirm, loading }) {
+function ConfirmModal({ referral, type, onClose, onConfirm, loading, pointsPreview }) {
   const isApprove = type === 'approve'
+  const pontos = pointsPreview?.pontos || 3000
+  const plano = pointsPreview?.plano || 'free'
 
   return (
     <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -51,7 +53,10 @@ function ConfirmModal({ referral, type, onClose, onConfirm, loading }) {
             {isApprove && (
               <div>
                 <p className="text-xs text-dusty-rose uppercase tracking-wider mb-1">Pontos</p>
-                <p className="font-bold text-green-600">+{format.pointsShort(PONTOS_POR_INDICACAO)}</p>
+                <p className="font-bold text-green-600">+{format.pointsShort(pontos)}</p>
+                <p className="text-[10px] text-dusty-rose/70 mt-0.5">
+                  ({plano === 'prime' ? 'Prime' : 'Free'})
+                </p>
               </div>
             )}
           </div>
@@ -59,8 +64,9 @@ function ConfirmModal({ referral, type, onClose, onConfirm, loading }) {
 
         {isApprove ? (
           <p className="text-sm text-dusty-rose mb-6">
-            Ao aprovar, <strong>{format.pointsShort(PONTOS_POR_INDICACAO)} pontos</strong> serão creditados
-            ao indicador <strong>{referral.referrer?.name}</strong>.
+            Ao aprovar, <strong>{format.pointsShort(pontos)} pontos</strong> serão creditados
+            ao indicador <strong>{referral.referrer?.name}</strong>
+            {plano === 'prime' && <span className="text-antique-gold"> (Prime)</span>}.
           </p>
         ) : (
           <p className="text-sm text-dusty-rose mb-6">
@@ -102,7 +108,17 @@ export function AdminReferrals() {
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
-  const [modal, setModal] = useState(null) // { referral, type: 'approve' | 'reject' }
+  const [modal, setModal] = useState(null) // { referral, type: 'approve' | 'reject', pointsPreview }
+
+  // Abrir modal com preview de pontos
+  const openModal = async (referral, type) => {
+    if (type === 'approve' && referral.referrer?.id) {
+      const preview = await getReferralPointsPreview(referral.referrer.id)
+      setModal({ referral, type, pointsPreview: preview })
+    } else {
+      setModal({ referral, type, pointsPreview: null })
+    }
+  }
 
   // Carregar indicações
   const loadReferrals = useCallback(async () => {
@@ -290,13 +306,13 @@ export function AdminReferrals() {
                             {referral.status === 'pending' && (
                               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-1.5 sm:gap-2">
                                 <button
-                                  onClick={() => setModal({ referral, type: 'approve' })}
+                                  onClick={() => openModal(referral, 'approve')}
                                   className="px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm whitespace-nowrap"
                                 >
                                   Aprovar
                                 </button>
                                 <button
-                                  onClick={() => setModal({ referral, type: 'reject' })}
+                                  onClick={() => openModal(referral, 'reject')}
                                   className="px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-medium bg-red-100 text-red-600 border border-red-200 hover:bg-red-200 transition-colors whitespace-nowrap"
                                 >
                                   Rejeitar
@@ -342,6 +358,7 @@ export function AdminReferrals() {
           onClose={() => setModal(null)}
           onConfirm={modal.type === 'approve' ? handleApprove : handleReject}
           loading={actionLoading}
+          pointsPreview={modal.pointsPreview}
         />
       )}
     </AdminLayout>
