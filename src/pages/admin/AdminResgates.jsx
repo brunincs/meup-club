@@ -6,13 +6,19 @@ import {
   aprovarResgate,
   rejeitarResgate
 } from '@/services/resgateService'
+import {
+  reabrirResgate,
+  reverterAprovacaoResgate
+} from '@/services/reversalService'
+import { ReversalModal } from '@/components/admin/ReversalModal'
 import toast from 'react-hot-toast'
 
 // Configuração de status
 const statusConfig = {
   pendente: { label: 'Pendente', color: 'text-amber-600', bg: 'bg-amber-100', border: 'border-amber-200' },
   aprovado: { label: 'Aprovado', color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-200' },
-  rejeitado: { label: 'Rejeitado', color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-200' }
+  rejeitado: { label: 'Rejeitado', color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-200' },
+  revertido: { label: 'Revertido', color: 'text-purple-600', bg: 'bg-purple-100', border: 'border-purple-200' }
 }
 
 // Modal de Rejeição
@@ -91,6 +97,8 @@ export function AdminResgates() {
   const [filter, setFilter] = useState('pendente')
   const [rejectingItem, setRejectingItem] = useState(null)
   const [processing, setProcessing] = useState(null)
+  const [reversalModal, setReversalModal] = useState(null) // { solicitacao, type: 'reabrir' | 'devolver' }
+  const [reversalLoading, setReversalLoading] = useState(false)
 
   // Carregar dados
   const loadData = async () => {
@@ -166,6 +174,36 @@ export function AdminResgates() {
     }
   }
 
+  // Reabrir resgate rejeitado
+  const handleReabrir = async (motivo) => {
+    if (!reversalModal?.solicitacao) return
+    setReversalLoading(true)
+    const result = await reabrirResgate(reversalModal.solicitacao.id, motivo)
+    if (result.success) {
+      toast.success('Resgate reaberto! Agora pode ser aprovado.')
+      setReversalModal(null)
+      loadData()
+    } else {
+      toast.error(result.error || 'Erro ao reabrir resgate')
+    }
+    setReversalLoading(false)
+  }
+
+  // Reverter aprovação (devolve pontos ao cliente)
+  const handleReverter = async (motivo) => {
+    if (!reversalModal?.solicitacao) return
+    setReversalLoading(true)
+    const result = await reverterAprovacaoResgate(reversalModal.solicitacao.id, motivo)
+    if (result.success) {
+      toast.success(`Resgate revertido! ${result.pointsDevolvidos?.toLocaleString('pt-BR')} pontos devolvidos ao cliente.`)
+      setReversalModal(null)
+      loadData()
+    } else {
+      toast.error(result.error || 'Erro ao reverter aprovação')
+    }
+    setReversalLoading(false)
+  }
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -197,6 +235,7 @@ export function AdminResgates() {
             { value: 'pendente', label: 'Pendentes' },
             { value: 'aprovado', label: 'Aprovados' },
             { value: 'rejeitado', label: 'Rejeitados' },
+            { value: 'revertido', label: 'Revertidos' },
             { value: 'all', label: 'Todos' }
           ].map(f => (
             <button
@@ -306,54 +345,72 @@ export function AdminResgates() {
                       )}
                     </div>
 
-                    {/* Ações (só para pendentes) */}
-                    {sol.status === 'pendente' && (
-                      <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 w-full sm:w-auto mt-3 sm:mt-0">
+                    {/* Ações */}
+                    <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 w-full sm:w-auto mt-3 sm:mt-0">
+                      {sol.status === 'pendente' && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              console.log('[CLICK] Botão Aprovar clicado, sol.id:', sol.id, 'isProcessing:', isProcessing)
+                              if (!isProcessing) {
+                                handleAprovar(sol.id)
+                              }
+                            }}
+                            disabled={isProcessing}
+                            className="px-4 py-2.5 sm:py-2 rounded-xl bg-green-500 text-white text-xs font-heading font-medium hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                          >
+                            {isProcessing ? (
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                className="w-3 h-3 border border-white/30 border-t-white rounded-full"
+                              />
+                            ) : (
+                              <span>✓</span>
+                            )}
+                            Aprovar
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              console.log('[CLICK] Botão Rejeitar clicado, sol:', sol.id)
+                              if (!isProcessing) {
+                                setRejectingItem(sol)
+                              }
+                            }}
+                            disabled={isProcessing}
+                            className="px-4 py-2.5 sm:py-2 rounded-xl bg-ice-white border border-red-200 text-red-600 text-xs font-heading font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+                          >
+                            Rejeitar
+                          </button>
+                        </>
+                      )}
+                      {sol.status === 'rejeitado' && (
                         <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            console.log('[CLICK] Botão Aprovar clicado, sol.id:', sol.id, 'isProcessing:', isProcessing)
-                            if (!isProcessing) {
-                              handleAprovar(sol.id)
-                            }
-                          }}
-                          disabled={isProcessing}
-                          className="px-4 py-2.5 sm:py-2 rounded-xl bg-green-500 text-white text-xs font-heading font-medium hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                          onClick={() => setReversalModal({ solicitacao: sol, type: 'reabrir' })}
+                          className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200 transition-colors"
                         >
-                          {isProcessing ? (
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                              className="w-3 h-3 border border-white/30 border-t-white rounded-full"
-                            />
-                          ) : (
-                            <span>✓</span>
-                          )}
-                          Aprovar
+                          Reabrir
                         </button>
+                      )}
+                      {sol.status === 'aprovado' && (
                         <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            console.log('[CLICK] Botão Rejeitar clicado, sol:', sol.id)
-                            if (!isProcessing) {
-                              setRejectingItem(sol)
-                            }
-                          }}
-                          disabled={isProcessing}
-                          className="px-4 py-2.5 sm:py-2 rounded-xl bg-ice-white border border-red-200 text-red-600 text-xs font-heading font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+                          onClick={() => setReversalModal({ solicitacao: sol, type: 'devolver' })}
+                          className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors"
                         >
-                          Rejeitar
+                          Reverter
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
                     {/* Info de processamento (se aprovado/rejeitado) */}
                     {sol.status !== 'pendente' && sol.processedAt && (
-                      <div className="text-right flex-shrink-0">
+                      <div className="text-right flex-shrink-0 ml-2">
                         <p className="text-xs text-graphite/50 font-heading">
-                          Processado em {sol.processedAt}
+                          {sol.processedAt}
                         </p>
                       </div>
                     )}
@@ -372,6 +429,25 @@ export function AdminResgates() {
             solicitacao={rejectingItem}
             onClose={() => setRejectingItem(null)}
             onConfirm={handleRejeitar}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal de reversão */}
+      <AnimatePresence>
+        {reversalModal && (
+          <ReversalModal
+            type={reversalModal.type}
+            itemType="resgate"
+            item={{
+              userName: reversalModal.solicitacao.userName,
+              pontos: reversalModal.solicitacao.pontos,
+              experienciaNome: reversalModal.solicitacao.displayName || reversalModal.solicitacao.experienciaNome
+            }}
+            currentBalance={reversalModal.solicitacao.userPoints}
+            onConfirm={reversalModal.type === 'reabrir' ? handleReabrir : handleReverter}
+            onClose={() => setReversalModal(null)}
+            loading={reversalLoading}
           />
         )}
       </AnimatePresence>

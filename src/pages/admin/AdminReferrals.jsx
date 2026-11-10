@@ -1,10 +1,10 @@
 // ============================================
 // ADMIN - Gestão de Indicações
-// Aprovar/Rejeitar indicações e creditar pontos
+// Aprovar/Rejeitar/Reabrir/Reverter indicações
 // ============================================
 
 import { useState, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import {
   getAllReferrals,
@@ -16,6 +16,11 @@ import {
   PONTOS_POR_INDICACAO_FREE,
   PONTOS_POR_INDICACAO_PRIME
 } from '@/services/referralService'
+import {
+  reabrirIndicacao,
+  reverterAprovacaoIndicacao
+} from '@/services/reversalService'
+import { ReversalModal } from '@/components/admin/ReversalModal'
 import { format } from '@/services/copy'
 import toast from 'react-hot-toast'
 
@@ -106,11 +111,12 @@ function ConfirmModal({ referral, type, onClose, onConfirm, loading, pointsPrevi
 // ============================================
 export function AdminReferrals() {
   const [referrals, setReferrals] = useState([])
-  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 })
+  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0, reverted: 0 })
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [modal, setModal] = useState(null) // { referral, type: 'approve' | 'reject', pointsPreview }
+  const [reversalModal, setReversalModal] = useState(null) // { referral, type: 'reabrir' | 'reverter' }
 
   // Abrir modal com preview de pontos
   const openModal = async (referral, type) => {
@@ -178,6 +184,40 @@ export function AdminReferrals() {
     setActionLoading(false)
   }
 
+  // Reabrir indicação rejeitada
+  const handleReabrir = async (motivo) => {
+    if (!reversalModal?.referral) return
+
+    setActionLoading(true)
+    const result = await reabrirIndicacao(reversalModal.referral.id, motivo)
+
+    if (result.success) {
+      toast.success('Indicação reaberta! Agora pode ser aprovada.')
+      setReversalModal(null)
+      loadReferrals()
+    } else {
+      toast.error(result.error || 'Erro ao reabrir indicação')
+    }
+    setActionLoading(false)
+  }
+
+  // Reverter aprovação (estorna pontos)
+  const handleReverter = async (motivo) => {
+    if (!reversalModal?.referral) return
+
+    setActionLoading(true)
+    const result = await reverterAprovacaoIndicacao(reversalModal.referral.id, motivo)
+
+    if (result.success) {
+      toast.success(`Aprovação revertida! ${format.pointsShort(result.pointsEstornados)} pontos estornados.`)
+      setReversalModal(null)
+      loadReferrals()
+    } else {
+      toast.error(result.error || 'Erro ao reverter aprovação')
+    }
+    setActionLoading(false)
+  }
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -208,7 +248,8 @@ export function AdminReferrals() {
             { value: 'all', label: 'Todas' },
             { value: 'pending', label: `Pendentes${stats.pending > 0 ? ` (${stats.pending})` : ''}` },
             { value: 'approved', label: 'Aprovadas' },
-            { value: 'rejected', label: 'Rejeitadas' }
+            { value: 'rejected', label: 'Rejeitadas' },
+            { value: 'reverted', label: 'Revertidas' }
           ].map(f => (
             <button
               key={f.value}
@@ -321,6 +362,22 @@ export function AdminReferrals() {
                                 </button>
                               </div>
                             )}
+                            {referral.status === 'rejected' && (
+                              <button
+                                onClick={() => setReversalModal({ referral, type: 'reabrir' })}
+                                className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200 transition-colors whitespace-nowrap"
+                              >
+                                Reabrir
+                              </button>
+                            )}
+                            {referral.status === 'approved' && (
+                              <button
+                                onClick={() => setReversalModal({ referral, type: 'reverter' })}
+                                className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors whitespace-nowrap"
+                              >
+                                Reverter
+                              </button>
+                            )}
                           </td>
                         </motion.tr>
                       )
@@ -364,6 +421,24 @@ export function AdminReferrals() {
           pointsPreview={modal.pointsPreview}
         />
       )}
+
+      {/* Modal de reversão */}
+      <AnimatePresence>
+        {reversalModal && (
+          <ReversalModal
+            type={reversalModal.type}
+            itemType="indicação"
+            item={{
+              userName: reversalModal.referral.referrer?.name,
+              pontos: reversalModal.referral.points_awarded,
+              description: `Indicação de ${reversalModal.referral.referred?.name}`
+            }}
+            onConfirm={reversalModal.type === 'reabrir' ? handleReabrir : handleReverter}
+            onClose={() => setReversalModal(null)}
+            loading={actionLoading}
+          />
+        )}
+      </AnimatePresence>
     </AdminLayout>
   )
 }

@@ -557,7 +557,8 @@ export function formatStatus(status) {
   const statusMap = {
     pendente: { label: 'Em análise', color: 'text-amber-600', bg: 'bg-amber-100' },
     aprovada: { label: 'Aprovada', color: 'text-green-600', bg: 'bg-green-100' },
-    recusada: { label: 'Recusada', color: 'text-red-600', bg: 'bg-red-100' }
+    recusada: { label: 'Recusada', color: 'text-red-600', bg: 'bg-red-100' },
+    revertida: { label: 'Revertida', color: 'text-purple-600', bg: 'bg-purple-100' }
   }
   return statusMap[status] || statusMap.pendente
 }

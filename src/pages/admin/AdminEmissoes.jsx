@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN EMISSÕES - Aprovar/Recusar Viagens
+// ADMIN EMISSÕES - Aprovar/Recusar/Reabrir/Reverter Viagens
 // ============================================
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -17,6 +17,11 @@ import {
   uploadCardMeup,
   calcularPontos
 } from '@/services/emissaoService'
+import {
+  reabrirEmissao,
+  reverterAprovacaoEmissao
+} from '@/services/reversalService'
+import { ReversalModal } from '@/components/admin/ReversalModal'
 import toast from 'react-hot-toast'
 
 // ============================================
@@ -441,10 +446,12 @@ export function AdminEmissoes() {
   const { user } = useAuth()
   const [emissoes, setEmissoes] = useState([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState('pendentes') // 'pendentes', 'todas', 'aprovadas', 'recusadas'
+  const [tab, setTab] = useState('pendentes') // 'pendentes', 'todas', 'aprovadas', 'recusadas', 'revertidas'
   const [previewUrl, setPreviewUrl] = useState(null)
   const [recusarEmissaoData, setRecusarEmissaoData] = useState(null)
   const [showLancarModal, setShowLancarModal] = useState(false)
+  const [reversalModal, setReversalModal] = useState(null) // { emissao, type: 'reabrir' | 'reverter' }
+  const [reversalLoading, setReversalLoading] = useState(false)
 
   // Carregar emissões
   const loadEmissoes = async () => {
@@ -456,7 +463,13 @@ export function AdminEmissoes() {
     } else if (tab === 'todas') {
       result = await fetchTodasEmissoes()
     } else {
-      result = await fetchTodasEmissoes(tab === 'aprovadas' ? 'aprovada' : 'recusada')
+      // Map tab value to status
+      const statusMap = {
+        aprovadas: 'aprovada',
+        recusadas: 'recusada',
+        revertidas: 'revertida'
+      }
+      result = await fetchTodasEmissoes(statusMap[tab])
     }
 
     if (result.success) {
@@ -496,6 +509,36 @@ export function AdminEmissoes() {
     }
   }
 
+  // Reabrir emissão recusada
+  const handleReabrir = async (motivo) => {
+    if (!reversalModal?.emissao) return
+    setReversalLoading(true)
+    const result = await reabrirEmissao(reversalModal.emissao.id, motivo)
+    if (result.success) {
+      toast.success('Emissão reaberta! Agora pode ser aprovada.')
+      setReversalModal(null)
+      loadEmissoes()
+    } else {
+      toast.error(result.error || 'Erro ao reabrir emissão')
+    }
+    setReversalLoading(false)
+  }
+
+  // Reverter aprovação (estorna pontos)
+  const handleReverter = async (motivo) => {
+    if (!reversalModal?.emissao) return
+    setReversalLoading(true)
+    const result = await reverterAprovacaoEmissao(reversalModal.emissao.id, motivo)
+    if (result.success) {
+      toast.success(`Aprovação revertida! ${result.pointsEstornados?.toLocaleString('pt-BR')} pontos estornados.`)
+      setReversalModal(null)
+      loadEmissoes()
+    } else {
+      toast.error(result.error || 'Erro ao reverter aprovação')
+    }
+    setReversalLoading(false)
+  }
+
   const pendentesCount = emissoes.filter(e => e.status === 'pendente').length
 
   return (
@@ -533,7 +576,8 @@ export function AdminEmissoes() {
             { value: 'pendentes', label: 'Pendentes', badge: pendentesCount },
             { value: 'todas', label: 'Todas' },
             { value: 'aprovadas', label: 'Aprovadas' },
-            { value: 'recusadas', label: 'Recusadas' }
+            { value: 'recusadas', label: 'Recusadas' },
+            { value: 'revertidas', label: 'Revertidas' }
           ].map(t => (
             <button
               key={t.value}
@@ -663,23 +707,41 @@ export function AdminEmissoes() {
                       </p>
                     </div>
 
-                    {/* Ações (só para pendentes) */}
-                    {isPending && (
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Ações */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {isPending && (
+                        <>
+                          <button
+                            onClick={() => handleAprovar(emissao)}
+                            className="px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm"
+                          >
+                            Aprovar
+                          </button>
+                          <button
+                            onClick={() => setRecusarEmissaoData(emissao)}
+                            className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-red-100 text-red-600 border border-red-200 hover:bg-red-200 transition-colors"
+                          >
+                            Recusar
+                          </button>
+                        </>
+                      )}
+                      {emissao.status === 'recusada' && (
                         <button
-                          onClick={() => handleAprovar(emissao)}
-                          className="px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm"
+                          onClick={() => setReversalModal({ emissao, type: 'reabrir' })}
+                          className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200 transition-colors"
                         >
-                          Aprovar
+                          Reabrir
                         </button>
+                      )}
+                      {emissao.status === 'aprovada' && (
                         <button
-                          onClick={() => setRecusarEmissaoData(emissao)}
-                          className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-red-100 text-red-600 border border-red-200 hover:bg-red-200 transition-colors"
+                          onClick={() => setReversalModal({ emissao, type: 'reverter' })}
+                          className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors"
                         >
-                          Recusar
+                          Reverter
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               )
@@ -719,6 +781,24 @@ export function AdminEmissoes() {
               loadEmissoes()
             }}
             onClose={() => setShowLancarModal(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Reversão */}
+      <AnimatePresence>
+        {reversalModal && (
+          <ReversalModal
+            type={reversalModal.type}
+            itemType="emissão"
+            item={{
+              userName: reversalModal.emissao.userName,
+              pontos: reversalModal.emissao.pontosCreditados || reversalModal.emissao.pontosEstimados,
+              description: `R$ ${reversalModal.emissao.valor?.toLocaleString('pt-BR')}`
+            }}
+            onConfirm={reversalModal.type === 'reabrir' ? handleReabrir : handleReverter}
+            onClose={() => setReversalModal(null)}
+            loading={reversalLoading}
           />
         )}
       </AnimatePresence>
