@@ -220,7 +220,7 @@ export function PlanStatusCard() {
             Acelere sua jornada
           </p>
           <p className="text-xs text-dusty-rose/70">
-            Multiplicador 1.5x nas viagens + check-in triplo
+            1,5x nas viagens no Prime anual + check-in triplo
           </p>
         </div>
         <Link
