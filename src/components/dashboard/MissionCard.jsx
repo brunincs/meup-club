@@ -154,14 +154,10 @@ export function MissionCard({
           {/* Botões de ação */}
           <div className="flex items-center gap-2">
             {isCompleted ? (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => onClaim?.(mission)}
-                className="px-4 py-2 rounded-lg text-xs font-heading font-semibold bg-game-green text-deep-purple shadow-lg shadow-game-green/20"
-              >
+              // Badge inerte - NÃO é botão, só status visual
+              <span className="px-4 py-2 rounded-lg text-xs font-heading font-semibold bg-game-green text-deep-purple shadow-lg shadow-game-green/20 select-none">
                 {needsApproval ? 'Aprovada' : 'Concluída'} ✓
-              </motion.button>
+              </span>
             ) : isPending ? (
               <span className={`text-xs px-3 py-2 rounded-lg ${isLight ? 'bg-antique-gold/10 text-antique-gold' : 'bg-antique-gold/20 text-antique-gold'}`}>
                 Pendente

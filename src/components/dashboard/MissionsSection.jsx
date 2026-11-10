@@ -202,16 +202,20 @@ export function MissionsSection({ variant = 'dark' }) {
 
   // Missões em destaque (2 principais para o dashboard - sem semanais)
   const featuredMissions = useMemo(() => {
-    // Pegar missões diárias e únicas (sem semanais)
+    // Pegar missões diárias (podem repetir) e únicas NÃO concluídas
     const daily = processedTasks.find(t => t.tipo === 'diaria' && !t.completed)
-    const oneTime = processedTasks.find(t => t.tipo === 'unica' && !t.completed)
-    const oneTime2 = processedTasks.find(t => t.tipo === 'unica' && !t.completed && t.id !== oneTime?.id)
 
-    // Se não tiver pendentes, pega as primeiras
+    // Missões únicas: NUNCA mostrar concluídas (são one-time, já ganharam os pontos)
+    const pendingOneTime = processedTasks.filter(t => t.tipo === 'unica' && !t.completed)
+    const oneTime = pendingOneTime[0] || null
+    const oneTime2 = pendingOneTime[1] || null
+
+    // Para diárias: se não tiver pendente, pega qualquer uma (reseta)
+    // Para únicas: NUNCA mostra concluídas
     return {
       share: daily || processedTasks.find(t => t.tipo === 'diaria'),
-      convert: oneTime || processedTasks.find(t => t.tipo === 'unica'),
-      convert2: oneTime2 || null
+      convert: oneTime,  // null se todas concluídas
+      convert2: oneTime2
     }
   }, [processedTasks])
 
@@ -375,17 +379,11 @@ export function MissionsSection({ variant = 'dark' }) {
     }
   }, [user, handleGoToMission])
 
-  // Handler para resgatar pontos (quando completa)
-  const handleClaimMission = useCallback((mission) => {
-    fireConfetti({ x: '50%', y: '50%' })
-    toast.success(`+${mission.points} pontos resgatados!`, {
-      style: {
-        background: '#32113f',
-        color: '#edf0f1',
-        border: '1px solid rgba(34, 197, 94, 0.3)'
-      }
-    })
-  }, [fireConfetti])
+  // Handler removido - botão "Concluída" agora é apenas badge visual inerte
+  // Pontos já foram creditados quando a missão foi aprovada pelo admin
+  const handleClaimMission = useCallback(() => {
+    // Não faz nada - badge é apenas visual
+  }, [])
 
   // Handler para check-in diário
   const handleCheckin = useCallback(async () => {
