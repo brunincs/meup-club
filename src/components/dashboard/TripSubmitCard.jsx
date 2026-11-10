@@ -14,7 +14,9 @@ import {
   formatStatus,
   calcularPontos
 } from '@/services/emissaoService'
-import { fetchUserBenefits } from '@/services/subscriptionService'
+import { fetchUserBenefits, fetchPlanosConfig } from '@/services/subscriptionService'
+import { getCtaText, calcularComparacaoPrime } from '@/services/primeUpsellService'
+import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
 // ============================================
@@ -28,6 +30,8 @@ export function TripSubmitCard({ variant = 'dark' }) {
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [isPrime, setIsPrime] = useState(false)
   const [loadingBenefits, setLoadingBenefits] = useState(true)
+  const [ofertaFundador, setOfertaFundador] = useState(false)
+  const [planosConfig, setPlanosConfig] = useState(null)
 
   // Buscar benefícios reais do usuário para detectar Prime
   useEffect(() => {
@@ -38,6 +42,16 @@ export function TripSubmitCard({ variant = 'dark' }) {
       }
       const result = await fetchUserBenefits(user.id)
       setIsPrime(result.benefits?.isPrime || false)
+
+      // Buscar config dos planos para saber se oferta fundador está ativa
+      const planosResult = await fetchPlanosConfig()
+      if (planosResult.success) {
+        setPlanosConfig(planosResult.planos)
+        if (planosResult.planos?.prime) {
+          setOfertaFundador(planosResult.planos.prime.ofertaFundadorAtiva || false)
+        }
+      }
+
       setLoadingBenefits(false)
     }
     checkPrime()
@@ -154,6 +168,9 @@ export function TripSubmitCard({ variant = 'dark' }) {
                 emissoes={emissoes}
                 loading={loadingHistory}
                 isDark={isDark}
+                isPrime={isPrime}
+                planosConfig={planosConfig}
+                ofertaFundador={ofertaFundador}
               />
             </motion.div>
           ) : showForm ? (
@@ -173,6 +190,25 @@ export function TripSubmitCard({ variant = 'dark' }) {
                 }}
                 onCancel={() => setShowForm(false)}
               />
+
+              {/* Chamada contextual Prime (só para Free) */}
+              <div className={`mt-4 pt-4 border-t text-center ${
+                isDark ? 'border-dusty-rose/10' : 'border-dusty-rose/20'
+              }`}>
+                <p className={`text-xs leading-relaxed mb-2 ${
+                  isDark ? 'text-dusty-rose/80' : 'text-graphite/60'
+                }`}>
+                  No Prime, nossa equipe lança seus pontos por você — sem enviar nada.
+                </p>
+                <Link
+                  to="/planos"
+                  className={`text-xs font-heading font-semibold transition-colors ${
+                    isDark ? 'text-antique-gold hover:text-accent-light' : 'text-deep-purple hover:text-bright-purple'
+                  }`}
+                >
+                  {getCtaText(ofertaFundador)}
+                </Link>
+              </div>
             </motion.div>
           ) : (
             // === CTA INICIAL ===
@@ -463,7 +499,7 @@ function EmissaoForm({ userId, isDark, onSuccess, onCancel }) {
 // ============================================
 // HISTÓRICO DE EMISSÕES
 // ============================================
-function EmissaoHistory({ emissoes, loading, isDark }) {
+function EmissaoHistory({ emissoes, loading, isDark, isPrime, planosConfig, ofertaFundador }) {
   if (loading) {
     return (
       <div className="py-8 text-center">
@@ -522,11 +558,25 @@ function EmissaoHistory({ emissoes, loading, isDark }) {
                 {new Date(emissao.data_emissao).toLocaleDateString('pt-BR')}
               </span>
 
-              {emissao.status === 'aprovada' && (
-                <span className="text-xs font-mono text-green-600 font-semibold">
-                  +{(emissao.pontos_creditados || emissao.pontos_estimados)?.toLocaleString('pt-BR')} pts
-                </span>
-              )}
+              {emissao.status === 'aprovada' && (() => {
+                const pontos = emissao.pontos_creditados || emissao.pontos_estimados || 0
+                const comparison = !isPrime && planosConfig
+                  ? calcularComparacaoPrime(pontos, 'emissao', planosConfig)
+                  : null
+
+                return (
+                  <div className="text-right">
+                    <span className="text-xs font-mono text-green-600 font-semibold">
+                      +{pontos.toLocaleString('pt-BR')} pts
+                    </span>
+                    {comparison?.temDiferenca && (
+                      <p className={`text-[10px] ${isDark ? 'text-dusty-rose/60' : 'text-graphite/50'}`}>
+                        No Prime{comparison.soAnual ? ' anual' : ''} seriam +{comparison.pontosPrime.toLocaleString('pt-BR')}
+                      </p>
+                    )}
+                  </div>
+                )
+              })()}
 
               {emissao.status === 'recusada' && emissao.motivo_recusa && (
                 <span className="text-xs text-red-500 truncate max-w-[120px]" title={emissao.motivo_recusa}>

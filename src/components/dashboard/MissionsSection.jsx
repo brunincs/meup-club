@@ -19,7 +19,13 @@ import {
   registrarCompartilhamento,
   registrarVisitaExperiencias
 } from '@/services/supabaseData'
-import { fetchUserBenefits } from '@/services/subscriptionService'
+import { fetchUserBenefits, fetchPlanosConfig } from '@/services/subscriptionService'
+import {
+  canShowCheckinComparison,
+  markCheckinComparisonShown,
+  calcularComparacaoPrime,
+  getCtaText
+} from '@/services/primeUpsellService'
 import { getMissionAction, isExternalMission, requiresApproval, isAutomaticMission, shouldHideFromList } from '@/services/missionActions'
 import toast from 'react-hot-toast'
 
@@ -46,6 +52,10 @@ export function MissionsSection({ variant = 'dark' }) {
 
   // Pontos de check-in do plano do usuário
   const [pontosCheckin, setPontosCheckin] = useState(10)
+
+  // Estado para chamadas contextuais do Prime
+  const [isPrime, setIsPrime] = useState(false)
+  const [planosConfig, setPlanosConfig] = useState(null)
 
   // Carregar tarefas e status do usuário
   useEffect(() => {
@@ -80,6 +90,13 @@ export function MissionsSection({ variant = 'dark' }) {
         const benefitsResult = await fetchUserBenefits(user.id)
         if (benefitsResult.success) {
           setPontosCheckin(benefitsResult.benefits.pontosCheckin || 10)
+          setIsPrime(benefitsResult.benefits.isPrime || false)
+        }
+
+        // Buscar config dos planos para comparações Prime
+        const planosResult = await fetchPlanosConfig()
+        if (planosResult.success) {
+          setPlanosConfig(planosResult.planos)
         }
       } catch (error) {
         console.error('Erro ao carregar missões:', error)
@@ -440,13 +457,30 @@ export function MissionsSection({ variant = 'dark' }) {
         await refreshPoints()
 
         fireConfetti({ x: '50%', y: '30%' })
+
+        // Verificar se deve mostrar comparação Prime (só para Free, 1x/semana)
+        const showComparison = !isPrime && planosConfig && canShowCheckinComparison(user.id)
+        const comparison = showComparison
+          ? calcularComparacaoPrime(result.pontos, 'checkin', planosConfig)
+          : null
+
+        // Marcar que mostrou comparação (se aplicável)
+        if (showComparison && comparison?.temDiferenca) {
+          markCheckinComparisonShown(user.id)
+        }
+
         toast.success(
           <div>
             <strong>Check-in realizado!</strong>
             <div className="text-sm opacity-80">+{result.pontos} pontos</div>
+            {showComparison && comparison?.temDiferenca && (
+              <div className="text-xs opacity-60 mt-1">
+                No Prime seriam +{comparison.pontosPrime}.
+              </div>
+            )}
           </div>,
           {
-            duration: 4000,
+            duration: showComparison && comparison?.temDiferenca ? 5000 : 4000,
             style: {
               background: '#32113f',
               color: '#edf0f1',
@@ -480,7 +514,7 @@ export function MissionsSection({ variant = 'dark' }) {
       toast.error('Erro ao fazer check-in')
       setCheckinStatus(prev => ({ ...prev, isLoading: false }))
     }
-  }, [user, checkinStatus.podeFazer, checkinStatus.isLoading, fireConfetti, refreshPoints])
+  }, [user, checkinStatus.podeFazer, checkinStatus.isLoading, fireConfetti, refreshPoints, isPrime, planosConfig])
 
   // Calcular tempo restante para próximo check-in
   const getTempoRestante = useCallback(() => {
