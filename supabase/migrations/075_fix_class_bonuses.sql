@@ -132,7 +132,7 @@ VALUES (
   'Meup Exclusive',
   'Alcance a classe Meup Exclusive (100.000 pts acumulados)',
   10000,
-  'conquista',
+  'unica',
   true
 )
 ON CONFLICT DO NOTHING;
