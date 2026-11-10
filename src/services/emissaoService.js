@@ -207,6 +207,7 @@ export async function fetchTodasEmissoes(status = null) {
       cardUrl: e.card_url,
       cardPath: e.card_path,
       status: e.status,
+      origem: e.origem || 'cliente', // 'cliente' ou 'equipe'
       motivoRecusa: e.motivo_recusa,
       adminId: e.admin_id,
       createdAt: new Date(e.created_at).toLocaleDateString('pt-BR', {
@@ -395,6 +396,152 @@ export async function recusarEmissao(emissaoId, adminId, motivo = '') {
     return { success: true }
   } catch (error) {
     console.error('Erro ao recusar emissão:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// ============================================
+// ADMIN: LANÇAR EMISSÃO PELA EQUIPE
+// ============================================
+
+/**
+ * Buscar clientes para seleção (autocomplete)
+ * @param {string} search - Termo de busca (nome ou email)
+ */
+export async function buscarClientes(search = '') {
+  try {
+    let query = supabase
+      .from('profiles')
+      .select('id, name, email')
+      .limit(20)
+      .order('name', { ascending: true })
+
+    if (search && search.length >= 2) {
+      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
+    }
+
+    const { data, error } = await query
+
+    if (error) throw error
+
+    return {
+      success: true,
+      clientes: (data || []).map(c => ({
+        id: c.id,
+        name: c.name || 'Sem nome',
+        email: c.email
+      }))
+    }
+  } catch (error) {
+    console.error('Erro ao buscar clientes:', error)
+    return { success: false, error: error.message, clientes: [] }
+  }
+}
+
+/**
+ * Lançar emissão diretamente pela equipe (admin)
+ * JÁ credita os pontos e registra como aprovada
+ * ANTI-DUPLO-CRÉDITO: usa token único de idempotência
+ *
+ * @param {Object} params
+ * @param {string} params.clienteId - ID do cliente
+ * @param {number} params.valor - Valor total (R$)
+ * @param {string} params.dataEmissao - Data da emissão (YYYY-MM-DD)
+ * @param {string} params.cardUrl - URL do card no storage
+ * @param {string} params.cardPath - Path do arquivo no storage
+ * @param {string} params.adminId - ID do admin que está lançando
+ * @param {string} params.idempotencyKey - Chave única para evitar duplo-crédito
+ */
+export async function lancarEmissaoEquipe({
+  clienteId,
+  valor,
+  dataEmissao,
+  cardUrl,
+  cardPath,
+  adminId,
+  idempotencyKey
+}) {
+  try {
+    // Validações
+    if (!clienteId) return { success: false, error: 'Selecione um cliente' }
+    if (!valor || valor <= 0) return { success: false, error: 'Valor inválido' }
+    if (!cardUrl) return { success: false, error: 'Anexe o card Meup' }
+    if (!idempotencyKey) return { success: false, error: 'Erro de idempotência' }
+
+    // ANTI-DUPLO-CRÉDITO: verificar se já existe emissão com essa chave
+    const { data: existente } = await supabase
+      .from('emissoes')
+      .select('id, status')
+      .eq('idempotency_key', idempotencyKey)
+      .maybeSingle()
+
+    if (existente) {
+      return {
+        success: false,
+        error: 'Esta emissão já foi processada',
+        duplicada: true
+      }
+    }
+
+    // Calcular pontos (1 pt por R$1)
+    const pontos = Math.floor(valor * PONTOS_POR_REAL)
+
+    // 1. Criar emissão JÁ aprovada com origem = 'equipe'
+    const { data: emissao, error: insertError } = await supabase
+      .from('emissoes')
+      .insert([{
+        user_id: clienteId,
+        valor: valor,
+        pontos_estimados: pontos,
+        pontos_creditados: pontos,
+        data_emissao: dataEmissao,
+        card_url: cardUrl,
+        card_path: cardPath,
+        status: 'aprovada',
+        origem: 'equipe',
+        admin_id: adminId,
+        processed_at: new Date().toISOString(),
+        idempotency_key: idempotencyKey
+      }])
+      .select()
+      .single()
+
+    if (insertError) throw insertError
+
+    // 2. Creditar pontos usando função existente
+    const { error: creditError } = await supabase.rpc('admin_credit_points', {
+      p_user_id: clienteId,
+      p_amount: pontos,
+      p_reason: `Emissão lançada pela equipe: R$ ${valor.toLocaleString('pt-BR')}`,
+      p_type: 'credit'
+    })
+
+    if (creditError) {
+      // Rollback: deletar emissão se falhou crédito
+      await supabase.from('emissoes').delete().eq('id', emissao.id)
+      throw creditError
+    }
+
+    // 3. Notificar cliente
+    await supabase.from('notifications').insert([{
+      user_id: clienteId,
+      type: 'emissao_aprovada',
+      title: 'Viagem registrada!',
+      message: `A equipe registrou sua emissão de R$ ${valor.toLocaleString('pt-BR')}. +${pontos.toLocaleString('pt-BR')} pontos creditados!`,
+      read: false
+    }])
+
+    return {
+      success: true,
+      pontos,
+      emissao: {
+        id: emissao.id,
+        valor,
+        pontosCreditados: pontos
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao lançar emissão:', error)
     return { success: false, error: error.message }
   }
 }
