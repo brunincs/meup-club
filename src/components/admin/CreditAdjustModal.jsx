@@ -94,6 +94,7 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
       }
 
       setIsLoadingPreview(true)
+      setPreview(null) // Limpa preview anterior para evitar mostrar valor stale
       const result = await getCreditPreview(
         user.id,
         creditType === 'aniversario' ? 1 : inputNumber,
