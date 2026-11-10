@@ -10,7 +10,10 @@ const typeConfig = {
   referral: { label: 'Indicação', color: 'text-blue-600', bgColor: 'bg-blue-100', icon: '→' },
   welcome_referral: { label: 'Bônus Indicação', color: 'text-blue-600', bgColor: 'bg-blue-100', icon: '🎁' },
   task: { label: 'Tarefa', color: 'text-purple-600', bgColor: 'bg-purple-100', icon: '✓' },
-  redemption: { label: 'Resgate', color: 'text-amber-600', bgColor: 'bg-amber-100', icon: '★' }
+  redemption: { label: 'Resgate', color: 'text-amber-600', bgColor: 'bg-amber-100', icon: '★' },
+  emissao: { label: 'Viagem', color: 'text-cyan-600', bgColor: 'bg-cyan-100', icon: '✈' },
+  birthday: { label: 'Aniversário', color: 'text-pink-600', bgColor: 'bg-pink-100', icon: '🎂' },
+  estorno: { label: 'Estorno', color: 'text-orange-600', bgColor: 'bg-orange-100', icon: '↩' }
 }
 
 function TransactionDetailModal({ transaction, onClose }) {
