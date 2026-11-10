@@ -348,6 +348,36 @@ export async function getReferralPointsPreview(referrerId) {
 }
 
 // ============================================
+// BUSCAR PROGRESSO DE INDICAÇÕES APROVADAS
+// ============================================
+
+/**
+ * Busca o número de indicações aprovadas do usuário
+ * Usado para calcular progresso das missões de indicação
+ * @param {string} userId - ID do usuário
+ * @returns {Promise<{aprovadas: number}>}
+ */
+export async function getReferralProgress(userId) {
+  try {
+    const { data, error } = await supabase.rpc('get_referral_progress', {
+      p_user_id: userId
+    })
+
+    if (error) {
+      console.error('Erro ao buscar progresso de indicações:', error)
+      return { aprovadas: 0 }
+    }
+
+    return {
+      aprovadas: data?.aprovadas || 0
+    }
+  } catch (error) {
+    console.error('Erro ao buscar progresso de indicações:', error)
+    return { aprovadas: 0 }
+  }
+}
+
+// ============================================
 // FUNÇÕES AUXILIARES
 // ============================================
 

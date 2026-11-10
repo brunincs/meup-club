@@ -117,6 +117,7 @@ export function AdminReferrals() {
   const [actionLoading, setActionLoading] = useState(false)
   const [modal, setModal] = useState(null) // { referral, type: 'approve' | 'reject', pointsPreview }
   const [reversalModal, setReversalModal] = useState(null) // { referral, type: 'reabrir' | 'reverter' }
+  const [pointsPreviews, setPointsPreviews] = useState({}) // { referrer_id: { plano, pontos } }
 
   // Abrir modal com preview de pontos
   const openModal = async (referral, type) => {
@@ -128,13 +129,24 @@ export function AdminReferrals() {
     }
   }
 
-  // Carregar indicações
+  // Carregar indicações e previews de pontos
   const loadReferrals = useCallback(async () => {
     setLoading(true)
     const result = await getAllReferrals()
     if (result.success) {
       setReferrals(result.referrals)
       setStats(result.stats)
+
+      // Buscar preview de pontos para cada indicador único (apenas pendentes)
+      const pendingReferrals = result.referrals.filter(r => r.status === 'pending')
+      const uniqueReferrerIds = [...new Set(pendingReferrals.map(r => r.referrer?.id).filter(Boolean))]
+
+      const previews = {}
+      await Promise.all(uniqueReferrerIds.map(async (referrerId) => {
+        const preview = await getReferralPointsPreview(referrerId)
+        previews[referrerId] = preview
+      }))
+      setPointsPreviews(previews)
     } else {
       toast.error('Erro ao carregar indicações')
     }
@@ -291,6 +303,9 @@ export function AdminReferrals() {
                       <th className="hidden md:table-cell text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">
                         Data
                       </th>
+                      <th className="text-center text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">
+                        Pontos
+                      </th>
                       <th className="text-left text-xs font-heading font-semibold text-dusty-rose uppercase tracking-wide px-4 py-3">
                         Status
                       </th>
@@ -335,15 +350,28 @@ export function AdminReferrals() {
                               {formatReferralDate(referral.created_at)}
                             </span>
                           </td>
+                          <td className="px-4 py-4 text-center">
+                            {referral.status === 'approved' ? (
+                              <span className="text-sm font-mono font-bold text-green-600">
+                                +{format.pointsShort(referral.points_awarded)}
+                              </span>
+                            ) : referral.status === 'pending' ? (
+                              <div>
+                                <span className="text-sm font-mono font-semibold text-antique-gold">
+                                  {format.pointsShort(pointsPreviews[referral.referrer?.id]?.pontos || 3000)}
+                                </span>
+                                <p className="text-[10px] text-dusty-rose/70">
+                                  {pointsPreviews[referral.referrer?.id]?.plano === 'prime' ? 'Prime' : 'Free'}
+                                </p>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-dusty-rose/50">—</span>
+                            )}
+                          </td>
                           <td className="px-4 py-4">
                             <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-heading font-medium ${status.bg} ${status.color} border ${status.border}`}>
                               {status.label}
                             </span>
-                            {referral.status === 'approved' && referral.points_awarded > 0 && (
-                              <p className="text-xs text-green-600 mt-1">
-                                +{format.pointsShort(referral.points_awarded)} pts
-                              </p>
-                            )}
                           </td>
                           <td className="px-4 py-4 text-right">
                             {referral.status === 'pending' && (

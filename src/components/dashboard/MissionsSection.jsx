@@ -27,6 +27,7 @@ import {
   getCtaText
 } from '@/services/primeUpsellService'
 import { getMissionAction, isExternalMission, requiresApproval, isAutomaticMission, shouldHideFromList } from '@/services/missionActions'
+import { getReferralProgress } from '@/services/referralService'
 import toast from 'react-hot-toast'
 
 export function MissionsSection({ variant = 'dark' }) {
@@ -56,6 +57,9 @@ export function MissionsSection({ variant = 'dark' }) {
   // Estado para chamadas contextuais do Prime
   const [isPrime, setIsPrime] = useState(false)
   const [planosConfig, setPlanosConfig] = useState(null)
+
+  // Estado para indicações aprovadas (para missões de indicação)
+  const [approvedReferrals, setApprovedReferrals] = useState(0)
 
   // Carregar tarefas e status do usuário
   useEffect(() => {
@@ -98,6 +102,10 @@ export function MissionsSection({ variant = 'dark' }) {
         if (planosResult.success) {
           setPlanosConfig(planosResult.planos)
         }
+
+        // Buscar indicações aprovadas (para missões de indicação)
+        const referralProgress = await getReferralProgress(user.id)
+        setApprovedReferrals(referralProgress.aprovadas || 0)
       } catch (error) {
         console.error('Erro ao carregar missões:', error)
       } finally {
@@ -112,7 +120,7 @@ export function MissionsSection({ variant = 'dark' }) {
   const userStats = useMemo(() => {
     if (!profile) {
       return {
-        totalReferrals: 0,
+        approvedReferrals: 0,
         totalSales: 0,
         profileComplete: false,
         levelId: 1,
@@ -124,13 +132,14 @@ export function MissionsSection({ variant = 'dark' }) {
     const profileComplete = !!(profile.name && profile.email && profile.phone)
 
     return {
-      totalReferrals: profile.total_referrals || 0,
+      // Usar approvedReferrals do estado (vem da função RPC)
+      approvedReferrals,
       totalSales: profile.total_sales_value > 0 ? 1 : 0, // Simplificado
       profileComplete,
       levelId: profile.level_id || 1,
       points: profile.points || 0
     }
-  }, [profile])
+  }, [profile, approvedReferrals])
 
   // Processar tarefas com status real
   const processedTasks = useMemo(() => {
@@ -164,20 +173,20 @@ export function MissionsSection({ variant = 'dark' }) {
 
       const nomeLower = tarefa.nome.toLowerCase()
 
-      // Tarefas que dependem de indicações
+      // Tarefas que dependem de indicações APROVADAS
       if (nomeLower.includes('indicar') || nomeLower.includes('indicação') || nomeLower.includes('indicações')) {
         if (nomeLower.includes('2 pessoas') || nomeLower.includes('2 indicações')) {
           target = 2
-          progress = Math.min(userStats.totalReferrals, 2)
+          progress = Math.min(userStats.approvedReferrals, 2)
         } else if (nomeLower.includes('5 indicações')) {
           target = 5
-          progress = Math.min(userStats.totalReferrals, 5)
+          progress = Math.min(userStats.approvedReferrals, 5)
         } else if (nomeLower.includes('10 indicações')) {
           target = 10
-          progress = Math.min(userStats.totalReferrals, 10)
+          progress = Math.min(userStats.approvedReferrals, 10)
         } else if (nomeLower.includes('primeira')) {
           target = 1
-          progress = userStats.totalReferrals >= 1 ? 1 : 0
+          progress = userStats.approvedReferrals >= 1 ? 1 : 0
         }
       }
 
