@@ -12,7 +12,9 @@ import {
   rejectReferral,
   formatReferralStatus,
   formatReferralDate,
-  getReferralPointsPreview
+  getReferralPointsPreview,
+  PONTOS_POR_INDICACAO_FREE,
+  PONTOS_POR_INDICACAO_PRIME
 } from '@/services/referralService'
 import { format } from '@/services/copy'
 import toast from 'react-hot-toast'
@@ -195,7 +197,7 @@ export function AdminReferrals() {
           <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 border border-green-200">
             <span className="text-green-600">◇</span>
             <span className="text-sm text-green-700">
-              <strong>{format.pointsShort(PONTOS_POR_INDICACAO)}</strong> pontos por aprovação
+              <strong>{format.pointsShort(PONTOS_POR_INDICACAO_FREE)}</strong> (Free) ou <strong>{format.pointsShort(PONTOS_POR_INDICACAO_PRIME)}</strong> (Prime) por aprovação
             </span>
           </div>
         </div>
@@ -344,8 +346,9 @@ export function AdminReferrals() {
         <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
           <p className="text-sm text-amber-800">
             <strong>Como funciona:</strong> Quando um cliente indicado viaja e fecha com a Me,up,
-            você aprova a indicação aqui. O indicador recebe automaticamente <strong>{format.pointsShort(PONTOS_POR_INDICACAO)} pontos</strong> fixos.
-            Nenhum valor em R$ é mostrado ao cliente.
+            você aprova a indicação aqui. O indicador recebe pontos baseado no seu plano atual:
+            <strong> {format.pointsShort(PONTOS_POR_INDICACAO_FREE)}</strong> (Free) ou
+            <strong> {format.pointsShort(PONTOS_POR_INDICACAO_PRIME)}</strong> (Prime).
           </p>
         </div>
       </div>
