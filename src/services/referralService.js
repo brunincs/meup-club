@@ -200,6 +200,9 @@ export async function getAllReferrals(status = null) {
         points_awarded,
         processed_at,
         created_at,
+        revertida_anteriormente,
+        revertida_motivo,
+        revertida_em,
         referrer:referrer_id (
           id,
           name,

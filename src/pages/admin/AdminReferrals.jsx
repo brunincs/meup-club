@@ -111,7 +111,7 @@ function ConfirmModal({ referral, type, onClose, onConfirm, loading, pointsPrevi
 // ============================================
 export function AdminReferrals() {
   const [referrals, setReferrals] = useState([])
-  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0, reverted: 0 })
+  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0, jaRevertidas: 0 })
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
@@ -135,7 +135,12 @@ export function AdminReferrals() {
     const result = await getAllReferrals()
     if (result.success) {
       setReferrals(result.referrals)
-      setStats(result.stats)
+      // Calcular stats incluindo "já revertidas"
+      const jaRevertidas = result.referrals.filter(r => r.revertida_anteriormente).length
+      setStats({
+        ...result.stats,
+        jaRevertidas
+      })
 
       // Buscar preview de pontos para cada indicador único (apenas pendentes)
       const pendingReferrals = result.referrals.filter(r => r.status === 'pending')
@@ -157,10 +162,12 @@ export function AdminReferrals() {
     loadReferrals()
   }, [loadReferrals])
 
-  // Filtrar por status
+  // Filtrar por status (jaRevertidas = items que foram revertidos alguma vez)
   const filteredReferrals = filter === 'all'
     ? referrals
-    : referrals.filter(r => r.status === filter)
+    : filter === 'jaRevertidas'
+      ? referrals.filter(r => r.revertida_anteriormente)
+      : referrals.filter(r => r.status === filter)
 
   // Aprovar indicação
   const handleApprove = async () => {
@@ -261,7 +268,7 @@ export function AdminReferrals() {
             { value: 'pending', label: `Pendentes${stats.pending > 0 ? ` (${stats.pending})` : ''}` },
             { value: 'approved', label: 'Aprovadas' },
             { value: 'rejected', label: 'Rejeitadas' },
-            { value: 'reverted', label: 'Revertidas' }
+            { value: 'jaRevertidas', label: `Já revertidas${stats.jaRevertidas > 0 ? ` (${stats.jaRevertidas})` : ''}` }
           ].map(f => (
             <button
               key={f.value}
@@ -369,9 +376,23 @@ export function AdminReferrals() {
                             )}
                           </td>
                           <td className="px-4 py-4">
-                            <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-heading font-medium ${status.bg} ${status.color} border ${status.border}`}>
-                              {status.label}
-                            </span>
+                            <div className="flex flex-col gap-1">
+                              <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-heading font-medium ${status.bg} ${status.color} border ${status.border}`}>
+                                {status.label}
+                              </span>
+                              {referral.revertida_anteriormente && (
+                                <span
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-heading bg-orange-50 text-orange-600 border border-orange-200 cursor-help"
+                                  title={`Revertida em ${referral.revertida_em ? new Date(referral.revertida_em).toLocaleDateString('pt-BR') : '?'}: ${referral.revertida_motivo || 'Sem motivo'}`}
+                                >
+                                  <svg viewBox="0 0 24 24" fill="none" className="w-3 h-3">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M3 3v5h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                  revertida antes
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-4 text-right">
                             {referral.status === 'pending' && (
