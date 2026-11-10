@@ -47,6 +47,14 @@ UPDATE public.notifications
 SET title = REPLACE(title, 'Voce', 'Você')
 WHERE title LIKE '%Voce%';
 
+UPDATE public.notifications
+SET message = REPLACE(message, 'missao', 'missão')
+WHERE message LIKE '%missao%';
+
+UPDATE public.notifications
+SET title = REPLACE(title, 'Missao', 'Missão')
+WHERE title LIKE '%Missao%';
+
 -- =============================================
 -- 3. REMOVER NOTIFICAÇÕES DUPLICADAS
 -- Manter apenas a mais recente de cada "lote" (mesmo user, mesmo minuto)
