@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { levels, rewardsTable, calculateLevel } from '@/services/pointsSystem'
+import { levels, calculateLevel } from '@/services/pointsSystem'
 import { levels as levelCopy } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
 import { usePoints } from '@/contexts/PointsContext'
+import { fetchExperiencias } from '@/services/experienciasService'
 
 export function ClassExplorer() {
   const { points: userPoints } = usePoints() // Pontos reais do usuário logado
@@ -11,11 +12,32 @@ export function ClassExplorer() {
   const userLevelId = levelData?.current?.id ?? 1
 
   const [selectedClass, setSelectedClass] = useState(userLevelId)
+  const [experiencias, setExperiencias] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Recompensas da classe selecionada (sem cash)
-  const classRewards = rewardsTable
-    .filter(r => r.requiredLevel === selectedClass && r.category !== 'cash')
-    .slice(0, 3)
+  // Carregar experiências do banco
+  useEffect(() => {
+    async function loadExperiencias() {
+      try {
+        const result = await fetchExperiencias(false) // só ativas
+        if (result.success) {
+          setExperiencias(result.experiencias)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar experiências:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadExperiencias()
+  }, [])
+
+  // Experiências da classe selecionada (do banco)
+  const classRewards = useMemo(() => {
+    return experiencias
+      .filter(exp => exp.classe_minima === selectedClass)
+      .slice(0, 3)
+  }, [experiencias, selectedClass])
 
   const selectedLevel = levels.find(l => l.id === selectedClass)
   const ClassIcon = getClassIcon(selectedClass)
@@ -161,10 +183,16 @@ export function ClassExplorer() {
                 Experiências desta classe
               </p>
               <div className="space-y-2">
-                {classRewards.length > 0 ? (
-                  classRewards.map((reward) => (
+                {isLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="h-14 rounded-lg bg-dusty-rose/10 animate-pulse" />
+                    ))}
+                  </div>
+                ) : classRewards.length > 0 ? (
+                  classRewards.map((exp) => (
                     <div
-                      key={reward.id}
+                      key={exp.id}
                       className={`p-3 rounded-lg border ${
                         isUnlocked
                           ? 'bg-deep-purple/30 border-dusty-rose/20'
@@ -174,10 +202,10 @@ export function ClassExplorer() {
                       <p className={`text-sm font-heading font-medium ${
                         isUnlocked ? 'text-ice-white' : 'text-dusty-rose'
                       }`}>
-                        {reward.name}
+                        {exp.nome}
                       </p>
                       <p className="text-[10px] text-dusty-rose/60">
-                        {reward.points_required.toLocaleString('pt-BR')} pts
+                        {exp.pontos.toLocaleString('pt-BR')} pts
                       </p>
                     </div>
                   ))
