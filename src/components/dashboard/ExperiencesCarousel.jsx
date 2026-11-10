@@ -2,35 +2,48 @@ import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { usePoints } from '@/contexts/PointsContext'
-import { rewardsTable, calculateLevel, calculateRewardsProgress } from '@/services/pointsSystem'
+import { calculateLevel } from '@/services/pointsSystem'
 import { format, levels as levelCopy } from '@/services/copy'
+import { useExperiencias, formatPoints } from '@/hooks/useExperiencias'
 
-const categoryIcons = {
-  travel: '✦',
-  experience: '◆',
-  premium: '❖',
-  lounge: '◈'
-}
-
-// Imagens do Unsplash para cada categoria
-const categoryImages = {
-  travel: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&h=250&fit=crop&crop=center&q=80',
-  experience: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=250&fit=crop&crop=center&q=80',
-  premium: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=250&fit=crop&crop=center&q=80',
-  lounge: 'https://images.unsplash.com/photo-1583416750470-965b2707b355?w=400&h=250&fit=crop&crop=center&q=80'
-}
+// Imagem fallback genérica
+const fallbackImage = 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=400&h=250&fit=crop&crop=center&q=80'
 
 export function ExperiencesCarousel() {
   const scrollRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
-  const { points: userPoints } = usePoints() // Pontos reais do usuário logado
+  const { points: userPoints } = usePoints()
   const levelData = calculateLevel(userPoints)
   const userLevelId = levelData?.current?.id ?? 1
-  const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
-    .filter(r => r.category !== 'cash')
+
+  // Buscar experiências do Supabase (mesma fonte do admin)
+  const { allExperiences, loading } = useExperiencias()
+
+  // Calcular progresso para cada experiência
+  const rewardsWithProgress = allExperiences
     .slice(0, 8)
+    .map(exp => {
+      const progress = Math.min((userPoints / exp.points) * 100, 100)
+      const pointsNeeded = Math.max(exp.points - userPoints, 0)
+      const hasEnoughPoints = userPoints >= exp.points
+      const meetsLevelRequirement = userLevelId >= (exp.classeMinima || 1)
+      const canRedeem = hasEnoughPoints && meetsLevelRequirement
+
+      return {
+        ...exp,
+        id: exp.id,
+        name: exp.title,
+        subtitle: exp.description,
+        points_required: exp.points,
+        requiredLevelId: exp.classeMinima || 1,
+        progress: Math.round(progress),
+        pointsNeeded,
+        canRedeem,
+        image: exp.image || fallbackImage
+      }
+    })
 
   // Mouse/Touch handlers para arrastar
   const handleMouseDown = (e) => {
@@ -60,6 +73,28 @@ export function ExperiencesCarousel() {
     const x = e.touches[0].pageX - scrollRef.current.offsetLeft
     const walk = (x - startX) * 2
     scrollRef.current.scrollLeft = scrollLeft - walk
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        <div className="flex items-center justify-between mb-6">
+          <div className="h-6 w-48 bg-white/10 rounded" />
+          <div className="h-4 w-20 bg-white/10 rounded" />
+        </div>
+        <div className="flex gap-4 overflow-hidden">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="flex-shrink-0 w-[280px] h-[240px] bg-white/5 rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Sem experiências
+  if (!rewardsWithProgress.length) {
+    return null
   }
 
   return (
@@ -118,26 +153,33 @@ export function ExperiencesCarousel() {
                 {/* Imagem */}
                 <div className="relative h-32 overflow-hidden">
                   <img
-                    src={categoryImages[reward.category] || categoryImages.experience}
+                    src={reward.image}
                     alt={reward.name}
                     className="w-full h-full object-cover"
                     draggable={false}
+                    onError={(e) => { e.target.src = fallbackImage }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-deep-purple via-deep-purple/50 to-transparent" />
 
                   {/* Badge de classe */}
                   <div className="absolute top-3 right-3">
                     <span className="px-2 py-1 text-[10px] uppercase tracking-wider bg-deep-purple/80 text-dusty-rose rounded-lg border border-dusty-rose/20">
-                      {levelCopy.shortNames[reward.requiredLevelId]}
+                      {levelCopy.shortNames[reward.requiredLevelId] || 'Econômica'}
                     </span>
                   </div>
 
-                  {/* Icone da categoria */}
-                  <div className="absolute bottom-3 left-3">
-                    <span className={`text-2xl ${canRedeem ? 'text-antique-gold' : 'text-dusty-rose'}`}>
-                      {categoryIcons[reward.category] || '◆'}
-                    </span>
-                  </div>
+                  {/* Badge featured/limitado */}
+                  {(reward.featured || reward.tempoLimitado) && (
+                    <div className="absolute top-3 left-3">
+                      <span className={`px-2 py-1 text-[9px] uppercase tracking-wider rounded-lg font-semibold ${
+                        reward.featured
+                          ? 'bg-antique-gold text-deep-purple'
+                          : 'bg-dusty-rose text-deep-purple'
+                      }`}>
+                        {reward.featured ? 'Popular' : 'Limitado'}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Conteudo */}

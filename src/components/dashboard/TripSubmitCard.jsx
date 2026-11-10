@@ -14,6 +14,7 @@ import {
   formatStatus,
   calcularPontos
 } from '@/services/emissaoService'
+import { fetchUserBenefits } from '@/services/subscriptionService'
 import toast from 'react-hot-toast'
 
 // ============================================
@@ -25,9 +26,22 @@ export function TripSubmitCard({ variant = 'dark' }) {
   const [showHistory, setShowHistory] = useState(false)
   const [emissoes, setEmissoes] = useState([])
   const [loadingHistory, setLoadingHistory] = useState(false)
+  const [isPrime, setIsPrime] = useState(false)
+  const [loadingBenefits, setLoadingBenefits] = useState(true)
 
-  // Verificar se é Prime
-  const isPrime = profile?.subscription_status === 'active' || profile?.plano === 'prime'
+  // Buscar benefícios reais do usuário para detectar Prime
+  useEffect(() => {
+    async function checkPrime() {
+      if (!user?.id) {
+        setLoadingBenefits(false)
+        return
+      }
+      const result = await fetchUserBenefits(user.id)
+      setIsPrime(result.benefits?.isPrime || false)
+      setLoadingBenefits(false)
+    }
+    checkPrime()
+  }, [user?.id])
 
   // Carregar histórico
   const loadHistory = async () => {
