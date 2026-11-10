@@ -1,36 +1,110 @@
+import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import { getTasksWithStatus, getTasksSummary, calculateTasksPoints } from '@/services/tasksData'
-import { missions, format } from '@/services/copy'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { fetchTarefas, fetchStatusSolicitacoes } from '@/services/experienciasService'
+import { getMissionAction, shouldHideFromList } from '@/services/missionActions'
+import { format } from '@/services/copy'
 import { TargetIcon, CheckIcon } from '@/components/ui/Icons'
 
 export function TasksWidget() {
-  const dailyTasks = getTasksWithStatus('daily')
-  const summary = getTasksSummary()
-  const tasksPoints = calculateTasksPoints()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [tarefas, setTarefas] = useState([])
+  const [statusMap, setStatusMap] = useState({})
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Semanais removidas do cálculo
-  const totalCompleted = summary.daily.completed + summary.oneTime.completed
-  const totalTasks = summary.daily.total + summary.oneTime.total
-
-  function handleCompleteTask(task) {
-    if (task.completed) return
-
-    toast.success(
-      <div>
-        <p className="font-heading font-medium">{missions.benefitsFormat(task.points)}</p>
-        <p className="text-sm opacity-80">{task.name}</p>
-      </div>,
-      {
-        duration: 3000,
-        style: {
-          background: '#32113f',
-          color: '#edf0f1',
-          border: '1px solid rgba(162, 121, 55, 0.3)'
-        }
+  // Carregar tarefas reais do banco
+  useEffect(() => {
+    async function loadData() {
+      if (!user?.id) {
+        setIsLoading(false)
+        return
       }
+
+      try {
+        const tarefasResult = await fetchTarefas(false)
+        if (tarefasResult.success) {
+          setTarefas(tarefasResult.tarefas)
+        }
+
+        const statusResult = await fetchStatusSolicitacoes(user.id)
+        if (statusResult.success) {
+          setStatusMap(statusResult.statusMap)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar tarefas:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadData()
+  }, [user?.id])
+
+  // Processar tarefas
+  const processedTasks = useMemo(() => {
+    return tarefas
+      .filter(tarefa => {
+        const nomeLower = tarefa.nome.toLowerCase()
+        // Esconder check-in, semanais e missões marcadas
+        if (tarefa.tipo === 'semanal') return false
+        if (nomeLower.includes('check-in') || nomeLower.includes('checkin')) return false
+        if (shouldHideFromList(tarefa.nome)) return false
+        return true
+      })
+      .map(tarefa => ({
+        ...tarefa,
+        name: tarefa.nome,
+        description: tarefa.descricao,
+        points: tarefa.pontos,
+        completed: statusMap[tarefa.id] === 'aprovada'
+      }))
+  }, [tarefas, statusMap])
+
+  // Calcular totais
+  const stats = useMemo(() => {
+    const completed = processedTasks.filter(t => t.completed).length
+    const total = processedTasks.length
+    const earnedPoints = processedTasks.filter(t => t.completed).reduce((sum, t) => sum + t.points, 0)
+    return { completed, total, earnedPoints }
+  }, [processedTasks])
+
+  function handleTaskClick(task) {
+    const action = getMissionAction(task.name)
+    if (action?.route) {
+      navigate(action.route)
+    } else {
+      navigate('/tarefas')
+    }
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 p-5">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-dusty-rose/10 rounded w-24" />
+          <div className="h-8 bg-dusty-rose/10 rounded" />
+          <div className="h-8 bg-dusty-rose/10 rounded" />
+        </div>
+      </div>
     )
+  }
+
+  // Se não há tarefas, não mostra o widget
+  if (processedTasks.length === 0) {
+    return null
+  }
+
+  // Filtrar apenas tarefas únicas NÃO concluídas para mostrar
+  const tasksToShow = processedTasks
+    .filter(t => !t.completed && t.tipo === 'unica')
+    .slice(0, 3)
+
+  // Se todas foram concluídas, não mostra
+  if (tasksToShow.length === 0) {
+    return null
   }
 
   return (
@@ -49,7 +123,7 @@ export function TasksWidget() {
               Missões
             </h3>
             <p className="text-sm text-dusty-rose">
-              {totalCompleted}/{totalTasks} concluídas
+              {stats.completed}/{stats.total} concluídas
             </p>
           </div>
           <Link
@@ -66,7 +140,7 @@ export function TasksWidget() {
         <div className="h-1 bg-dusty-rose/10 rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
-            animate={{ width: `${(totalCompleted / totalTasks) * 100}%` }}
+            animate={{ width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%` }}
             transition={{ duration: 0.8 }}
             className="h-full bg-antique-gold rounded-full"
           />
@@ -74,55 +148,39 @@ export function TasksWidget() {
         <div className="flex items-center justify-between mt-2">
           <span className="text-[10px] text-dusty-rose/60">Progresso</span>
           <span className="text-[10px] text-game-green">
-            +{format.pointsShort(tasksPoints.earned)} pontos
+            +{format.pointsShort(stats.earnedPoints)} pontos
           </span>
         </div>
       </div>
 
       {/* Missions list */}
       <div className="divide-y divide-dusty-rose/10">
-        {dailyTasks.slice(0, 3).map((task, index) => (
+        {tasksToShow.map((task, index) => (
           <motion.div
             key={task.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 * index }}
-            className={`flex items-center gap-4 px-5 py-4 ${
-              task.completed ? 'opacity-60' : ''
-            }`}
+            onClick={() => handleTaskClick(task)}
+            className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-deep-purple/30 transition-colors"
           >
             {/* Status */}
             <div className="flex-shrink-0">
-              {task.completed ? (
-                <div className="w-8 h-8 rounded-lg bg-game-green/10 flex items-center justify-center">
-                  <CheckIcon size={16} color="#22c55e" />
-                </div>
-              ) : (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleCompleteTask(task)}
-                  className="w-8 h-8 rounded-lg bg-deep-purple/50 flex items-center justify-center text-sm text-antique-gold border border-antique-gold/20 hover:bg-antique-gold/10 transition-colors"
-                >
-                  ◇
-                </motion.button>
-              )}
+              <div className="w-8 h-8 rounded-lg bg-deep-purple/50 flex items-center justify-center text-sm text-antique-gold border border-antique-gold/20">
+                ◇
+              </div>
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <div className={`text-sm font-heading ${
-                task.completed ? 'text-dusty-rose' : 'text-ice-white'
-              }`}>
+              <div className="text-sm font-heading text-ice-white">
                 {task.name}
               </div>
               <p className="text-xs text-dusty-rose/60 truncate">{task.description}</p>
             </div>
 
             {/* Points */}
-            <div className={`text-xs font-display font-light ${
-              task.completed ? 'text-dusty-rose/60' : 'text-antique-gold'
-            }`}>
+            <div className="text-xs font-display font-light text-antique-gold">
               +{task.points}
             </div>
           </motion.div>
