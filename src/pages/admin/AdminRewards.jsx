@@ -18,7 +18,7 @@ function EditRewardModal({ reward, onClose, onSave }) {
     name: reward.name,
     description: reward.description,
     points_required: reward.points_required.toString(),
-    requiredLevel: reward.requiredLevel
+    classeMinima: reward.classeMinima
   })
 
   const handleSubmit = (e) => {
@@ -76,8 +76,8 @@ function EditRewardModal({ reward, onClose, onSave }) {
             <div>
               <label className="block text-xs text-dusty-rose font-heading mb-1.5">Nível Mínimo</label>
               <select
-                value={formData.requiredLevel}
-                onChange={(e) => setFormData({ ...formData, requiredLevel: parseInt(e.target.value) })}
+                value={formData.classeMinima}
+                onChange={(e) => setFormData({ ...formData, classeMinima: parseInt(e.target.value) })}
                 className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
               >
                 {levels.map(level => (
@@ -187,7 +187,7 @@ export function AdminRewards() {
               <tbody className="divide-y divide-dusty-rose/10">
                 {filteredRewards.map((reward, index) => {
                   const category = categoryLabels[reward.category] || { label: reward.category, icon: '◆' }
-                  const level = levels.find(l => l.id === reward.requiredLevel)
+                  const level = levels.find(l => l.id === reward.classeMinima)
 
                   return (
                     <motion.tr

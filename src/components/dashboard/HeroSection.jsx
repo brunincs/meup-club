@@ -3,7 +3,8 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
-import { calculateLevel, rewardsTable, getNextRewards } from '@/services/pointsSystem'
+import { useExperiencias, getNextExperience } from '@/hooks/useExperiencias'
+import { calculateLevel } from '@/services/pointsSystem'
 import { AnimatedCounter, CountUp } from '@/components/effects/AnimatedCounter'
 import { ProgressBar } from '@/components/effects/ProgressRing'
 import { GlowBorder } from '@/components/effects/GlowEffect'
@@ -21,6 +22,7 @@ const HERO_IMAGE = 'https://images.unsplash.com/photo-1506929562872-bb421503ef21
 export function HeroSection() {
   const { profile, user, useMock } = useAuth()
   const { points: userPoints } = usePoints()
+  const { allExperiences } = useExperiencias()
 
   // Nome do usuário: prioriza profile, fallback para user do Auth
   const fullName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
@@ -34,9 +36,8 @@ export function HeroSection() {
   const todayPoints = useMock ? 320 : 0
   const weekPoints = useMock ? 1250 : 0
 
-  // Próxima experiência
-  const nextRewards = getNextRewards(userPoints, 1)
-  const nextExperience = nextRewards[0]
+  // Próxima experiência (do Supabase)
+  const nextExperience = getNextExperience(allExperiences, userPoints)
 
   // Animação inicial
   const [showCounter, setShowCounter] = useState(false)
@@ -165,31 +166,38 @@ export function HeroSection() {
               )}
 
               {/* Quase Lá - Próxima Recompensa */}
-              {nextExperience && nextExperience.progress >= 60 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                  className="mb-6"
-                >
-                  <GlowBorder color="gold" className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-antique-gold font-heading font-semibold">
-                          Quase lá! {nextExperience.progress}%
-                        </span>
-                        <p className="text-sm text-ice-white truncate max-w-[180px]">{nextExperience.name}</p>
+              {(() => {
+                if (!nextExperience) return null
+                const pointsReq = nextExperience.points || nextExperience.points_required
+                const progress = Math.round((userPoints / pointsReq) * 100)
+                const pointsNeeded = pointsReq - userPoints
+                if (progress < 60) return null
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7 }}
+                    className="mb-6"
+                  >
+                    <GlowBorder color="gold" className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-antique-gold font-heading font-semibold">
+                            Quase lá! {progress}%
+                          </span>
+                          <p className="text-sm text-ice-white truncate max-w-[180px]">{nextExperience.name || nextExperience.title}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-heading font-bold text-antique-gold">
+                            {pointsNeeded.toLocaleString('pt-BR')}
+                          </span>
+                          <p className="text-[10px] text-dusty-rose">restantes</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className="text-sm font-heading font-bold text-antique-gold">
-                          {nextExperience.pointsNeeded.toLocaleString('pt-BR')}
-                        </span>
-                        <p className="text-[10px] text-dusty-rose">restantes</p>
-                      </div>
-                    </div>
-                  </GlowBorder>
-                </motion.div>
-              )}
+                    </GlowBorder>
+                  </motion.div>
+                )
+              })()}
 
               {/* CTA */}
               <Link to="/recompensas">

@@ -2,11 +2,10 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
+import { useExperiencias } from '@/hooks/useExperiencias'
 import {
-  rewardsTable,
   calculateRewardsProgress,
-  calculateLevel,
-  getRarityConfig
+  calculateLevel
 } from '@/services/pointsSystem'
 import toast from 'react-hot-toast'
 import { format, levels as levelCopy } from '@/services/copy'
@@ -17,44 +16,20 @@ const categoryIcons = {
   travel: '✦',
   experience: '◆',
   premium: '❖',
-  lounge: '◈'
-}
-
-const rarityStyles = {
-  common: {
-    border: 'border-dusty-rose/20',
-    bg: 'bg-deep-purple/30',
-    badge: null,
-    glow: ''
-  },
-  rare: {
-    border: 'border-blue-500/30',
-    bg: 'bg-blue-500/5',
-    badge: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    glow: 'shadow-lg shadow-blue-500/10'
-  },
-  epic: {
-    border: 'border-purple-500/30',
-    bg: 'bg-purple-500/5',
-    badge: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-    glow: 'shadow-lg shadow-purple-500/15'
-  },
-  legendary: {
-    border: 'border-antique-gold/40',
-    bg: 'bg-gradient-to-br from-antique-gold/10 to-antique-gold/5',
-    badge: 'bg-antique-gold/20 text-antique-gold border-antique-gold/30',
-    glow: 'shadow-lg shadow-antique-gold/20'
-  }
+  lounge: '◈',
+  servico: '◇'
 }
 
 export function RewardsSection() {
   const { profile } = useAuth()
   const { points: userPoints } = usePoints() // Pontos reais do usuário logado
+  const { allExperiences, loading } = useExperiencias()
   const levelData = calculateLevel(userPoints)
   const userLevelId = levelData?.current?.id ?? 1
 
-  const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
-    .filter(r => r.category !== 'cash') // Filtrar recompensas em dinheiro
+  // Calcular progresso com experiências do Supabase
+  const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId, allExperiences)
+    .filter(r => r.categoria !== 'cash') // Filtrar recompensas em dinheiro
 
   // Selecionar experiências para exibição
   const availableRewards = rewardsWithProgress.filter(r => r.canRedeem)
@@ -88,6 +63,34 @@ export function RewardsSection() {
   }
 
   const availableCount = availableRewards.length
+
+  // Loading state
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 overflow-hidden"
+      >
+        <div className="p-6 border-b border-dusty-rose/20">
+          <h3 className="text-[10px] uppercase tracking-wider text-dusty-rose mb-1">
+            Troque seus Pontos
+          </h3>
+          <p className="text-sm text-dusty-rose">Carregando experiências...</p>
+        </div>
+        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[1, 2].map(i => (
+            <div key={i} className="p-5 rounded-xl border border-dusty-rose/20 bg-deep-purple/30 animate-pulse">
+              <div className="w-10 h-10 rounded-xl bg-dusty-rose/10 mb-4" />
+              <div className="h-4 bg-dusty-rose/10 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-dusty-rose/10 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div
@@ -125,9 +128,7 @@ export function RewardsSection() {
         {displayRewards.map((reward, index) => {
           const canRedeem = reward.canRedeem
           const isAlmostThere = reward.progress >= 70
-          const rarity = reward.rarity || 'common'
-          const rarityStyle = rarityStyles[rarity] || rarityStyles.common
-          const rarityConf = getRarityConfig(rarity)
+          const isFeatured = reward.featured || reward.tempoLimitado
 
           return (
             <motion.div
@@ -138,12 +139,12 @@ export function RewardsSection() {
               whileHover={canRedeem ? { scale: 1.02 } : {}}
               className={`relative p-5 rounded-xl border transition-all overflow-hidden ${
                 canRedeem
-                  ? `${rarityStyle.border} ${rarityStyle.bg} ${rarityStyle.glow}`
+                  ? 'border-antique-gold/30 bg-antique-gold/5 shadow-lg shadow-antique-gold/10'
                   : 'border-dusty-rose/20 bg-deep-purple/30 hover:bg-dark-700/20'
               }`}
             >
-              {/* Shimmer effect for legendary */}
-              {rarity === 'legendary' && canRedeem && (
+              {/* Shimmer effect for featured experiences */}
+              {isFeatured && canRedeem && (
                 <ShimmerEffect className="rounded-xl" />
               )}
 
@@ -153,14 +154,14 @@ export function RewardsSection() {
                   canRedeem ? 'bg-antique-gold/10' : 'bg-dusty-rose/10'
                 }`}>
                   <span className={`text-lg ${canRedeem ? 'text-antique-gold' : 'text-dusty-rose'}`}>
-                    {categoryIcons[reward.category] || '◇'}
+                    {categoryIcons[reward.categoria] || categoryIcons[reward.category] || '◇'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* Rarity badge */}
-                  {rarity !== 'common' && (
-                    <span className={`px-2 py-0.5 text-[9px] uppercase tracking-wider font-heading font-bold rounded-full border ${rarityStyle.badge}`}>
-                      {rarityConf.label}
+                  {/* Featured badge */}
+                  {reward.tempoLimitado && (
+                    <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-heading font-bold rounded-full border bg-amber-500/20 text-amber-400 border-amber-500/30">
+                      Limitado
                     </span>
                   )}
                   {reward.requiredLevelId && (
@@ -177,11 +178,11 @@ export function RewardsSection() {
               <h4 className={`text-sm font-heading font-medium mb-1 ${
                 canRedeem ? 'text-ice-white' : 'text-dusty-rose'
               }`}>
-                {reward.name}
+                {reward.name || reward.title}
               </h4>
-              {reward.subtitle && (
-                <p className="text-xs text-dusty-rose/80 mb-3">
-                  {reward.subtitle}
+              {reward.description && (
+                <p className="text-xs text-dusty-rose/80 mb-3 line-clamp-2">
+                  {reward.description}
                 </p>
               )}
 
@@ -210,7 +211,7 @@ export function RewardsSection() {
                 <span className={`text-sm font-display font-light ${
                   canRedeem ? 'text-antique-gold' : 'text-dusty-rose'
                 }`}>
-                  {format.pointsShort(reward.points_required)}
+                  {format.pointsShort(reward.points_required || reward.points)}
                   <span className="text-xs text-dusty-rose/60 ml-1">pontos</span>
                 </span>
 
@@ -219,15 +220,7 @@ export function RewardsSection() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleActivate(reward)}
-                    className={`px-4 py-2 rounded-lg text-xs font-heading font-semibold transition-all ${
-                      rarity === 'legendary'
-                        ? 'bg-gradient-to-r from-antique-gold to-accent-light text-deep-purple shadow-lg shadow-antique-gold/20'
-                        : rarity === 'epic'
-                          ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
-                          : rarity === 'rare'
-                            ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
-                            : 'bg-antique-gold text-deep-purple hover:bg-accent-light'
-                    }`}
+                    className="px-4 py-2 rounded-lg text-xs font-heading font-semibold transition-all bg-antique-gold text-deep-purple hover:bg-accent-light"
                   >
                     Trocar
                   </motion.button>

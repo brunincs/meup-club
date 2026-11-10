@@ -13,7 +13,7 @@ export const rotatingRewardsPool = [
     category: 'travel',
     realCost: 50,
     perceivedValue: 300,
-    requiredLevel: 1,
+    classeMinima: 1,
     tag: 'week_offer', // 🔥 Oferta da semana
     slots: null, // Sem limite de vagas
     rotationDays: 7
@@ -26,7 +26,7 @@ export const rotatingRewardsPool = [
     category: 'cash',
     realCost: 25,
     perceivedValue: 100,
-    requiredLevel: 1,
+    classeMinima: 1,
     tag: 'limited_time', // ⏳ Tempo limitado
     slots: null,
     rotationDays: 3
@@ -39,7 +39,7 @@ export const rotatingRewardsPool = [
     category: 'travel',
     realCost: 80,
     perceivedValue: 200,
-    requiredLevel: 2,
+    classeMinima: 2,
     tag: 'few_slots', // ⚠️ Restam poucas vagas
     slots: 5, // Apenas 5 vagas
     rotationDays: 5
@@ -52,7 +52,7 @@ export const rotatingRewardsPool = [
     category: 'experience',
     realCost: 120,
     perceivedValue: 350,
-    requiredLevel: 2,
+    classeMinima: 2,
     tag: 'week_offer',
     slots: 3,
     rotationDays: 7
@@ -65,7 +65,7 @@ export const rotatingRewardsPool = [
     category: 'travel',
     realCost: 40,
     perceivedValue: 150,
-    requiredLevel: 1,
+    classeMinima: 1,
     tag: 'limited_time',
     slots: null,
     rotationDays: 2
@@ -78,7 +78,7 @@ export const rotatingRewardsPool = [
     category: 'travel',
     realCost: 30,
     perceivedValue: 120,
-    requiredLevel: 1,
+    classeMinima: 1,
     tag: 'few_slots',
     slots: 10,
     rotationDays: 4
@@ -91,7 +91,7 @@ export const rotatingRewardsPool = [
     category: 'travel',
     realCost: 60,
     perceivedValue: 180,
-    requiredLevel: 2,
+    classeMinima: 2,
     tag: 'week_offer',
     slots: null,
     rotationDays: 7
@@ -104,7 +104,7 @@ export const rotatingRewardsPool = [
     category: 'cash',
     realCost: 35,
     perceivedValue: 200,
-    requiredLevel: 1,
+    classeMinima: 1,
     tag: 'limited_time',
     slots: 8,
     rotationDays: 3
@@ -117,7 +117,7 @@ export const rotatingRewardsPool = [
     category: 'experience',
     realCost: 100,
     perceivedValue: 300,
-    requiredLevel: 3,
+    classeMinima: 3,
     tag: 'few_slots',
     slots: 3,
     rotationDays: 5
@@ -130,7 +130,7 @@ export const rotatingRewardsPool = [
     category: 'experience',
     realCost: 90,
     perceivedValue: 400,
-    requiredLevel: 3,
+    classeMinima: 3,
     tag: 'week_offer',
     slots: 5,
     rotationDays: 7
@@ -264,7 +264,7 @@ export function getActiveRotatingRewards(userLevelId = 1) {
     }
 
     // Verificar se está desbloqueado pelo nível
-    const isUnlockedByLevel = userLevelId >= reward.requiredLevel
+    const isUnlockedByLevel = userLevelId >= reward.classeMinima
 
     return {
       ...reward,
@@ -340,7 +340,7 @@ export function formatTimeRemaining(milliseconds) {
  */
 export function canRedeemRotatingReward(reward, userPoints, userLevelId) {
   const hasEnoughPoints = userPoints >= reward.points_required
-  const isUnlockedByLevel = userLevelId >= reward.requiredLevel
+  const isUnlockedByLevel = userLevelId >= reward.classeMinima
   const hasSlots = reward.remainingSlots === null || reward.remainingSlots > 0
   const notExpired = reward.timeRemaining > 0
 

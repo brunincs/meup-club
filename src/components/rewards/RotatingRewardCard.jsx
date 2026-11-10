@@ -103,7 +103,7 @@ function SlotsIndicator({ slots, totalSlots }) {
 
 export function RotatingRewardCard({ reward, userPoints, userLevelId, onRedeem, index = 0 }) {
   const redeemStatus = canRedeemRotatingReward(reward, userPoints, userLevelId)
-  const requiredLevel = levels.find(l => l.id === reward.requiredLevel)
+  const reqLevelData = levels.find(l => l.id === reward.classeMinima)
   const progress = Math.min((userPoints / reward.points_required) * 100, 100)
   const actionVerb = actionVerbs[index % actionVerbs.length]
 
@@ -139,7 +139,7 @@ export function RotatingRewardCard({ reward, userPoints, userLevelId, onRedeem, 
         <div className="absolute inset-0 bg-dark-900/50 backdrop-blur-sm flex items-center justify-center z-20 rounded-2xl">
           <div className="text-center">
             <p className="text-xs text-neutral-500">
-              {benefits.lockedByLevel(levelCopy.names[reward.requiredLevel] || requiredLevel?.name)}
+              {benefits.lockedByLevel(levelCopy.names[reward.classeMinima] || reqLevelData?.name)}
             </p>
           </div>
         </div>
@@ -154,7 +154,7 @@ export function RotatingRewardCard({ reward, userPoints, userLevelId, onRedeem, 
           />
 
           <span className="text-[10px] px-2 py-0.5 rounded bg-dark-700/30 text-neutral-500">
-            {levelCopy.names[reward.requiredLevel] || requiredLevel?.name}
+            {levelCopy.names[reward.classeMinima] || reqLevelData?.name}
           </span>
         </div>
 

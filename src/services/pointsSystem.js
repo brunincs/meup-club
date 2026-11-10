@@ -149,225 +149,9 @@ export const rarityConfig = {
 }
 
 // ============================================
-// IMAGENS DAS EXPERIÊNCIAS (Unsplash)
+// NOTA: O catálogo de experiências agora vem do Supabase
+// Use o hook useExperiencias() para carregar as experiências
 // ============================================
-const REWARD_IMAGES = {
-  passagem: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&h=400&fit=crop&crop=center',
-  kit: 'https://images.unsplash.com/photo-1553531384-cc64ac80f931?w=600&h=400&fit=crop&crop=center',
-  seguro: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&h=400&fit=crop&crop=center',
-  upgrade: 'https://images.unsplash.com/photo-1540339832862-474599807836?w=600&h=400&fit=crop&crop=center',
-  spa: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&h=400&fit=crop&crop=center',
-  jantar: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=400&fit=crop&crop=center',
-  stopover: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&h=400&fit=crop&crop=center',
-  lounge: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=600&h=400&fit=crop&crop=center',
-  elite: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=400&fit=crop&crop=center',
-  resort: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&h=400&fit=crop&crop=center',
-}
-
-// ============================================
-// CATÁLOGO DE EXPERIÊNCIAS (Com requisito de classe e raridade)
-// Regra: preços de cada classe > preços da classe anterior
-// IMPORTANTE: Nunca mostrar valor em reais nas descrições
-// ============================================
-export const rewardsTable = [
-  // CLASSE ECONÔMICA (1) — Primeiras conquistas
-  {
-    id: '1',
-    tier: 1,
-    requiredLevel: 1,
-    name: 'Desconto em Passagem',
-    subtitle: 'Sua primeira conquista',
-    description: 'Economize na sua próxima passagem aérea',
-    image: REWARD_IMAGES.passagem,
-    points_required: 2000,
-    category: 'travel',
-    realCost: 50,
-    perceivedValue: 50,
-    badge: null,
-    rarity: 'common',
-    available: true
-  },
-  {
-    id: '2',
-    tier: 1,
-    requiredLevel: 1,
-    name: 'Kit Viajante',
-    subtitle: 'Conforto na viagem',
-    description: 'Travesseiro de pescoço, máscara e fones premium',
-    image: REWARD_IMAGES.kit,
-    points_required: 3500,
-    category: 'experience',
-    realCost: 40,
-    perceivedValue: 60,
-    badge: 'hot',
-    rarity: 'common',
-    available: true
-  },
-  {
-    id: '3',
-    tier: 1,
-    requiredLevel: 1,
-    name: 'Seguro Viagem Básico',
-    subtitle: 'Viaje tranquilo',
-    description: 'Cobertura completa para viagens nacionais por 7 dias',
-    image: REWARD_IMAGES.seguro,
-    points_required: 5000,
-    category: 'travel',
-    realCost: 50,
-    perceivedValue: 80,
-    badge: null,
-    rarity: 'common',
-    available: true
-  },
-
-  // PREMIUM ECONOMY (2) — Conforto elevado: 6.000 - 8.000 pts
-  {
-    id: '4',
-    tier: 2,
-    requiredLevel: 2,
-    name: 'Upgrade de Conforto',
-    subtitle: 'Mais espaço, mais conforto',
-    description: 'Assento com espaço extra em voos selecionados',
-    image: REWARD_IMAGES.upgrade,
-    points_required: 6000,
-    category: 'travel',
-    realCost: 80,
-    perceivedValue: 100,
-    badge: 'recommended',
-    rarity: 'rare',
-    available: true
-  },
-  {
-    id: '5',
-    tier: 2,
-    requiredLevel: 2,
-    name: 'Day Use em Spa',
-    subtitle: 'Relaxe antes de voar',
-    description: 'Acesso a spa premium em São Paulo ou Rio de Janeiro',
-    image: REWARD_IMAGES.spa,
-    points_required: 8000,
-    category: 'experience',
-    realCost: 100,
-    perceivedValue: 120,
-    badge: null,
-    rarity: 'rare',
-    available: true
-  },
-
-  // CLASSE EXECUTIVA (3) — Experiência refinada: 10.000 - 14.000 pts
-  {
-    id: '6',
-    tier: 3,
-    requiredLevel: 3,
-    name: 'Jantar Exclusivo',
-    subtitle: 'Mesa para dois',
-    description: 'Jantar completo em restaurante premium selecionado',
-    image: REWARD_IMAGES.jantar,
-    points_required: 10000,
-    category: 'experience',
-    realCost: 100,
-    perceivedValue: 120,
-    badge: 'limited',
-    rarity: 'rare',
-    available: true
-  },
-  {
-    id: '7',
-    tier: 3,
-    requiredLevel: 3,
-    name: 'Stopover Exclusivo',
-    subtitle: 'Transforme a escala em passeio',
-    description: 'Pernoite em cidade intermediária durante sua conexão',
-    image: REWARD_IMAGES.stopover,
-    points_required: 14000,
-    category: 'experience',
-    realCost: 140,
-    perceivedValue: 180,
-    badge: 'exclusive',
-    rarity: 'epic',
-    available: true
-  },
-
-  // PRIMEIRA CLASSE (4) — Exclusividade absoluta: 16.000 - 20.000 pts
-  {
-    id: '8',
-    tier: 4,
-    requiredLevel: 4,
-    name: 'Upgrade Prioritário de Voo',
-    subtitle: 'Voe como merece',
-    description: 'Upgrade para Classe Executiva em voo internacional',
-    image: REWARD_IMAGES.upgrade,
-    points_required: 16000,
-    category: 'travel',
-    realCost: 160,
-    perceivedValue: 200,
-    badge: 'recommended',
-    rarity: 'epic',
-    featured: true,
-    available: true
-  },
-  {
-    id: '9',
-    tier: 4,
-    requiredLevel: 4,
-    name: 'Acesso Lounge Anual',
-    subtitle: 'Seu refúgio nos aeroportos',
-    description: 'Acesso ilimitado a lounges premium por 12 meses',
-    image: REWARD_IMAGES.lounge,
-    points_required: 20000,
-    category: 'lounge',
-    realCost: 200,
-    perceivedValue: 250,
-    badge: 'exclusive',
-    rarity: 'epic',
-    available: true
-  },
-
-  // MEUP EXCLUSIVE (5) — O ápice do privilégio: 25.000 - 40.000 pts
-  {
-    id: '10',
-    tier: 5,
-    requiredLevel: 5,
-    name: 'Benefícios Elite',
-    subtitle: 'Tratamento VIP',
-    description: 'Pacote completo de benefícios elite por 12 meses',
-    image: REWARD_IMAGES.elite,
-    points_required: 25000,
-    category: 'premium',
-    realCost: 250,
-    perceivedValue: 300,
-    badge: 'exclusive',
-    rarity: 'legendary',
-    featured: true,
-    available: true
-  },
-  {
-    id: '11',
-    tier: 5,
-    requiredLevel: 5,
-    name: 'A Grande Experiência',
-    subtitle: 'O melhor que oferecemos',
-    description: 'Voo executivo + resort all-inclusive por 5 noites',
-    image: REWARD_IMAGES.resort,
-    points_required: 40000,
-    category: 'premium',
-    realCost: 400,
-    perceivedValue: 500,
-    badge: 'exclusive',
-    rarity: 'legendary',
-    featured: true,
-    available: true
-  }
-]
-
-/**
- * Obtém configuração de raridade de uma recompensa
- * @param {string} rarity - ID da raridade
- * @returns {object} - Configuração da raridade
- */
-export function getRarityConfig(rarity) {
-  return rarityConfig[rarity] || rarityConfig.common
-}
 
 // ============================================
 // SISTEMA DE PONTOS EXTRAS
@@ -648,7 +432,8 @@ export function getSaleFinancialSummary(valorGasto, type = 'padrao') {
  * @returns {boolean} - Se está desbloqueada
  */
 export function isRewardUnlockedByLevel(reward, userLevelId) {
-  return userLevelId >= reward.requiredLevel
+  const reqLevel = reward.requiredLevelId || reward.classeMinima || 1
+  return userLevelId >= reqLevel
 }
 
 /**
@@ -656,36 +441,39 @@ export function isRewardUnlockedByLevel(reward, userLevelId) {
  * @param {object} reward - Recompensa
  * @returns {object} - Nível requerido com detalhes
  */
-export function getRequiredLevel(reward) {
-  return levels.find(l => l.id === reward.requiredLevel) || levels[0]
+export function getRequiredLevelData(reward) {
+  const reqLevel = reward.requiredLevelId || reward.classeMinima || 1
+  return levels.find(l => l.id === reqLevel) || levels[0]
 }
 
 /**
  * Calcula progresso para cada recompensa (com verificação de nível)
  * @param {number} userPoints - Pontos do usuário
  * @param {number} userLevelId - ID do nível do usuário (opcional, calculado se não fornecido)
- * @param {array} customRewardsTable - Tabela customizada de experiências (opcional, usa rewardsTable padrão)
+ * @param {array} experiencias - Lista de experiências do Supabase (obrigatório)
  * @returns {array} - Recompensas com status de progresso e desbloqueio
  */
-export function calculateRewardsProgress(userPoints, userLevelId = null, customRewardsTable = null) {
+export function calculateRewardsProgress(userPoints, userLevelId = null, experiencias = []) {
   // Se não foi passado o nível, calcular
   if (userLevelId === null) {
     const levelData = calculateLevel(userPoints)
     userLevelId = levelData.current.id
   }
 
-  // Usar tabela customizada ou a padrão
-  const tableToUse = customRewardsTable || rewardsTable
+  // Usar experiências passadas como parâmetro
+  if (!experiencias || experiencias.length === 0) {
+    return []
+  }
 
-  return tableToUse.map(reward => {
+  return experiencias.map(reward => {
     const progress = Math.min((userPoints / reward.points_required) * 100, 100)
     const pointsNeeded = Math.max(reward.points_required - userPoints, 0)
     const hasEnoughPoints = userPoints >= reward.points_required
-    // Suporta tanto requiredLevel quanto requiredLevelId
-    const requiredLevel = reward.requiredLevel || reward.requiredLevelId || 1
-    const isUnlockedByLevel = userLevelId >= requiredLevel
+    // Suporta classeMinima (Supabase) ou requiredLevelId (mapeado)
+    const reqLevel = reward.classeMinima || reward.requiredLevelId || 1
+    const isUnlockedByLevel = userLevelId >= reqLevel
     const canRedeem = hasEnoughPoints && isUnlockedByLevel
-    const requiredLevelData = levels.find(l => l.id === requiredLevel) || levels[0]
+    const reqLevelData = levels.find(l => l.id === reqLevel) || levels[0]
 
     let status = 'locked_level' // Bloqueado por nível
     if (!isUnlockedByLevel) {
@@ -708,8 +496,8 @@ export function calculateRewardsProgress(userPoints, userLevelId = null, customR
       isUnlockedByLevel,
       canRedeem,
       status,
-      requiredLevelName: requiredLevelData.name,
-      requiredLevelId: requiredLevel
+      reqLevelName: reqLevelData.name,
+      requiredLevelId: reqLevel
     }
   })
 }
@@ -718,33 +506,43 @@ export function calculateRewardsProgress(userPoints, userLevelId = null, customR
  * Obtém recompensas recém-desbloqueadas ao subir de nível
  * @param {number} previousLevelId - Nível anterior
  * @param {number} newLevelId - Novo nível
+ * @param {array} experiencias - Lista de experiências do Supabase
  * @returns {array} - Recompensas desbloqueadas
  */
-export function getNewlyUnlockedRewards(previousLevelId, newLevelId) {
-  return rewardsTable.filter(reward =>
-    reward.requiredLevel > previousLevelId && reward.requiredLevel <= newLevelId
-  )
+export function getNewlyUnlockedRewards(previousLevelId, newLevelId, experiencias = []) {
+  return experiencias.filter(reward => {
+    const reqLevel = reward.requiredLevelId || reward.classeMinima || 1
+    return reqLevel > previousLevelId && reqLevel <= newLevelId
+  })
 }
 
 /**
  * Obtém recompensas bloqueadas por nível
  * @param {number} userLevelId - ID do nível do usuário
+ * @param {array} experiencias - Lista de experiências do Supabase
  * @returns {array} - Recompensas bloqueadas
  */
-export function getLockedRewardsByLevel(userLevelId) {
-  return rewardsTable.filter(reward => reward.requiredLevel > userLevelId)
+export function getLockedRewardsByLevel(userLevelId, experiencias = []) {
+  return experiencias.filter(reward => {
+    const reqLevel = reward.requiredLevelId || reward.classeMinima || 1
+    return reqLevel > userLevelId
+  })
 }
 
 /**
  * Obtém próximo nível que desbloqueia novas recompensas
  * @param {number} userLevelId - ID do nível do usuário
+ * @param {array} experiencias - Lista de experiências do Supabase
  * @returns {object} - Próximo nível e recompensas que serão desbloqueadas
  */
-export function getNextLevelRewards(userLevelId) {
+export function getNextLevelRewards(userLevelId, experiencias = []) {
   const nextLevel = levels.find(l => l.id === userLevelId + 1)
   if (!nextLevel) return null
 
-  const rewardsToUnlock = rewardsTable.filter(r => r.requiredLevel === nextLevel.id)
+  const rewardsToUnlock = experiencias.filter(r => {
+    const reqLevel = r.requiredLevelId || r.classeMinima || 1
+    return reqLevel === nextLevel.id
+  })
 
   return {
     level: nextLevel,
@@ -806,20 +604,29 @@ export function isRewardSustainable(reward) {
 /**
  * Calcula próximas recompensas alcançáveis
  * @param {number} userPoints - Pontos do usuário
+ * @param {array} experiencias - Lista de experiências do Supabase
  * @param {number} limit - Quantidade de recompensas a retornar
  * @returns {array} - Próximas recompensas
  */
-export function getNextRewards(userPoints, limit = 3) {
-  const sorted = [...rewardsTable]
-    .filter(r => r.points_required > userPoints && r.available)
-    .sort((a, b) => a.points_required - b.points_required)
+export function getNextRewards(userPoints, experiencias = [], limit = 3) {
+  if (!experiencias || experiencias.length === 0) {
+    return []
+  }
+
+  const sorted = [...experiencias]
+    .filter(r => (r.points_required || r.points) > userPoints)
+    .sort((a, b) => (a.points_required || a.points) - (b.points_required || b.points))
     .slice(0, limit)
 
-  return sorted.map(reward => ({
-    ...reward,
-    pointsNeeded: reward.points_required - userPoints,
-    progress: Math.round((userPoints / reward.points_required) * 100)
-  }))
+  return sorted.map(reward => {
+    const pointsRequired = reward.points_required || reward.points
+    return {
+      ...reward,
+      points_required: pointsRequired,
+      pointsNeeded: pointsRequired - userPoints,
+      progress: Math.round((userPoints / pointsRequired) * 100)
+    }
+  })
 }
 
 /**

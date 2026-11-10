@@ -1,7 +1,7 @@
 // Serviço de Dados Administrativos - Meup Club
 // Gerenciamento completo do sistema
 
-import { levels, rewardsTable, calculateSaleCredits, creditsConfig, validateMonthlyWithdrawal } from './pointsSystem'
+import { levels, calculateSaleCredits, creditsConfig, validateMonthlyWithdrawal } from './pointsSystem'
 
 // ============================================
 // MOCK DE USUÁRIOS
@@ -113,13 +113,9 @@ export const mockPendingTasks = [
 
 // ============================================
 // MOCK DE RECOMPENSAS (editável)
+// NOTA: Experiências reais vêm do Supabase via useExperiencias()
 // ============================================
-export const mockRewardsAdmin = rewardsTable.map(r => ({
-  ...r,
-  isActive: true,
-  redemptions: Math.floor(Math.random() * 20),
-  lastEdited: '2024-04-01'
-}))
+export const mockRewardsAdmin = []
 
 // ============================================
 // ESTATÍSTICAS GERAIS

@@ -3,7 +3,8 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
-import { calculateLevel, rewardsTable, getNextRewards } from '@/services/pointsSystem'
+import { useExperiencias, getNextExperience } from '@/hooks/useExperiencias'
+import { calculateLevel } from '@/services/pointsSystem'
 import { mockUserEngagement } from '@/services/engagementData'
 import { greetings, levels as levelCopy, buttons, format } from '@/services/copy'
 import { GoldLine } from '@/components/ui/GoldLine'
@@ -12,6 +13,7 @@ import { getClassIcon } from '@/components/ui/Icons'
 export function EngagementHeader() {
   const { profile, user } = useAuth()
   const { points: userPoints } = usePoints() // Pontos reais do usuário logado
+  const { allExperiences, loading } = useExperiencias()
   const userName = profile?.name?.split(' ')[0] || user?.user_metadata?.name?.split(' ')[0] || 'Usuário'
 
   const levelData = calculateLevel(userPoints)
@@ -19,14 +21,15 @@ export function EngagementHeader() {
   const nextLevel = levelData.next
   const currentStreak = mockUserEngagement.streak.current
 
-  // Calcular experiências disponíveis
-  const availableExperiences = rewardsTable.filter(r =>
-    r.requiredLevel <= currentLevel.id && userPoints >= r.points_required
-  ).length
+  // Calcular experiências disponíveis (do Supabase)
+  const availableExperiences = allExperiences.filter(r => {
+    const reqLevel = r.requiredLevelId || r.classeMinima || 1
+    const pointsReq = r.points_required || r.points
+    return reqLevel <= currentLevel.id && userPoints >= pointsReq
+  }).length
 
-  // Próxima experiência
-  const nextRewards = getNextRewards(userPoints, 1)
-  const nextExperience = nextRewards[0]
+  // Próxima experiência (do Supabase)
+  const nextExperience = getNextExperience(allExperiences, userPoints)
 
   return (
     <motion.div
@@ -151,12 +154,12 @@ export function EngagementHeader() {
                   <div className="text-[10px] uppercase tracking-wider text-dusty-rose mb-1">
                     Próxima experiência
                   </div>
-                  <div className="text-sm text-ice-white">{nextExperience.name}</div>
-                  <div className="text-xs text-dusty-rose mt-0.5">{nextExperience.subtitle}</div>
+                  <div className="text-sm text-ice-white">{nextExperience.name || nextExperience.title}</div>
+                  <div className="text-xs text-dusty-rose mt-0.5 line-clamp-1">{nextExperience.description}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-heading font-medium text-antique-gold">
-                    {format.pointsShort(nextExperience.pointsNeeded)}
+                    {format.pointsShort((nextExperience.points || nextExperience.points_required) - userPoints)}
                   </div>
                   <div className="text-[10px] text-dusty-rose">pontos restantes</div>
                 </div>

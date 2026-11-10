@@ -6,13 +6,14 @@ import {
   calculateLevel,
   validateExtraPoints,
   calculateRewardsProgress,
-  rewardsTable,
   levels,
   extraPointsConfig
 } from './pointsSystem'
 
 // Re-exportar para manter compatibilidade
-export { levels, rewardsTable as mockRewards }
+// NOTA: Experiências reais vêm do Supabase via useExperiencias()
+export { levels }
+export const mockRewards = [] // Removido - usar useExperiencias()
 export { multipliers } from './pointsSystem'
 
 // ============================================
@@ -247,26 +248,31 @@ export function getStats(referrals) {
 
 /**
  * Retorna recompensas com progresso calculado
+ * NOTA: Usar useExperiencias() hook e passar experiências como parâmetro
  */
-export function getRewardsWithProgress(userPoints) {
-  return calculateRewardsProgress(userPoints)
+export function getRewardsWithProgress(userPoints, experiencias = []) {
+  return calculateRewardsProgress(userPoints, null, experiencias)
 }
 
 /**
  * Retorna próxima recompensa alcançável
+ * NOTA: Usar getNextExperience de useExperiencias hook
  */
-export function getNextReward(userPoints) {
-  const rewards = rewardsTable
-    .filter(r => r.points_required > userPoints && r.available)
-    .sort((a, b) => a.points_required - b.points_required)
+export function getNextReward(userPoints, experiencias = []) {
+  if (!experiencias || experiencias.length === 0) return null
+
+  const rewards = experiencias
+    .filter(r => (r.points_required || r.points) > userPoints)
+    .sort((a, b) => (a.points_required || a.points) - (b.points_required || b.points))
 
   if (rewards.length === 0) return null
 
   const next = rewards[0]
+  const pointsReq = next.points_required || next.points
   return {
     ...next,
-    pointsNeeded: next.points_required - userPoints,
-    progress: Math.round((userPoints / next.points_required) * 100)
+    pointsNeeded: pointsReq - userPoints,
+    progress: Math.round((userPoints / pointsReq) * 100)
   }
 }
 
