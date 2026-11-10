@@ -16,7 +16,8 @@ import {
 import {
   fazerCheckin,
   podeFazerCheckin,
-  registrarCompartilhamento
+  registrarCompartilhamento,
+  registrarVisitaExperiencias
 } from '@/services/supabaseData'
 import { fetchUserBenefits } from '@/services/subscriptionService'
 import { getMissionAction, isExternalMission, requiresApproval, isAutomaticMission, shouldHideFromList } from '@/services/missionActions'
@@ -308,6 +309,40 @@ export function MissionsSection({ variant = 'dark' }) {
         toast.success('Link copiado para a área de transferência!', {
           style: { background: '#32113f', color: '#edf0f1' }
         })
+      }
+    } else if (action.type === 'action' && action.route === '/recompensas') {
+      // Missão "Explorar experiências" - chamar RPC antes de navegar
+      if (user?.id) {
+        registrarVisitaExperiencias(user.id).then(async (result) => {
+          if (result.creditou) {
+            // Atualizar saldo NA HORA
+            await refreshPoints()
+
+            fireConfetti({ x: '50%', y: '50%' })
+            toast.success(
+              <div>
+                <strong>Missão concluída!</strong>
+                <div className="text-sm opacity-80">+{result.pontos} pontos</div>
+              </div>,
+              {
+                duration: 3000,
+                style: {
+                  background: '#32113f',
+                  color: '#edf0f1',
+                  border: '1px solid rgba(34, 197, 94, 0.3)'
+                }
+              }
+            )
+          }
+          // Navegar após registrar
+          navigate(action.route)
+        }).catch((err) => {
+          console.error('Erro ao registrar visita:', err)
+          // Navegar mesmo com erro
+          navigate(action.route)
+        })
+      } else {
+        navigate(action.route)
       }
     } else {
       // Navega para rota interna
