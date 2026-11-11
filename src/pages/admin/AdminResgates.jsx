@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import {
   fetchSolicitacoesResgate,
-  aprovarResgate,
+  aprovarResgateV2,
   rejeitarResgate
 } from '@/services/resgateService'
 import {
@@ -134,12 +134,17 @@ export function AdminResgates() {
     setProcessing(id)
 
     try {
-      console.log('[AdminResgates] Chamando aprovarResgate...')
-      const result = await aprovarResgate(id)
+      console.log('[AdminResgates] Chamando aprovarResgateV2...')
+      const result = await aprovarResgateV2(id)
       console.log('[AdminResgates] Resultado:', result)
 
       if (result.success) {
-        toast.success('Resgate aprovado!')
+        // Mensagem diferente se gerou voucher
+        if (result.voucher_code) {
+          toast.success(`Aprovado! Voucher: ${result.voucher_code}`)
+        } else {
+          toast.success('Resgate aprovado! Em preparação.')
+        }
         loadData()
       } else {
         toast.error(result.error || 'Erro ao aprovar')
