@@ -483,8 +483,13 @@ export async function lancarEmissaoEquipe({
       }
     }
 
-    // Calcular pontos (1 pt por R$1)
-    const pontos = Math.floor(valor * PONTOS_POR_REAL)
+    // Buscar preview com multiplicador correto (Prime anual = 1.5x)
+    const preview = await getEmissaoPointsPreview(clienteId, valor)
+    const pontos = preview.pontos_final
+    const pontosBase = preview.pontos_base
+    const multiplicador = preview.multiplicador
+    const plano = preview.plano
+    const ciclo = preview.ciclo
 
     // 1. Criar emissão JÁ aprovada com origem = 'equipe'
     const { data: emissao, error: insertError } = await supabase
@@ -492,8 +497,11 @@ export async function lancarEmissaoEquipe({
       .insert([{
         user_id: clienteId,
         valor: valor,
-        pontos_estimados: pontos,
+        pontos_estimados: pontosBase,
         pontos_creditados: pontos,
+        multiplicador_aplicado: multiplicador,
+        plano_na_aprovacao: plano,
+        ciclo_na_aprovacao: ciclo,
         data_emissao: dataEmissao,
         card_url: cardUrl,
         card_path: cardPath,
@@ -508,12 +516,14 @@ export async function lancarEmissaoEquipe({
 
     if (insertError) throw insertError
 
-    // 2. Creditar pontos usando função existente
-    const { error: creditError } = await supabase.rpc('admin_credit_points', {
+    // 2. Creditar pontos usando função central
+    const multiplicadorLabel = multiplicador > 1 ? ` (Prime anual ${multiplicador}x)` : ''
+    const { error: creditError } = await supabase.rpc('creditar_pontos_central', {
       p_user_id: clienteId,
       p_amount: pontos,
-      p_reason: `Emissão lançada pela equipe: R$ ${valor.toLocaleString('pt-BR')}`,
-      p_type: 'credit'
+      p_type: 'emissao',
+      p_reason: `Emissão lançada pela equipe: R$ ${valor.toLocaleString('pt-BR')}${multiplicadorLabel}`,
+      p_operation: 'credit'
     })
 
     if (creditError) {
@@ -527,13 +537,15 @@ export async function lancarEmissaoEquipe({
       user_id: clienteId,
       type: 'emissao_aprovada',
       title: 'Viagem registrada!',
-      message: `A equipe registrou sua emissão de R$ ${valor.toLocaleString('pt-BR')}. +${pontos.toLocaleString('pt-BR')} pontos creditados!`,
+      message: `A equipe registrou sua emissão de R$ ${valor.toLocaleString('pt-BR')}. +${pontos.toLocaleString('pt-BR')} pontos creditados!${multiplicadorLabel}`,
       read: false
     }])
 
     return {
       success: true,
       pontos,
+      multiplicador,
+      plano,
       emissao: {
         id: emissao.id,
         valor,
@@ -621,8 +633,55 @@ export function formatStatus(status) {
 }
 
 /**
- * Calcular pontos estimados
+ * Calcular pontos estimados (básico, sem multiplicador)
  */
 export function calcularPontos(valor) {
   return Math.floor(valor * PONTOS_POR_REAL)
+}
+
+/**
+ * Buscar preview de pontos com multiplicador correto (Prime anual = 1.5x)
+ * @param {string} userId - ID do usuário
+ * @param {number} valor - Valor da emissão em R$
+ * @returns {Promise<{plano: string, ciclo: string, multiplicador: number, pontos_base: number, pontos_final: number, label: string}>}
+ */
+export async function getEmissaoPointsPreview(userId, valor) {
+  try {
+    const { data, error } = await supabase.rpc('get_emissao_points_preview', {
+      p_user_id: userId,
+      p_valor: Math.floor(valor)
+    })
+
+    if (error) {
+      console.error('Erro ao buscar preview de pontos:', error)
+      // Fallback para cálculo básico
+      return {
+        plano: 'free',
+        ciclo: null,
+        multiplicador: 1.0,
+        pontos_base: Math.floor(valor),
+        pontos_final: Math.floor(valor),
+        label: `${Math.floor(valor)} pts (Free)`
+      }
+    }
+
+    return {
+      plano: data.plano || 'free',
+      ciclo: data.ciclo || null,
+      multiplicador: parseFloat(data.multiplicador) || 1.0,
+      pontos_base: data.pontos_base || Math.floor(valor),
+      pontos_final: data.pontos_final || Math.floor(valor),
+      label: data.label || `${Math.floor(valor)} pts`
+    }
+  } catch (error) {
+    console.error('Erro ao buscar preview de emissão:', error)
+    return {
+      plano: 'free',
+      ciclo: null,
+      multiplicador: 1.0,
+      pontos_base: Math.floor(valor),
+      pontos_final: Math.floor(valor),
+      label: `${Math.floor(valor)} pts (Free)`
+    }
+  }
 }

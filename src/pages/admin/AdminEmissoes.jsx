@@ -16,6 +16,7 @@ import {
   lancarEmissaoEquipe,
   uploadCardMeup,
   calcularPontos,
+  getEmissaoPointsPreview,
   getSignedCardUrl,
   downloadCardMeup
 } from '@/services/emissaoService'
@@ -280,6 +281,7 @@ function LancarEmissaoModal({ onConfirm, onClose, adminId }) {
   const [cardFile, setCardFile] = useState(null)
   const [cardPreview, setCardPreview] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [pontosPreview, setPontosPreview] = useState(null)
 
   // Idempotency key única para evitar duplo-crédito
   const idempotencyKey = useRef(`equipe_${Date.now()}_${Math.random().toString(36).slice(2)}`)
@@ -315,6 +317,23 @@ function LancarEmissaoModal({ onConfirm, onClose, adminId }) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Buscar preview de pontos com multiplicador quando cliente/valor mudar
+  useEffect(() => {
+    const fetchPreview = async () => {
+      if (clienteSelecionado?.id && valor) {
+        const valorNumerico = parseFloat(valor.replace(/\D/g, '')) / 100
+        if (valorNumerico > 0) {
+          const preview = await getEmissaoPointsPreview(clienteSelecionado.id, valorNumerico)
+          setPontosPreview(preview)
+        }
+      } else {
+        setPontosPreview(null)
+      }
+    }
+    const timer = setTimeout(fetchPreview, 300)
+    return () => clearTimeout(timer)
+  }, [clienteSelecionado?.id, valor])
+
   const handleSelectCliente = (cliente) => {
     setClienteSelecionado(cliente)
     setSearchTerm(cliente.name)
@@ -336,7 +355,7 @@ function LancarEmissaoModal({ onConfirm, onClose, adminId }) {
     }
   }
 
-  const pontosEstimados = valor ? calcularPontos(parseFloat(valor.replace(/\D/g, '')) / 100) : 0
+  const pontosEstimados = pontosPreview?.pontos_final || (valor ? calcularPontos(parseFloat(valor.replace(/\D/g, '')) / 100) : 0)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -485,9 +504,21 @@ function LancarEmissaoModal({ onConfirm, onClose, adminId }) {
               className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-deep-purple/50 focus:ring-2 focus:ring-deep-purple/20 transition-all font-mono text-lg font-semibold"
             />
             {pontosEstimados > 0 && (
-              <p className="text-sm text-antique-gold font-heading font-semibold mt-2">
-                +{pontosEstimados.toLocaleString('pt-BR')} pontos serão creditados
-              </p>
+              <div className="mt-2">
+                <p className="text-sm text-antique-gold font-heading font-semibold">
+                  +{pontosEstimados.toLocaleString('pt-BR')} pontos serão creditados
+                </p>
+                {pontosPreview?.multiplicador > 1 && (
+                  <p className="text-xs text-green-600 font-heading mt-0.5">
+                    Prime anual: {pontosPreview.multiplicador}x multiplicador aplicado
+                  </p>
+                )}
+                {pontosPreview && pontosPreview.multiplicador === 1 && (
+                  <p className="text-xs text-graphite/50 font-heading mt-0.5">
+                    {pontosPreview.plano === 'prime' ? 'Prime mensal' : 'Free'} (1x)
+                  </p>
+                )}
+              </div>
             )}
           </div>
 

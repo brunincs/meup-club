@@ -210,12 +210,10 @@ export function AdminSubscriptions() {
                             <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-heading font-medium bg-amber-100 text-amber-700">
                               {daysRemaining} dia{daysRemaining !== 1 ? 's' : ''}
                             </span>
-                          ) : daysRemaining !== null ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-heading font-medium bg-green-100 text-green-700">
-                              {daysRemaining} dias
-                            </span>
                           ) : (
-                            <span className="text-xs text-graphite/50">—</span>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-heading font-medium bg-green-100 text-green-700">
+                              Ativo{daysRemaining !== null ? ` (${daysRemaining}d)` : ''}
+                            </span>
                           )}
                         </td>
                         <td className="px-4 py-4 text-center">
