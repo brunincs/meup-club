@@ -101,17 +101,15 @@ Você é notificado a cada etapa concluída.`
   },
   {
     category: 'prime',
-    question: 'Qual a diferença entre Prime Mensal e Anual?',
-    answer: `**Prime Mensal** (R$ 49,90/mês):
-• Todos os benefícios Prime
-• Cancele quando quiser
-
-**Prime Anual** (R$ 497/ano):
-• Todos os benefícios Prime
+    question: 'Como funciona o Prime?',
+    answer: `O Prime custa **R$ 497/ano** (de R$ 997) e inclui:
 • +2.000 pontos de boas-vindas
-• 1,5x pontos nas viagens
-• Economia de 17% vs mensal
-• Participa da Ação Fundadores (vagas limitadas)`
+• 1,5x pontos em todas as viagens
+• Check-in diário com 3x mais pontos
+• Bônus de aniversário
+• Experiências com desconto
+• Participa da Ação Fundadores (vagas limitadas)
+• Fundadores renovam pelo mesmo preço enquanto mantiverem ativo`
   },
   {
     category: 'prime',
@@ -128,14 +126,14 @@ O pagamento é processado de forma segura pelo Asaas.`
   {
     category: 'fundadores',
     question: 'O que é a Ação Fundadores?',
-    answer: `A Ação Fundadores é uma oportunidade exclusiva para os **100 primeiros** assinantes do Prime Anual:
+    answer: `A Ação Fundadores é uma oportunidade exclusiva para os **100 primeiros** assinantes do Prime:
 
 • Preço especial: **R$ 497** (de R$ 997 - 50% de desconto)
 • Selo de Fundador permanente
 • 1 número da sorte para concorrer a **500.000 pontos**
 • Experiências e prioridades exclusivas
 
-É uma forma de recompensar quem acredita na Me,up desde o início.`
+Fundadores renovam pelo mesmo valor enquanto mantiverem a assinatura ativa.`
   },
   {
     category: 'fundadores',
@@ -145,7 +143,7 @@ O pagamento é processado de forma segura pelo Asaas.`
   {
     category: 'fundadores',
     question: 'Como funciona o número da sorte?',
-    answer: 'Ao ativar seu Prime Anual como Fundador, você recebe automaticamente um número da sorte único. Esse número participa de uma Ação Promocional conforme o regulamento autorizado. O ganhador é definido com base no resultado da Loteria Federal e recebe 500.000 pontos creditados na conta.'
+    answer: 'Ao ativar seu Prime como Fundador, você recebe automaticamente um número da sorte único. Esse número participa de uma Ação Promocional conforme o regulamento autorizado. O ganhador é definido com base no resultado da Loteria Federal e recebe 500.000 pontos creditados na conta.'
   },
   {
     category: 'fundadores',

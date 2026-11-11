@@ -16,7 +16,7 @@ const FAQ_ITEMS = [
   {
     id: 2,
     question: 'Posso cancelar quando quiser?',
-    answer: 'Sim! Você pode cancelar a qualquer momento pelo WhatsApp. No plano mensal, o cancelamento é imediato. No anual, você continua com acesso até o fim do período pago. Sem multas ou taxas de cancelamento.'
+    answer: 'Sim! Você pode cancelar a qualquer momento pelo WhatsApp. Você continua com acesso até o fim do período pago. Sem multas ou taxas de cancelamento.'
   },
   {
     id: 3,
@@ -36,7 +36,7 @@ const FAQ_ITEMS = [
   {
     id: 6,
     question: 'Como funciona o multiplicador 1.5x?',
-    answer: 'No plano Prime Anual, toda viagem que você faz com a Me,up rende 50% mais pontos. Uma viagem que daria 10.000 pontos passa a dar 15.000. O multiplicador é exclusivo do ciclo anual.'
+    answer: 'No Prime, toda viagem que você faz com a Me,up rende 50% mais pontos. Uma viagem que daria 10.000 pontos passa a dar 15.000.'
   },
   {
     id: 7,

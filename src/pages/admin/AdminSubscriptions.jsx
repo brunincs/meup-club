@@ -13,7 +13,7 @@ import toast from 'react-hot-toast'
 export function AdminSubscriptions() {
   const [subscriptions, setSubscriptions] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all') // all | mensal | anual | expiring
+  const [filter, setFilter] = useState('all') // all | expiring (mensal removido - todo Prime é anual)
 
   const loadSubscriptions = useCallback(async () => {
     setLoading(true)
@@ -30,20 +30,14 @@ export function AdminSubscriptions() {
     loadSubscriptions()
   }, [loadSubscriptions])
 
-  // Filtrar assinaturas
+  // Filtrar assinaturas (mensal removido - todo Prime é anual)
   const filteredSubscriptions = subscriptions.filter(sub => {
-    if (filter === 'mensal') return sub.ciclo === 'mensal'
-    if (filter === 'anual') return sub.ciclo === 'anual'
     if (filter === 'expiring') {
       const days = getDaysRemaining(sub.current_period_end)
       return days !== null && days <= 7
     }
     return true
   })
-
-  // Contadores
-  const totalMensal = subscriptions.filter(s => s.ciclo === 'mensal').length
-  const totalAnual = subscriptions.filter(s => s.ciclo === 'anual').length
   const totalExpiring = subscriptions.filter(s => {
     const days = getDaysRemaining(s.current_period_end)
     return days !== null && days <= 7
@@ -88,37 +82,17 @@ export function AdminSubscriptions() {
           </p>
         </div>
 
-        {/* Filtros */}
+        {/* Filtros (mensal removido - todo Prime é anual) */}
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFilter('all')}
             className={`px-4 py-2 rounded-xl text-sm font-heading font-medium transition-colors ${
               filter === 'all'
-                ? 'bg-deep-purple text-white'
-                : 'bg-white border border-dusty-rose/30 text-graphite/70 hover:text-graphite hover:border-dusty-rose/50'
-            }`}
-          >
-            Todos ({subscriptions.length})
-          </button>
-          <button
-            onClick={() => setFilter('mensal')}
-            className={`px-4 py-2 rounded-xl text-sm font-heading font-medium transition-colors ${
-              filter === 'mensal'
-                ? 'bg-deep-purple text-white'
-                : 'bg-white border border-dusty-rose/30 text-graphite/70 hover:text-graphite hover:border-dusty-rose/50'
-            }`}
-          >
-            Mensal ({totalMensal})
-          </button>
-          <button
-            onClick={() => setFilter('anual')}
-            className={`px-4 py-2 rounded-xl text-sm font-heading font-medium transition-colors ${
-              filter === 'anual'
                 ? 'bg-amber-500 text-white'
                 : 'bg-white border border-dusty-rose/30 text-graphite/70 hover:text-graphite hover:border-dusty-rose/50'
             }`}
           >
-            Anual ({totalAnual})
+            Todos ({subscriptions.length})
           </button>
           <button
             onClick={() => setFilter('expiring')}
@@ -277,18 +251,10 @@ export function AdminSubscriptions() {
 
         {/* Resumo */}
         {!loading && subscriptions.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 rounded-xl bg-white border border-dusty-rose/20">
-              <p className="text-xs text-graphite/60 font-heading uppercase tracking-wide">Total Ativos</p>
-              <p className="text-2xl font-display font-bold text-graphite">{subscriptions.length}</p>
-            </div>
-            <div className="p-4 rounded-xl bg-white border border-dusty-rose/20">
-              <p className="text-xs text-graphite/60 font-heading uppercase tracking-wide">Mensais</p>
-              <p className="text-2xl font-display font-bold text-deep-purple">{totalMensal}</p>
-            </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
-              <p className="text-xs text-amber-700 font-heading uppercase tracking-wide">Anuais</p>
-              <p className="text-2xl font-display font-bold text-amber-700">{totalAnual}</p>
+              <p className="text-xs text-amber-700 font-heading uppercase tracking-wide">Prime Ativos</p>
+              <p className="text-2xl font-display font-bold text-amber-700">{subscriptions.length}</p>
             </div>
             <div className={`p-4 rounded-xl ${totalExpiring > 0 ? 'bg-red-50 border border-red-200' : 'bg-white border border-dusty-rose/20'}`}>
               <p className={`text-xs font-heading uppercase tracking-wide ${totalExpiring > 0 ? 'text-red-700' : 'text-graphite/60'}`}>

@@ -12,7 +12,7 @@ const waysToEarn = [
     id: 'travel',
     badge: 'Viajando',
     title: 'Suas viagens rendem',
-    highlight: 'R$ 1 = 1 ponto',
+    highlight: 'Cada R$ 1 = 1 ponto no Free · 1,5 ponto no Prime',
     description: 'No Prime, os pontos entram automático. No Free, é só cadastrar e aguardar aprovação.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
@@ -24,9 +24,9 @@ const waysToEarn = [
   {
     id: 'referral',
     badge: 'Indicando',
-    title: 'Cada indicação rende',
-    highlight: '+3.000 a +5.000 pts',
-    description: 'Seu amigo viajou: Free +3.000 / Prime +5.000. Assinou o anual: você +3.000 e ele +1.000 (só Prime).',
+    title: 'Cada amigo que viaja rende',
+    highlight: 'Até 8.000 pts por amigo',
+    description: 'Seu amigo fez a 1ª viagem: você ganha 3.000 (Free) ou 5.000 (Prime). Seu amigo virou Prime: você ganha +3.000 e ele +1.000 (só se você for Prime).',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />

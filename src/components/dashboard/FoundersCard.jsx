@@ -1,6 +1,6 @@
 // ============================================
 // CARD AÇÃO FUNDADORES - Dashboard
-// Mostra diferentes estados: Free, Prime Mensal, Fundador
+// Mostra diferentes estados: Free, Fundador
 // ============================================
 
 import { useState, useEffect } from 'react'
@@ -16,9 +16,7 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
   const [regulamentoUrl, setRegulamentoUrl] = useState('')
 
   const planoEfetivo = profile?.plano_efetivo || profile?.plano || 'free'
-  const ciclo = profile?.ciclo || 'mensal'
   const isPrime = planoEfetivo === 'prime'
-  const isAnual = ciclo === 'anual'
 
   useEffect(() => {
     async function loadData() {
@@ -104,55 +102,7 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
     )
   }
 
-  // PRIME MENSAL - Incentivo para mudar para anual
-  if (isPrime && !isAnual) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-amber-400/30 bg-gradient-to-br from-amber-900/20 to-deep-purple/40 p-6"
-      >
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
-            <span className="text-xl">👑</span>
-          </div>
-
-          <div className="flex-1">
-            <h3 className="text-base font-display font-bold text-amber-400 mb-1">
-              Mude para o Anual e vire Fundador
-            </h3>
-            <p className="text-sm text-dusty-rose mb-3">
-              Garanta sua vaga entre os 100 primeiros e concorra a 500 mil pontos!
-            </p>
-
-            {(() => {
-              const vagasRestantes = fundadorData?.vagas_disponiveis || 0
-              const isUltimas = vagasRestantes <= 20 && vagasRestantes > 0
-              return (
-                <div className="flex items-center gap-3 mb-4">
-                  <span className={`text-xs px-2 py-1 rounded-lg ${
-                    isUltimas
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
-                      : 'bg-ice-white/10 text-ice-white/60'
-                  }`}>
-                    {isUltimas ? `Últimas ${vagasRestantes} vagas` : `Restam ${vagasRestantes} vagas`}
-                  </span>
-                </div>
-              )
-            })()}
-
-            <SubscribeButton
-              plan="anual"
-              label="Quero ser Fundador"
-              className="w-full"
-            />
-          </div>
-        </div>
-      </motion.div>
-    )
-  }
-
-  // FREE - Card de destaque
+  // FREE - Card de destaque (Prime mensal removido - todo Prime é anual)
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -173,8 +123,8 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
             Torne-se Fundador
           </h3>
           <p className="text-sm text-dusty-rose mb-2">
-            Prime Anual por <span className="line-through text-dusty-rose/60">R$ 997</span>{' '}
-            <span className="text-amber-400 font-semibold">R$ 497</span> e concorra a 500 mil pontos
+            Prime por <span className="line-through text-dusty-rose/60">R$ 997</span>{' '}
+            <span className="text-amber-400 font-semibold">R$ 497/ano</span> e concorra a 500 mil pontos
           </p>
 
           {(() => {

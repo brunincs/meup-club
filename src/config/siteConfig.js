@@ -121,11 +121,12 @@ export const siteConfig = {
     prime: {
       perks: [
         'Prioridade na cotação (até 4h)',
-        '1 roteiro em PDF por ano (no anual)',
+        '1 roteiro em PDF por ano',
         'Acesso antecipado a experiências',
         'Experiências com desconto: pague menos pontos',
         'Selo de fundador',
         'Lançamento automático pelo time Me,up',
+        '1,5x pontos em viagens',
       ],
     },
   },

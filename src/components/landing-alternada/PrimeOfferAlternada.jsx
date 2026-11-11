@@ -15,7 +15,6 @@ import { siteConfig } from '@/config/siteConfig'
 export function PrimeOfferAlternada() {
   const [config, setConfig] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [ciclo, setCiclo] = useState('anual')
   const [vagasData, setVagasData] = useState({ vagas_usadas: 0, vagas_total: 100 })
   const [regulamentoUrl, setRegulamentoUrl] = useState('')
 
@@ -39,22 +38,19 @@ export function PrimeOfferAlternada() {
   }, [])
 
   const handleGarantirVaga = () => {
-    garantirVagaFundadorWhatsApp(ciclo)
+    garantirVagaFundadorWhatsApp('anual')
   }
 
   const prime = config?.prime || {}
   const free = config?.free || {}
 
-  // Preços
-  const precoMensal = prime.precoMensal || 49.90
+  // Preços (apenas anual, mensal removido)
   const precoAnual = prime.precoAnual || 497
-  const precoMensalCheio = prime.precoMensalCheio || 99.90
   const precoAnualCheio = prime.precoAnualCheio || 997
   const ofertaFundador = prime.ofertaFundadorAtiva ?? true
 
   // Economia de FUNDADOR (âncora - oferta)
   const economiaFundadorAnual = (precoAnualCheio - precoAnual).toFixed(0)
-  const economiaFundadorMensal = (precoMensalCheio - precoMensal).toFixed(0).replace('.', ',')
 
   return (
     <section id="prime-offer" className="relative py-16 md:py-24 bg-deep-purple overflow-hidden">
@@ -104,39 +100,6 @@ export function PrimeOfferAlternada() {
           </motion.p>
         </div>
 
-        {/* Toggle Ciclo */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex justify-center mb-8"
-        >
-          <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white/10 border border-white/20">
-            <button
-              onClick={() => setCiclo('mensal')}
-              className={`px-5 py-2 rounded-full text-sm font-heading font-medium transition-all ${
-                ciclo === 'mensal'
-                  ? 'bg-white/20 text-white'
-                  : 'text-dusty-rose hover:text-white'
-              }`}
-            >
-              Mensal
-            </button>
-            <button
-              onClick={() => setCiclo('anual')}
-              className={`px-5 py-2 rounded-full text-sm font-heading font-medium transition-all flex items-center gap-2 ${
-                ciclo === 'anual'
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'
-                  : 'text-dusty-rose hover:text-white'
-              }`}
-            >
-              Anual
-              <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs">
-                2 meses grátis
-              </span>
-            </button>
-          </div>
-        </motion.div>
 
         {/* Cards Grid */}
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
@@ -215,45 +178,25 @@ export function PrimeOfferAlternada() {
 
               {/* Preço */}
               <div className="mb-6">
-                {ciclo === 'anual' ? (
-                  <>
-                    {ofertaFundador && (
-                      <p className="text-ice-white/60 line-through text-lg">
-                        R${formatPrice(precoAnualCheio, false)}/ano
-                      </p>
-                    )}
-                    <p className="text-3xl font-display font-bold text-white">
-                      R${formatPrice(precoAnual, false)}<span className="text-lg text-ice-white/60">/ano</span>
-                    </p>
-                    {ofertaFundador && (
-                      <p className="text-sm text-amber-300 mt-1">
-                        Economia de R${economiaFundadorAnual} · preço de fundador
-                      </p>
-                    )}
-                    <p className="text-xs text-ice-white/60 mt-1">
-                      à vista no Pix ou 6x de R$ 82,83 sem juros
-                    </p>
-                    <p className="text-xs text-amber-300 mt-2 flex items-center gap-1">
-                      <span>🎁</span> +2.000 pts de boas-vindas
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    {ofertaFundador && (
-                      <p className="text-ice-white/60 line-through text-lg">
-                        R${formatPrice(precoMensalCheio)}/mês
-                      </p>
-                    )}
-                    <p className="text-3xl font-display font-bold text-white">
-                      R${formatPrice(precoMensal)}<span className="text-lg text-ice-white/60">/mês</span>
-                    </p>
-                    {ofertaFundador && (
-                      <p className="text-sm text-amber-300 mt-1">
-                        Economia de R${economiaFundadorMensal}/mês · preço de fundador
-                      </p>
-                    )}
-                  </>
+                {ofertaFundador && (
+                  <p className="text-ice-white/60 line-through text-lg">
+                    R${formatPrice(precoAnualCheio, false)}/ano
+                  </p>
                 )}
+                <p className="text-3xl font-display font-bold text-white">
+                  R${formatPrice(precoAnual, false)}<span className="text-lg text-ice-white/60">/ano</span>
+                </p>
+                {ofertaFundador && (
+                  <p className="text-sm text-amber-300 mt-1">
+                    Economia de R${economiaFundadorAnual} · preço de fundador
+                  </p>
+                )}
+                <p className="text-xs text-ice-white/60 mt-1">
+                  à vista no Pix ou 6x de R$ 82,83 sem juros
+                </p>
+                <p className="text-xs text-amber-300 mt-2 flex items-center gap-1">
+                  <span>🎁</span> +2.000 pts de boas-vindas
+                </p>
               </div>
 
               {/* Bloco 1: Mais pontos */}
@@ -262,7 +205,7 @@ export function PrimeOfferAlternada() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Pontos em viagens: <strong className="text-antique-gold">{ciclo === 'anual' ? '1,5x' : '1x'}</strong>{ciclo === 'mensal' && <span className="text-ice-white/60 text-xs ml-1">(1,5x no anual)</span>}</span>
+                    <span className="text-white">Pontos em viagens: <strong className="text-antique-gold">1,5x</strong></span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
@@ -293,7 +236,7 @@ export function PrimeOfferAlternada() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Roteiros em PDF {ciclo === 'mensal' && <span className="text-ice-white/60 text-xs">(no anual)</span>}</span>
+                    <span className="text-white">Roteiros em PDF</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
@@ -311,6 +254,13 @@ export function PrimeOfferAlternada() {
                     <span className="text-antique-gold mt-0.5">★</span>
                     <span className="text-white">Pontos não expiram</span>
                   </li>
+                  {/* Número da sorte - só enquanto houver vagas */}
+                  {(vagasData.vagas_total - vagasData.vagas_usadas) > 0 && (
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-400 mt-0.5">🎟️</span>
+                      <span className="text-white">Número da sorte na Ação Fundadores <span className="text-amber-300 text-xs">(concorra a 500 mil pts)</span></span>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -349,7 +299,7 @@ export function PrimeOfferAlternada() {
           </p>
 
           <p className="text-sm text-amber-300 text-center mb-4">
-            Assine o Prime Anual e receba seu número da sorte.
+            Assine o Prime e receba seu número da sorte.
           </p>
 
           {/* Contador de vagas com barra de progresso */}
