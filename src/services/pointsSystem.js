@@ -66,7 +66,7 @@ export const levels = [
     bonusMultiplier: 1.05,
     icon: '🌟',
     color: 'blue',
-    perks: ['Bônus de 1.000 pts ao subir', '5% de desconto em experiências']
+    perks: ['Bônus de 1.000 pts ao subir']
   },
   {
     id: 3,
@@ -77,7 +77,7 @@ export const levels = [
     bonusMultiplier: 1.1,
     icon: '💼',
     color: 'violet',
-    perks: ['Bônus de 3.000 pts ao subir', '10% de desconto em upgrades e experiências', 'Prioridade no atendimento']
+    perks: ['Bônus de 3.000 pts ao subir']
   },
   {
     id: 4,
@@ -88,7 +88,7 @@ export const levels = [
     bonusMultiplier: 1.15,
     icon: '👑',
     color: 'amber',
-    perks: ['Bônus de 5.000 pts ao subir', '15% de desconto', 'Acesso a experiências exclusivas']
+    perks: ['Bônus de 5.000 pts ao subir']
   },
   {
     id: 5,
@@ -99,7 +99,7 @@ export const levels = [
     bonusMultiplier: 1.25,
     icon: '💎',
     color: 'slate-900',
-    perks: ['Bônus de 10.000 pts ao subir', 'Maior desconto', 'Atendimento VIP', 'Consultor dedicado']
+    perks: ['Bônus de 10.000 pts ao subir']
   }
 ]
 

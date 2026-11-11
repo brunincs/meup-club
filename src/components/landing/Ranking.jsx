@@ -16,13 +16,14 @@ import { PlaneIcon, StarIcon, BriefcaseIcon, CrownIcon, DiamondIcon } from '@/co
  * ╚════════════════════════════════════════════════════════════════════════════╝
  */
 
+// NOTA: Desconto em experiências é só por plano Prime (130 vs 150), não por classe
+// Classes dão bônus de pontos ao subir, não desconto
 const classLevels = [
   {
     id: 1,
     name: 'Econômica',
     shortName: 'Econômica',
-    // DETALHE DE NÍVEL A DEFINIR - benefícios exatos
-    benefit: 'Acesso ao clube e acúmulo de pontos',
+    benefit: 'Entrada no clube: acumula pontos e troca por experiências',
     icon: PlaneIcon,
     gradient: 'from-slate-400 to-slate-600',
     bgColor: 'bg-slate-500/10 border-slate-400/30',
@@ -32,8 +33,7 @@ const classLevels = [
     id: 2,
     name: 'Econômica Premium',
     shortName: 'Premium',
-    // DETALHE DE NÍVEL A DEFINIR - benefícios exatos
-    benefit: 'Experiências exclusivas desbloqueadas',
+    benefit: '5.000+ pts · Bônus de 1.000 pts ao subir',
     icon: StarIcon,
     gradient: 'from-blue-400 to-blue-600',
     bgColor: 'bg-blue-500/10 border-blue-400/30',
@@ -43,8 +43,7 @@ const classLevels = [
     id: 3,
     name: 'Executiva',
     shortName: 'Executiva',
-    // DETALHE DE NÍVEL A DEFINIR - benefícios exatos
-    benefit: 'Upgrades e lounges com desconto',
+    benefit: '20.000+ pts · Bônus de 3.000 pts ao subir',
     icon: BriefcaseIcon,
     gradient: 'from-violet-400 to-purple-600',
     bgColor: 'bg-violet-500/10 border-violet-400/30',
@@ -54,8 +53,7 @@ const classLevels = [
     id: 4,
     name: 'Primeira Classe',
     shortName: 'Primeira',
-    // DETALHE DE NÍVEL A DEFINIR - benefícios exatos
-    benefit: 'Acesso a experiências premium',
+    benefit: '50.000+ pts · Bônus de 5.000 pts ao subir',
     icon: CrownIcon,
     gradient: 'from-amber-400 to-yellow-600',
     bgColor: 'bg-amber-500/10 border-amber-400/30',
@@ -65,8 +63,7 @@ const classLevels = [
     id: 5,
     name: 'Meup Exclusive',
     shortName: 'Exclusive',
-    // DETALHE DE NÍVEL A DEFINIR - benefícios exatos
-    benefit: 'Benefícios máximos do clube',
+    benefit: '100.000+ pts · Bônus de 10.000 pts ao subir',
     icon: DiamondIcon,
     gradient: 'from-slate-200 to-slate-400',
     bgColor: 'bg-slate-200/10 border-slate-300/30',

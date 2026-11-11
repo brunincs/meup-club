@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { fetchPlanosConfig } from '@/services/subscriptionService'
+import { getFundadoresCount, getRegulamentoUrl } from '@/services/fundadoresService'
 import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 import { formatPrice } from '@/config/contact'
 import { siteConfig } from '@/config/siteConfig'
@@ -15,13 +16,23 @@ export function PrimeOfferAlternada() {
   const [config, setConfig] = useState(null)
   const [loading, setLoading] = useState(true)
   const [ciclo, setCiclo] = useState('anual')
+  const [vagasData, setVagasData] = useState({ vagas_usadas: 0, vagas_total: 100 })
+  const [regulamentoUrl, setRegulamentoUrl] = useState('')
 
   useEffect(() => {
     async function load() {
-      const result = await fetchPlanosConfig()
-      if (result.success) {
-        setConfig(result.planos)
+      const [planosResult, vagasResult, regUrl] = await Promise.all([
+        fetchPlanosConfig(),
+        getFundadoresCount(),
+        getRegulamentoUrl()
+      ])
+      if (planosResult.success) {
+        setConfig(planosResult.planos)
       }
+      if (vagasResult.success) {
+        setVagasData(vagasResult)
+      }
+      setRegulamentoUrl(regUrl)
       setLoading(false)
     }
     load()
@@ -220,7 +231,10 @@ export function PrimeOfferAlternada() {
                       </p>
                     )}
                     <p className="text-xs text-ice-white/60 mt-1">
-                      Equivale a R$41,42/mês
+                      à vista no Pix ou 6x de R$ 82,83 sem juros
+                    </p>
+                    <p className="text-xs text-amber-300 mt-2 flex items-center gap-1">
+                      <span>🎁</span> +2.000 pts de boas-vindas
                     </p>
                   </>
                 ) : (
@@ -287,7 +301,11 @@ export function PrimeOfferAlternada() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Acesso antecipado e desconto em experiências</span>
+                    <span className="text-white">Acesso antecipado a experiências</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">Melhor conversão na troca <span className="text-ice-white/60 text-xs">(fator 130)</span></span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
@@ -312,19 +330,62 @@ export function PrimeOfferAlternada() {
           </motion.div>
         </div>
 
-        {/* Escassez honesta */}
+        {/* Ação Fundadores */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mt-8 max-w-xl mx-auto"
+          className="mt-10 p-6 md:p-8 rounded-2xl border-2 border-amber-400/40 bg-gradient-to-br from-amber-900/20 to-deep-purple/40 max-w-2xl mx-auto"
         >
-          <p className="text-sm text-ice-white/80 leading-relaxed">
-            Preço de fundador para os <span className="text-amber-300 font-semibold">{siteConfig.fundador.vagas} primeiros</span>.
-            Quando encerrar, volta para R$997.
+          {/* Badge */}
+          <div className="flex justify-center mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400 text-deep-purple text-xs font-heading font-bold">
+              🏆 Ação Fundadores
+            </span>
+          </div>
+
+          <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white text-center mb-3">
+            Concorra a 500 mil pontos
+          </h3>
+
+          <p className="text-sm text-ice-white/80 text-center mb-4 max-w-md mx-auto">
+            O suficiente para uma viagem nacional para 2 pessoas ou muitas experiências no clube.
           </p>
-          <p className="text-xs text-ice-white/50 mt-2">
-            Quem entrar agora mantém o valor enquanto renovar.
+
+          {/* Contador de vagas */}
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-ice-white/10 border border-ice-white/20">
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-sm text-ice-white font-heading font-medium">
+                {vagasData.vagas_usadas} de {vagasData.vagas_total} vagas preenchidas
+              </span>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleGarantirVaga}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors shadow-lg shadow-amber-500/25"
+            >
+              Quero ser Fundador
+            </motion.button>
+            {regulamentoUrl && (
+              <a
+                href={regulamentoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-ice-white/70 hover:text-ice-white underline"
+              >
+                Regulamento
+              </a>
+            )}
+          </div>
+
+          <p className="text-xs text-ice-white/50 text-center mt-4">
+            Quem entrar agora mantém o valor de fundador enquanto renovar.
           </p>
         </motion.div>
 

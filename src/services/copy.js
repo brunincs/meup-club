@@ -28,12 +28,13 @@ export const levels = {
     5: '💎'
   },
   // Alinhado com siteConfig.classes
+  // NOTA: Desconto é só por plano Prime (130 vs 150), não por classe
   descriptions: {
-    1: 'Entrada no clube: acumula pontos e troca por recompensas',
-    2: 'Bônus de 1.000 pts ao subir · 5% de desconto em experiências',
-    3: 'Bônus de 3.000 pts · 10% de desconto · prioridade no atendimento',
-    4: 'Bônus de 5.000 pts · 15% de desconto · experiências exclusivas',
-    5: 'Bônus de 10.000 pts · maior desconto · atendimento VIP'
+    1: 'Entrada no clube: acumula pontos e troca por experiências',
+    2: 'A partir de 5.000 pts · Bônus de 1.000 pts ao subir',
+    3: 'A partir de 20.000 pts · Bônus de 3.000 pts ao subir',
+    4: 'A partir de 50.000 pts · Bônus de 5.000 pts ao subir',
+    5: 'A partir de 100.000 pts · Bônus de 10.000 pts ao subir'
   },
   unlockNew: 'Desbloqueia novas experiências',
   current: 'Sua classe',

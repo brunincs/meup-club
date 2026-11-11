@@ -26,7 +26,7 @@ const waysToEarn = [
     badge: 'Indicando',
     title: 'Cada indicação rende',
     highlight: '+3.000 a +5.000 pts',
-    description: 'Indicou alguém e a pessoa viajou? Os pontos são seus. Prime ganha mais.',
+    description: 'Seu amigo viajou: Free +3.000 / Prime +5.000. Assinou o anual: você +3.000 e ele +1.000 (só Prime).',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
