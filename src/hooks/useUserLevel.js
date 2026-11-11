@@ -15,6 +15,27 @@ export function useUserLevel() {
   const { totalPointsEarned, levelId, points } = usePoints()
 
   return useMemo(() => {
+    // Se levelId ainda não carregou, retornar valores nulos
+    // para que componentes possam mostrar loading
+    if (levelId === null) {
+      return {
+        current: null,
+        currentId: null,
+        currentName: null,
+        currentShortName: null,
+        next: null,
+        nextId: null,
+        nextName: null,
+        progress: 0,
+        pointsToNext: 0,
+        totalPointsEarned: 0,
+        balance: points,
+        levels,
+        isMaxLevel: false,
+        bonusMultiplier: 1
+      }
+    }
+
     // Usa levelId do banco (já calculado pelo backend)
     const currentLevel = levels.find(l => l.id === levelId) || levels[0]
     const nextLevel = levels.find(l => l.id === levelId + 1) || null

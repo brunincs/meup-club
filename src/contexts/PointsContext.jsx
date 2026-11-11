@@ -31,7 +31,8 @@ export function PointsProvider({ children }) {
   // Total de pontos ganhos (usado para calcular classe)
   const [totalPointsEarned, setTotalPointsEarned] = useState(0)
   // Level ID do banco (já calculado pelo backend)
-  const [levelId, setLevelId] = useState(1)
+  // Inicia como null para evitar flash de classe errada antes do profile carregar
+  const [levelId, setLevelId] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
   // Sincroniza pontos quando o profile carrega
