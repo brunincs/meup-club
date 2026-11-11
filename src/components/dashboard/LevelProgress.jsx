@@ -7,7 +7,7 @@ import { getClassIcon } from '@/components/ui/Icons'
 
 export function LevelProgress() {
   const { profile } = useAuth()
-  const { totalPointsEarned, levelId } = usePoints()
+  const { totalPointsEarned, levelId, points } = usePoints()
 
   // Usar levelId do banco (calculado por total_points_earned)
   const currentLevel = levels.find(l => l.id === levelId) || levels[0]

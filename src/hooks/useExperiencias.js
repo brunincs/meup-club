@@ -1,8 +1,8 @@
 // Hook para carregar experiências do Supabase
-// Substitui a importação estática de EXPERIENCES e DREAM_EXPERIENCES
+// Usa get_experiencias_com_precos para preços por plano
 
 import { useState, useEffect, useMemo } from 'react'
-import { fetchExperiencias } from '@/services/experienciasService'
+import { fetchExperienciasComPrecos } from '@/services/experienciasService'
 import { PONTOS_POR_REAL, PONTOS_POR_INDICACAO, formatPoints } from '@/config/experiences'
 
 // Re-exportar constantes para manter compatibilidade
@@ -24,7 +24,7 @@ export function useExperiencias() {
 
     async function loadExperiencias() {
       setLoading(true)
-      const result = await fetchExperiencias(false) // Só ativas
+      const result = await fetchExperienciasComPrecos() // Com preços por plano
 
       if (!mounted) return
 
@@ -58,8 +58,12 @@ export function useExperiencias() {
       name: exp.nome, // Alias para compatibilidade
       description: exp.descricao,
       image: exp.imagem_url || getPlaceholderImage(exp.nome),
-      points: exp.pontos,
-      points_required: exp.pontos, // Alias para compatibilidade
+      // Preços por plano (valor_reais × fator)
+      valorReais: exp.valor_reais,
+      pontosFree: exp.pontos_free,
+      pontosPrime: exp.pontos_prime,
+      points: exp.pontos_usuario, // Preço para o usuário atual
+      points_required: exp.pontos_usuario, // Alias para compatibilidade
       featured: exp.selo === 'popular',
       tempoLimitado: exp.selo === 'limitado',
       isDream: exp.selo === 'sonhos',
