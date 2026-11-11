@@ -6,16 +6,15 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { getReferralSteps, getMissedEarnings, getTotalMissedEarnings } from '@/services/cotacaoService'
+import { getReferralSteps, getMissedEarnings, getTotalMissedEarnings } from '@/services/referralService'
 import { getMyReferralCode } from '@/services/referralService'
 import { format } from '@/services/copy'
 
 // Etapas do funil de indicação
 const STEPS = [
   { key: 'cadastrou', label: 'Cadastrou', icon: '👤' },
-  { key: 'cotacao_validada', label: 'Cotação', icon: '✉️', primeOnly: true },
-  { key: 'primeira_emissao', label: 'Viajou', icon: '✈️' },
-  { key: 'prime_anual', label: 'Prime Anual', icon: '👑', primeOnly: true }
+  { key: 'primeira_emissao', label: 'Comprou', icon: '✈️' },
+  { key: 'prime_anual', label: 'Assinou Prime', icon: '👑', primeOnly: true }
 ]
 
 export function MyReferrals({ variant = 'dark' }) {
@@ -101,7 +100,7 @@ export function MyReferrals({ variant = 'dark' }) {
 
   // Calculate totals
   const totalPontos = referrals.reduce((sum, r) =>
-    sum + (r.cotacao_pontos || 0) + (r.emissao_pontos || 0) + (r.prime_anual_pontos || 0), 0)
+    sum + (r.emissao_pontos || 0) + (r.prime_anual_pontos || 0), 0)
 
   return (
     <motion.div
@@ -198,7 +197,7 @@ export function MyReferrals({ variant = 'dark' }) {
             </div>
             <p className="text-sm">Compartilhe seu código e ganhe pontos!</p>
             <p className="text-xs mt-2 text-graphite/50">
-              Cotação validada: +500 pts · Primeira viagem: até +5.000 pts
+              Primeira viagem: até +5.000 pts · Prime Anual: +3.000 pts
             </p>
           </div>
         ) : (
@@ -238,9 +237,9 @@ export function MyReferrals({ variant = 'dark' }) {
                   </div>
 
                   {/* Total de pontos */}
-                  {(referral.cotacao_pontos + referral.emissao_pontos + referral.prime_anual_pontos) > 0 && (
+                  {(referral.emissao_pontos + referral.prime_anual_pontos) > 0 && (
                     <span className="text-xs text-green-600 font-heading font-semibold">
-                      +{format.pointsShort(referral.cotacao_pontos + referral.emissao_pontos + referral.prime_anual_pontos)}
+                      +{format.pointsShort(referral.emissao_pontos + referral.prime_anual_pontos)}
                     </span>
                   )}
                 </div>
@@ -250,8 +249,7 @@ export function MyReferrals({ variant = 'dark' }) {
                   {STEPS.map((step, stepIndex) => {
                     const completed = referral[step.key]
                     const isPrimeStep = step.primeOnly
-                    const points = step.key === 'cotacao_validada' ? referral.cotacao_pontos
-                      : step.key === 'primeira_emissao' ? referral.emissao_pontos
+                    const points = step.key === 'primeira_emissao' ? referral.emissao_pontos
                       : step.key === 'prime_anual' ? referral.prime_anual_pontos : 0
                     const isPending = step.key === 'prime_anual' && referral.prime_anual_pendente
 
@@ -316,7 +314,7 @@ export function MyReferrals({ variant = 'dark' }) {
           <div className="flex items-center justify-between">
             <p className={`text-xs flex items-center gap-2 ${isLight ? 'text-deep-purple/70' : 'text-dusty-rose'}`}>
               <span className="text-amber-500">🔒</span>
-              Assine o Prime para ganhar em cotações e Prime Anual
+              Assine o Prime para ganhar mais na viagem e no Prime Anual
             </p>
             <a
               href="/planos"
@@ -333,7 +331,7 @@ export function MyReferrals({ variant = 'dark' }) {
         <div className={`px-6 py-4 border-t ${isLight ? 'border-deep-purple/10' : 'border-dusty-rose/20'}`}>
           <p className={`text-[10px] flex items-center gap-2 ${isLight ? 'text-deep-purple/50' : 'text-dusty-rose/60'}`}>
             <span className="text-antique-gold">◇</span>
-            Cotação validada +500 pts · Primeira viagem +5.000 pts · Prime Anual +3.000 pts
+            Primeira viagem +5.000 pts · Prime Anual +3.000 pts (indicador) +1.000 pts (indicado)
           </p>
         </div>
       )}

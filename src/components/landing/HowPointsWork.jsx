@@ -30,7 +30,7 @@ const steps = [
   {
     number: '02',
     title: 'Você indica',
-    description: 'Indique amigos e ganhe pontos a cada etapa: cotação, primeira viagem e assinatura Prime.',
+    description: 'Indique amigos e ganhe pontos na primeira viagem e na assinatura Prime Anual.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -52,11 +52,10 @@ const steps = [
   },
 ]
 
-// Timeline de indicação
+// Timeline de indicação (apenas Viagem e Prime Anual)
 const referralTimeline = [
-  { label: 'Cotação validada', points: '+500 pts', primeOnly: true },
   { label: 'Primeira viagem', points: '+3.000 / +5.000 pts', primeOnly: false, note: 'Free / Prime' },
-  { label: 'Prime Anual', points: '+3.000 pts', primeOnly: true }
+  { label: 'Prime Anual', points: '+3.000 pts', primeOnly: true, note: 'Indicador Prime' }
 ]
 
 export function HowPointsWork() {
@@ -175,7 +174,7 @@ export function HowPointsWork() {
           </div>
 
           <p className="text-center text-xs text-deep-purple/60 mt-4 font-heading">
-            Assinantes Prime ganham em todas as etapas. Free ganha apenas na primeira viagem.
+            Free e Prime ganham na viagem. Só Prime ganha quando indicado assina Prime Anual.
           </p>
         </motion.div>
       </div>

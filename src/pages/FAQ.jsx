@@ -65,7 +65,6 @@ O Prime sempre tem preço menor em todas as experiências.`
 
 | O que o amigo fez | Indicador Free | Indicador Prime | Indicado |
 |-------------------|----------------|-----------------|----------|
-| Cotação validada | — | +500 pts | +500 pts |
 | Primeira viagem | +3.000 pts | +5.000 pts | — |
 | Assinou Prime Anual | — | +3.000 pts | +1.000 pts |
 
@@ -76,9 +75,8 @@ Os pontos são creditados apenas uma vez por indicado, em cada etapa.`
     question: 'Quando ganho os pontos de indicação?',
     answer: `Cada etapa precisa ser validada pela equipe:
 
-1. **Cotação validada**: Quando seu amigo pede uma cotação e a equipe confirma os dados (destino, datas, passageiros).
-2. **Primeira viagem**: Quando a primeira emissão de passagem do seu amigo é aprovada.
-3. **Prime Anual**: Quando seu amigo assina o Prime Anual e passa o período de arrependimento (7 dias).
+1. **Primeira viagem**: Quando a primeira emissão de passagem do seu amigo é aprovada.
+2. **Prime Anual**: Quando seu amigo assina o Prime Anual e passa o período de arrependimento (7 dias).
 
 Você é notificado a cada etapa concluída.`
   },
@@ -96,7 +94,7 @@ Você é notificado a cada etapa concluída.`
 
 • **Preços menores** em todas as experiências (fator 130 vs 150)
 • **Mais pontos** nas indicações (+5.000 vs +3.000 na primeira viagem)
-• **Bônus exclusivos** de cotação e Prime Anual do indicado
+• **Bônus exclusivo** quando indicado assina Prime Anual (+3.000 indicador, +1.000 indicado)
 • **1,5x pontos** nas viagens (apenas Prime Anual)
 • **+2.000 pts** de boas-vindas (apenas Prime Anual)
 • **Prioridade** no suporte e novidades`
@@ -265,12 +263,6 @@ export function FAQ() {
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr className="border-b border-ice-white/10">
-                                  <td className="py-2 px-3">Cotação validada</td>
-                                  <td className="text-center py-2 px-3 text-ice-white/40">—</td>
-                                  <td className="text-center py-2 px-3 text-green-400">+500 pts</td>
-                                  <td className="text-center py-2 px-3 text-green-400">+500 pts</td>
-                                </tr>
                                 <tr className="border-b border-ice-white/10">
                                   <td className="py-2 px-3">Primeira viagem</td>
                                   <td className="text-center py-2 px-3 text-green-400">+3.000 pts</td>

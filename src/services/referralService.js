@@ -381,6 +381,70 @@ export async function getReferralProgress(userId) {
 }
 
 // ============================================
+// FUNÇÕES DE ETAPAS DE INDICAÇÃO
+// ============================================
+
+/**
+ * Busca etapas de indicação por amigo
+ */
+export async function getReferralSteps() {
+  try {
+    const { data, error } = await supabase.rpc('get_referral_steps')
+    if (error) throw error
+    return { success: true, steps: data || [] }
+  } catch (error) {
+    console.error('Erro ao buscar etapas:', error)
+    return { success: false, steps: [], error: error.message }
+  }
+}
+
+// ============================================
+// FUNÇÕES DE GANHOS PERDIDOS (Free users)
+// ============================================
+
+/**
+ * Busca ganhos perdidos do usuário
+ */
+export async function getMissedEarnings() {
+  try {
+    const { data, error } = await supabase.rpc('get_missed_earnings')
+    if (error) throw error
+    return { success: true, earnings: data || [] }
+  } catch (error) {
+    console.error('Erro ao buscar ganhos perdidos:', error)
+    return { success: false, earnings: [], error: error.message }
+  }
+}
+
+/**
+ * Busca total de ganhos perdidos
+ */
+export async function getTotalMissedEarnings() {
+  try {
+    const { data, error } = await supabase.rpc('get_total_missed_earnings')
+    if (error) throw error
+    return { success: true, total: data || 0 }
+  } catch (error) {
+    console.error('Erro ao buscar total:', error)
+    return { success: false, total: 0, error: error.message }
+  }
+}
+
+/**
+ * Marca ganhos perdidos como visualizados
+ */
+export async function markMissedEarningsViewed() {
+  try {
+    const { error } = await supabase.rpc('mark_missed_earnings_viewed')
+    if (error) throw error
+    return { success: true }
+  } catch (error) {
+    console.error('Erro ao marcar como visualizado:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// ============================================
 // FUNÇÕES AUXILIARES
 // ============================================
 

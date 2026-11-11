@@ -1,6 +1,6 @@
 // ============================================
 // ADMIN COTAÇÕES - Validar cotações de clientes
-// Credita pontos de indicação quando indicador é Prime
+// Apenas para gestão de cotações (sem crédito de pontos)
 // ============================================
 
 import { useState, useEffect } from 'react'
@@ -66,20 +66,8 @@ function ValidarModal({ cotacao, onConfirm, onClose }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Indicação info */}
           {cotacao.tem_indicacao && (
-            <div className={`p-3 rounded-xl text-sm ${
-              cotacao.indicador_plano === 'prime'
-                ? 'bg-green-50 border border-green-200 text-green-700'
-                : 'bg-amber-50 border border-amber-200 text-amber-700'
-            }`}>
-              {cotacao.indicador_plano === 'prime' ? (
-                <>
-                  <strong>Indicador Prime</strong> - Ambos ganham +500 pts
-                </>
-              ) : (
-                <>
-                  <strong>Indicador Free</strong> - Sem pontos de indicação
-                </>
-              )}
+            <div className="p-3 rounded-xl text-sm bg-blue-50 border border-blue-200 text-blue-700">
+              <strong>Indicado por:</strong> {cotacao.indicador_nome || 'Indicador'}
             </div>
           )}
 
@@ -201,11 +189,6 @@ function ReverterModal({ cotacao, onConfirm, onClose }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {cotacao.pontos_creditados && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-              <strong>Atenção:</strong> Os pontos creditados serão estornados.
-            </div>
-          )}
 
           <div>
             <label className="block text-xs text-graphite/60 font-heading mb-1.5">
@@ -282,11 +265,7 @@ export function AdminCotacoes() {
     const result = await validarCotacao(validarModal.id, dados)
 
     if (result.success) {
-      if (result.pontos_creditados) {
-        toast.success(`Cotação validada! +${result.pontos_indicador} pts para indicador, +${result.pontos_indicado} pts para indicado`)
-      } else {
-        toast.success(result.message || 'Cotação validada!')
-      }
+      toast.success('Cotação validada!')
       setValidarModal(null)
       loadCotacoes()
     } else {
@@ -299,11 +278,7 @@ export function AdminCotacoes() {
     const result = await reverterCotacao(reverterModal.id, motivo)
 
     if (result.success) {
-      if (result.estornado_indicador) {
-        toast.success(`Cotação revertida! Estornados: -${result.estornado_indicador} pts indicador, -${result.estornado_indicado} pts indicado`)
-      } else {
-        toast.success('Cotação cancelada!')
-      }
+      toast.success('Cotação cancelada!')
       setReverterModal(null)
       loadCotacoes()
     } else {
@@ -320,7 +295,7 @@ export function AdminCotacoes() {
         <div>
           <h1 className="text-2xl font-display font-bold text-graphite">Cotações</h1>
           <p className="text-sm text-graphite/70 mt-1 font-heading">
-            Validar cotações e creditar pontos de indicação
+            Gerenciar cotações de clientes
             {tab === 'pendentes' && pendentesCount > 0 && (
               <span className="text-amber-600 font-medium ml-2">
                 · {pendentesCount} pendente{pendentesCount > 1 ? 's' : ''}
