@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { fetchAllSubscriptions } from '@/services/adminService'
-import { formatCiclo, getDaysRemaining } from '@/services/subscriptionService'
+import { formatCiclo, getDaysRemaining, confirmarPrimeAnual } from '@/services/subscriptionService'
 import { getWhatsAppUrl } from '@/config/contact'
 import toast from 'react-hot-toast'
 
@@ -62,6 +62,19 @@ export function AdminSubscriptions() {
     const url = getWhatsAppUrl(message)
     window.open(url, '_blank')
     toast.success('WhatsApp aberto para lembrete')
+  }
+
+  const handleConfirmarBonusAnual = async (sub) => {
+    const result = await confirmarPrimeAnual(sub.id)
+    if (result.success) {
+      if (result.pontos_indicador) {
+        toast.success(`Bônus agendado! +${result.pontos_indicador} pts indicador, +${result.pontos_indicado} pts indicado (liberação em 7 dias)`)
+      } else {
+        toast.success(result.message || 'Processado!')
+      }
+    } else {
+      toast.error(result.error || 'Erro ao confirmar bônus')
+    }
   }
 
   return (
@@ -217,20 +230,31 @@ export function AdminSubscriptions() {
                           )}
                         </td>
                         <td className="px-4 py-4 text-center">
-                          {daysRemaining !== null && daysRemaining <= 14 && daysRemaining > 0 ? (
-                            <button
-                              onClick={() => handleEnviarLembrete(sub)}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-heading font-medium transition-colors ${
-                                daysRemaining <= 3
-                                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                                  : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                              }`}
-                            >
-                              Lembrar
-                            </button>
-                          ) : (
-                            <span className="text-xs text-graphite/30">—</span>
-                          )}
+                          <div className="flex items-center justify-center gap-2">
+                            {sub.ciclo === 'anual' && (
+                              <button
+                                onClick={() => handleConfirmarBonusAnual(sub)}
+                                className="px-3 py-1.5 rounded-lg text-xs font-heading font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
+                                title="Confirma bônus de indicação (se houver)"
+                              >
+                                Bônus
+                              </button>
+                            )}
+                            {daysRemaining !== null && daysRemaining <= 14 && daysRemaining > 0 ? (
+                              <button
+                                onClick={() => handleEnviarLembrete(sub)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-heading font-medium transition-colors ${
+                                  daysRemaining <= 3
+                                    ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                                    : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                                }`}
+                              >
+                                Lembrar
+                              </button>
+                            ) : sub.ciclo !== 'anual' ? (
+                              <span className="text-xs text-graphite/30">—</span>
+                            ) : null}
+                          </div>
                         </td>
                       </motion.tr>
                     )

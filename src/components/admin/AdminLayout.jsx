@@ -8,6 +8,7 @@ const navItems = [
   { path: '/admin/usuarios', label: 'Clientes', icon: '◇' },
   { path: '/admin/assinaturas', label: 'Assinaturas', icon: '👑' },
   { path: '/admin/emissoes', label: 'Emissões', icon: '✈' },
+  { path: '/admin/cotacoes', label: 'Cotações', icon: '✉' },
   { path: '/admin/indicacoes', label: 'Indicações', icon: '→' },
   { path: '/admin/experiencias', label: 'Experiências', icon: '★' },
   { path: '/admin/resgates', label: 'Resgates', icon: '♦' },

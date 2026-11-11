@@ -304,3 +304,39 @@ export async function fetchSubscriptionStatus(userId) {
     return { success: false, error: error.message, status: null }
   }
 }
+
+/**
+ * Confirma Prime Anual e processa bônus de indicação
+ * Pontos ficam pendentes por 7 dias (período de arrependimento)
+ */
+export async function confirmarPrimeAnual(subscriptionId) {
+  try {
+    const { data, error } = await supabase.rpc('admin_confirmar_prime_anual', {
+      p_subscription_id: subscriptionId
+    })
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Erro ao confirmar Prime Anual:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Cancela pontos pendentes de uma assinatura (arrependimento)
+ */
+export async function cancelarPontosPendentes(subscriptionId, motivo) {
+  try {
+    const { data, error } = await supabase.rpc('cancelar_pontos_pendentes_assinatura', {
+      p_subscription_id: subscriptionId,
+      p_motivo: motivo || 'Cancelamento no período de arrependimento'
+    })
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Erro ao cancelar pontos pendentes:', error)
+    return { success: false, error: error.message }
+  }
+}

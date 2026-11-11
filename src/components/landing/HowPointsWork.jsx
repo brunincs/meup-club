@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
-import { PONTOS_POR_INDICACAO, formatPoints } from '@/config/experiences'
 
 /**
  * ╔════════════════════════════════════════════════════════════════════════════╗
@@ -20,9 +19,8 @@ import { PONTOS_POR_INDICACAO, formatPoints } from '@/config/experiences'
 const steps = [
   {
     number: '01',
-    title: 'Você viaja ou indica',
-    // Regras: 1 pt / R$ 1 viajando, 3.000 pts por indicação convertida
-    description: `Viajou com a Me,up? Acumula pontos. Indicou alguém que viajou? +${formatPoints(PONTOS_POR_INDICACAO)} pontos.`,
+    title: 'Você viaja',
+    description: 'A cada R$ 1 em passagens emitidas com a Me,up, você acumula 1 ponto. Prime Anual: 1,5x pontos.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
@@ -31,13 +29,14 @@ const steps = [
   },
   {
     number: '02',
-    title: 'Seus pontos crescem',
-    // REGRA DE PONTOS A DEFINIR - linguagem de experiência
-    description: 'Quanto mais você viaja, mais pontos acumula — e mais perto fica das experiências.',
+    title: 'Você indica',
+    description: 'Indique amigos e ganhe pontos a cada etapa: cotação, primeira viagem e assinatura Prime.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" strokeLinecap="round" strokeLinejoin="round" />
-        <polyline points="17 6 23 6 23 12" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="8.5" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round"/>
+        <line x1="20" y1="8" x2="20" y2="14" strokeLinecap="round" strokeLinejoin="round"/>
+        <line x1="23" y1="11" x2="17" y2="11" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
   },
@@ -51,6 +50,13 @@ const steps = [
       </svg>
     ),
   },
+]
+
+// Timeline de indicação
+const referralTimeline = [
+  { label: 'Cotação validada', points: '+500 pts', primeOnly: true },
+  { label: 'Primeira viagem', points: '+3.000 / +5.000 pts', primeOnly: false, note: 'Free / Prime' },
+  { label: 'Prime Anual', points: '+3.000 pts', primeOnly: true }
 ]
 
 export function HowPointsWork() {
@@ -86,7 +92,7 @@ export function HowPointsWork() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4"
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
         >
           {steps.map((step) => (
             <motion.div
@@ -117,6 +123,60 @@ export function HowPointsWork() {
               </p>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* Timeline de Indicação */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-2xl mx-auto p-6 rounded-2xl bg-gradient-to-r from-deep-purple/5 to-antique-gold/5 border border-deep-purple/10"
+        >
+          <h4 className="text-center text-sm font-heading font-semibold text-deep-purple mb-4 flex items-center justify-center gap-2">
+            <span>→</span> Recompensas por Indicação
+          </h4>
+
+          <div className="flex items-center justify-between">
+            {referralTimeline.map((item, index) => (
+              <div key={item.label} className="flex items-center">
+                {/* Step */}
+                <div className="flex flex-col items-center text-center">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold ${
+                    item.primeOnly
+                      ? 'bg-antique-gold/20 text-antique-gold border-2 border-antique-gold/30'
+                      : 'bg-green-100 text-green-700 border-2 border-green-200'
+                  }`}>
+                    {item.primeOnly ? '👑' : '✓'}
+                  </div>
+                  <p className="text-xs text-deep-purple/70 mt-2 font-heading">
+                    {item.label}
+                  </p>
+                  <p className={`text-xs font-heading font-semibold mt-0.5 ${
+                    item.primeOnly ? 'text-antique-gold' : 'text-green-600'
+                  }`}>
+                    {item.points}
+                  </p>
+                  {item.note && (
+                    <p className="text-[10px] text-deep-purple/50">{item.note}</p>
+                  )}
+                  {item.primeOnly && (
+                    <span className="text-[10px] text-amber-600 font-heading mt-0.5">
+                      Apenas Prime
+                    </span>
+                  )}
+                </div>
+
+                {/* Connector */}
+                {index < referralTimeline.length - 1 && (
+                  <div className="w-8 md:w-12 h-0.5 bg-gradient-to-r from-deep-purple/20 to-antique-gold/20 mx-2" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-xs text-deep-purple/60 mt-4 font-heading">
+            Assinantes Prime ganham em todas as etapas. Free ganha apenas na primeira viagem.
+          </p>
         </motion.div>
       </div>
     </section>
