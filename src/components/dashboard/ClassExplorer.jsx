@@ -14,6 +14,7 @@ export function ClassExplorer() {
   const [isLoading, setIsLoading] = useState(true)
 
   // Inicializar selectedClass com a classe atual do usuário
+  // Só define uma vez quando userLevelId estiver disponível
   useEffect(() => {
     if (userLevelId && selectedClass === null) {
       setSelectedClass(userLevelId)
@@ -37,8 +38,26 @@ export function ClassExplorer() {
     loadExperiencias()
   }, [])
 
-  // Usar classe atual do usuário se selectedClass ainda não foi definido
-  const activeClass = selectedClass ?? userLevelId ?? 1
+  // Esperar userLevelId estar disponível antes de determinar activeClass
+  // Isso evita que o componente renderize com classe errada no primeiro render
+  const activeClass = selectedClass ?? userLevelId
+
+  // Se ainda não temos classe definida, mostrar loading
+  if (!activeClass) {
+    return (
+      <div className="p-6 rounded-2xl border border-dusty-rose/20 bg-deep-purple/30">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 w-48 mx-auto rounded bg-dusty-rose/20" />
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="w-[90px] h-16 rounded-xl bg-dusty-rose/10" />
+            ))}
+          </div>
+          <div className="h-40 rounded-2xl bg-dusty-rose/10" />
+        </div>
+      </div>
+    )
+  }
   const selectedLevel = levels.find(l => l.id === activeClass)
   const ClassIcon = getClassIcon(activeClass)
   const isUnlocked = userLevelId >= activeClass
