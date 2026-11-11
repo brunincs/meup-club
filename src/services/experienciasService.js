@@ -101,17 +101,24 @@ export async function updateExperiencia(id, updates) {
 
 /**
  * Ativa/desativa uma experiência (apenas admin)
+ * Verifica se realmente alterou algo
  */
 export async function toggleExperienciaAtiva(id, ativa) {
   try {
-    const { error } = await supabase
+    const { data, error, count } = await supabase
       .from('experiencias')
-      .update({ ativa })
+      .update({ ativa, updated_at: new Date().toISOString() })
       .eq('id', id)
+      .select()
 
     if (error) throw error
 
-    return { success: true }
+    // Verificar se alterou algo
+    if (!data || data.length === 0) {
+      return { success: false, error: 'Nenhum registro alterado. Verifique permissões.' }
+    }
+
+    return { success: true, experiencia: data[0] }
   } catch (error) {
     console.error('Erro ao alterar status:', error)
     return { success: false, error: error.message }

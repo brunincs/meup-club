@@ -60,7 +60,7 @@ export const CLASS_NAMES = {
   },
   2: {
     name: 'Econômica Premium',
-    shortName: 'Premium',
+    shortName: 'Econ. Premium',
     icon: '🌟',
     color: 'from-blue-400 to-blue-600',
     bgColor: 'bg-blue-50',

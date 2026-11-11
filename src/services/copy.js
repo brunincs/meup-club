@@ -15,7 +15,7 @@ export const levels = {
   },
   shortNames: {
     1: 'Econômica',
-    2: 'Premium',
+    2: 'Econ. Premium',
     3: 'Executiva',
     4: 'Primeira',
     5: 'Exclusive'

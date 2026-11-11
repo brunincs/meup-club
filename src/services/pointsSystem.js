@@ -60,7 +60,7 @@ export const levels = [
   {
     id: 2,
     name: 'Econômica Premium',
-    shortName: 'Premium',
+    shortName: 'Econ. Premium',
     minPoints: 5000,
     maxPoints: 19999,
     bonusMultiplier: 1.05,

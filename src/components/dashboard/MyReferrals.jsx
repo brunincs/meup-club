@@ -6,15 +6,19 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { getMyReferrals, formatReferralStatus, formatReferralDate, PONTOS_POR_INDICACAO } from '@/services/referralService'
+import { getMyReferrals, formatReferralStatus, formatReferralDate, pontosIndicacao_FREE, pontosIndicacao_PRIME } from '@/services/referralService'
 import { format } from '@/services/copy'
 
 export function MyReferrals({ variant = 'dark' }) {
-  const { user, useMock } = useAuth()
+  const { user, useMock, profile } = useAuth()
   const [referrals, setReferrals] = useState([])
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0 })
   const [loading, setLoading] = useState(true)
   const isLight = variant === 'light'
+
+  // Pontos por indicacao baseado no plano do usuario
+  const planoEfetivo = profile?.plano_efetivo || profile?.plano || 'free'
+  const pontosIndicacao = planoEfetivo === 'prime' ? pontosIndicacao_PRIME : pontosIndicacao_FREE
 
   useEffect(() => {
     async function loadReferrals() {
@@ -106,7 +110,7 @@ export function MyReferrals({ variant = 'dark' }) {
             <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-antique-gold/10 flex items-center justify-center">
               <span className="text-antique-gold text-xl">◇</span>
             </div>
-            <p className="text-sm">Compartilhe seu código e ganhe {format.pointsShort(PONTOS_POR_INDICACAO)} pontos por indicação aprovada!</p>
+            <p className="text-sm">Compartilhe seu código e ganhe {format.pointsShort(pontosIndicacao)} pontos por indicação aprovada!</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -152,7 +156,7 @@ export function MyReferrals({ variant = 'dark' }) {
                     </span>
                     {referral.status === 'approved' && (
                       <p className="text-xs text-green-600 mt-1">
-                        +{format.pointsShort(referral.points_awarded || PONTOS_POR_INDICACAO)}
+                        +{format.pointsShort(referral.points_awarded || pontosIndicacao)}
                       </p>
                     )}
                   </div>
@@ -167,7 +171,7 @@ export function MyReferrals({ variant = 'dark' }) {
       <div className={`px-6 py-4 border-t ${isLight ? 'border-deep-purple/10' : 'border-dusty-rose/20'}`}>
         <p className={`text-[10px] flex items-center gap-2 ${isLight ? 'text-deep-purple/50' : 'text-dusty-rose/60'}`}>
           <span className="text-antique-gold">◇</span>
-          Você ganha {format.pointsShort(PONTOS_POR_INDICACAO)} pontos quando a indicação é aprovada
+          Você ganha {format.pointsShort(pontosIndicacao)} pontos quando a indicação é aprovada
         </p>
       </div>
     </motion.div>
