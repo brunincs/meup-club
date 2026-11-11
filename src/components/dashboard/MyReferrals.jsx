@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { getMyReferrals, formatReferralStatus, formatReferralDate, pontosIndicacao_FREE, pontosIndicacao_PRIME } from '@/services/referralService'
+import { getMyReferrals, formatReferralStatus, formatReferralDate, PONTOS_POR_INDICACAO_FREE, PONTOS_POR_INDICACAO_PRIME } from '@/services/referralService'
 import { format } from '@/services/copy'
 
 export function MyReferrals({ variant = 'dark' }) {
@@ -18,7 +18,7 @@ export function MyReferrals({ variant = 'dark' }) {
 
   // Pontos por indicacao baseado no plano do usuario
   const planoEfetivo = profile?.plano_efetivo || profile?.plano || 'free'
-  const pontosIndicacao = planoEfetivo === 'prime' ? pontosIndicacao_PRIME : pontosIndicacao_FREE
+  const pontosIndicacao = planoEfetivo === 'prime' ? PONTOS_POR_INDICACAO_PRIME : PONTOS_POR_INDICACAO_FREE
 
   useEffect(() => {
     async function loadReferrals() {
