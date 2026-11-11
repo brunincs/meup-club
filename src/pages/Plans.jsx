@@ -302,7 +302,7 @@ export function Plans() {
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">★</span>
-                <span className="text-white font-semibold">Lançamento automático</span>
+                <span className="text-white font-semibold">Viagem lançada pela equipe</span>
               </li>
             </ul>
 

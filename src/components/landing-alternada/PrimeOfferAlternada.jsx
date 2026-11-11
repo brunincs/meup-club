@@ -232,7 +232,7 @@ export function PrimeOfferAlternada() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Lançamento automático de pontos</span>
+                    <span className="text-white">Sua viagem lançada pela equipe Me,up</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>

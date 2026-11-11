@@ -3,40 +3,9 @@ import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
 
 /**
- * Como Funciona - SECAO ESCURA
- * Texto claro sobre fundo escuro (contraste garantido)
+ * Como Funciona - SEÇÃO ESCURA
+ * Dois cards com mesma estrutura e altura
  */
-
-const waysToEarn = [
-  {
-    id: 'travel',
-    badge: 'Viajando',
-    title: 'Suas viagens rendem',
-    highlight: 'Cada R$ 1 = 1 ponto no Free · 1,5 ponto no Prime',
-    description: 'No Prime, os pontos entram automático. No Free, é só cadastrar e aguardar aprovação.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-    color: 'gold',
-  },
-  {
-    id: 'referral',
-    badge: 'Indicando',
-    title: 'Cada amigo que viaja rende',
-    highlight: 'Até 8.000 pts por amigo',
-    description: 'Seu amigo fez a 1ª viagem: você ganha 3.000 (Free) ou 5.000 (Prime). Seu amigo virou Prime: você ganha +3.000 e ele +1.000 (só se você for Prime).',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    ),
-    color: 'purple',
-  },
-]
 
 export function HowItWorksAlternada() {
   return (
@@ -50,7 +19,7 @@ export function HowItWorksAlternada() {
       </div>
 
       <div className="container-premium relative z-10">
-        {/* Header da secao - TEXTO CLARO sobre fundo escuro */}
+        {/* Header da seção */}
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -70,62 +39,117 @@ export function HowItWorksAlternada() {
           </p>
         </motion.div>
 
-        {/* Duas formas de ganhar - lado a lado */}
+        {/* Grid de cards com mesma altura */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch"
         >
-          {waysToEarn.map((way) => (
-            <motion.div
-              key={way.id}
-              variants={staggerItem}
-              whileHover={{
-                y: -4,
-                transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
-              }}
-              className={`group relative p-5 md:p-6 rounded-2xl border transition-all duration-500 bg-white/5 ${
-                way.color === 'gold'
-                  ? 'border-antique-gold/30 hover:border-antique-gold/50 hover:bg-white/10'
-                  : 'border-white/10 hover:border-white/20 hover:bg-white/10'
-              }`}
-            >
-              {/* Badge */}
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-heading font-semibold mb-4 ${
-                way.color === 'gold'
-                  ? 'bg-antique-gold/20 text-antique-gold border border-antique-gold/30'
-                  : 'bg-white/10 text-ice-white border border-white/20'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${way.color === 'gold' ? 'bg-antique-gold' : 'bg-ice-white'}`} />
-                {way.badge}
+          {/* CARD VIAJANDO */}
+          <motion.div
+            variants={staggerItem}
+            className="group relative p-5 md:p-6 rounded-2xl border border-antique-gold/30 bg-white/5 hover:border-antique-gold/50 hover:bg-white/10 transition-all duration-300 flex flex-col"
+          >
+            {/* Badge + Ícone */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-heading font-semibold bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-antique-gold" />
+                Viajando
               </span>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+                  <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            </div>
 
-              {/* Icone */}
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 ${
-                way.color === 'gold'
-                  ? 'bg-antique-gold/20 text-antique-gold border border-antique-gold/30'
-                  : 'bg-white/10 text-ice-white border border-white/20'
-              }`}>
-                {way.icon}
+            {/* Título */}
+            <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-4 whitespace-nowrap">
+              Até 1,5 ponto por R$ 1
+            </h3>
+
+            {/* Linhas de comparação */}
+            <div className="flex-1 space-y-0">
+              {/* Linha 1: Free */}
+              <div className="flex items-start justify-between py-3 border-b border-white/10">
+                <span className="text-sm font-heading font-medium text-ice-white/70">Free</span>
+                <div className="text-right">
+                  <span className="text-sm font-heading font-semibold text-ice-white">1 pt por R$ 1</span>
+                  <p className="text-xs text-ice-white/50 mt-0.5">você lança, a gente aprova</p>
+                </div>
               </div>
 
-              {/* Conteudo - TEXTO CLARO */}
-              <p className="text-xs text-ice-white/70 uppercase tracking-wider font-heading font-medium mb-1">
-                {way.title}
-              </p>
+              {/* Linha 2: Prime */}
+              <div className="flex items-start justify-between py-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-heading font-medium text-antique-gold">Prime</span>
+                  <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-heading font-semibold bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
+                    ★
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-heading font-semibold text-antique-gold">1,5 pt por R$ 1</span>
+                  <p className="text-xs text-ice-white/50 mt-0.5">a equipe Me,up lança por você</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
-              {/* Destaque do valor */}
-              <div className="text-2xl md:text-3xl font-display font-bold text-ice-white mb-2">
-                {way.highlight}
+          {/* CARD INDICANDO */}
+          <motion.div
+            variants={staggerItem}
+            className="group relative p-5 md:p-6 rounded-2xl border border-antique-gold/30 bg-white/5 hover:border-antique-gold/50 hover:bg-white/10 transition-all duration-300 flex flex-col"
+          >
+            {/* Badge + Ícone */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-heading font-semibold bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-antique-gold" />
+                Indicando
+              </span>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Título */}
+            <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-4 whitespace-nowrap">
+              Até 8.000 pts por amigo
+            </h3>
+
+            {/* Linhas de comparação */}
+            <div className="flex-1 space-y-0">
+              {/* Linha 1: Amigo viajou */}
+              <div className="flex items-start justify-between py-3 border-b border-white/10">
+                <span className="text-sm font-heading font-medium text-ice-white/70">Amigo viajou</span>
+                <div className="text-right">
+                  <span className="text-sm font-heading font-semibold text-ice-white">
+                    Free <span className="text-ice-white/70">3.000</span> · Prime <span className="text-antique-gold">5.000</span>
+                  </span>
+                </div>
               </div>
 
-              <p className="text-sm text-ice-white/70 leading-relaxed">
-                {way.description}
-              </p>
-            </motion.div>
-          ))}
+              {/* Linha 2: Amigo virou Prime */}
+              <div className="flex items-start justify-between py-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-heading font-medium text-ice-white/70">Amigo virou Prime</span>
+                  <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-heading font-semibold bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
+                    só Prime
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-heading font-semibold text-ice-white">
+                    você <span className="text-antique-gold">+3.000</span> · ele <span className="text-antique-gold">+1.000</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>

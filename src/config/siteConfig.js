@@ -125,7 +125,7 @@ export const siteConfig = {
         'Acesso antecipado a experiências',
         'Experiências com desconto: pague menos pontos',
         'Selo de fundador',
-        'Lançamento automático pelo time Me,up',
+        'Sua viagem lançada pela equipe Me,up',
         '1,5x pontos em viagens',
       ],
     },
