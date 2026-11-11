@@ -542,13 +542,12 @@ export async function solicitarResgateV2(experienciaId, experienciaNome, pontosU
  */
 export async function fetchFilaEntregas() {
   try {
+    // Buscar resgates em preparação
     const { data, error } = await supabase
       .from('resgate_solicitacoes')
       .select(`
         id, user_id, experiencia_id, experiencia_nome, pontos, quantidade,
-        status, formulario_dados, prazo_entrega, emissao_id, created_at,
-        experiencias:experiencia_id (tipo_entrega, subtipo_entrega),
-        profiles:user_id (name, email)
+        status, formulario_dados, prazo_entrega, emissao_id, created_at
       `)
       .eq('status', 'em_preparacao')
       .order('prazo_entrega', { ascending: true })
@@ -558,22 +557,55 @@ export async function fetchFilaEntregas() {
       return { success: false, error: error.message, entregas: [] }
     }
 
+    if (!data || data.length === 0) {
+      return { success: true, entregas: [] }
+    }
+
+    // Buscar perfis dos usuários
+    const userIds = [...new Set(data.map(e => e.user_id))]
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, name, email')
+      .in('id', userIds)
+
+    const profilesMap = (profiles || []).reduce((acc, p) => {
+      acc[p.id] = p
+      return acc
+    }, {})
+
+    // Buscar experiências para pegar tipo_entrega
+    const expIds = [...new Set(data.map(e => e.experiencia_id).filter(Boolean))]
+    let experienciasMap = {}
+    if (expIds.length > 0) {
+      const { data: experiencias } = await supabase
+        .from('experiencias')
+        .select('id, tipo_entrega, subtipo_entrega')
+        .in('id', expIds)
+
+      experienciasMap = (experiencias || []).reduce((acc, e) => {
+        acc[e.id] = e
+        return acc
+      }, {})
+    }
+
     const now = new Date()
-    const entregas = (data || []).map(e => {
+    const entregas = data.map(e => {
       const prazoDate = e.prazo_entrega ? new Date(e.prazo_entrega) : null
       const isAtrasado = prazoDate && prazoDate < now
+      const profile = profilesMap[e.user_id] || {}
+      const exp = experienciasMap[e.experiencia_id] || {}
 
       return {
         id: e.id,
         userId: e.user_id,
-        userName: e.profiles?.name || 'Cliente',
-        userEmail: e.profiles?.email || '',
+        userName: profile.name || 'Cliente',
+        userEmail: profile.email || '',
         experienciaId: e.experiencia_id,
         experienciaNome: e.experiencia_nome,
         pontos: e.pontos,
         quantidade: e.quantidade || 1,
-        tipoEntrega: e.experiencias?.tipo_entrega || 'voucher',
-        subtipoEntrega: e.experiencias?.subtipo_entrega,
+        tipoEntrega: exp.tipo_entrega || 'voucher',
+        subtipoEntrega: exp.subtipo_entrega || null,
         formularioDados: e.formulario_dados || {},
         prazoEntrega: prazoDate,
         prazoFormatado: prazoDate ? prazoDate.toLocaleDateString('pt-BR', {
