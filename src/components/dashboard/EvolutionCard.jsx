@@ -46,10 +46,10 @@ export function EvolutionCard() {
 
           <div className="text-center px-4 py-2 rounded-xl bg-antique-gold/10 border border-antique-gold/20">
             <p className="text-xl font-display font-bold text-antique-gold">
-              {format.pointsShort(userPoints)}
+              {format.pointsShort(totalPointsEarned)}
             </p>
             <p className="text-[10px] text-antique-gold/70">
-              pontos
+              pts acumulados
             </p>
           </div>
         </div>

@@ -4,20 +4,20 @@ import { levels } from '@/services/pointsSystem'
 import { levels as levelCopy } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
 import { useUserLevel } from '@/hooks/useUserLevel'
-import { fetchExperiencias } from '@/services/experienciasService'
+import { fetchExperienciasComPrecos } from '@/services/experienciasService'
 
 export function ClassExplorer() {
-  const { currentId: userLevelId } = useUserLevel()
+  const { currentId: userLevelId, totalPointsEarned } = useUserLevel()
 
   const [selectedClass, setSelectedClass] = useState(userLevelId)
   const [experiencias, setExperiencias] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Carregar experiências do banco
+  // Carregar experiências do banco com preços calculados
   useEffect(() => {
     async function loadExperiencias() {
       try {
-        const result = await fetchExperiencias(false) // só ativas
+        const result = await fetchExperienciasComPrecos()
         if (result.success) {
           setExperiencias(result.experiencias)
         }
@@ -168,7 +168,7 @@ export function ClassExplorer() {
                 <div className="mt-4 p-3 rounded-lg bg-dusty-rose/10 border border-dusty-rose/20">
                   <p className="text-xs text-dusty-rose">
                     Faltam <span className="text-antique-gold font-bold">
-                      {(selectedLevel.minPoints - userPoints).toLocaleString('pt-BR')}
+                      {(selectedLevel.minPoints - totalPointsEarned).toLocaleString('pt-BR')}
                     </span> pontos para desbloquear
                   </p>
                 </div>
@@ -203,7 +203,7 @@ export function ClassExplorer() {
                         {exp.nome}
                       </p>
                       <p className="text-[10px] text-dusty-rose/60">
-                        {exp.pontos.toLocaleString('pt-BR')} pts
+                        {(exp.pontos_usuario || exp.pontos).toLocaleString('pt-BR')} pts
                       </p>
                     </div>
                   ))

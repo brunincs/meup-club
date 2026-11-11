@@ -109,44 +109,51 @@ export async function fetchMySubscription() {
 
 /**
  * Busca todas as configurações de planos (para exibir na UI)
+ * Usa função RPC get_planos_config para retornar estrutura padronizada
  */
 export async function fetchPlanosConfig() {
   try {
-    const { data, error } = await supabase
-      .from('plano_config')
-      .select('*')
-      .order('plano')
+    const { data, error } = await supabase.rpc('get_planos_config')
 
     if (error) throw error
 
-    // Mapear para formato mais amigável
-    const planos = {}
-    for (const p of data) {
-      planos[p.plano] = {
-        nome: p.nome_exibicao,
-        descricao: p.descricao,
-        // Preços de oferta (cobrados atualmente)
-        precoMensal: p.preco_mensal,
-        precoAnual: p.preco_anual,
-        // Preços âncora (cheios, para mostrar riscado)
-        precoMensalCheio: p.preco_mensal_cheio,
-        precoAnualCheio: p.preco_anual_cheio,
-        // Flag de oferta de fundador
-        ofertaFundadorAtiva: p.oferta_fundador_ativa ?? false,
-        // Benefícios
-        multiplicadorViagem: parseFloat(p.multiplicador_viagem),
-        multiplicadorSoAnual: p.multiplicador_viagem_so_anual,
-        pontosIndicacao: p.pontos_indicacao,
-        pontosAniversario: p.pontos_aniversario,
-        pontosCheckin: p.pontos_checkin,
-        lancamentoModo: p.lancamento_modo
+    // data já vem no formato { free: {...}, prime: {...}, config: {...} }
+    const planos = {
+      free: {
+        nome: data.free?.nome || 'Free',
+        descricao: data.free?.descricao || 'Acesso básico ao clube',
+        pontosCheckin: data.free?.pontosCheckin || 10,
+        pontosIndicacao: data.free?.pontosIndicacao || 3000,
+        multiplicadorViagem: data.free?.multiplicadorViagem || 1.0,
+        fatorPontos: data.free?.fatorPontos || 150
+      },
+      prime: {
+        nome: data.prime?.nome || 'Prime',
+        descricao: data.prime?.descricao || 'Benefícios exclusivos',
+        pontosCheckin: data.prime?.pontosCheckin || 30,
+        pontosIndicacao: data.prime?.pontosIndicacao || 5000,
+        multiplicadorViagem: data.prime?.multiplicadorViagem || 1.5,
+        fatorPontos: data.prime?.fatorPontos || 130,
+        pontosAnualIndicador: data.prime?.pontosAnualIndicador || 3000,
+        pontosAnualIndicado: data.prime?.pontosAnualIndicado || 1000
+      },
+      config: {
+        diasBloqueio: data.config?.diasBloqueio || 7
       }
     }
 
     return { success: true, planos }
   } catch (error) {
     console.error('Erro ao buscar config de planos:', error)
-    return { success: false, error: error.message, planos: {} }
+    // Retorna valores default como fallback
+    return {
+      success: false,
+      error: error.message,
+      planos: {
+        free: { nome: 'Free', pontosCheckin: 10, pontosIndicacao: 3000, multiplicadorViagem: 1.0, fatorPontos: 150 },
+        prime: { nome: 'Prime', pontosCheckin: 30, pontosIndicacao: 5000, multiplicadorViagem: 1.5, fatorPontos: 130 }
+      }
+    }
   }
 }
 

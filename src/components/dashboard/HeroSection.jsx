@@ -23,7 +23,7 @@ export function HeroSection() {
   const { profile, user, useMock } = useAuth()
   const { points: userPoints } = usePoints()
   const { allExperiences } = useExperiencias()
-  const { current: currentLevel, next: nextLevel, totalPointsEarned } = useUserLevel()
+  const { current: currentLevel, next: nextLevel, totalPointsEarned, progress, pointsToNext } = useUserLevel()
 
   // Nome do usuário: prioriza profile, fallback para user do Auth
   const fullName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
@@ -148,15 +148,15 @@ export function HeroSection() {
                     </div>
                   </div>
                   <ProgressBar
-                    progress={levelData.progress}
+                    progress={progress}
                     height={6}
                     gradient={['#a27937', '#c9a962']}
                     bgColor="rgba(163, 150, 149, 0.15)"
                   />
                   <div className="flex items-center justify-between mt-2">
-                    <span className="text-[10px] text-dusty-rose/60">{levelData.progress}%</span>
+                    <span className="text-[10px] text-dusty-rose/60">{progress}%</span>
                     <span className="text-[10px] font-heading text-antique-gold">
-                      {levelData.pointsToNext.toLocaleString('pt-BR')} pontos restantes
+                      {pointsToNext.toLocaleString('pt-BR')} pontos restantes
                     </span>
                   </div>
                 </motion.div>
