@@ -338,7 +338,7 @@ export function CreditAdjustModal({ user, onClose, onAdjust }) {
                       {creditType === 'viagem' && (
                         preview?.hasBonus && preview?.multiplier > 1
                           ? <span className="text-amber-600 font-semibold">
-                              👑 Prime {preview.ciclo === 'anual' ? 'Anual' : 'Mensal'}: {inputNumber.toLocaleString('pt-BR')} × {preview.multiplier}x = {preview.finalAmount.toLocaleString('pt-BR')} pts
+                              👑 Prime {preview.ciclo === 'anual' ? 'Anual' : 'Mensal'}: {inputNumber.toLocaleString('pt-BR')} × {preview.multiplier}x = {Math.round(inputNumber * preview.multiplier).toLocaleString('pt-BR')} pts
                             </span>
                           : `Taxa: ${PONTOS_POR_REAL} ponto por R$1`
                       )}
