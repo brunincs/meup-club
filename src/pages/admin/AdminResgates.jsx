@@ -5,7 +5,8 @@ import { AdminLayout } from '@/components/admin/AdminLayout'
 import {
   fetchSolicitacoesResgate,
   aprovarResgateV2,
-  rejeitarResgate
+  rejeitarResgate,
+  marcarVoucherUtilizado
 } from '@/services/resgateService'
 import {
   reabrirResgate,
@@ -365,6 +366,33 @@ export function AdminResgates() {
                           Motivo: {sol.adminComentario}
                         </p>
                       )}
+
+                      {/* Voucher info (se entregue) */}
+                      {sol.voucher && (
+                        <div className="mt-3 p-3 rounded-xl bg-antique-gold/10 border border-antique-gold/20">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div>
+                              <span className="text-xs text-graphite/60">Voucher:</span>
+                              <span className="ml-1 font-mono font-bold text-deep-purple">
+                                {sol.voucher.codigo}
+                              </span>
+                            </div>
+                            <span className="text-sm font-semibold text-antique-gold">
+                              R$ {sol.voucher.valor}
+                            </span>
+                            <span className="text-xs text-graphite/60">
+                              Validade: {sol.voucher.validade}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                              sol.voucher.status === 'utilizado'
+                                ? 'bg-purple-100 text-purple-700'
+                                : 'bg-green-100 text-green-700'
+                            }`}>
+                              {sol.voucher.status === 'utilizado' ? 'Utilizado' : 'Disponível'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Ações */}
@@ -424,6 +452,26 @@ export function AdminResgates() {
                           className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors"
                         >
                           Reverter
+                        </button>
+                      )}
+                      {sol.status === 'entregue' && sol.voucher?.status === 'disponivel' && (
+                        <button
+                          onClick={async () => {
+                            if (processing === sol.voucher.id) return
+                            setProcessing(sol.voucher.id)
+                            const result = await marcarVoucherUtilizado(sol.voucher.id)
+                            if (result.success) {
+                              toast.success('Voucher marcado como utilizado')
+                              loadData()
+                            } else {
+                              toast.error(result.error || 'Erro ao marcar como utilizado')
+                            }
+                            setProcessing(null)
+                          }}
+                          disabled={processing === sol.voucher?.id}
+                          className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-purple-500 text-white hover:bg-purple-600 transition-colors disabled:opacity-50"
+                        >
+                          {processing === sol.voucher?.id ? 'Marcando...' : 'Marcar Utilizado'}
                         </button>
                       )}
                     </div>

@@ -28,14 +28,22 @@ export function PointsProvider({ children }) {
 
   // Pontos: vem do profile real ou do demo
   const [points, setPoints] = useState(0)
+  // Total de pontos ganhos (usado para calcular classe)
+  const [totalPointsEarned, setTotalPointsEarned] = useState(0)
+  // Level ID do banco (já calculado pelo backend)
+  const [levelId, setLevelId] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
 
   // Sincroniza pontos quando o profile carrega
   useEffect(() => {
     if (profile?.points !== undefined) {
       setPoints(profile.points)
+      setTotalPointsEarned(profile.total_points_earned || profile.points)
+      setLevelId(profile.level_id || 1)
     } else if (useMock) {
       setPoints(demoUser.points)
+      setTotalPointsEarned(demoUser.points)
+      setLevelId(2)
     }
   }, [profile, useMock])
 
@@ -186,6 +194,8 @@ export function PointsProvider({ children }) {
 
   const value = {
     points,
+    totalPointsEarned, // Total de pontos ganhos (para classe)
+    levelId,           // Classe do usuário (1-5)
     redeemedIds,
     pendingIds,
     isLoading,

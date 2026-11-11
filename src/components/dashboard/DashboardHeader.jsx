@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
-import { calculateLevel } from '@/services/pointsSystem'
+import { levels } from '@/services/pointsSystem'
 // Fallback para quando profile ainda não carregou
 import { levels as levelCopy } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
@@ -13,11 +13,12 @@ const navItems = [
   { path: '/dashboard', label: 'Clube', icon: '◆' },
   { path: '/tarefas', label: 'Missões', icon: '◇' },
   { path: '/recompensas', label: 'Experiências', icon: '✦' },
+  { path: '/meus-resgates', label: 'Meus Resgates', icon: '★' },
 ]
 
 export function DashboardHeader() {
   const { profile, user, signOut } = useAuth()
-  const { points: userPoints } = usePoints()
+  const { points: userPoints, levelId } = usePoints()
 
   // Dados do usuário: prioriza profile, fallback para user do Auth
   const userName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
@@ -37,9 +38,9 @@ export function DashboardHeader() {
     navigate('/login')
   }
 
-  // Agora lê do contexto compartilhado (antes lia de demoUser.points)
-  const levelData = calculateLevel(userPoints)
-  const level = levelData.current
+  // Usar levelId do contexto (calculado por total_points_earned no backend)
+  const { levelId } = usePoints()
+  const level = levels.find(l => l.id === levelId) || levels[0]
 
   return (
     <header className="border-b border-dusty-rose/20 bg-deep-purple/95 backdrop-blur-xl sticky top-0 z-50">

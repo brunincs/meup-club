@@ -99,6 +99,14 @@ export function AuthProvider({ children }) {
         .eq('id', userId)
         .single()
 
+      if (!error && data) {
+        // Buscar plano efetivo via RPC
+        const { data: planoData } = await supabase.rpc('get_plano_efetivo', { p_user_id: userId })
+        if (planoData) {
+          data.plano_efetivo = planoData
+        }
+      }
+
       if (error) {
         // Perfil não existe - criar automaticamente
         logWarn('Perfil não encontrado, criando automaticamente...')

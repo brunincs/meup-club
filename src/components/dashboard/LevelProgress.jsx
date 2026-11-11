@@ -1,21 +1,29 @@
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
-import { calculateLevel, levels, getNextRewards } from '@/services/pointsSystem'
+import { levels, getNextRewards } from '@/services/pointsSystem'
 import { levels as levelCopy, format } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
 
 export function LevelProgress() {
   const { profile } = useAuth()
-  const { points } = usePoints() // Pontos reais do usuário logado
-  const levelData = calculateLevel(points)
-  const nextRewards = getNextRewards(points, 1)
+  const { totalPointsEarned, levelId } = usePoints()
+
+  // Usar levelId do banco (calculado por total_points_earned)
+  const currentLevel = levels.find(l => l.id === levelId) || levels[0]
+  const nextLevel = levels.find(l => l.id === levelId + 1) || null
+
+  // Calcular progresso baseado em total_points_earned
+  const pointsInLevel = totalPointsEarned - currentLevel.minPoints
+  const pointsForLevel = nextLevel ? (nextLevel.minPoints - currentLevel.minPoints) : 0
+  const progress = nextLevel ? Math.min(100, Math.round((pointsInLevel / pointsForLevel) * 100)) : 100
+  const pointsToNext = nextLevel ? (nextLevel.minPoints - totalPointsEarned) : 0
+
+  const nextRewards = getNextRewards(totalPointsEarned, 1)
   const nextExperience = nextRewards[0]
 
-  const current = levelData?.current || { id: 1, shortName: 'Econômica', bonusMultiplier: 1 }
-  const next = levelData?.next || null
-  const progress = levelData?.progress || 0
-  const pointsToNext = levelData?.pointsToNext || 0
+  const current = currentLevel
+  const next = nextLevel
   const ClassIcon = getClassIcon(current.id)
 
   return (
@@ -137,9 +145,9 @@ export function LevelProgress() {
           <div className="text-[10px] uppercase tracking-wider text-dusty-rose/60 mb-4">Jornada de Classes</div>
           <div className="space-y-2">
             {levels.map((level, index) => {
-              const isActive = level.id === current.id
-              const isPast = points >= level.maxPoints
-              const isFuture = points < level.minPoints
+              const isActive = level.id === levelId
+              const isPast = level.id < levelId
+              const isFuture = level.id > levelId
               const LevelIcon = getClassIcon(level.id)
 
               return (
@@ -187,7 +195,7 @@ export function LevelProgress() {
                     isPast ? 'text-dusty-rose/60' :
                     'text-dusty-rose/40'
                   }`}>
-                    {format.pointsShort(level.minPoints)}+
+                    {format.pointsShort(level.minPoints)}
                   </span>
 
                   {/* Status indicator */}

@@ -206,8 +206,26 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
       }
     }
 
+    // Buscar vouchers para todos os resgates de uma vez
+    const resgateIds = (data || []).map(s => s.id)
+    let vouchersMap = {}
+    if (resgateIds.length > 0) {
+      const { data: vouchersData } = await supabase
+        .from('vouchers')
+        .select('*')
+        .in('resgate_id', resgateIds)
+
+      if (vouchersData) {
+        vouchersMap = vouchersData.reduce((acc, v) => {
+          acc[v.resgate_id] = v
+          return acc
+        }, {})
+      }
+    }
+
     const solicitacoes = (data || []).map(s => {
       const quantidade = s.quantidade || 1
+      const voucher = vouchersMap[s.id]
       const mapped = {
         id: s.id,
         userId: s.user_id,
@@ -224,6 +242,14 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
           : s.experiencia_nome,
         status: s.status,
         adminComentario: s.admin_comentario,
+        // Dados do voucher se existir
+        voucher: voucher ? {
+          id: voucher.id,
+          codigo: voucher.codigo,
+          valor: voucher.valor,
+          validade: new Date(voucher.validade).toLocaleDateString('pt-BR'),
+          status: voucher.status
+        } : null,
         createdAt: new Date(s.created_at).toLocaleDateString('pt-BR', {
           day: '2-digit', month: '2-digit', year: 'numeric',
           hour: '2-digit', minute: '2-digit'
@@ -235,10 +261,11 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
     })
 
     // Estatísticas
+    // "aprovados" conta em_preparacao + entregue (são os aprovados ainda não utilizados)
     const stats = {
       total: solicitacoes.length,
-      pendentes: solicitacoes.filter(s => s.status === 'pendente').length,
-      aprovados: solicitacoes.filter(s => s.status === 'aprovado').length,
+      pendentes: solicitacoes.filter(s => s.status === 'pendente' || s.status === 'solicitado').length,
+      aprovados: solicitacoes.filter(s => ['aprovado', 'em_preparacao', 'entregue'].includes(s.status)).length,
       rejeitados: solicitacoes.filter(s => s.status === 'rejeitado').length
     }
 
@@ -787,6 +814,7 @@ export async function buscarArquivosResgate(resgateId) {
 
 /**
  * Busca solicitações de resgate do cliente com dados completos de entrega
+ * Usa a view vw_resgates_completos que já inclui voucher
  */
 export async function buscarMeusResgatesCompletos() {
   try {
@@ -795,14 +823,10 @@ export async function buscarMeusResgatesCompletos() {
       return { success: false, error: 'Não logado', resgates: [] }
     }
 
+    // Buscar resgates do usuário
     const { data, error } = await supabase
       .from('resgate_solicitacoes')
-      .select(`
-        id, experiencia_id, experiencia_nome, pontos, quantidade, status,
-        admin_comentario, formulario_dados, prazo_entrega, entregue_em,
-        entrega_dados, motivo_cancelamento, created_at, processed_at,
-        experiencias:experiencia_id (tipo_entrega, subtipo_entrega)
-      `)
+      .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
@@ -811,21 +835,30 @@ export async function buscarMeusResgatesCompletos() {
       return { success: false, error: error.message, resgates: [] }
     }
 
-    const resgates = await Promise.all((data || []).map(async (r) => {
-      // Buscar voucher se for tipo voucher
-      let voucher = null
-      if (r.experiencias?.tipo_entrega === 'voucher' && r.status === 'entregue') {
-        const { data: voucherData } = await supabase
-          .from('vouchers')
-          .select('id, codigo, validade, status')
-          .eq('resgate_id', r.id)
-          .maybeSingle()
-        voucher = voucherData
-      }
+    // Buscar todos os vouchers do usuário de uma vez
+    const resgateIds = (data || []).map(r => r.id)
+    let vouchersMap = {}
+    if (resgateIds.length > 0) {
+      const { data: vouchersData } = await supabase
+        .from('vouchers')
+        .select('*')
+        .in('resgate_id', resgateIds)
 
-      // Buscar arquivos se for tipo arquivo
+      if (vouchersData) {
+        vouchersMap = vouchersData.reduce((acc, v) => {
+          acc[v.resgate_id] = v
+          return acc
+        }, {})
+      }
+    }
+
+    const resgates = await Promise.all((data || []).map(async (r) => {
+      // Voucher direto do mapa
+      const voucherData = vouchersMap[r.id]
+
+      // Buscar arquivos se tiver
       let arquivos = []
-      if (r.experiencias?.tipo_entrega === 'arquivo' && r.status === 'entregue') {
+      if (r.status === 'entregue') {
         const { data: arquivosData } = await supabase
           .from('arquivos_resgate')
           .select('id, file_path, file_name')
@@ -840,8 +873,8 @@ export async function buscarMeusResgatesCompletos() {
         pontos: r.pontos,
         quantidade: r.quantidade || 1,
         status: r.status,
-        tipoEntrega: r.experiencias?.tipo_entrega || 'voucher',
-        subtipoEntrega: r.experiencias?.subtipo_entrega,
+        tipoEntrega: voucherData ? 'voucher' : 'outro',
+        subtipoEntrega: null,
         adminComentario: r.admin_comentario,
         formularioDados: r.formulario_dados || {},
         prazoEntrega: r.prazo_entrega ? new Date(r.prazo_entrega) : null,
@@ -851,11 +884,12 @@ export async function buscarMeusResgatesCompletos() {
         entregueEm: r.entregue_em ? new Date(r.entregue_em).toLocaleDateString('pt-BR') : null,
         entregaDados: r.entrega_dados || {},
         motivoCancelamento: r.motivo_cancelamento,
-        voucher: voucher ? {
-          id: voucher.id,
-          codigo: voucher.codigo,
-          validade: new Date(voucher.validade).toLocaleDateString('pt-BR'),
-          status: voucher.status
+        voucher: voucherData ? {
+          id: voucherData.id,
+          codigo: voucherData.codigo,
+          valor: voucherData.valor,
+          validade: new Date(voucherData.validade).toLocaleDateString('pt-BR'),
+          status: voucherData.status
         } : null,
         arquivos: arquivos.map(a => ({
           id: a.id,
