@@ -282,6 +282,9 @@ $$;
 -- 6. ADMIN: Listar fundadores com preço de renovação
 -- ============================================
 
+-- Dropar função existente para alterar assinatura (adiciona coluna preco_renovacao)
+DROP FUNCTION IF EXISTS admin_get_fundadores();
+
 CREATE OR REPLACE FUNCTION admin_get_fundadores()
 RETURNS TABLE (
   id UUID,
