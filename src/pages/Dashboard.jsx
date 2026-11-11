@@ -20,6 +20,7 @@ import { getMyReferrals } from '@/services/referralService'
 import { PointsSimulatorTabs } from '@/components/shared/PointsSimulator'
 import { ExperiencesCarousel } from '@/components/dashboard/ExperiencesCarousel'
 import { ClassExplorer } from '@/components/dashboard/ClassExplorer'
+import { SafeSection } from '@/components/shared/ErrorBoundary'
 
 export function Dashboard() {
   const { user, profile, loading } = useAuth()
@@ -78,10 +79,14 @@ export function Dashboard() {
           ══════════════════════════════════════════════════════════════ */}
       <section className="bg-deep-purple pt-12 pb-8">
         <div className="container-premium">
-          <HeroSection />
+          <SafeSection name="Hero" silent>
+            <HeroSection />
+          </SafeSection>
           {/* Status do plano */}
           <div className="mt-6">
-            <PlanStatusCard />
+            <SafeSection name="Plano" silent>
+              <PlanStatusCard />
+            </SafeSection>
           </div>
         </div>
       </section>
@@ -94,11 +99,15 @@ export function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Missões - ocupa 2 colunas */}
             <div className="lg:col-span-2">
-              <MissionsSection variant="light" />
+              <SafeSection name="Missões">
+                <MissionsSection variant="light" />
+              </SafeSection>
             </div>
             {/* Lançar Viagem - ocupa 1 coluna */}
             <div>
-              <TripSubmitCard variant="light" />
+              <SafeSection name="Lançar Viagem">
+                <TripSubmitCard variant="light" />
+              </SafeSection>
             </div>
           </div>
         </div>
@@ -111,11 +120,15 @@ export function Dashboard() {
         <div className="container-premium">
           {/* Stats cards */}
           <div className="mb-8">
-            <StatsCards stats={referralStats} />
+            <SafeSection name="Estatísticas" silent>
+              <StatsCards stats={referralStats} />
+            </SafeSection>
           </div>
 
           {/* Carrossel de experiências */}
-          <ExperiencesCarousel />
+          <SafeSection name="Experiências">
+            <ExperiencesCarousel />
+          </SafeSection>
         </div>
       </section>
 
@@ -136,7 +149,9 @@ export function Dashboard() {
           ══════════════════════════════════════════════════════════════ */}
       <section className="bg-deep-purple py-10">
         <div className="container-premium">
-          <ClassExplorer />
+          <SafeSection name="Classes">
+            <ClassExplorer />
+          </SafeSection>
         </div>
       </section>
 
@@ -154,7 +169,9 @@ export function Dashboard() {
             </p>
           </div>
           <div className="max-w-xl mx-auto">
-            <PointsSimulatorTabs variant="light" compact={true} />
+            <SafeSection name="Simulador">
+              <PointsSimulatorTabs variant="light" compact={true} />
+            </SafeSection>
           </div>
         </div>
       </section>
@@ -166,13 +183,19 @@ export function Dashboard() {
         <div className="container-premium">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Progresso de nível */}
-            <LevelProgress />
+            <SafeSection name="Progresso">
+              <LevelProgress />
+            </SafeSection>
 
             {/* Sua Evolução */}
-            <EvolutionCard />
+            <SafeSection name="Evolução">
+              <EvolutionCard />
+            </SafeSection>
 
             {/* Tasks */}
-            <TasksWidget />
+            <SafeSection name="Tarefas">
+              <TasksWidget />
+            </SafeSection>
           </div>
         </div>
       </section>

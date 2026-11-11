@@ -609,7 +609,8 @@ export function isRewardSustainable(reward) {
  * @returns {array} - Próximas recompensas
  */
 export function getNextRewards(userPoints, experiencias = [], limit = 3) {
-  if (!experiencias || experiencias.length === 0) {
+  // GUARDA: garantir que é array
+  if (!Array.isArray(experiencias) || experiencias.length === 0) {
     return []
   }
 

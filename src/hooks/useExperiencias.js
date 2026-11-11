@@ -98,6 +98,8 @@ export function useExperiencias() {
  * @param {number} pontos - Quantidade de pontos do cliente
  */
 export function getUnlockedExperiences(allExperiences, pontos) {
+  // GUARDA: garantir que é array
+  if (!Array.isArray(allExperiences)) return []
   return allExperiences.filter(exp => exp.points <= pontos)
 }
 
@@ -107,6 +109,8 @@ export function getUnlockedExperiences(allExperiences, pontos) {
  * @param {number} pontos - Quantidade de pontos do cliente
  */
 export function getNextExperience(allExperiences, pontos) {
+  // GUARDA: garantir que é array
+  if (!Array.isArray(allExperiences)) return null
   return allExperiences.find(exp => exp.points > pontos) || null
 }
 
