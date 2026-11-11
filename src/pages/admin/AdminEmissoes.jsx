@@ -283,6 +283,12 @@ function LancarEmissaoModal({ onConfirm, onClose, adminId }) {
   const [submitting, setSubmitting] = useState(false)
   const [pontosPreview, setPontosPreview] = useState(null)
 
+  // Campos de viagem
+  const [viagemOrigem, setViagemOrigem] = useState('')
+  const [viagemDestino, setViagemDestino] = useState('')
+  const [dataIda, setDataIda] = useState('')
+  const [dataVolta, setDataVolta] = useState('')
+
   // Idempotency key única para evitar duplo-crédito
   const idempotencyKey = useRef(`equipe_${Date.now()}_${Math.random().toString(36).slice(2)}`)
 
@@ -383,7 +389,7 @@ function LancarEmissaoModal({ onConfirm, onClose, adminId }) {
         throw new Error(uploadResult.error)
       }
 
-      // 2. Lançar emissão com idempotency key
+      // 2. Lançar emissão com idempotency key e dados da viagem
       const valorNumerico = parseFloat(valor.replace(/\D/g, '')) / 100
       const result = await lancarEmissaoEquipe({
         clienteId: clienteSelecionado.id,
@@ -392,7 +398,11 @@ function LancarEmissaoModal({ onConfirm, onClose, adminId }) {
         cardUrl: uploadResult.url,
         cardPath: uploadResult.path,
         adminId,
-        idempotencyKey: idempotencyKey.current
+        idempotencyKey: idempotencyKey.current,
+        origem: viagemOrigem || null,
+        destino: viagemDestino || null,
+        dataIda: dataIda || null,
+        dataVolta: dataVolta || null
       })
 
       if (result.success) {
@@ -533,6 +543,72 @@ function LancarEmissaoModal({ onConfirm, onClose, adminId }) {
               onChange={(e) => setDataEmissao(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite focus:outline-none focus:border-deep-purple/50 focus:ring-2 focus:ring-deep-purple/20 transition-all font-heading text-sm"
             />
+          </div>
+
+          {/* Dados da Viagem (para serviços de voo) */}
+          <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200/50 space-y-4">
+            <p className="text-xs text-blue-700 font-heading font-semibold flex items-center gap-1">
+              <span>✈️</span> Dados da Viagem (para serviços de voo)
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-graphite/60 font-heading mb-1.5">
+                  Origem
+                </label>
+                <input
+                  type="text"
+                  value={viagemOrigem}
+                  onChange={(e) => setViagemOrigem(e.target.value)}
+                  placeholder="Ex: São Paulo"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-deep-purple/50 focus:ring-2 focus:ring-deep-purple/20 transition-all font-heading text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-graphite/60 font-heading mb-1.5">
+                  Destino
+                </label>
+                <input
+                  type="text"
+                  value={viagemDestino}
+                  onChange={(e) => setViagemDestino(e.target.value)}
+                  placeholder="Ex: Lisboa"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-deep-purple/50 focus:ring-2 focus:ring-deep-purple/20 transition-all font-heading text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-graphite/60 font-heading mb-1.5">
+                  Data de Ida
+                </label>
+                <input
+                  type="date"
+                  value={dataIda}
+                  onChange={(e) => setDataIda(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-dusty-rose/30 text-graphite focus:outline-none focus:border-deep-purple/50 focus:ring-2 focus:ring-deep-purple/20 transition-all font-heading text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-graphite/60 font-heading mb-1.5">
+                  Data de Volta
+                </label>
+                <input
+                  type="date"
+                  value={dataVolta}
+                  onChange={(e) => setDataVolta(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-dusty-rose/30 text-graphite focus:outline-none focus:border-deep-purple/50 focus:ring-2 focus:ring-deep-purple/20 transition-all font-heading text-sm"
+                />
+              </div>
+            </div>
+
+            {viagemOrigem && viagemDestino && dataIda && (
+              <p className="text-xs text-blue-600 font-heading">
+                {viagemOrigem} → {viagemDestino} · {new Date(dataIda).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                {dataVolta && ` - ${new Date(dataVolta).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}`}
+              </p>
+            )}
           </div>
 
           {/* Upload Card */}

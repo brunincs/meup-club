@@ -70,8 +70,9 @@ export async function uploadCardMeup(file, userId) {
  * @param {string} dataEmissao - Data da emissão (YYYY-MM-DD)
  * @param {string} cardUrl - URL do card Meup no storage
  * @param {string} cardPath - Path do arquivo no storage
+ * @param {Object} viagemDados - Dados da viagem (origem, destino, data_ida, data_volta)
  */
-export async function criarEmissao(userId, valor, dataEmissao, cardUrl, cardPath) {
+export async function criarEmissao(userId, valor, dataEmissao, cardUrl, cardPath, viagemDados = {}) {
   try {
     // Validações
     if (!userId) return { success: false, error: 'Usuário não identificado' }
@@ -90,7 +91,11 @@ export async function criarEmissao(userId, valor, dataEmissao, cardUrl, cardPath
         data_emissao: dataEmissao,
         card_url: cardUrl,
         card_path: cardPath,
-        status: 'pendente'
+        status: 'pendente',
+        viagem_origem: viagemDados.origem || null,
+        viagem_destino: viagemDados.destino || null,
+        data_ida: viagemDados.data_ida || null,
+        data_volta: viagemDados.data_volta || null
       }])
       .select()
       .single()
@@ -451,6 +456,10 @@ export async function buscarClientes(search = '') {
  * @param {string} params.cardPath - Path do arquivo no storage
  * @param {string} params.adminId - ID do admin que está lançando
  * @param {string} params.idempotencyKey - Chave única para evitar duplo-crédito
+ * @param {string} params.origem - Cidade/aeroporto de origem
+ * @param {string} params.destino - Cidade/aeroporto de destino
+ * @param {string} params.dataIda - Data de ida (YYYY-MM-DD)
+ * @param {string} params.dataVolta - Data de volta (YYYY-MM-DD)
  */
 export async function lancarEmissaoEquipe({
   clienteId,
@@ -459,7 +468,11 @@ export async function lancarEmissaoEquipe({
   cardUrl,
   cardPath,
   adminId,
-  idempotencyKey
+  idempotencyKey,
+  origem = null,
+  destino = null,
+  dataIda = null,
+  dataVolta = null
 }) {
   try {
     // Validações
@@ -509,7 +522,12 @@ export async function lancarEmissaoEquipe({
         origem: 'equipe',
         admin_id: adminId,
         processed_at: new Date().toISOString(),
-        idempotency_key: idempotencyKey
+        idempotency_key: idempotencyKey,
+        // Dados da viagem (para serviços de voo)
+        viagem_origem: origem,
+        viagem_destino: destino,
+        data_ida: dataIda,
+        data_volta: dataVolta
       }])
       .select()
       .single()
@@ -612,6 +630,41 @@ export async function downloadCardMeup(path, filename = 'card-meup') {
   } catch (error) {
     console.error('Erro ao baixar arquivo:', error)
     return { success: false, error: error.message }
+  }
+}
+
+// ============================================
+// EMISSÕES VÁLIDAS PARA SERVIÇOS DE VOO
+// ============================================
+
+/**
+ * Busca emissões válidas do usuário para usar em serviços de voo
+ * (aprovadas, origem=equipe, data_ida >= hoje)
+ * @param {string} userId - ID do usuário (opcional, usa usuário logado se não informado)
+ * @returns {Promise<{success: boolean, emissoes?: Array, error?: string}>}
+ */
+export async function fetchUserValidEmissions(userId = null) {
+  try {
+    const { data, error } = await supabase.rpc('get_user_valid_emissions', {
+      p_user_id: userId
+    })
+
+    if (error) throw error
+
+    const emissoes = (data || []).map(e => ({
+      id: e.id,
+      viagemOrigem: e.viagem_origem,
+      viagemDestino: e.viagem_destino,
+      dataIda: e.data_ida,
+      dataVolta: e.data_volta,
+      valor: e.valor,
+      displayText: e.display_text
+    }))
+
+    return { success: true, emissoes }
+  } catch (error) {
+    console.error('Erro ao buscar emissões válidas:', error)
+    return { success: false, error: error.message, emissoes: [] }
   }
 }
 

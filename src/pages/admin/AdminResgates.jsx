@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import {
@@ -16,8 +17,13 @@ import toast from 'react-hot-toast'
 // Configuração de status
 const statusConfig = {
   pendente: { label: 'Pendente', color: 'text-amber-600', bg: 'bg-amber-100', border: 'border-amber-200' },
+  solicitado: { label: 'Solicitado', color: 'text-amber-600', bg: 'bg-amber-100', border: 'border-amber-200' },
   aprovado: { label: 'Aprovado', color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-200' },
+  em_preparacao: { label: 'Em Preparação', color: 'text-blue-600', bg: 'bg-blue-100', border: 'border-blue-200' },
+  entregue: { label: 'Entregue', color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-200' },
+  utilizado: { label: 'Utilizado', color: 'text-purple-600', bg: 'bg-purple-100', border: 'border-purple-200' },
   rejeitado: { label: 'Rejeitado', color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-200' },
+  cancelado: { label: 'Cancelado', color: 'text-gray-600', bg: 'bg-gray-100', border: 'border-gray-200' },
   revertido: { label: 'Revertido', color: 'text-purple-600', bg: 'bg-purple-100', border: 'border-purple-200' }
 }
 
@@ -218,14 +224,23 @@ export function AdminResgates() {
             </p>
           </div>
 
-          {/* Stats badges */}
-          <div className="flex gap-2">
-            <span className="px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-heading font-semibold">
-              {stats.pendentes} pendentes
-            </span>
-            <span className="px-3 py-1.5 rounded-full bg-green-100 text-green-700 text-xs font-heading font-semibold">
-              {stats.aprovados} aprovados
-            </span>
+          {/* Stats badges e link para fila */}
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2">
+              <span className="px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-heading font-semibold">
+                {stats.pendentes} pendentes
+              </span>
+              <span className="px-3 py-1.5 rounded-full bg-green-100 text-green-700 text-xs font-heading font-semibold">
+                {stats.aprovados} aprovados
+              </span>
+            </div>
+            <Link
+              to="/admin/fila-entregas"
+              className="px-4 py-2 rounded-xl bg-blue-500 text-white text-xs font-heading font-semibold hover:bg-blue-600 transition-colors flex items-center gap-1.5"
+            >
+              <span>📦</span>
+              Fila de Entregas
+            </Link>
           </div>
         </div>
 
@@ -233,9 +248,11 @@ export function AdminResgates() {
         <div className="flex flex-wrap gap-2">
           {[
             { value: 'pendente', label: 'Pendentes' },
-            { value: 'aprovado', label: 'Aprovados' },
+            { value: 'em_preparacao', label: 'Em Preparação' },
+            { value: 'entregue', label: 'Entregues' },
+            { value: 'utilizado', label: 'Utilizados' },
             { value: 'rejeitado', label: 'Rejeitados' },
-            { value: 'revertido', label: 'Revertidos' },
+            { value: 'cancelado', label: 'Cancelados' },
             { value: 'all', label: 'Todos' }
           ].map(f => (
             <button

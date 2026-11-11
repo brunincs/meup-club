@@ -51,7 +51,9 @@ export async function createExperiencia(experiencia) {
         selo: experiencia.selo || null,
         imagem_url: experiencia.imagem_url || null,
         ativa: experiencia.ativa !== false,
-        ordem: experiencia.ordem || 0
+        ordem: experiencia.ordem || 0,
+        tipo_entrega: experiencia.tipo_entrega || 'voucher',
+        subtipo_entrega: experiencia.subtipo_entrega || null
       }])
       .select()
       .single()
@@ -80,7 +82,9 @@ export async function updateExperiencia(id, updates) {
         selo: updates.selo || null,
         imagem_url: updates.imagem_url,
         ativa: updates.ativa,
-        ordem: updates.ordem
+        ordem: updates.ordem,
+        tipo_entrega: updates.tipo_entrega || 'voucher',
+        subtipo_entrega: updates.subtipo_entrega || null
       })
       .eq('id', id)
       .select()

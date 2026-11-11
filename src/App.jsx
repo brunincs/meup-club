@@ -4,7 +4,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { PointsProvider } from '@/contexts/PointsContext'
 import { ProtectedRoute, AdminRoute } from '@/components/auth'
 import { RootLayout } from '@/layouts'
-import { Home, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans } from '@/pages'
+import { Home, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans, MeusResgates } from '@/pages'
 import {
   AdminDashboard,
   AdminReferrals,
@@ -17,7 +17,8 @@ import {
   AdminTarefasNew,
   AdminResgates,
   AdminSubscriptions,
-  AdminEmissoes
+  AdminEmissoes,
+  AdminFilaEntregas
 } from '@/pages/admin'
 
 function App() {
@@ -132,6 +133,7 @@ function App() {
           <Route path="/tarefas" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/missoes" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/meus-resgates" element={<ProtectedRoute><MeusResgates /></ProtectedRoute>} />
 
           {/* Referral redirect */}
           <Route
@@ -156,6 +158,7 @@ function App() {
           <Route path="/admin/missoes" element={<AdminRoute><AdminTarefasNew /></AdminRoute>} />
           <Route path="/admin/assinaturas" element={<AdminRoute><AdminSubscriptions /></AdminRoute>} />
           <Route path="/admin/emissoes" element={<AdminRoute><AdminEmissoes /></AdminRoute>} />
+          <Route path="/admin/fila-entregas" element={<AdminRoute><AdminFilaEntregas /></AdminRoute>} />
         </Routes>
         </PointsProvider>
       </AuthProvider>

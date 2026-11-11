@@ -29,7 +29,9 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
     classe_minima: experiencia?.classe_minima || 1,
     selo: experiencia?.selo || '',
     imagem_url: experiencia?.imagem_url || '',
-    ordem: experiencia?.ordem || 0
+    ordem: experiencia?.ordem || 0,
+    tipo_entrega: experiencia?.tipo_entrega || 'voucher',
+    subtipo_entrega: experiencia?.subtipo_entrega || ''
   })
   const [saving, setSaving] = useState(false)
 
@@ -47,7 +49,9 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
       pontos: parseInt(formData.pontos),
       classe_minima: parseInt(formData.classe_minima),
       ordem: parseInt(formData.ordem) || 0,
-      selo: formData.selo || null
+      selo: formData.selo || null,
+      tipo_entrega: formData.tipo_entrega || 'voucher',
+      subtipo_entrega: formData.tipo_entrega === 'servico_voo' ? (formData.subtipo_entrega || null) : null
     })
     setSaving(false)
   }
@@ -160,6 +164,57 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
                 className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
               />
             </div>
+          </div>
+
+          {/* Tipo de Entrega */}
+          <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200/50 space-y-4">
+            <p className="text-xs text-blue-700 font-heading font-semibold">
+              Tipo de Entrega
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-graphite/60 font-heading mb-1.5">
+                  Como será entregue?
+                </label>
+                <select
+                  value={formData.tipo_entrega}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    tipo_entrega: e.target.value,
+                    subtipo_entrega: e.target.value === 'servico_voo' ? formData.subtipo_entrega : ''
+                  })}
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-dusty-rose/30 text-graphite focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
+                >
+                  <option value="voucher">Voucher / Crédito</option>
+                  <option value="servico_voo">Serviço de Voo</option>
+                  <option value="arquivo">Arquivo Digital</option>
+                  <option value="envio_fisico">Envio Físico</option>
+                </select>
+              </div>
+              {formData.tipo_entrega === 'servico_voo' && (
+                <div>
+                  <label className="block text-xs text-graphite/60 font-heading mb-1.5">
+                    Subtipo de Serviço
+                  </label>
+                  <select
+                    value={formData.subtipo_entrega}
+                    onChange={(e) => setFormData({ ...formData, subtipo_entrega: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-dusty-rose/30 text-graphite focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="assento">Escolha de Assento</option>
+                    <option value="bagagem">Bagagem Extra</option>
+                    <option value="sala_vip">Acesso a Lounge/Sala VIP</option>
+                  </select>
+                </div>
+              )}
+            </div>
+            <p className="text-[10px] text-graphite/50">
+              {formData.tipo_entrega === 'voucher' && 'Código gerado automaticamente após aprovação'}
+              {formData.tipo_entrega === 'servico_voo' && 'Cliente seleciona viagem e preenche dados do passageiro'}
+              {formData.tipo_entrega === 'arquivo' && 'Admin faz upload de PDF/imagem para o cliente'}
+              {formData.tipo_entrega === 'envio_fisico' && 'Cliente informa endereço de entrega'}
+            </p>
           </div>
 
           {/* URL da Imagem */}

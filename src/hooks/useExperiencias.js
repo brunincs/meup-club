@@ -68,7 +68,10 @@ export function useExperiencias() {
       ordem: exp.ordem,
       categoria: exp.categoria || 'servico',
       oQueInclui: exp.o_que_inclui || '',
-      regras: exp.regras || ''
+      regras: exp.regras || '',
+      // Campos do sistema de entrega
+      tipoEntrega: exp.tipo_entrega || 'voucher',
+      subtipoEntrega: exp.subtipo_entrega || null
     }))
 
     // Separar regulares e sonhos

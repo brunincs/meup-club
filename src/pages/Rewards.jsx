@@ -15,6 +15,7 @@ import { ExperienceDetailModal } from '@/components/experiences/ExperienceDetail
 import { registrarVisitaExperiencias } from '@/services/supabaseData'
 import { format, levels as levelCopy } from '@/services/copy'
 import { getClassIcon, GiftIcon } from '@/components/ui/Icons'
+import { RedemptionFormByType } from '@/components/redemption/RedemptionFormByType'
 
 // ============================================
 // FOTO A VALIDAR - trocar pela oficial da Me,up depois
@@ -49,6 +50,12 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
 
   // Estado de quantidade
   const [quantity, setQuantity] = useState(1)
+
+  // Estado do formulário de entrega
+  const [formData, setFormData] = useState({})
+
+  // Verificar se precisa de formulário
+  const needsForm = reward.tipoEntrega && reward.tipoEntrega !== 'voucher'
 
   // Cálculos
   const unitCost = reward.points_required
@@ -118,9 +125,9 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
     }
   }, [isLoading, onCancel])
 
-  // Confirmar com quantidade
+  // Confirmar com quantidade e dados do formulário
   const handleConfirm = () => {
-    onConfirm(quantity)
+    onConfirm(quantity, formData)
   }
 
   return (
@@ -232,6 +239,21 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
               </span>
             </div>
           </div>
+
+          {/* Formulário de entrega (se necessário) */}
+          {needsForm && (
+            <div className="mb-4">
+              <RedemptionFormByType
+                tipoEntrega={reward.tipoEntrega}
+                subtipoEntrega={reward.subtipoEntrega}
+                experienciaNome={reward.name}
+                onChange={setFormData}
+                initialData={formData}
+                disabled={isLoading}
+                isDark={true}
+              />
+            </div>
+          )}
 
           {/* Aviso sobre reserva de pontos */}
           <div className="p-3 rounded-xl bg-antique-gold/10 border border-antique-gold/20 mb-4">
@@ -786,7 +808,10 @@ export function Rewards() {
     isDream: exp.isDream,
     oQueInclui: exp.oQueInclui,
     regras: exp.regras,
-    categoria: exp.categoria
+    categoria: exp.categoria,
+    // Campos do sistema de entrega
+    tipoEntrega: exp.tipoEntrega || 'voucher',
+    subtipoEntrega: exp.subtipoEntrega || null
   }))
 
   const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId, rewardsTable)
@@ -839,7 +864,10 @@ export function Rewards() {
       categoria: reward.categoria,
       requiredLevelId: reward.requiredLevelId,
       isUnlockedByLevel: reward.isUnlockedByLevel,
-      canRedeem: reward.canRedeem
+      canRedeem: reward.canRedeem,
+      // Campos do sistema de entrega
+      tipoEntrega: reward.tipoEntrega || 'voucher',
+      subtipoEntrega: reward.subtipoEntrega || null
     })
   }, [])
 
@@ -871,7 +899,10 @@ export function Rewards() {
       name: experience.name,
       description: experience.description,
       points_required: experience.points,
-      category: experience.categoria === 'credito' ? 'travel' : 'experience'
+      category: experience.categoria === 'credito' ? 'travel' : 'experience',
+      // Campos do sistema de entrega
+      tipoEntrega: experience.tipoEntrega || 'voucher',
+      subtipoEntrega: experience.subtipoEntrega || null
     })
   }, [userPoints])
 
@@ -882,7 +913,7 @@ export function Rewards() {
   }
 
   // Handler para confirmar resgate - INTEGRAÇÃO REAL COM SUPABASE
-  async function handleConfirmRedeem(quantity = 1) {
+  async function handleConfirmRedeem(quantity = 1, formData = {}) {
     // Prevenir duplo clique
     if (!selectedReward || isRedeeming) return
 
@@ -899,13 +930,15 @@ export function Rewards() {
     setIsRedeeming(true)
 
     try {
-      // Chamar serviço REAL de resgate com quantidade
+      // Chamar serviço REAL de resgate com quantidade e dados do formulário
       const result = await resgatar(
         selectedReward.id,
         selectedReward.name,
         selectedReward.points_required, // custo unitário
         1, // classe mínima (será validada no banco)
-        quantity // quantidade
+        quantity, // quantidade
+        formData, // dados do formulário de entrega
+        formData.emissaoId || null // ID da emissão (para serviços de voo)
       )
 
       if (!result.success) {

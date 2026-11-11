@@ -440,3 +440,480 @@ export async function buscarExperienciasResgatadas() {
     return []
   }
 }
+
+// ============================================
+// FUNÇÕES DE ENTREGA (DELIVERY SYSTEM)
+// ============================================
+
+/**
+ * Solicita resgate v2 com formulário de dados e emissão
+ * @param {string} experienciaId
+ * @param {string} experienciaNome
+ * @param {number} pontosUnitarios
+ * @param {number} classeMinima
+ * @param {number} quantidade
+ * @param {Object} formData - Dados do formulário
+ * @param {string} emissaoId - ID da emissão (para serviços de voo)
+ */
+export async function solicitarResgateV2(experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1, formData = {}, emissaoId = null) {
+  try {
+    const { data, error } = await supabase.rpc('client_request_redemption_v2', {
+      p_experience_id: experienciaId,
+      p_experience_name: experienciaNome,
+      p_points_cost: pontosUnitarios,
+      p_min_class: classeMinima,
+      p_quantity: quantidade,
+      p_form_data: formData,
+      p_emissao_id: emissaoId
+    })
+
+    if (error) {
+      console.error('Erro ao solicitar resgate v2:', error)
+      return { success: false, error: error.message || 'Erro ao processar solicitação.' }
+    }
+
+    if (!data.success) {
+      return { success: false, error: data.error }
+    }
+
+    return {
+      success: true,
+      requestId: data.request_id,
+      quantity: data.quantity || quantidade,
+      totalPoints: data.total_points || (pontosUnitarios * quantidade),
+      balance_after: data.balance_after,
+      message: data.message || 'Pontos reservados! Aguardando aprovação.'
+    }
+  } catch (error) {
+    console.error('Erro inesperado na solicitação v2:', error)
+    return { success: false, error: 'Erro inesperado. Tente novamente.' }
+  }
+}
+
+/**
+ * Busca fila de entregas (em_preparacao) para admin
+ * Ordenado por prazo de entrega (urgente primeiro)
+ */
+export async function fetchFilaEntregas() {
+  try {
+    const { data, error } = await supabase
+      .from('resgate_solicitacoes')
+      .select(`
+        id, user_id, experiencia_id, experiencia_nome, pontos, quantidade,
+        status, formulario_dados, prazo_entrega, emissao_id, created_at,
+        experiencias:experiencia_id (tipo_entrega, subtipo_entrega),
+        profiles:user_id (name, email)
+      `)
+      .eq('status', 'em_preparacao')
+      .order('prazo_entrega', { ascending: true })
+
+    if (error) {
+      console.error('Erro ao buscar fila de entregas:', error)
+      return { success: false, error: error.message, entregas: [] }
+    }
+
+    const now = new Date()
+    const entregas = (data || []).map(e => {
+      const prazoDate = e.prazo_entrega ? new Date(e.prazo_entrega) : null
+      const isAtrasado = prazoDate && prazoDate < now
+
+      return {
+        id: e.id,
+        userId: e.user_id,
+        userName: e.profiles?.name || 'Cliente',
+        userEmail: e.profiles?.email || '',
+        experienciaId: e.experiencia_id,
+        experienciaNome: e.experiencia_nome,
+        pontos: e.pontos,
+        quantidade: e.quantidade || 1,
+        tipoEntrega: e.experiencias?.tipo_entrega || 'voucher',
+        subtipoEntrega: e.experiencias?.subtipo_entrega,
+        formularioDados: e.formulario_dados || {},
+        prazoEntrega: prazoDate,
+        prazoFormatado: prazoDate ? prazoDate.toLocaleDateString('pt-BR', {
+          day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+        }) : null,
+        isAtrasado,
+        emissaoId: e.emissao_id,
+        createdAt: new Date(e.created_at).toLocaleDateString('pt-BR', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        })
+      }
+    })
+
+    return { success: true, entregas }
+  } catch (error) {
+    console.error('Erro ao buscar fila de entregas:', error)
+    return { success: false, error: error.message, entregas: [] }
+  }
+}
+
+/**
+ * Admin marca resgate como entregue
+ * @param {string} resgateId
+ * @param {Object} entregaDados - Dados da entrega (varia por tipo)
+ */
+export async function marcarEntregue(resgateId, entregaDados = {}) {
+  try {
+    const { data, error } = await supabase.rpc('admin_mark_delivered', {
+      p_request_id: resgateId,
+      p_delivery_data: entregaDados
+    })
+
+    if (error) {
+      console.error('Erro ao marcar como entregue:', error)
+      return { success: false, error: error.message }
+    }
+
+    if (!data.success) {
+      return { success: false, error: data.error }
+    }
+
+    return { success: true, message: data.message }
+  } catch (error) {
+    console.error('Erro ao marcar como entregue:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Admin cancela resgate (devolve pontos)
+ * @param {string} resgateId
+ * @param {string} motivo
+ */
+export async function cancelarResgate(resgateId, motivo = null) {
+  try {
+    const { data, error } = await supabase.rpc('admin_cancel_redemption', {
+      p_request_id: resgateId,
+      p_reason: motivo
+    })
+
+    if (error) {
+      console.error('Erro ao cancelar resgate:', error)
+      return { success: false, error: error.message }
+    }
+
+    if (!data.success) {
+      return { success: false, error: data.error }
+    }
+
+    return {
+      success: true,
+      pointsRefunded: data.points_refunded,
+      idempotent: data.idempotent || false,
+      message: data.message
+    }
+  } catch (error) {
+    console.error('Erro ao cancelar resgate:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Upload de arquivo de entrega (para tipos 'arquivo')
+ * @param {File} file
+ * @param {string} resgateId
+ */
+export async function uploadArquivoEntrega(file, resgateId) {
+  try {
+    // Validar tipo de arquivo
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      return { success: false, error: 'Tipo de arquivo não permitido. Use PDF, JPG ou PNG.' }
+    }
+
+    // Validar tamanho (max 10MB)
+    const maxSize = 10 * 1024 * 1024
+    if (file.size > maxSize) {
+      return { success: false, error: 'Arquivo muito grande. Máximo 10MB.' }
+    }
+
+    // Gerar nome único
+    const ext = file.name.split('.').pop()
+    const timestamp = Date.now()
+    const path = `entregas/${resgateId}/${timestamp}.${ext}`
+
+    // Upload para o storage
+    const { data, error } = await supabase.storage
+      .from('entregas-resgate')
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
+
+    if (error) throw error
+
+    // Registrar arquivo na tabela
+    const { data: { user } } = await supabase.auth.getUser()
+
+    await supabase.from('arquivos_resgate').insert([{
+      resgate_id: resgateId,
+      file_path: data.path,
+      file_name: file.name,
+      uploaded_by: user?.id
+    }])
+
+    return {
+      success: true,
+      path: data.path,
+      fileName: file.name
+    }
+  } catch (error) {
+    console.error('Erro no upload de arquivo:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Gera URL assinada para acessar arquivo de entrega
+ * @param {string} path
+ * @returns {Promise<{success: boolean, url?: string, error?: string}>}
+ */
+export async function getArquivoSignedUrl(path) {
+  try {
+    if (!path) return { success: false, error: 'Caminho não informado' }
+
+    const { data, error } = await supabase.storage
+      .from('entregas-resgate')
+      .createSignedUrl(path, 300) // 5 minutos
+
+    if (error) throw error
+
+    return { success: true, url: data.signedUrl }
+  } catch (error) {
+    console.error('Erro ao gerar signed URL:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Admin marca voucher como utilizado
+ * @param {string} voucherId
+ * @param {string} emissaoId - Emissão onde o voucher foi usado (opcional)
+ */
+export async function marcarVoucherUtilizado(voucherId, emissaoId = null) {
+  try {
+    const { data, error } = await supabase.rpc('admin_mark_voucher_used', {
+      p_voucher_id: voucherId,
+      p_emissao_id: emissaoId
+    })
+
+    if (error) {
+      console.error('Erro ao marcar voucher como utilizado:', error)
+      return { success: false, error: error.message }
+    }
+
+    if (!data.success) {
+      return { success: false, error: data.error }
+    }
+
+    return { success: true, message: data.message }
+  } catch (error) {
+    console.error('Erro ao marcar voucher como utilizado:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Busca vouchers do cliente logado
+ */
+export async function buscarMeusVouchers() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Não logado', vouchers: [] }
+
+    const { data, error } = await supabase
+      .from('vouchers')
+      .select(`
+        id, codigo, valor, validade, status, usado_em, created_at,
+        resgate_solicitacoes:resgate_id (experiencia_nome)
+      `)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Erro ao buscar vouchers:', error)
+      return { success: false, error: error.message, vouchers: [] }
+    }
+
+    const vouchers = (data || []).map(v => ({
+      id: v.id,
+      codigo: v.codigo,
+      valor: v.valor,
+      validade: v.validade,
+      validadeFormatada: new Date(v.validade).toLocaleDateString('pt-BR'),
+      status: v.status,
+      usadoEm: v.usado_em ? new Date(v.usado_em).toLocaleDateString('pt-BR') : null,
+      experienciaNome: v.resgate_solicitacoes?.experiencia_nome || 'Voucher',
+      isExpirado: new Date(v.validade) < new Date(),
+      createdAt: new Date(v.created_at).toLocaleDateString('pt-BR')
+    }))
+
+    return { success: true, vouchers }
+  } catch (error) {
+    console.error('Erro ao buscar vouchers:', error)
+    return { success: false, error: error.message, vouchers: [] }
+  }
+}
+
+/**
+ * Busca arquivos de entrega do resgate
+ * @param {string} resgateId
+ */
+export async function buscarArquivosResgate(resgateId) {
+  try {
+    const { data, error } = await supabase
+      .from('arquivos_resgate')
+      .select('id, file_path, file_name, created_at')
+      .eq('resgate_id', resgateId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    return {
+      success: true,
+      arquivos: (data || []).map(a => ({
+        id: a.id,
+        filePath: a.file_path,
+        fileName: a.file_name,
+        createdAt: new Date(a.created_at).toLocaleDateString('pt-BR')
+      }))
+    }
+  } catch (error) {
+    console.error('Erro ao buscar arquivos:', error)
+    return { success: false, error: error.message, arquivos: [] }
+  }
+}
+
+/**
+ * Busca solicitações de resgate do cliente com dados completos de entrega
+ */
+export async function buscarMeusResgatesCompletos() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { success: false, error: 'Não logado', resgates: [] }
+    }
+
+    const { data, error } = await supabase
+      .from('resgate_solicitacoes')
+      .select(`
+        id, experiencia_id, experiencia_nome, pontos, quantidade, status,
+        admin_comentario, formulario_dados, prazo_entrega, entregue_em,
+        entrega_dados, motivo_cancelamento, created_at, processed_at,
+        experiencias:experiencia_id (tipo_entrega, subtipo_entrega)
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Erro ao buscar resgates:', error)
+      return { success: false, error: error.message, resgates: [] }
+    }
+
+    const resgates = await Promise.all((data || []).map(async (r) => {
+      // Buscar voucher se for tipo voucher
+      let voucher = null
+      if (r.experiencias?.tipo_entrega === 'voucher' && r.status === 'entregue') {
+        const { data: voucherData } = await supabase
+          .from('vouchers')
+          .select('id, codigo, validade, status')
+          .eq('resgate_id', r.id)
+          .maybeSingle()
+        voucher = voucherData
+      }
+
+      // Buscar arquivos se for tipo arquivo
+      let arquivos = []
+      if (r.experiencias?.tipo_entrega === 'arquivo' && r.status === 'entregue') {
+        const { data: arquivosData } = await supabase
+          .from('arquivos_resgate')
+          .select('id, file_path, file_name')
+          .eq('resgate_id', r.id)
+        arquivos = arquivosData || []
+      }
+
+      return {
+        id: r.id,
+        experienciaId: r.experiencia_id,
+        experienciaNome: r.experiencia_nome,
+        pontos: r.pontos,
+        quantidade: r.quantidade || 1,
+        status: r.status,
+        tipoEntrega: r.experiencias?.tipo_entrega || 'voucher',
+        subtipoEntrega: r.experiencias?.subtipo_entrega,
+        adminComentario: r.admin_comentario,
+        formularioDados: r.formulario_dados || {},
+        prazoEntrega: r.prazo_entrega ? new Date(r.prazo_entrega) : null,
+        prazoFormatado: r.prazo_entrega
+          ? new Date(r.prazo_entrega).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+          : null,
+        entregueEm: r.entregue_em ? new Date(r.entregue_em).toLocaleDateString('pt-BR') : null,
+        entregaDados: r.entrega_dados || {},
+        motivoCancelamento: r.motivo_cancelamento,
+        voucher: voucher ? {
+          id: voucher.id,
+          codigo: voucher.codigo,
+          validade: new Date(voucher.validade).toLocaleDateString('pt-BR'),
+          status: voucher.status
+        } : null,
+        arquivos: arquivos.map(a => ({
+          id: a.id,
+          filePath: a.file_path,
+          fileName: a.file_name
+        })),
+        createdAt: new Date(r.created_at).toLocaleDateString('pt-BR', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        }),
+        processedAt: r.processed_at ? new Date(r.processed_at).toLocaleDateString('pt-BR') : null
+      }
+    }))
+
+    return { success: true, resgates }
+  } catch (error) {
+    console.error('Erro ao buscar resgates:', error)
+    return { success: false, error: error.message, resgates: [] }
+  }
+}
+
+/**
+ * Admin aprova resgate v2 (com sistema de entrega)
+ * @param {string} solicitacaoId
+ */
+export async function aprovarResgateV2(solicitacaoId) {
+  console.log('[aprovarResgateV2] Iniciando aprovação para:', solicitacaoId)
+
+  if (!solicitacaoId) {
+    console.error('[aprovarResgateV2] ID inválido')
+    return { success: false, error: 'ID da solicitação é obrigatório' }
+  }
+
+  try {
+    const { data, error } = await supabase.rpc('admin_approve_redemption_v2', {
+      p_request_id: solicitacaoId
+    })
+
+    console.log('[aprovarResgateV2] Resposta RPC:', data, error)
+
+    if (error) {
+      console.error('[aprovarResgateV2] Erro RPC:', error)
+      return { success: false, error: error.message || 'Erro ao chamar função de aprovação' }
+    }
+
+    if (!data?.success) {
+      return { success: false, error: data?.error || 'Erro desconhecido na aprovação' }
+    }
+
+    return {
+      success: true,
+      tipoEntrega: data.tipo_entrega,
+      prazoEntrega: data.prazo_entrega,
+      voucherCode: data.voucher_code,
+      message: data.message
+    }
+  } catch (error) {
+    console.error('[aprovarResgateV2] Exceção:', error)
+    return { success: false, error: 'Erro inesperado: ' + (error.message || 'Tente novamente') }
+  }
+}
