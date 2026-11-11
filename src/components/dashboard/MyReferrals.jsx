@@ -230,9 +230,12 @@ export function MyReferrals({ variant = 'dark' }) {
                       }`}>
                         {referral.referred_name || 'Amigo'}
                       </p>
-                      <p className={`text-xs ${isLight ? 'text-deep-purple/50' : 'text-dusty-rose/60'}`}>
-                        {referral.referred_email}
-                      </p>
+                      {/* Só mostrar email mascarado se não houver nome */}
+                      {(!referral.referred_name || referral.referred_name === 'Amigo') && referral.referred_email && (
+                        <p className={`text-xs ${isLight ? 'text-deep-purple/50' : 'text-dusty-rose/60'}`}>
+                          {referral.referred_email}
+                        </p>
+                      )}
                     </div>
                   </div>
 

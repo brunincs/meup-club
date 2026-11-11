@@ -9,9 +9,16 @@ import { fetchExperienciasComPrecos } from '@/services/experienciasService'
 export function ClassExplorer() {
   const { currentId: userLevelId, totalPointsEarned } = useUserLevel()
 
-  const [selectedClass, setSelectedClass] = useState(userLevelId)
+  const [selectedClass, setSelectedClass] = useState(null)
   const [experiencias, setExperiencias] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+
+  // Inicializar selectedClass com a classe atual do usuário
+  useEffect(() => {
+    if (userLevelId && selectedClass === null) {
+      setSelectedClass(userLevelId)
+    }
+  }, [userLevelId, selectedClass])
 
   // Carregar experiências do banco com preços calculados
   useEffect(() => {
@@ -30,16 +37,18 @@ export function ClassExplorer() {
     loadExperiencias()
   }, [])
 
+  // Usar classe atual do usuário se selectedClass ainda não foi definido
+  const activeClass = selectedClass ?? userLevelId ?? 1
+  const selectedLevel = levels.find(l => l.id === activeClass)
+  const ClassIcon = getClassIcon(activeClass)
+  const isUnlocked = userLevelId >= activeClass
+
   // Experiências da classe selecionada (do banco)
   const classRewards = useMemo(() => {
     return experiencias
-      .filter(exp => exp.classe_minima === selectedClass)
+      .filter(exp => exp.classe_minima === activeClass)
       .slice(0, 3)
-  }, [experiencias, selectedClass])
-
-  const selectedLevel = levels.find(l => l.id === selectedClass)
-  const ClassIcon = getClassIcon(selectedClass)
-  const isUnlocked = userLevelId >= selectedClass
+  }, [experiencias, activeClass])
 
   return (
     <motion.div
@@ -61,7 +70,7 @@ export function ClassExplorer() {
       <div className="flex justify-center gap-2 mb-8 overflow-x-auto pb-2">
         {levels.map((level) => {
           const LevelIcon = getClassIcon(level.id)
-          const isActive = selectedClass === level.id
+          const isActive = activeClass === level.id
           const isUserLevel = userLevelId === level.id
           const isLocked = userLevelId < level.id
 
@@ -103,7 +112,7 @@ export function ClassExplorer() {
       {/* Detalhes da classe selecionada */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={selectedClass}
+          key={activeClass}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
@@ -127,7 +136,7 @@ export function ClassExplorer() {
                   <h4 className={`text-xl font-heading font-medium ${
                     isUnlocked ? 'text-ice-white' : 'text-dusty-rose'
                   }`}>
-                    {levelCopy.names[selectedClass]}
+                    {levelCopy.names[activeClass]}
                   </h4>
                   <p className="text-xs text-dusty-rose">
                     {selectedLevel?.minPoints.toLocaleString('pt-BR')}+ pontos
