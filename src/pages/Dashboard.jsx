@@ -13,7 +13,8 @@ import {
   HeroSection,
   MissionsSection,
   PlanStatusCard,
-  TripSubmitCard
+  TripSubmitCard,
+  FoundersCard
 } from '@/components/dashboard'
 import { EvolutionCard } from '@/components/dashboard/EvolutionCard'
 import { getMyReferrals } from '@/services/referralService'
@@ -86,6 +87,12 @@ export function Dashboard() {
           <div className="mt-6">
             <SafeSection name="Plano" silent>
               <PlanStatusCard />
+            </SafeSection>
+          </div>
+          {/* Ação Fundadores */}
+          <div className="mt-6">
+            <SafeSection name="Fundadores" silent>
+              <FoundersCard />
             </SafeSection>
           </div>
         </div>

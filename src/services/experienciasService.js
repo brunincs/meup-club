@@ -8,6 +8,27 @@ import { supabase } from '@/lib/supabase'
 // ══════════════════════════════════════════════════════════════════════════════
 
 /**
+ * Busca experiências com preços calculados por plano
+ * Retorna pontos_free, pontos_prime e pontos_usuario (baseado no plano atual)
+ */
+export async function fetchExperienciasComPrecos() {
+  try {
+    const { data, error } = await supabase.rpc('get_experiencias_com_precos')
+
+    if (error) throw error
+
+    return {
+      success: true,
+      experiencias: data || []
+    }
+  } catch (error) {
+    console.error('Erro ao buscar experiências com preços:', error)
+    // Fallback para busca simples
+    return fetchExperiencias(false)
+  }
+}
+
+/**
  * Busca todas as experiências (admin vê todas, cliente vê só ativas)
  * @param {boolean} includeInactive - Se true, inclui inativas (só admin)
  */
@@ -38,15 +59,21 @@ export async function fetchExperiencias(includeInactive = false) {
 
 /**
  * Cria uma nova experiência (apenas admin)
+ * Usa valor_reais e calcula pontos automaticamente
  */
 export async function createExperiencia(experiencia) {
   try {
+    // Calcular pontos baseado em valor_reais (fator Free = 150)
+    const valorReais = experiencia.valor_reais || (experiencia.pontos / 150)
+    const pontos = experiencia.pontos || Math.round(valorReais * 150)
+
     const { data, error } = await supabase
       .from('experiencias')
       .insert([{
         nome: experiencia.nome,
         descricao: experiencia.descricao,
-        pontos: experiencia.pontos,
+        valor_reais: valorReais,
+        pontos: pontos,
         classe_minima: experiencia.classe_minima || 1,
         selo: experiencia.selo || null,
         imagem_url: experiencia.imagem_url || null,
@@ -72,12 +99,17 @@ export async function createExperiencia(experiencia) {
  */
 export async function updateExperiencia(id, updates) {
   try {
+    // Calcular pontos baseado em valor_reais (fator Free = 150)
+    const valorReais = updates.valor_reais || (updates.pontos / 150)
+    const pontos = updates.pontos || Math.round(valorReais * 150)
+
     const { data, error } = await supabase
       .from('experiencias')
       .update({
         nome: updates.nome,
         descricao: updates.descricao,
-        pontos: updates.pontos,
+        valor_reais: valorReais,
+        pontos: pontos,
         classe_minima: updates.classe_minima,
         selo: updates.selo || null,
         imagem_url: updates.imagem_url,

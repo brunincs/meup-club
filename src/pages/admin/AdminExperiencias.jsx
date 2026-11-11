@@ -20,12 +20,16 @@ const seloConfig = {
 // ══════════════════════════════════════════════════════════════════════════════
 // MODAL DE CRIAR/EDITAR EXPERIÊNCIA
 // ══════════════════════════════════════════════════════════════════════════════
+// Fatores de conversão
+const FATOR_FREE = 150
+const FATOR_PRIME = 130
+
 function ExperienciaModal({ experiencia, onClose, onSave }) {
   const isEditing = !!experiencia?.id
   const [formData, setFormData] = useState({
     nome: experiencia?.nome || '',
     descricao: experiencia?.descricao || '',
-    pontos: experiencia?.pontos || '',
+    valor_reais: experiencia?.valor_reais || (experiencia?.pontos ? Math.round(experiencia.pontos / FATOR_FREE) : ''),
     classe_minima: experiencia?.classe_minima || 1,
     selo: experiencia?.selo || '',
     imagem_url: experiencia?.imagem_url || '',
@@ -35,10 +39,15 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
   })
   const [saving, setSaving] = useState(false)
 
+  // Calcular pontos em tempo real
+  const valorReais = parseFloat(formData.valor_reais) || 0
+  const pontosFree = Math.round(valorReais * FATOR_FREE)
+  const pontosPrime = Math.round(valorReais * FATOR_PRIME)
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!formData.nome || !formData.descricao || !formData.pontos) {
+    if (!formData.nome || !formData.descricao || !formData.valor_reais) {
       toast.error('Preencha todos os campos obrigatórios')
       return
     }
@@ -46,7 +55,8 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
     setSaving(true)
     await onSave({
       ...formData,
-      pontos: parseInt(formData.pontos),
+      valor_reais: parseFloat(formData.valor_reais),
+      pontos: pontosFree, // Manter compatibilidade
       classe_minima: parseInt(formData.classe_minima),
       ordem: parseInt(formData.ordem) || 0,
       selo: formData.selo || null,
@@ -100,17 +110,18 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
             />
           </div>
 
-          {/* Pontos e Classe */}
+          {/* Valor em Reais e Classe */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-graphite/60 font-heading mb-1.5">
-                Custo em pontos <span className="text-red-500">*</span>
+                Valor em R$ <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
-                value={formData.pontos}
-                onChange={(e) => setFormData({ ...formData, pontos: e.target.value })}
-                placeholder="Ex: 10000"
+                step="0.01"
+                value={formData.valor_reais}
+                onChange={(e) => setFormData({ ...formData, valor_reais: e.target.value })}
+                placeholder="Ex: 100.00"
                 min="1"
                 className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
                 required
@@ -133,6 +144,23 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
               </select>
             </div>
           </div>
+
+          {/* Preview de preços calculados */}
+          {valorReais > 0 && (
+            <div className="p-4 rounded-xl bg-gradient-to-r from-gray-50 to-amber-50 border border-gray-200">
+              <p className="text-xs text-graphite/60 font-heading mb-2">Custo em pontos (calculado):</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-2 rounded-lg bg-white border border-gray-200">
+                  <p className="text-xs text-graphite/60">Free</p>
+                  <p className="text-lg font-display font-bold text-graphite">{pontosFree.toLocaleString('pt-BR')}</p>
+                </div>
+                <div className="text-center p-2 rounded-lg bg-amber-100 border border-amber-200">
+                  <p className="text-xs text-amber-700">Prime</p>
+                  <p className="text-lg font-display font-bold text-amber-700">{pontosPrime.toLocaleString('pt-BR')}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Selo e Ordem */}
           <div className="grid grid-cols-2 gap-4">

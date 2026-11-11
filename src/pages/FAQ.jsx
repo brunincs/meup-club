@@ -1,40 +1,177 @@
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Header, Footer } from '@/components/landing'
 
+// Categorias de FAQ
+const categories = [
+  { id: 'geral', label: 'Geral' },
+  { id: 'pontos', label: 'Pontos' },
+  { id: 'indicacao', label: 'Indicação' },
+  { id: 'prime', label: 'Prime' },
+  { id: 'fundadores', label: 'Ação Fundadores' }
+]
+
 const faqs = [
+  // GERAL
   {
-    question: 'Como eu ganho pontos?',
-    answer: 'Você ganha pontos de duas formas: viajando com a Me,up Viagens ou indicando amigos e familiares que fechem uma viagem conosco.'
+    category: 'geral',
+    question: 'O que é o Meup Club?',
+    answer: 'O Meup Club é o programa de fidelidade da Me,up Viagens. Você acumula pontos viajando e indicando amigos, e troca por experiências exclusivas como upgrades de voo, acesso a lounges e muito mais.'
   },
   {
+    category: 'geral',
+    question: 'Preciso pagar mensalidade?',
+    answer: 'O Meup Club tem plano Free (gratuito) e plano Prime (pago). No Free você já acumula pontos e pode trocar por experiências. No Prime, você ganha mais pontos, mais benefícios e preços melhores nas experiências.'
+  },
+  {
+    category: 'geral',
+    question: 'Como acompanho meus pontos e indicações?',
+    answer: 'Basta fazer login no Meup Club e acessar seu painel. Lá você vê seu saldo de pontos, histórico de indicações, recompensas disponíveis e tudo mais.'
+  },
+
+  // PONTOS
+  {
+    category: 'pontos',
+    question: 'Como eu ganho pontos?',
+    answer: 'Você ganha pontos de várias formas: viajando com a Me,up (1 ponto por real gasto), indicando amigos, completando tarefas no app, e recebendo bônus especiais. Assinantes Prime Anual ganham 1,5x mais pontos nas viagens.'
+  },
+  {
+    category: 'pontos',
     question: 'Meus pontos expiram?',
     answer: 'Não! Seus pontos no Meup Club nunca expiram. Acumule no seu ritmo e troque quando quiser.'
   },
   {
+    category: 'pontos',
+    question: 'Quanto vale cada experiência em pontos?',
+    answer: `O custo em pontos depende do seu plano:
+
+• **Free**: R$ 1 = 150 pontos (ex: experiência de R$ 100 = 15.000 pts)
+• **Prime**: R$ 1 = 130 pontos (ex: mesma experiência = 13.000 pts)
+
+O Prime sempre tem preço menor em todas as experiências.`
+  },
+  {
+    category: 'pontos',
     question: 'Como troco meus pontos?',
-    answer: 'Você pode trocar seus pontos por experiências exclusivas: upgrades de assento, acesso a lounges VIP, jantares especiais e muito mais. Acesse a área de recompensas no seu painel para ver todas as opções disponíveis.'
+    answer: 'Acesse a área de Recompensas no seu painel, escolha a experiência desejada e confirme o resgate. Se você tem pontos suficientes e está na classe mínima exigida, é só confirmar!'
   },
+
+  // INDICAÇÃO
   {
-    question: 'Preciso pagar mensalidade?',
-    answer: 'Não! O Meup Club é 100% gratuito. Não há taxa de adesão nem mensalidade. Você só ganha.'
-  },
-  {
+    category: 'indicacao',
     question: 'Como funciona a indicação?',
-    answer: 'É simples: você indica alguém usando seu código exclusivo, essa pessoa fecha uma viagem com a Me,up, e você ganha pontos automaticamente. Quanto mais indicações que viajam, mais pontos você acumula.'
+    answer: `Você indica alguém usando seu código exclusivo. Quando essa pessoa avança no relacionamento com a Me,up, vocês ganham pontos:
+
+| O que o amigo fez | Indicador Free | Indicador Prime | Indicado |
+|-------------------|----------------|-----------------|----------|
+| Cotação validada | — | +500 pts | +500 pts |
+| Primeira viagem | +3.000 pts | +5.000 pts | — |
+| Assinou Prime Anual | — | +3.000 pts | +1.000 pts |
+
+Os pontos são creditados apenas uma vez por indicado, em cada etapa.`
   },
   {
-    question: 'Como acompanho meus pontos e indicações?',
-    answer: 'Basta fazer login no Meup Club e acessar seu painel. Lá você vê seu saldo de pontos, histórico de indicações, recompensas disponíveis e tudo mais.'
+    category: 'indicacao',
+    question: 'Quando ganho os pontos de indicação?',
+    answer: `Cada etapa precisa ser validada pela equipe:
+
+1. **Cotação validada**: Quando seu amigo pede uma cotação e a equipe confirma os dados (destino, datas, passageiros).
+2. **Primeira viagem**: Quando a primeira emissão de passagem do seu amigo é aprovada.
+3. **Prime Anual**: Quando seu amigo assina o Prime Anual e passa o período de arrependimento (7 dias).
+
+Você é notificado a cada etapa concluída.`
+  },
+  {
+    category: 'indicacao',
+    question: 'O que é o período de arrependimento de 7 dias?',
+    answer: 'Pontos relacionados a assinaturas Prime Anual ficam visíveis no seu saldo, mas bloqueados para resgate por 7 dias. Isso protege contra arrependimento. Se a assinatura for cancelada nesse prazo, os pontos são estornados automaticamente. Após 7 dias, os pontos são liberados.'
+  },
+
+  // PRIME
+  {
+    category: 'prime',
+    question: 'Quais são os benefícios do Prime?',
+    answer: `O Meup Prime oferece:
+
+• **Preços menores** em todas as experiências (fator 130 vs 150)
+• **Mais pontos** nas indicações (+5.000 vs +3.000 na primeira viagem)
+• **Bônus exclusivos** de cotação e Prime Anual do indicado
+• **1,5x pontos** nas viagens (apenas Prime Anual)
+• **+2.000 pts** de boas-vindas (apenas Prime Anual)
+• **Prioridade** no suporte e novidades`
+  },
+  {
+    category: 'prime',
+    question: 'Qual a diferença entre Prime Mensal e Anual?',
+    answer: `**Prime Mensal** (R$ 49,90/mês):
+• Todos os benefícios Prime
+• Cancele quando quiser
+
+**Prime Anual** (R$ 497/ano):
+• Todos os benefícios Prime
+• +2.000 pontos de boas-vindas
+• 1,5x pontos nas viagens
+• Economia de 17% vs mensal
+• Participa da Ação Fundadores (vagas limitadas)`
+  },
+  {
+    category: 'prime',
+    question: 'Como é o pagamento?',
+    answer: `Aceitamos:
+
+• **Pix**: à vista, com desconto
+• **Cartão de crédito**: em até 6x sem juros (R$ 82,83/mês no anual)
+
+O pagamento é processado de forma segura pelo Asaas.`
+  },
+
+  // AÇÃO FUNDADORES
+  {
+    category: 'fundadores',
+    question: 'O que é a Ação Fundadores?',
+    answer: `A Ação Fundadores é uma oportunidade exclusiva para os **100 primeiros** assinantes do Prime Anual:
+
+• Preço especial: **R$ 497** (de R$ 997 - 50% de desconto)
+• Selo de Fundador permanente
+• 1 número da sorte para concorrer a **500.000 pontos**
+• Experiências e prioridades exclusivas
+
+É uma forma de recompensar quem acredita na Me,up desde o início.`
+  },
+  {
+    category: 'fundadores',
+    question: 'Quanto valem 500 mil pontos?',
+    answer: 'Com 500.000 pontos você pode resgatar experiências equivalentes a mais de R$ 3.000, como uma viagem nacional para 2 pessoas ou diversas experiências premium no clube.'
+  },
+  {
+    category: 'fundadores',
+    question: 'Como funciona o número da sorte?',
+    answer: 'Ao ativar seu Prime Anual como Fundador, você recebe automaticamente um número da sorte único. Esse número participa de uma Ação Promocional conforme o regulamento autorizado. O ganhador é definido com base no resultado da Loteria Federal e recebe 500.000 pontos creditados na conta.'
+  },
+  {
+    category: 'fundadores',
+    question: 'E se eu cancelar no período de arrependimento?',
+    answer: 'Se você cancelar a assinatura nos primeiros 7 dias, você perde a vaga de Fundador e o número da sorte. Os pontos de boas-vindas também são estornados. A vaga pode ser ocupada pelo próximo assinante.'
+  },
+  {
+    category: 'fundadores',
+    question: 'Onde vejo o regulamento completo?',
+    answer: 'O regulamento completo da Ação Fundadores está disponível em [link do regulamento]. Lá você encontra todas as regras, prazos e condições da promoção.'
   }
 ]
 
 export function FAQ() {
+  const [activeCategory, setActiveCategory] = useState('geral')
+  const [expandedIndex, setExpandedIndex] = useState(null)
+
+  const filteredFaqs = faqs.filter(faq => faq.category === activeCategory)
+
   return (
     <>
       <Header />
       <section className="py-20 md:py-28">
-        <div className="container-premium max-w-3xl">
+        <div className="container-premium max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -48,21 +185,112 @@ export function FAQ() {
             </p>
           </motion.div>
 
-          <div className="space-y-6">
-            {faqs.map((faq, index) => (
+          {/* Categorias */}
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setActiveCategory(cat.id)
+                  setExpandedIndex(null)
+                }}
+                className={`px-4 py-2 rounded-xl text-sm font-heading font-medium transition-all ${
+                  activeCategory === cat.id
+                    ? 'bg-antique-gold text-deep-purple'
+                    : 'bg-deep-purple/30 text-ice-white/70 hover:bg-deep-purple/50 hover:text-ice-white border border-ice-white/10'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* FAQs */}
+          <div className="space-y-4">
+            {filteredFaqs.map((faq, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-deep-purple/30 border border-ice-white/10 rounded-2xl p-6"
+                transition={{ delay: index * 0.05 }}
+                className="bg-deep-purple/30 border border-ice-white/10 rounded-2xl overflow-hidden"
               >
-                <h2 className="font-display text-lg font-semibold text-antique-gold mb-3">
-                  {faq.question}
-                </h2>
-                <p className="text-ice-white/80 leading-relaxed">
-                  {faq.answer}
-                </p>
+                <button
+                  onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                  className="w-full px-6 py-5 text-left flex items-center justify-between gap-4"
+                >
+                  <h2 className="font-display text-lg font-semibold text-antique-gold">
+                    {faq.question}
+                  </h2>
+                  <span className={`text-antique-gold transition-transform ${expandedIndex === index ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </button>
+
+                <AnimatePresence>
+                  {expandedIndex === index && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 pb-5 text-ice-white/80 leading-relaxed prose prose-invert prose-sm max-w-none">
+                        {faq.answer.split('\n').map((line, i) => {
+                          // Renderizar tabelas simples
+                          if (line.startsWith('|')) {
+                            return null // Será renderizado junto
+                          }
+                          // Renderizar markdown básico
+                          return (
+                            <p key={i} className="mb-2" dangerouslySetInnerHTML={{
+                              __html: line
+                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-antique-gold underline">$1</a>')
+                            }} />
+                          )
+                        })}
+
+                        {/* Renderizar tabela de indicação */}
+                        {faq.answer.includes('|') && faq.category === 'indicacao' && (
+                          <div className="mt-4 overflow-x-auto">
+                            <table className="w-full text-sm border-collapse">
+                              <thead>
+                                <tr className="border-b border-ice-white/20">
+                                  <th className="text-left py-2 px-3 text-antique-gold">O que o amigo fez</th>
+                                  <th className="text-center py-2 px-3 text-ice-white/60">Free</th>
+                                  <th className="text-center py-2 px-3 text-amber-400">Prime</th>
+                                  <th className="text-center py-2 px-3 text-ice-white/60">Indicado</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className="border-b border-ice-white/10">
+                                  <td className="py-2 px-3">Cotação validada</td>
+                                  <td className="text-center py-2 px-3 text-ice-white/40">—</td>
+                                  <td className="text-center py-2 px-3 text-green-400">+500 pts</td>
+                                  <td className="text-center py-2 px-3 text-green-400">+500 pts</td>
+                                </tr>
+                                <tr className="border-b border-ice-white/10">
+                                  <td className="py-2 px-3">Primeira viagem</td>
+                                  <td className="text-center py-2 px-3 text-green-400">+3.000 pts</td>
+                                  <td className="text-center py-2 px-3 text-green-400">+5.000 pts</td>
+                                  <td className="text-center py-2 px-3 text-ice-white/40">—</td>
+                                </tr>
+                                <tr>
+                                  <td className="py-2 px-3">Assinou Prime Anual</td>
+                                  <td className="text-center py-2 px-3 text-ice-white/40">—</td>
+                                  <td className="text-center py-2 px-3 text-green-400">+3.000 pts</td>
+                                  <td className="text-center py-2 px-3 text-green-400">+1.000 pts</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ))}
           </div>
