@@ -569,7 +569,7 @@ export function Tasks() {
       // Compartilhar código - credita pontos automaticamente na primeira vez
       const code = profile?.referral_code || 'MEUP0000'
       const shareUrl = `${window.location.origin}/cadastro?ref=${code}`
-      const shareText = `Use meu codigo ${code} para entrar no Meup Club e ganhar pontos!`
+      const shareText = `Use meu codigo ${code} para entrar no Me,up Club e ganhar pontos!`
 
       // Registrar compartilhamento (credita pontos na primeira vez)
       if (user?.id) {
@@ -599,7 +599,7 @@ export function Tasks() {
       // Abrir share nativo ou copiar
       if (navigator.share) {
         navigator.share({
-          title: 'Meup Club - Convite',
+          title: 'Me,up Club - Convite',
           text: shareText,
           url: shareUrl
         }).catch(() => {

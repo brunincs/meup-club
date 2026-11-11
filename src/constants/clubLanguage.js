@@ -35,7 +35,7 @@ export const DASHBOARD_MESSAGES = {
     evening: 'Boa noite'
   },
   tagline: 'Sua próxima viagem começa antes do embarque.',
-  subtitle: 'Bem-vindo ao Meup Club.',
+  subtitle: 'Bem-vindo ao Me,up Club.',
   memberSince: 'Membro desde',
   currentClass: 'Sua classe atual',
   nextClass: 'Próxima classe',

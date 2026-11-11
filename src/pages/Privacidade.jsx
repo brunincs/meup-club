@@ -31,7 +31,7 @@ export function Privacidade() {
                 1. Quem Somos
               </h2>
               <p className="text-ice-white/80 leading-relaxed">
-                O Meup Club é operado pela Me,up Viagens, agência de viagens brasileira comprometida com a proteção dos dados pessoais de seus clientes e participantes, em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).
+                O Me,up Club é operado pela Me,up Viagens, agência de viagens brasileira comprometida com a proteção dos dados pessoais de seus clientes e participantes, em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).
               </p>
             </div>
 
@@ -59,7 +59,7 @@ export function Privacidade() {
                 Utilizamos seus dados para:
               </p>
               <ul className="list-disc list-inside text-ice-white/80 space-y-2">
-                <li>Gerenciar sua conta no Meup Club</li>
+                <li>Gerenciar sua conta no Me,up Club</li>
                 <li>Creditar e controlar seus pontos</li>
                 <li>Processar resgates de recompensas</li>
                 <li>Enviar comunicações sobre o programa</li>

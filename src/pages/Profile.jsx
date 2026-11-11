@@ -69,7 +69,7 @@ function PassportHeader({ profile, levelData, userPoints }) {
             PASSAPORTE DE VIAGEM
           </h2>
           <p className="text-[10px] uppercase tracking-[0.2em] text-[#ddd1d0]/60 mt-1">
-            Meup Club
+            Me,up Club
           </p>
         </div>
 

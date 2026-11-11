@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { adminGetFundadores, adminRegistrarGanhador, getFundadoresCount } from '@/services/fundadoresService'
+import { SeloFundador } from '@/components/ui/SeloFundador'
 import toast from 'react-hot-toast'
 
 export function AdminFundadores() {
@@ -64,11 +65,14 @@ export function AdminFundadores() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-display font-bold text-graphite">Ação Fundadores</h1>
-            <p className="text-sm text-graphite/70 mt-1 font-heading">
-              Gerenciar os 100 primeiros assinantes anuais
-            </p>
+          <div className="flex items-center gap-4">
+            <SeloFundador size="md" />
+            <div>
+              <h1 className="text-2xl font-display font-bold text-graphite">Ação Fundadores</h1>
+              <p className="text-sm text-graphite/70 mt-1 font-heading">
+                Gerenciar os 100 primeiros assinantes anuais
+              </p>
+            </div>
           </div>
 
           {/* Contador de vagas */}

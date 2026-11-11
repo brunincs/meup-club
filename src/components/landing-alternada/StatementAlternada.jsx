@@ -67,7 +67,7 @@ export function StatementAlternada() {
               transition={{ duration: 0.8, delay: 0.15 }}
               className="text-xl md:text-2xl lg:text-3xl font-display font-bold leading-relaxed"
             >
-              <span className="text-ice-white">Membros do Meup Club </span>
+              <span className="text-ice-white">Membros do Me,up Club </span>
               <span className="text-antique-gold">acumulam privilégios a cada viagem.</span>
             </motion.p>
           </div>

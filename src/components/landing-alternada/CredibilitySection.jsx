@@ -158,7 +158,7 @@ export function CredibilitySection() {
         >
           <div className="p-6 rounded-2xl bg-gradient-to-br from-deep-purple/5 to-antique-gold/5 border border-deep-purple/10 text-center">
             <p className="text-lg md:text-xl font-display text-deep-purple leading-relaxed">
-              "O Meup Club nasceu pra retribuir quem viaja e indica a Me,up.
+              "O Me,up Club nasceu pra retribuir quem viaja e indica a Me,up.
               <br className="hidden md:block" />
               <span className="text-antique-gold font-semibold"> Não é um programa genérico</span> — é a nossa forma de dizer obrigado."
             </p>

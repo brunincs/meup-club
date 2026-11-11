@@ -16,18 +16,18 @@ const faqs = [
   // GERAL
   {
     category: 'geral',
-    question: 'O que é o Meup Club?',
-    answer: 'O Meup Club é o programa de fidelidade da Me,up Viagens. Você acumula pontos viajando e indicando amigos, e troca por experiências exclusivas como upgrades de voo, acesso a lounges e muito mais.'
+    question: 'O que é o Me,up Club?',
+    answer: 'O Me,up Club é o programa de fidelidade da Me,up Viagens. Você acumula pontos viajando e indicando amigos, e troca por experiências exclusivas como upgrades de voo, acesso a lounges e muito mais.'
   },
   {
     category: 'geral',
     question: 'Preciso pagar mensalidade?',
-    answer: 'O Meup Club tem plano Free (gratuito) e plano Prime (pago). No Free você já acumula pontos e pode trocar por experiências. No Prime, você ganha mais pontos, mais benefícios e preços melhores nas experiências.'
+    answer: 'O Me,up Club tem plano Free (gratuito) e plano Prime (pago). No Free você já acumula pontos e pode trocar por experiências. No Prime, você ganha mais pontos, mais benefícios e preços melhores nas experiências.'
   },
   {
     category: 'geral',
     question: 'Como acompanho meus pontos e indicações?',
-    answer: 'Basta fazer login no Meup Club e acessar seu painel. Lá você vê seu saldo de pontos, histórico de indicações, recompensas disponíveis e tudo mais.'
+    answer: 'Basta fazer login no Me,up Club e acessar seu painel. Lá você vê seu saldo de pontos, histórico de indicações, recompensas disponíveis e tudo mais.'
   },
 
   // PONTOS
@@ -39,7 +39,7 @@ const faqs = [
   {
     category: 'pontos',
     question: 'Meus pontos expiram?',
-    answer: 'Não! Seus pontos no Meup Club nunca expiram. Acumule no seu ritmo e troque quando quiser.'
+    answer: 'Não! Seus pontos no Me,up Club nunca expiram. Acumule no seu ritmo e troque quando quiser.'
   },
   {
     category: 'pontos',
@@ -177,7 +177,7 @@ export function FAQ() {
               Perguntas Frequentes
             </h1>
             <p className="text-ice-white/70">
-              Tudo o que você precisa saber sobre o Meup Club
+              Tudo o que você precisa saber sobre o Me,up Club
             </p>
           </motion.div>
 

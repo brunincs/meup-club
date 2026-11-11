@@ -150,7 +150,7 @@ export function Hero() {
                   whileHover={{ x: '100%' }}
                   transition={{ duration: 0.6 }}
                 />
-                <span className="relative z-10">Entrar no Meup Club</span>
+                <span className="relative z-10">Entrar no Me,up Club</span>
                 <motion.span
                   className="relative z-10"
                   animate={{ x: [0, 5, 0] }}

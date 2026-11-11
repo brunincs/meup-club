@@ -80,7 +80,7 @@ const STATUS_CONFIG = {
 
 // WhatsApp da Me,up
 const WHATSAPP_NUMBER = '5516988126568'
-const WHATSAPP_MESSAGE = 'Olá! Preciso de ajuda com meu resgate no Meup Club.'
+const WHATSAPP_MESSAGE = 'Olá! Preciso de ajuda com meu resgate no Me,up Club.'
 
 export function MeusResgates() {
   const { user, loading: authLoading } = useAuth()

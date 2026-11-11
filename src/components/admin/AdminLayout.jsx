@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { Logo } from '@/components/ui/Logo'
 
 const navItems = [
   { path: '/admin', label: 'Dashboard', icon: '◆' },
@@ -36,16 +37,11 @@ export function AdminLayout({ children }) {
       <header className="sticky top-0 z-50 bg-deep-purple border-b border-antique-gold/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/admin" className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-antique-gold via-antique-gold to-accent-dark flex items-center justify-center shadow-lg shadow-antique-gold/20">
-                <span className="font-display font-bold text-sm text-deep-purple">M</span>
-              </div>
-              <div className="hidden sm:block">
-                <span className="font-display font-semibold text-ice-white tracking-tight">Meup Club</span>
-                <span className="text-xs text-antique-gold ml-2 font-heading">Admin</span>
-              </div>
-            </Link>
+            {/* Logo Me,up Club + Admin badge */}
+            <div className="flex items-center gap-3">
+              <Logo variant="dark" to="/admin" />
+              <span className="hidden sm:inline text-xs text-antique-gold font-heading">Admin</span>
+            </div>
 
             {/* Desktop nav */}
             <nav className="hidden lg:flex items-center gap-1">
@@ -158,7 +154,7 @@ export function AdminLayout({ children }) {
       <footer className="border-t border-dusty-rose/20 bg-ice-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-xs text-graphite/60 text-center">
-            Meup Club · Painel Administrativo
+            Me,up Club · Painel Administrativo
           </p>
         </div>
       </footer>

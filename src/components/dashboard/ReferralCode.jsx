@@ -18,7 +18,7 @@ export function ReferralCode({ variant = 'dark' }) {
   const referralLink = `${siteUrl}/cadastro?ref=${referralCode}`
 
   // Mensagem com LINK clicável para WhatsApp
-  const shareMessage = `Vem pro Meup Club! ✈️\n\nCadastre-se pelo meu link e a gente ganha experiências juntos:\n\n${referralLink}`
+  const shareMessage = `Vem pro Me,up Club! ✈️\n\nCadastre-se pelo meu link e a gente ganha experiências juntos:\n\n${referralLink}`
   const whatsappLink = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`
 
   // Copiar o link completo (não só o código)

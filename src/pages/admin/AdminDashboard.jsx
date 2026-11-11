@@ -75,7 +75,7 @@ export function AdminDashboard() {
             ════════════════════════════════════════════════════════════ */}
         <div>
           <h1 className="text-2xl font-display font-bold text-graphite">Dashboard</h1>
-          <p className="text-sm text-graphite/70 mt-1 font-heading">Visão geral do Meup Club</p>
+          <p className="text-sm text-graphite/70 mt-1 font-heading">Visão geral do Me,up Club</p>
         </div>
 
         {/* ════════════════════════════════════════════════════════════

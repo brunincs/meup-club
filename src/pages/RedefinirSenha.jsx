@@ -90,7 +90,7 @@ export function RedefinirSenha() {
                 <span className="font-display font-bold text-deep-purple">M</span>
               </div>
               <span className="font-display font-semibold text-ice-white tracking-tight">
-                Meup Club
+                Me,up Club
               </span>
             </Link>
 
@@ -120,7 +120,7 @@ export function RedefinirSenha() {
               <span className="font-display font-bold text-deep-purple">M</span>
             </div>
             <span className="font-display font-semibold text-ice-white tracking-tight">
-              Meup Club
+              Me,up Club
             </span>
           </Link>
 

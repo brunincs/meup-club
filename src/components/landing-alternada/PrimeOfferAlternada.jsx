@@ -84,7 +84,7 @@ export function PrimeOfferAlternada() {
             transition={{ delay: 0.1 }}
             className="text-2xl md:text-4xl font-display font-bold text-ice-white mb-4"
           >
-            Seja um <span className="text-antique-gold">Fundador</span> do Meup Club
+            Seja um <span className="text-antique-gold">Fundador</span> do Me,up Club
           </motion.h2>
 
           <GoldLine width="80px" centered className="mb-4" />

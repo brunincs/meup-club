@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { Logo } from '@/components/ui/Logo'
 
 /**
  * Header para landing alternada - funciona sobre fundo escuro
@@ -30,16 +31,8 @@ export function HeaderAlternada() {
     >
       <div className="container-premium">
         <div className="flex items-center justify-between h-16 md:h-18">
-          {/* Logo - texto claro sobre fundo escuro */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-antique-gold to-accent-dark flex items-center justify-center shadow-lg shadow-antique-gold/15">
-              <span className="font-display font-bold text-deep-purple text-sm">M</span>
-            </div>
-            <div className="hidden sm:block">
-              <span className="font-display font-semibold text-ice-white">Meup</span>
-              <span className="font-display font-light text-ice-white/60 ml-1">Club</span>
-            </div>
-          </Link>
+          {/* Logo Me,up Club */}
+          <Logo variant="dark" to="/" />
 
           {/* CTA Button */}
           <Link to="/login">

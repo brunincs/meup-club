@@ -8,6 +8,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { getMyFundadorData, getFundadoresCount, getRegulamentoUrl } from '@/services/fundadoresService'
 import { SubscribeButton } from '@/components/ui/SubscribeButton'
+import { SeloFundador } from '@/components/ui/SeloFundador'
 
 export function FoundersCard({ variant = 'default', showAfterPositiveAction = false }) {
   const { profile } = useAuth()
@@ -53,16 +54,15 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl border-2 border-amber-400/50 bg-gradient-to-br from-amber-900/30 to-amber-800/20 p-6 relative overflow-hidden"
       >
-        {/* Selo */}
+        {/* Selo Fundador */}
         <div className="absolute top-4 right-4">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-400 text-deep-purple text-xs font-heading font-bold">
-            🏆 Fundador #{fundadorData.vaga_numero}
-          </span>
+          <SeloFundador size="md" />
         </div>
 
         <div className="flex items-start gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
-            <span className="text-2xl">🎫</span>
+          <div className="flex-shrink-0 flex flex-col items-center gap-1">
+            <span className="text-xs text-amber-400/70 uppercase tracking-wider font-heading">Vaga</span>
+            <span className="text-2xl font-display font-bold text-amber-400">#{fundadorData.vaga_numero}</span>
           </div>
 
           <div className="flex-1">

@@ -64,7 +64,7 @@ export function HeroAlternada() {
             className="mb-3"
           >
             <span className="text-xs font-heading font-medium tracking-widest uppercase text-ice-white">
-              Meup Club · Clube da Me,up Viagens
+              Me,up Club · Clube da Me,up Viagens
             </span>
           </motion.div>
 
@@ -79,7 +79,7 @@ export function HeroAlternada() {
           >
             Viaje, indique e junte pontos.
             <br />
-            <span className="text-antique-gold">O Meup Club transforma em upgrades e experiências.</span>
+            <span className="text-antique-gold">O Me,up Club transforma em upgrades e experiências.</span>
           </motion.h1>
 
           <motion.div

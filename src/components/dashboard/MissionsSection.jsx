@@ -290,7 +290,7 @@ export function MissionsSection({ variant = 'dark' }) {
       // Abre compartilhamento do código
       const code = profile?.referral_code || 'MEUP0000'
       const shareUrl = `${window.location.origin}/cadastro?ref=${code}`
-      const shareText = `Use meu código ${code} para entrar no Meup Club e ganhar 500 pts na sua primeira viagem!`
+      const shareText = `Use meu código ${code} para entrar no Me,up Club e ganhar 500 pts na sua primeira viagem!`
 
       // Registrar compartilhamento no banco (credita pontos na primeira vez)
       if (user?.id) {
@@ -320,7 +320,7 @@ export function MissionsSection({ variant = 'dark' }) {
 
       if (navigator.share) {
         navigator.share({
-          title: 'Meup Club - Convite',
+          title: 'Me,up Club - Convite',
           text: shareText,
           url: shareUrl
         }).catch(() => {

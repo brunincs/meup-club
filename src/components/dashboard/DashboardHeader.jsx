@@ -3,11 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
+import { useFundador } from '@/hooks/useFundador'
 import { levels } from '@/services/pointsSystem'
 // Fallback para quando profile ainda não carregou
 import { levels as levelCopy } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
 import { NotificationBell } from './NotificationBell'
+import { Logo } from '@/components/ui/Logo'
+import { SeloFundador } from '@/components/ui/SeloFundador'
 
 const navItems = [
   { path: '/dashboard', label: 'Clube', icon: '◆' },
@@ -19,6 +22,7 @@ const navItems = [
 export function DashboardHeader() {
   const { profile, user, signOut } = useAuth()
   const { points: userPoints, levelId } = usePoints()
+  const { isFundador } = useFundador()
 
   // Dados do usuário: prioriza profile, fallback para user do Auth
   const userName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
@@ -45,15 +49,8 @@ export function DashboardHeader() {
     <header className="border-b border-dusty-rose/20 bg-deep-purple/95 backdrop-blur-xl sticky top-0 z-50">
       <div className="container-premium">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-antique-gold via-antique-gold to-accent-dark flex items-center justify-center shadow-lg shadow-antique-gold/15">
-              <span className="font-display font-bold text-sm text-deep-purple">M</span>
-            </div>
-            <div className="hidden sm:block">
-              <span className="font-display font-semibold text-ice-white tracking-tight">Meup Club</span>
-            </div>
-          </Link>
+          {/* Logo Me,up Club */}
+          <Logo variant="dark" to="/dashboard" />
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
@@ -102,7 +99,10 @@ export function DashboardHeader() {
                 aria-haspopup="menu"
               >
                 <div className="text-right hidden sm:block">
-                  <div className="text-sm font-heading font-medium text-ice-white">{userName}</div>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <span className="text-sm font-heading font-medium text-ice-white">{userName}</span>
+                    {isFundador && <SeloFundador size="sm" />}
+                  </div>
                   <div className="text-[10px] uppercase tracking-wider text-dusty-rose">
                     {levelCopy.names[level.id]}
                   </div>

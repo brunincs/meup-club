@@ -1,4 +1,4 @@
-// Sistema de Pontuação e Recompensas - Meup Club
+// Sistema de Pontuação e Recompensas - Me,up Club
 // Economia interna equilibrada e sustentável
 
 // ============================================
@@ -186,7 +186,7 @@ export const extraPointsConfig = {
       id: 'share_social',
       points: 30,
       name: 'Compartilhe o clube',
-      description: 'Divulgue o Meup Club nas suas redes',
+      description: 'Divulgue o Me,up Club nas suas redes',
       category: 'social',
       cooldown: 7
     },

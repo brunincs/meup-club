@@ -1,4 +1,4 @@
-// Copy Centralizado - Meup Club
+// Copy Centralizado - Me,up Club
 // Comunicação premium, elegante e aspiracional
 // Inspirado em: Amex Platinum, Nomad, XP Visa Infinite, LATAM Pass Black
 
@@ -93,7 +93,7 @@ export const terms = {
 export const greetings = {
   welcome: (name) => `${name}`,
   tagline: 'Sua próxima viagem começa antes do embarque.',
-  subtitle: 'Bem-vindo ao Meup Club.',
+  subtitle: 'Bem-vindo ao Me,up Club.',
   moment: 'Seu momento no clube',
 
   // Saudações por período

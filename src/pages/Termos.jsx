@@ -28,10 +28,10 @@ export function Termos() {
           >
             <div className="bg-deep-purple/30 border border-ice-white/10 rounded-2xl p-6">
               <h2 className="font-display text-xl font-semibold text-antique-gold mb-4">
-                1. Sobre o Meup Club
+                1. Sobre o Me,up Club
               </h2>
               <p className="text-ice-white/80 leading-relaxed">
-                O Meup Club é o programa de fidelidade da Me,up Viagens, agência de viagens devidamente registrada no Brasil. O programa permite que participantes acumulem pontos através de viagens e indicações, trocando-os por experiências e benefícios exclusivos.
+                O Me,up Club é o programa de fidelidade da Me,up Viagens, agência de viagens devidamente registrada no Brasil. O programa permite que participantes acumulem pontos através de viagens e indicações, trocando-os por experiências e benefícios exclusivos.
               </p>
             </div>
 
@@ -40,7 +40,7 @@ export function Termos() {
                 2. Cadastro e Elegibilidade
               </h2>
               <p className="text-ice-white/80 leading-relaxed">
-                Para participar do Meup Club, você deve ter pelo menos 18 anos e fornecer informações verdadeiras no cadastro. Cada pessoa pode ter apenas uma conta no programa.
+                Para participar do Me,up Club, você deve ter pelo menos 18 anos e fornecer informações verdadeiras no cadastro. Cada pessoa pode ter apenas uma conta no programa.
               </p>
             </div>
 

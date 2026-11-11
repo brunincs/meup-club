@@ -90,7 +90,7 @@ export function FooterAlternada() {
             transition={{ delay: 0.2 }}
             className="text-sm text-ice-white/60"
           >
-            &copy; {new Date().getFullYear()} Meup Club. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} Me,up Club. Todos os direitos reservados.
           </motion.p>
         </div>
       </div>

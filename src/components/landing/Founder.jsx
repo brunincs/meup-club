@@ -55,7 +55,7 @@ export function Founder() {
             className="mb-4"
           >
             <p className="text-base md:text-lg text-deep-purple font-display leading-relaxed italic">
-              "Cada viagem que você faz com a gente fortalece essa parceria. O Meup Club é a nossa forma de retribuir."
+              "Cada viagem que você faz com a gente fortalece essa parceria. O Me,up Club é a nossa forma de retribuir."
             </p>
           </motion.blockquote>
 
