@@ -297,15 +297,11 @@ export function PrimeOfferAlternada() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Cupons de parceiros</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-antique-gold mt-0.5">★</span>
                     <span className="text-white">Acesso antecipado a experiências</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Melhor conversão na troca <span className="text-ice-white/60 text-xs">(fator 130)</span></span>
+                    <span className="text-white">Experiências com desconto: pague menos pontos</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
@@ -348,19 +344,57 @@ export function PrimeOfferAlternada() {
             Concorra a 500 mil pontos
           </h3>
 
-          <p className="text-sm text-ice-white/80 text-center mb-4 max-w-md mx-auto">
+          <p className="text-sm text-ice-white/80 text-center mb-3 max-w-md mx-auto">
             O suficiente para uma viagem nacional para 2 pessoas ou muitas experiências no clube.
           </p>
 
-          {/* Contador de vagas */}
-          <div className="flex justify-center mb-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-ice-white/10 border border-ice-white/20">
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-sm text-ice-white font-heading font-medium">
-                {vagasData.vagas_usadas} de {vagasData.vagas_total} vagas preenchidas
-              </span>
-            </div>
-          </div>
+          <p className="text-sm text-amber-300 text-center mb-4">
+            Assine o Prime Anual e receba seu número da sorte.
+          </p>
+
+          {/* Contador de vagas com barra de progresso */}
+          {(() => {
+            const vagasRestantes = vagasData.vagas_total - vagasData.vagas_usadas
+            const porcentagemUsada = (vagasData.vagas_usadas / vagasData.vagas_total) * 100
+            const isUltimas = vagasRestantes <= 20 && vagasRestantes > 0
+            const isEsgotado = vagasRestantes === 0
+
+            if (isEsgotado) {
+              return (
+                <div className="flex justify-center mb-6">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-400/30">
+                    <span className="text-sm text-red-300 font-heading font-medium">
+                      Vagas de fundador esgotadas
+                    </span>
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <div className="mb-6 max-w-xs mx-auto">
+                <div className="flex justify-center mb-2">
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${
+                    isUltimas
+                      ? 'bg-amber-500/20 border-amber-400/40'
+                      : 'bg-ice-white/10 border-ice-white/20'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full animate-pulse ${isUltimas ? 'bg-amber-400' : 'bg-green-400'}`} />
+                    <span className={`text-sm font-heading font-medium ${isUltimas ? 'text-amber-300' : 'text-ice-white'}`}>
+                      {isUltimas ? `Últimas ${vagasRestantes} vagas` : `Restam ${vagasRestantes} de ${vagasData.vagas_total} vagas`}
+                    </span>
+                  </div>
+                </div>
+                {/* Barra de progresso */}
+                <div className="h-2 bg-ice-white/10 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${isUltimas ? 'bg-amber-400' : 'bg-antique-gold'}`}
+                    style={{ width: `${porcentagemUsada}%` }}
+                  />
+                </div>
+              </div>
+            )
+          })()}
 
           {/* CTA */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

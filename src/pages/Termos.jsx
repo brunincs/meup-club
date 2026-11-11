@@ -64,7 +64,16 @@ export function Termos() {
 
             <div className="bg-deep-purple/30 border border-ice-white/10 rounded-2xl p-6">
               <h2 className="font-display text-xl font-semibold text-antique-gold mb-4">
-                5. Alterações nos Termos
+                5. Preço de Fundador
+              </h2>
+              <p className="text-ice-white/80 leading-relaxed">
+                Fundadores renovam pelo mesmo valor de R$ 497/ano enquanto mantiverem a assinatura ativa, sem interrupção. Se cancelar, perde o preço de fundador e a renovação será pelo valor vigente na época (atualmente R$ 997/ano).
+              </p>
+            </div>
+
+            <div className="bg-deep-purple/30 border border-ice-white/10 rounded-2xl p-6">
+              <h2 className="font-display text-xl font-semibold text-antique-gold mb-4">
+                6. Alterações nos Termos
               </h2>
               <p className="text-ice-white/80 leading-relaxed">
                 A Me,up Viagens pode alterar estes termos a qualquer momento, notificando os participantes por e-mail ou através do site. O uso continuado do programa após as alterações constitui aceitação dos novos termos.
@@ -73,7 +82,7 @@ export function Termos() {
 
             <div className="bg-deep-purple/30 border border-ice-white/10 rounded-2xl p-6">
               <h2 className="font-display text-xl font-semibold text-antique-gold mb-4">
-                6. Contato
+                7. Contato
               </h2>
               <p className="text-ice-white/80 leading-relaxed">
                 Para dúvidas sobre estes termos, entre em contato pelo WhatsApp{' '}

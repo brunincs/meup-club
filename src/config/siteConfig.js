@@ -122,8 +122,8 @@ export const siteConfig = {
       perks: [
         'Prioridade na cotação (até 4h)',
         '1 roteiro em PDF por ano (no anual)',
-        'Cupons de parceiros',
         'Acesso antecipado a experiências',
+        'Experiências com desconto: pague menos pontos',
         'Selo de fundador',
         'Lançamento automático pelo time Me,up',
       ],

@@ -125,11 +125,21 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
               Garanta sua vaga entre os 100 primeiros e concorra a 500 mil pontos!
             </p>
 
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs text-ice-white/60 bg-ice-white/10 px-2 py-1 rounded-lg">
-                {fundadorData?.vagas_disponiveis || 0} de {fundadorData?.vagas_total || 100} vagas
-              </span>
-            </div>
+            {(() => {
+              const vagasRestantes = fundadorData?.vagas_disponiveis || 0
+              const isUltimas = vagasRestantes <= 20 && vagasRestantes > 0
+              return (
+                <div className="flex items-center gap-3 mb-4">
+                  <span className={`text-xs px-2 py-1 rounded-lg ${
+                    isUltimas
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                      : 'bg-ice-white/10 text-ice-white/60'
+                  }`}>
+                    {isUltimas ? `Últimas ${vagasRestantes} vagas` : `Restam ${vagasRestantes} vagas`}
+                  </span>
+                </div>
+              )
+            })()}
 
             <SubscribeButton
               plan="anual"
@@ -167,14 +177,24 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
             <span className="text-amber-400 font-semibold">R$ 497</span> e concorra a 500 mil pontos
           </p>
 
-          <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <span className="text-xs text-ice-white/60 bg-ice-white/10 px-2 py-1 rounded-lg">
-              {fundadorData?.vagas_disponiveis || 0} de {fundadorData?.vagas_total || 100} vagas
-            </span>
-            <span className="text-xs text-amber-400">
-              Pix ou 6x R$ 82,83
-            </span>
-          </div>
+          {(() => {
+            const vagasRestantes = fundadorData?.vagas_disponiveis || 0
+            const isUltimas = vagasRestantes <= 20 && vagasRestantes > 0
+            return (
+              <div className="flex items-center gap-3 mb-4 flex-wrap">
+                <span className={`text-xs px-2 py-1 rounded-lg ${
+                  isUltimas
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                    : 'bg-ice-white/10 text-ice-white/60'
+                }`}>
+                  {isUltimas ? `Últimas ${vagasRestantes} vagas` : `Restam ${vagasRestantes} vagas`}
+                </span>
+                <span className="text-xs text-amber-400">
+                  Pix ou 6x R$ 82,83
+                </span>
+              </div>
+            )
+          })()}
 
           <div className="flex items-center gap-3">
             <SubscribeButton

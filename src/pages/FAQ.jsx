@@ -92,7 +92,7 @@ Você é notificado a cada etapa concluída.`
     question: 'Quais são os benefícios do Prime?',
     answer: `O Meup Prime oferece:
 
-• **Preços menores** em todas as experiências (fator 130 vs 150)
+• **Experiências com desconto**: pague menos pontos em todas
 • **Mais pontos** nas indicações (+5.000 vs +3.000 na primeira viagem)
 • **Bônus exclusivo** quando indicado assina Prime Anual (+3.000 indicador, +1.000 indicado)
 • **1,5x pontos** nas viagens (apenas Prime Anual)

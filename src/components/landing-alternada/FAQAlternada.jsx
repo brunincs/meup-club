@@ -46,7 +46,7 @@ const FAQ_ITEMS = [
   {
     id: 8,
     question: 'O preço de fundador é por tempo limitado?',
-    answer: 'Sim. Estamos com 100 vagas de fundador no preço de lançamento (50% de desconto). Quando encerrarem, o preço volta ao valor cheio. Quem entrar como fundador mantém o preço enquanto renovar.'
+    answer: 'Sim. Estamos com 100 vagas de fundador no preço de lançamento (50% de desconto). Quando encerrarem, o preço volta ao valor cheio. Fundadores renovam pelo mesmo valor de R$ 497/ano enquanto mantiverem a assinatura ativa, sem interrupção. Se cancelar, perde o preço de fundador.'
   }
 ]
 
