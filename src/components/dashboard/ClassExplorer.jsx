@@ -42,6 +42,15 @@ export function ClassExplorer() {
   // Isso evita que o componente renderize com classe errada no primeiro render
   const activeClass = selectedClass ?? userLevelId
 
+  // IMPORTANTE: useMemo deve vir ANTES de qualquer return condicional
+  // para respeitar as regras de hooks do React
+  const classRewards = useMemo(() => {
+    if (!activeClass) return []
+    return experiencias
+      .filter(exp => exp.classe_minima === activeClass)
+      .slice(0, 3)
+  }, [experiencias, activeClass])
+
   // Se ainda não temos classe definida, mostrar loading
   if (!activeClass) {
     return (
@@ -58,16 +67,10 @@ export function ClassExplorer() {
       </div>
     )
   }
+
   const selectedLevel = levels.find(l => l.id === activeClass)
   const ClassIcon = getClassIcon(activeClass)
   const isUnlocked = userLevelId >= activeClass
-
-  // Experiências da classe selecionada (do banco)
-  const classRewards = useMemo(() => {
-    return experiencias
-      .filter(exp => exp.classe_minima === activeClass)
-      .slice(0, 3)
-  }, [experiencias, activeClass])
 
   return (
     <motion.div
