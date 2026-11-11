@@ -39,7 +39,6 @@ export function DashboardHeader() {
   }
 
   // Usar levelId do contexto (calculado por total_points_earned no backend)
-  const { levelId } = usePoints()
   const level = levels.find(l => l.id === levelId) || levels[0]
 
   return (
