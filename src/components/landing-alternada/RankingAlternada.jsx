@@ -31,9 +31,9 @@ const classStyles = [
   },
   {
     icon: CrownIcon,
-    gradient: 'from-amber-400 to-yellow-500',
-    bgColor: 'bg-amber-50 border-amber-200',
-    textColor: 'text-amber-600',
+    gradient: 'from-antique-gold to-[#c9a962]',
+    bgColor: 'bg-antique-gold/10 border-antique-gold/30',
+    textColor: 'text-antique-gold',
   },
   {
     icon: DiamondIcon,

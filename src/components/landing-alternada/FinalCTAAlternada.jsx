@@ -81,10 +81,10 @@ export function FinalCTAAlternada() {
               onClick={handleGarantirVaga}
               whileHover={{
                 scale: 1.02,
-                boxShadow: '0 0 50px rgba(245, 158, 11, 0.4)'
+                boxShadow: '0 0 50px rgba(162, 121, 55, 0.4)'
               }}
               whileTap={{ scale: 0.98 }}
-              className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-xl text-base font-heading font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-white overflow-hidden transition-all duration-300 shadow-lg shadow-amber-500/25"
+              className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-xl text-base font-heading font-semibold bg-antique-gold hover:bg-[#8b6830] text-deep-purple overflow-hidden transition-all duration-300 shadow-lg shadow-antique-gold/25"
             >
               {/* Shine effect */}
               <motion.div

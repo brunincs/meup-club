@@ -2,54 +2,45 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   useExperiencias,
-  PONTOS_POR_REAL,
   formatPoints,
   getUnlockedExperiences,
   getNextExperience,
 } from '@/hooks/useExperiencias'
-import { fetchPlanosConfig, fetchUserBenefits } from '@/services/subscriptionService'
-import { useAuth } from '@/contexts/AuthContext'
+import { fetchPlanosConfig } from '@/services/subscriptionService'
 import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 
 /**
- * Simulador de Pontos Unificado
+ * Simulador de Pontos - Landing Page
  *
- * Dois modos de simulação:
- * - "travel": quanto VOCÊ ganha viajando (slider de valor em R$)
- * - "referral": quanto você ganha indicando (slider de número de amigos)
- *
- * Agora com alternância Free/Prime para mostrar a diferença de ganhos.
- *
- * Props:
- * - mode: "travel" | "referral"
- * - variant: "light" | "dark" (para ajustar cores ao fundo)
- * - compact: boolean (versão menor para dashboard)
- * - plano: "free" | "prime" (qual plano simular)
- * - showPlanToggle: boolean (mostrar toggle Free/Prime)
+ * Layout: "Viajando | Indicando" → slider → dois cards resultado (Free/Prime) → experiências
+ * Valores lidos do plano_config (multiplicador, pontosIndicacao, etc.)
  */
 
-export function PointsSimulator({
-  mode = 'travel',
-  variant = 'light',
-  compact = false,
-  plano = 'prime',
-  ciclo = null, // 'anual' | 'mensal' | null
-  config = null,
-}) {
-  // Config padrão (fallback)
-  const freeConfig = config?.free || { pontosCheckin: 10, pontosIndicacao: 3000 }
-  const primeConfig = config?.prime || { pontosCheckin: 30, pontosIndicacao: 5000 }
+export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
+  const [activeMode, setActiveMode] = useState('travel')
+  const [config, setConfig] = useState(null)
+  const [inputValue, setInputValue] = useState(8000) // Inicial viajando
+  const { allExperiences } = useExperiencias()
+  const isLight = variant === 'light'
 
-  const planoConfig = plano === 'prime' ? primeConfig : freeConfig
-  // Multiplicador 1.5x APENAS para Prime ANUAL
-  const multiplicador = (plano === 'prime' && ciclo === 'anual') ? 1.5 : 1
+  // Carregar config dos planos
+  useEffect(() => {
+    async function load() {
+      const result = await fetchPlanosConfig()
+      if (result.success) {
+        setConfig(result.planos)
+      }
+    }
+    load()
+  }, [])
+
+  // Configurações do plano
+  const freeConfig = config?.free || { multiplicadorViagem: 1, pontosIndicacao: 3000 }
+  const primeConfig = config?.prime || { multiplicadorViagem: 1.5, pontosIndicacao: 5000 }
 
   // Configurações por modo
-  const CONFIG = {
+  const modeConfigs = {
     travel: {
-      title: 'Viajando',
-      subtitle: 'Ganhe pontos com suas viagens',
-      inputLabel: 'Se você gastar em viagens:',
       sliderMin: 2000,
       sliderMax: 50000,
       sliderStep: 500,
@@ -59,143 +50,200 @@ export function PointsSimulator({
         currency: 'BRL',
         minimumFractionDigits: 0,
       }).format(value),
-      formatMinMax: () => ({ min: 'R$ 2.000', max: 'R$ 50.000' }),
-      calculatePoints: (value) => Math.floor(value * PONTOS_POR_REAL * multiplicador),
+      formatMinMax: { min: 'R$ 2.000', max: 'R$ 50.000' },
+      calculateFree: (value) => Math.floor(value * (freeConfig.multiplicadorViagem || 1)),
+      calculatePrime: (value) => Math.floor(value * (primeConfig.multiplicadorViagem || 1.5)),
+      subtitle: null,
     },
     referral: {
-      title: 'Indicando',
-      subtitle: 'Ganhe pontos indicando amigos',
-      inputLabel: 'Se você indicar amigos que viajam:',
       sliderMin: 1,
       sliderMax: 10,
       sliderStep: 1,
       sliderInitial: 3,
       formatInput: (value) => `${value} ${value === 1 ? 'amigo' : 'amigos'}`,
-      formatMinMax: () => ({ min: '1 amigo', max: '10 amigos' }),
-      calculatePoints: (value) => value * planoConfig.pontosIndicacao,
+      formatMinMax: { min: '1 amigo', max: '10 amigos' },
+      calculateFree: (value) => value * (freeConfig.pontosIndicacao || 3000),
+      calculatePrime: (value) => value * (primeConfig.pontosIndicacao || 5000),
+      subtitle: 'Se o amigo virar Prime, você ganha +3.000 (só Prime)',
     },
   }
 
-  const modeConfig = CONFIG[mode]
-  const [inputValue, setInputValue] = useState(modeConfig.sliderInitial)
-  const { allExperiences } = useExperiencias()
+  const modeConfig = modeConfigs[activeMode]
 
-  const pontosAcumulados = modeConfig.calculatePoints(inputValue)
-  const experienciasDesbloqueadas = getUnlockedExperiences(allExperiences, pontosAcumulados)
-  const proximaExperiencia = getNextExperience(allExperiences, pontosAcumulados)
+  // Atualizar valor inicial ao trocar de modo
+  useEffect(() => {
+    setInputValue(modeConfig.sliderInitial)
+  }, [activeMode])
+
+  // Calcular pontos
+  const pontosFree = modeConfig.calculateFree(inputValue)
+  const pontosPrime = modeConfig.calculatePrime(inputValue)
+  const diferenca = pontosPrime - pontosFree
+
+  // Experiências baseadas no resultado Prime (preço Prime = fator 130 ou config)
+  const fatorPontoPrime = primeConfig.fatorPontos || 130
+  const experienciasDesbloqueadas = getUnlockedExperiences(allExperiences, pontosPrime, fatorPontoPrime)
+  const proximaExperiencia = getNextExperience(allExperiences, pontosPrime, fatorPontoPrime)
   const pontosFaltando = proximaExperiencia
-    ? proximaExperiencia.points - pontosAcumulados
+    ? proximaExperiencia.points - pontosPrime
     : 0
 
-  const isLight = variant === 'light'
-  const minMaxLabels = modeConfig.formatMinMax()
+  const handleUpgrade = () => {
+    garantirVagaFundadorWhatsApp('anual')
+  }
 
   // Classes baseadas na variante
-  const cardClass = isLight
-    ? 'border-deep-purple/20 bg-white shadow-lg'
-    : 'border-dusty-rose/20 bg-deep-purple/30'
-
-  const textSecondaryClass = isLight ? 'text-deep-purple/70' : 'text-dusty-rose'
+  const tabBgClass = isLight ? 'bg-deep-purple/10' : 'bg-deep-purple/50'
+  const tabActiveClass = isLight ? 'bg-deep-purple text-ice-white' : 'bg-antique-gold text-deep-purple'
+  const tabInactiveClass = isLight ? 'text-deep-purple/70 hover:text-deep-purple' : 'text-dusty-rose hover:text-ice-white'
   const textMutedClass = isLight ? 'text-deep-purple/60' : 'text-dusty-rose/60'
   const textPrimaryClass = isLight ? 'text-deep-purple' : 'text-ice-white'
-
-  const resultBoxClass = isLight
-    ? 'bg-deep-purple'
-    : 'bg-antique-gold/10 border border-antique-gold/20'
-  const resultTextClass = isLight ? 'text-ice-white' : 'text-dusty-rose'
-
-  const tagClass = isLight
-    ? 'bg-deep-purple/10 border-deep-purple/20 text-deep-purple'
-    : 'bg-dusty-rose/10 border-dusty-rose/20 text-dusty-rose'
-  const tagDreamClass = 'bg-antique-gold/20 border-antique-gold/40 text-antique-gold'
-
   const sliderClass = isLight ? 'slider-light' : 'slider-dark'
 
   return (
-    <div className={`p-${compact ? '5' : '6'} rounded-2xl border ${cardClass}`}>
-      {/* Input label */}
-      <div className="text-center mb-5">
-        <p className={`text-sm ${textSecondaryClass} mb-1`}>
-          {modeConfig.inputLabel}
-        </p>
-        <div className="text-2xl md:text-3xl font-display font-bold text-antique-gold">
-          {modeConfig.formatInput(inputValue)}
-        </div>
+    <div>
+      {/* Tabs Viajando | Indicando */}
+      <div className={`flex items-center justify-center gap-1 p-1 rounded-xl mb-6 w-fit mx-auto ${tabBgClass}`}>
+        <button
+          onClick={() => setActiveMode('travel')}
+          className={`px-5 py-2.5 rounded-lg text-sm font-heading font-medium transition-all ${
+            activeMode === 'travel' ? tabActiveClass : tabInactiveClass
+          }`}
+        >
+          Viajando
+        </button>
+        <button
+          onClick={() => setActiveMode('referral')}
+          className={`px-5 py-2.5 rounded-lg text-sm font-heading font-medium transition-all ${
+            activeMode === 'referral' ? tabActiveClass : tabInactiveClass
+          }`}
+        >
+          Indicando
+        </button>
       </div>
 
       {/* Slider */}
-      <div className="mb-5">
-        <input
-          type="range"
-          min={modeConfig.sliderMin}
-          max={modeConfig.sliderMax}
-          step={modeConfig.sliderStep}
-          value={inputValue}
-          onChange={(e) => setInputValue(Number(e.target.value))}
-          className={`${sliderClass} w-full`}
-        />
-        <div className={`flex justify-between mt-2 text-xs ${textMutedClass}`}>
-          <span>{minMaxLabels.min}</span>
-          <span>{minMaxLabels.max}</span>
+      <motion.div
+        key={activeMode}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`p-6 rounded-2xl border ${isLight ? 'border-deep-purple/20 bg-white shadow-lg' : 'border-dusty-rose/20 bg-deep-purple/30'}`}
+      >
+        {/* Input label */}
+        <div className="text-center mb-5">
+          <p className={`text-sm ${textMutedClass} mb-1`}>
+            {activeMode === 'travel' ? 'Se você gastar em viagens:' : 'Se você indicar amigos que viajam:'}
+          </p>
+          <div className="text-2xl md:text-3xl font-display font-bold text-antique-gold">
+            {modeConfig.formatInput(inputValue)}
+          </div>
         </div>
-      </div>
 
-      {/* Resultado */}
-      <div className={`text-center p-4 rounded-xl ${resultBoxClass} mb-4`}>
-        <p className={`text-sm ${resultTextClass} mb-1`}>Você ganha</p>
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-2xl md:text-3xl font-display font-bold text-antique-gold">
-            {formatPoints(pontosAcumulados)}
-          </span>
-          <span className={`text-sm ${resultTextClass}`}>pontos</span>
+        {/* Slider */}
+        <div className="mb-6">
+          <input
+            type="range"
+            min={modeConfig.sliderMin}
+            max={modeConfig.sliderMax}
+            step={modeConfig.sliderStep}
+            value={inputValue}
+            onChange={(e) => setInputValue(Number(e.target.value))}
+            className={`${sliderClass} w-full`}
+          />
+          <div className={`flex justify-between mt-2 text-xs ${textMutedClass}`}>
+            <span>{modeConfig.formatMinMax.min}</span>
+            <span>{modeConfig.formatMinMax.max}</span>
+          </div>
         </div>
-        {plano === 'prime' && mode === 'travel' && ciclo === 'anual' && (
-          <p className="text-xs text-antique-gold/80 mt-1">
-            (inclui multiplicador 1.5x do seu Prime Anual)
+
+        {/* Subtítulo modo indicando */}
+        {modeConfig.subtitle && (
+          <p className={`text-xs text-center mb-4 ${textMutedClass}`}>
+            {modeConfig.subtitle}
           </p>
         )}
-      </div>
 
-      {/* Experiências desbloqueadas */}
-      {experienciasDesbloqueadas.length > 0 && (
-        <div className="mb-3">
-          <p className={`text-xs ${textMutedClass} mb-2`}>
-            {compact ? 'Experiências:' : 'Experiências que você alcança:'}
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {experienciasDesbloqueadas.slice(0, compact ? 3 : 6).map((exp) => (
-              <span
-                key={exp.id}
-                className={`px-2 py-1 rounded-full text-[10px] font-heading font-medium border ${
-                  exp.isDream ? tagDreamClass : tagClass
-                }`}
-              >
-                {exp.title}
+        {/* Resultado: Dois cards lado a lado */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+          {/* Card Prime (primeiro no mobile) */}
+          <div className={`order-1 sm:order-2 p-4 rounded-xl border-2 ${
+            isLight
+              ? 'border-antique-gold/50 bg-gradient-to-br from-deep-purple to-deep-purple/90'
+              : 'border-antique-gold/50 bg-gradient-to-br from-antique-gold/20 to-antique-gold/10'
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className={`text-xs font-heading font-semibold uppercase tracking-wider ${isLight ? 'text-antique-gold' : 'text-antique-gold'}`}>
+                Prime
               </span>
-            ))}
-            {experienciasDesbloqueadas.length > (compact ? 3 : 6) && (
-              <span className={`px-2 py-1 text-[10px] ${textMutedClass}`}>
-                +{experienciasDesbloqueadas.length - (compact ? 3 : 6)} mais
+              <span className="px-2 py-0.5 rounded text-[10px] font-heading font-bold bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
+                +{formatPoints(diferenca)} no Prime
               </span>
-            )}
+            </div>
+            <div className="text-2xl md:text-3xl font-display font-bold text-antique-gold">
+              {formatPoints(pontosPrime)} <span className={`text-sm font-normal ${isLight ? 'text-ice-white/70' : 'text-dusty-rose'}`}>pts</span>
+            </div>
+          </div>
+
+          {/* Card Free */}
+          <div className={`order-2 sm:order-1 p-4 rounded-xl border ${
+            isLight
+              ? 'border-deep-purple/20 bg-deep-purple/5'
+              : 'border-white/10 bg-white/5'
+          }`}>
+            <span className={`text-xs font-heading font-medium uppercase tracking-wider ${textMutedClass}`}>
+              Free
+            </span>
+            <div className={`text-2xl md:text-3xl font-display font-bold ${textPrimaryClass} mt-2`}>
+              {formatPoints(pontosFree)} <span className={`text-sm font-normal ${textMutedClass}`}>pts</span>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Próxima experiência */}
-      {proximaExperiencia && !compact && (
-        <div className={`pt-3 border-t ${isLight ? 'border-deep-purple/10' : 'border-dusty-rose/10'}`}>
-          <p className={`text-xs ${textMutedClass} mb-1`}>Próxima:</p>
-          <div className="flex items-center justify-between">
-            <span className={`text-sm font-heading ${textPrimaryClass}`}>
-              {proximaExperiencia.title}
-            </span>
-            <span className={`text-xs ${textMutedClass}`}>
-              faltam <span className="text-antique-gold font-bold">{formatPoints(pontosFaltando)}</span> pts
-            </span>
+        {/* Experiências desbloqueadas */}
+        {experienciasDesbloqueadas.length > 0 && (
+          <div className="mb-3">
+            <p className={`text-xs ${textMutedClass} mb-2`}>
+              Experiências que você alcança:
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {experienciasDesbloqueadas.slice(0, compact ? 3 : 6).map((exp) => (
+                <span
+                  key={exp.id}
+                  className={`px-2 py-1 rounded-full text-[10px] font-heading font-medium border ${
+                    exp.isDream
+                      ? 'bg-antique-gold/20 border-antique-gold/40 text-antique-gold'
+                      : isLight
+                        ? 'bg-deep-purple/10 border-deep-purple/20 text-deep-purple'
+                        : 'bg-dusty-rose/10 border-dusty-rose/20 text-dusty-rose'
+                  }`}
+                >
+                  {exp.title}
+                </span>
+              ))}
+              {experienciasDesbloqueadas.length > (compact ? 3 : 6) && (
+                <span className={`px-2 py-1 text-[10px] ${textMutedClass}`}>
+                  +{experienciasDesbloqueadas.length - (compact ? 3 : 6)} mais
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Próxima experiência */}
+        {proximaExperiencia && !compact && (
+          <div className={`pt-3 border-t ${isLight ? 'border-deep-purple/10' : 'border-dusty-rose/10'}`}>
+            <p className={`text-xs ${textMutedClass} mb-1`}>Próxima:</p>
+            <div className="flex items-center justify-between">
+              <span className={`text-sm font-heading ${textPrimaryClass}`}>
+                {proximaExperiencia.title}
+              </span>
+              <span className={`text-xs ${textMutedClass}`}>
+                faltam <span className="text-antique-gold font-bold">{formatPoints(pontosFaltando)}</span> pts
+              </span>
+            </div>
+          </div>
+        )}
+      </motion.div>
 
       {/* CSS dos sliders */}
       <style>{`
@@ -251,176 +299,5 @@ export function PointsSimulator({
   )
 }
 
-/**
- * Wrapper com abas para alternar entre modos E planos
- * SEMPRE mostra comparação Free vs Prime na landing (mesmo logado)
- * Aba Prime aberta por padrão
- */
-export function PointsSimulatorTabs({ variant = 'light', compact = false, forceComparison = false }) {
-  const { profile, user } = useAuth()
-  const [activeMode, setActiveMode] = useState('travel')
-  const [activePlano, setActivePlano] = useState('prime') // Prime por padrão
-  const [config, setConfig] = useState(null)
-  const [userBenefits, setUserBenefits] = useState(null)
-  const isLight = variant === 'light'
-
-  // Verificar se usuário é Prime
-  const userIsPrime = userBenefits?.isPrime || false
-
-  // Carregar config dos planos e benefícios do usuário
-  useEffect(() => {
-    async function load() {
-      const result = await fetchPlanosConfig()
-      if (result.success) {
-        setConfig(result.planos)
-      }
-
-      // Buscar benefícios reais do usuário
-      if (user?.id) {
-        const benefitsResult = await fetchUserBenefits(user.id)
-        if (benefitsResult.success) {
-          setUserBenefits(benefitsResult.benefits)
-        }
-      }
-    }
-    load()
-  }, [user?.id])
-
-  const tabClass = (isActive) => {
-    if (isActive) {
-      return isLight
-        ? 'bg-deep-purple text-ice-white'
-        : 'bg-antique-gold text-deep-purple'
-    }
-    return isLight
-      ? 'text-deep-purple/70 hover:text-deep-purple'
-      : 'text-dusty-rose hover:text-ice-white'
-  }
-
-  const planoTabClass = (isActive) => {
-    if (isActive) {
-      return 'bg-antique-gold text-deep-purple font-semibold'
-    }
-    return isLight
-      ? 'text-deep-purple/60 hover:text-deep-purple border border-deep-purple/20'
-      : 'text-dusty-rose/60 hover:text-dusty-rose border border-dusty-rose/20'
-  }
-
-  // Calcular diferença para mostrar vantagem do Prime
-  const freeConfig = config?.free || { pontosIndicacao: 3000 }
-  const primeConfig = config?.prime || { pontosIndicacao: 5000 }
-
-  const handleUpgrade = () => {
-    garantirVagaFundadorWhatsApp('anual')
-  }
-
-  // Calcular pontos para comparação
-  const freePoints = activeMode === 'travel' ? 8000 : 3000 // 8000 de viagem ou 3000 de indicação
-  const primePoints = activeMode === 'travel' ? 12000 : 5000 // 12000 (1.5x) ou 5000
-  const diferencaPontos = primePoints - freePoints
-
-  return (
-    <div>
-      {/* Toggle Free / Prime - SEMPRE mostra para comparação */}
-      <div className="flex items-center justify-center gap-2 mb-4">
-        <button
-          onClick={() => setActivePlano('free')}
-          className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${planoTabClass(activePlano === 'free')}`}
-        >
-          Free
-        </button>
-        <button
-          onClick={() => setActivePlano('prime')}
-          className={`px-4 py-2 rounded-lg text-sm font-heading transition-all ${planoTabClass(activePlano === 'prime')}`}
-        >
-          👑 Prime
-        </button>
-      </div>
-
-      {/* Comparação clara de pontos */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-4"
-      >
-        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm ${
-          isLight ? 'bg-deep-purple/5 border border-deep-purple/10' : 'bg-white/5 border border-white/10'
-        }`}>
-          <span className={isLight ? 'text-deep-purple/70' : 'text-dusty-rose'}>
-            Free: <strong>{formatPoints(freePoints)}</strong> pts
-          </span>
-          <span className={isLight ? 'text-deep-purple/40' : 'text-white/30'}>·</span>
-          <span className="text-antique-gold font-semibold">
-            Prime: <strong>{formatPoints(primePoints)}</strong> pts
-          </span>
-          <span className={`text-xs px-1.5 py-0.5 rounded ${
-            isLight ? 'bg-green-100 text-green-700' : 'bg-green-500/20 text-green-400'
-          }`}>
-            +{formatPoints(diferencaPontos)}
-          </span>
-        </div>
-      </motion.div>
-
-      {/* Tabs de modo */}
-      <div className={`flex items-center justify-center gap-1 p-1 rounded-xl mb-4 w-fit mx-auto ${
-        isLight ? 'bg-deep-purple/10' : 'bg-deep-purple/50'
-      }`}>
-        <button
-          onClick={() => setActiveMode('travel')}
-          className={`px-4 py-2 rounded-lg text-sm font-heading font-medium transition-all ${tabClass(activeMode === 'travel')}`}
-        >
-          Viajando
-        </button>
-        <button
-          onClick={() => setActiveMode('referral')}
-          className={`px-4 py-2 rounded-lg text-sm font-heading font-medium transition-all ${tabClass(activeMode === 'referral')}`}
-        >
-          Indicando
-        </button>
-      </div>
-
-      {/* Simulador ativo */}
-      <motion.div
-        key={`${activeMode}-${activePlano}`}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-      >
-        <PointsSimulator
-          mode={activeMode}
-          variant={variant}
-          compact={compact}
-          plano={activePlano}
-          ciclo={activePlano === 'prime' ? 'anual' : null}
-          config={config}
-        />
-      </motion.div>
-
-      {/* CTA para upgrade - quando Free está selecionado */}
-      {activePlano === 'free' && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className={`mt-4 p-4 rounded-xl text-center ${
-            isLight ? 'bg-antique-gold/10 border border-antique-gold/20' : 'bg-antique-gold/5 border border-antique-gold/20'
-          }`}
-        >
-          <p className={`text-sm mb-3 ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
-            Com o <span className="text-antique-gold font-semibold">Prime</span>, você ganharia{' '}
-            <span className="text-antique-gold font-bold">
-              {activeMode === 'travel' ? '50% mais' : `+${formatPoints(primeConfig.pontosIndicacao - freeConfig.pontosIndicacao)}`}
-            </span>{' '}
-            {activeMode === 'travel' ? 'pontos' : 'pts por indicação'}
-          </p>
-          <button
-            onClick={handleUpgrade}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-antique-gold text-deep-purple text-sm font-heading font-semibold hover:bg-accent-light transition-colors"
-          >
-            Quero ser Prime
-            <span>→</span>
-          </button>
-        </motion.div>
-      )}
-    </div>
-  )
-}
+// Exportar também como PointsSimulator para compatibilidade
+export const PointsSimulator = PointsSimulatorTabs
