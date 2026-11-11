@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePoints } from '@/contexts/PointsContext'
 import { useExperiencias, getNextExperience } from '@/hooks/useExperiencias'
-import { calculateLevel } from '@/services/pointsSystem'
+import { useUserLevel, countAvailableExperiences } from '@/hooks/useUserLevel'
 import { mockUserEngagement } from '@/services/engagementData'
 import { greetings, levels as levelCopy, buttons, format } from '@/services/copy'
 import { GoldLine } from '@/components/ui/GoldLine'
@@ -12,21 +11,14 @@ import { getClassIcon } from '@/components/ui/Icons'
 
 export function EngagementHeader() {
   const { profile, user } = useAuth()
-  const { points: userPoints } = usePoints() // Pontos reais do usuário logado
+  const { current: currentLevel, next: nextLevel, balance: userPoints, currentId, pointsToNext, progress } = useUserLevel()
   const { allExperiences, loading } = useExperiencias()
   const userName = profile?.name?.split(' ')[0] || user?.user_metadata?.name?.split(' ')[0] || 'Usuário'
 
-  const levelData = calculateLevel(userPoints)
-  const currentLevel = levelData.current
-  const nextLevel = levelData.next
   const currentStreak = mockUserEngagement.streak.current
 
   // Calcular experiências disponíveis (do Supabase)
-  const availableExperiences = allExperiences.filter(r => {
-    const reqLevel = r.requiredLevelId || r.classeMinima || 1
-    const pointsReq = r.points_required || r.points
-    return reqLevel <= currentLevel.id && userPoints >= pointsReq
-  }).length
+  const availableExperiences = countAvailableExperiences(allExperiences, currentId)
 
   // Próxima experiência (do Supabase)
   const nextExperience = getNextExperience(allExperiences, userPoints)
@@ -119,7 +111,7 @@ export function EngagementHeader() {
                 <div className="flex items-center gap-2">
                   {getClassIcon(nextLevel.id, { size: 18, color: '#a39695' })}
                   <span className="text-sm text-ice-white">
-                    {format.pointsShort(levelData.pointsToNext)}
+                    {format.pointsShort(pointsToNext)}
                   </span>
                 </div>
               ) : (
@@ -138,7 +130,7 @@ export function EngagementHeader() {
               <div className="h-1 bg-dusty-rose/20 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: `${levelData.progress}%` }}
+                  animate={{ width: `${progress}%` }}
                   transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
                   className="h-full bg-gradient-to-r from-antique-gold to-accent-light rounded-full"
                 />

@@ -291,15 +291,27 @@ export function MeusResgates() {
 
                     {/* VOUCHER */}
                     {resgate.voucher && (
-                      <div className="p-4 rounded-xl bg-antique-gold/10 border border-antique-gold/20">
+                      <div className={`p-4 rounded-xl border ${
+                        resgate.voucher.status === 'utilizado'
+                          ? 'bg-purple-50 border-purple-200'
+                          : 'bg-antique-gold/10 border-antique-gold/20'
+                      }`}>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div>
-                            <p className="text-xs text-graphite/60 mb-1">Seu código de voucher</p>
-                            <p className="text-xl font-mono font-bold text-deep-purple tracking-wider">
+                            <p className="text-xs text-graphite/60 mb-1">
+                              {resgate.voucher.status === 'utilizado' ? 'Voucher utilizado' : 'Seu código de voucher'}
+                            </p>
+                            <p className={`text-xl font-mono font-bold tracking-wider ${
+                              resgate.voucher.status === 'utilizado'
+                                ? 'text-graphite/40 line-through'
+                                : 'text-deep-purple'
+                            }`}>
                               {resgate.voucher.codigo}
                             </p>
                             <div className="flex flex-wrap items-center gap-3 mt-1">
-                              <span className="text-sm font-semibold text-antique-gold">
+                              <span className={`text-sm font-semibold ${
+                                resgate.voucher.status === 'utilizado' ? 'text-purple-600' : 'text-antique-gold'
+                              }`}>
                                 R$ {resgate.voucher.valor}
                               </span>
                               <span className="text-xs text-graphite/60">
@@ -307,18 +319,21 @@ export function MeusResgates() {
                               </span>
                               {resgate.voucher.status === 'utilizado' && (
                                 <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 text-xs font-semibold">
-                                  Utilizado
+                                  ✓ Utilizado
                                 </span>
                               )}
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <button
-                              onClick={() => handleCopyVoucher(resgate.voucher.codigo)}
-                              className="px-4 py-2 rounded-xl bg-deep-purple text-ice-white text-sm font-heading font-medium hover:bg-bright-purple transition-colors"
-                            >
-                              Copiar Código
-                            </button>
+                            {/* Só mostrar botão de copiar se NÃO utilizado */}
+                            {resgate.voucher.status !== 'utilizado' && (
+                              <button
+                                onClick={() => handleCopyVoucher(resgate.voucher.codigo)}
+                                className="px-4 py-2 rounded-xl bg-deep-purple text-ice-white text-sm font-heading font-medium hover:bg-bright-purple transition-colors"
+                              >
+                                Copiar Código
+                              </button>
+                            )}
                             <button
                               onClick={openWhatsApp}
                               className="px-3 py-2 rounded-xl bg-green-500 text-white text-sm hover:bg-green-600 transition-colors"

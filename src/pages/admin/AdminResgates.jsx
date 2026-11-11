@@ -6,7 +6,8 @@ import {
   fetchSolicitacoesResgate,
   aprovarResgateV2,
   rejeitarResgate,
-  marcarVoucherUtilizado
+  marcarVoucherUtilizado,
+  desfazerVoucherUtilizado
 } from '@/services/resgateService'
 import {
   reabrirResgate,
@@ -26,6 +27,63 @@ const statusConfig = {
   rejeitado: { label: 'Rejeitado', color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-200' },
   cancelado: { label: 'Cancelado', color: 'text-gray-600', bg: 'bg-gray-100', border: 'border-gray-200' },
   revertido: { label: 'Revertido', color: 'text-purple-600', bg: 'bg-purple-100', border: 'border-purple-200' }
+}
+
+// Modal de confirmação para marcar voucher como utilizado
+function MarkUsedModal({ voucher, solicitacao, onClose, onConfirm, loading }) {
+  return (
+    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md bg-white rounded-2xl border border-dusty-rose/20 shadow-xl p-6"
+      >
+        <h3 className="text-lg font-display font-bold text-graphite mb-4">
+          Confirmar Voucher Utilizado
+        </h3>
+
+        <div className="mb-4 p-4 rounded-xl bg-purple-50 border border-purple-200">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-2xl">🎫</span>
+            <div>
+              <p className="font-mono font-bold text-deep-purple">
+                {voucher.codigo}
+              </p>
+              <p className="text-sm text-graphite/70">
+                R$ {voucher.valor}
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-graphite/60 mt-2">
+            Cliente: <strong>{solicitacao.userName}</strong>
+          </p>
+        </div>
+
+        <div className="mb-6 p-3 rounded-xl bg-amber-50 border border-amber-200">
+          <p className="text-xs text-amber-700">
+            ⚠️ Esta ação marca o voucher como utilizado. Você poderá desfazer se necessário.
+          </p>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            disabled={loading}
+            className="flex-1 px-4 py-2.5 rounded-xl bg-ice-white border border-dusty-rose/30 text-sm font-heading font-medium text-graphite hover:bg-dusty-rose/10 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex-1 px-4 py-2.5 rounded-xl bg-purple-500 text-white text-sm font-heading font-medium hover:bg-purple-600 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Marcando...' : 'Confirmar Utilizado'}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )
 }
 
 // Modal de Rejeição
@@ -106,6 +164,8 @@ export function AdminResgates() {
   const [processing, setProcessing] = useState(null)
   const [reversalModal, setReversalModal] = useState(null) // { solicitacao, type: 'reabrir' | 'devolver' }
   const [reversalLoading, setReversalLoading] = useState(false)
+  const [markUsedModal, setMarkUsedModal] = useState(null) // { voucher, solicitacao }
+  const [markUsedLoading, setMarkUsedLoading] = useState(false)
 
   // Carregar dados
   const loadData = async () => {
@@ -214,6 +274,35 @@ export function AdminResgates() {
       toast.error(result.error || 'Erro ao reverter aprovação')
     }
     setReversalLoading(false)
+  }
+
+  // Confirmar marcar voucher como utilizado
+  const handleConfirmMarkUsed = async () => {
+    if (!markUsedModal?.voucher) return
+    setMarkUsedLoading(true)
+    const result = await marcarVoucherUtilizado(markUsedModal.voucher.id)
+    if (result.success) {
+      toast.success('Voucher marcado como utilizado')
+      setMarkUsedModal(null)
+      loadData()
+    } else {
+      toast.error(result.error || 'Erro ao marcar como utilizado')
+    }
+    setMarkUsedLoading(false)
+  }
+
+  // Desfazer voucher utilizado
+  const handleDesfazerVoucherUtilizado = async (voucherId) => {
+    if (processing === voucherId) return
+    setProcessing(voucherId)
+    const result = await desfazerVoucherUtilizado(voucherId)
+    if (result.success) {
+      toast.success('Voucher restaurado para "Disponível"')
+      loadData()
+    } else {
+      toast.error(result.error || 'Erro ao desfazer')
+    }
+    setProcessing(null)
   }
 
   return (
@@ -456,22 +545,19 @@ export function AdminResgates() {
                       )}
                       {sol.status === 'entregue' && sol.voucher?.status === 'disponivel' && (
                         <button
-                          onClick={async () => {
-                            if (processing === sol.voucher.id) return
-                            setProcessing(sol.voucher.id)
-                            const result = await marcarVoucherUtilizado(sol.voucher.id)
-                            if (result.success) {
-                              toast.success('Voucher marcado como utilizado')
-                              loadData()
-                            } else {
-                              toast.error(result.error || 'Erro ao marcar como utilizado')
-                            }
-                            setProcessing(null)
-                          }}
-                          disabled={processing === sol.voucher?.id}
-                          className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-purple-500 text-white hover:bg-purple-600 transition-colors disabled:opacity-50"
+                          onClick={() => setMarkUsedModal({ voucher: sol.voucher, solicitacao: sol })}
+                          className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-purple-500 text-white hover:bg-purple-600 transition-colors"
                         >
-                          {processing === sol.voucher?.id ? 'Marcando...' : 'Marcar Utilizado'}
+                          Marcar Utilizado
+                        </button>
+                      )}
+                      {(sol.status === 'entregue' || sol.status === 'utilizado') && sol.voucher?.status === 'utilizado' && (
+                        <button
+                          onClick={() => handleDesfazerVoucherUtilizado(sol.voucher.id)}
+                          disabled={processing === sol.voucher?.id}
+                          className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200 transition-colors disabled:opacity-50"
+                        >
+                          {processing === sol.voucher?.id ? 'Desfazendo...' : 'Desfazer'}
                         </button>
                       )}
                     </div>
@@ -518,6 +604,19 @@ export function AdminResgates() {
             onConfirm={reversalModal.type === 'reabrir' ? handleReabrir : handleReverter}
             onClose={() => setReversalModal(null)}
             loading={reversalLoading}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal de confirmar voucher utilizado */}
+      <AnimatePresence>
+        {markUsedModal && (
+          <MarkUsedModal
+            voucher={markUsedModal.voucher}
+            solicitacao={markUsedModal.solicitacao}
+            onConfirm={handleConfirmMarkUsed}
+            onClose={() => setMarkUsedModal(null)}
+            loading={markUsedLoading}
           />
         )}
       </AnimatePresence>

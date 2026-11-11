@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePoints } from '@/contexts/PointsContext'
-import { calculateLevel } from '@/services/pointsSystem'
+import { useUserLevel } from '@/hooks/useUserLevel'
 import { levels as levelCopy, format } from '@/services/copy'
 import { getClassIcon, StarIcon } from '@/components/ui/Icons'
 
@@ -16,9 +15,7 @@ const cardVariants = {
 
 export function StatsCards({ stats }) {
   const { profile } = useAuth()
-  const { points } = usePoints() // Pontos reais do usuário logado
-  const levelData = calculateLevel(points)
-  const level = levelData?.current || { id: 1, shortName: 'Econômica', bonusMultiplier: 1 }
+  const { current: level, balance: points } = useUserLevel()
 
   const ClassIcon = getClassIcon(level.id)
 

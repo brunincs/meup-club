@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
 import { useExperiencias, getNextExperience } from '@/hooks/useExperiencias'
-import { calculateLevel } from '@/services/pointsSystem'
+import { useUserLevel } from '@/hooks/useUserLevel'
 import { AnimatedCounter, CountUp } from '@/components/effects/AnimatedCounter'
 import { ProgressBar } from '@/components/effects/ProgressRing'
 import { GlowBorder } from '@/components/effects/GlowEffect'
@@ -23,14 +23,11 @@ export function HeroSection() {
   const { profile, user, useMock } = useAuth()
   const { points: userPoints } = usePoints()
   const { allExperiences } = useExperiencias()
+  const { current: currentLevel, next: nextLevel, totalPointsEarned } = useUserLevel()
 
   // Nome do usuário: prioriza profile, fallback para user do Auth
   const fullName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
   const userName = fullName.split(' ')[0]
-
-  const levelData = calculateLevel(userPoints)
-  const currentLevel = levelData?.current || { id: 1, shortName: 'Econômica', bonusMultiplier: 1 }
-  const nextLevel = levelData?.next || null
 
   // Dados de engajamento (zerados para conta nova, demo mostra valores)
   const todayPoints = useMock ? 320 : 0

@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { usePoints } from '@/contexts/PointsContext'
-import { calculateLevel } from '@/services/pointsSystem'
+import { useUserLevel } from '@/hooks/useUserLevel'
 import { format, levels as levelCopy } from '@/services/copy'
 import { useExperiencias, formatPoints } from '@/hooks/useExperiencias'
 
@@ -14,9 +13,7 @@ export function ExperiencesCarousel() {
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
-  const { points: userPoints } = usePoints()
-  const levelData = calculateLevel(userPoints)
-  const userLevelId = levelData?.current?.id ?? 1
+  const { balance: userPoints, currentId: userLevelId } = useUserLevel()
 
   // Buscar experiências do Supabase (mesma fonte do admin)
   const { allExperiences, loading } = useExperiencias()

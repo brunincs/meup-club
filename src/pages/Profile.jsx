@@ -2,9 +2,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePoints } from '@/contexts/PointsContext'
+import { useUserLevel } from '@/hooks/useUserLevel'
 import { DashboardHeader } from '@/components/dashboard'
-import { calculateLevel } from '@/services/pointsSystem'
 import {
   updateUserProfile,
   fetchReferralStats,
@@ -710,7 +709,7 @@ function RecentActivity({ activities, userId }) {
 
 export function Profile() {
   const { user, profile, loading, refreshProfile } = useAuth()
-  const { points: userPoints } = usePoints()
+  const { balance: userPoints, current: currentLevel, next: nextLevel, progress: levelProgress, pointsToNext, currentId } = useUserLevel()
   const navigate = useNavigate()
 
   const [stats, setStats] = useState({
@@ -797,8 +796,13 @@ export function Profile() {
 
   if (!user) return null
 
-  // userPoints vem do PointsContext (atualiza em tempo real)
-  const levelData = calculateLevel(userPoints)
+  // Dados de nível vêm do useUserLevel (baseado em total_points_earned)
+  const levelData = {
+    current: currentLevel,
+    next: nextLevel,
+    progress: levelProgress,
+    pointsToNext
+  }
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">

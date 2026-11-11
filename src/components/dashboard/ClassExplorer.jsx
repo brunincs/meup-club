@@ -1,15 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { levels, calculateLevel } from '@/services/pointsSystem'
+import { levels } from '@/services/pointsSystem'
 import { levels as levelCopy } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
-import { usePoints } from '@/contexts/PointsContext'
+import { useUserLevel } from '@/hooks/useUserLevel'
 import { fetchExperiencias } from '@/services/experienciasService'
 
 export function ClassExplorer() {
-  const { points: userPoints } = usePoints() // Pontos reais do usuário logado
-  const levelData = calculateLevel(userPoints)
-  const userLevelId = levelData?.current?.id ?? 1
+  const { currentId: userLevelId } = useUserLevel()
 
   const [selectedClass, setSelectedClass] = useState(userLevelId)
   const [experiencias, setExperiencias] = useState([])

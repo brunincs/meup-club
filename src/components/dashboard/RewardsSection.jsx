@@ -1,12 +1,9 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePoints } from '@/contexts/PointsContext'
 import { useExperiencias } from '@/hooks/useExperiencias'
-import {
-  calculateRewardsProgress,
-  calculateLevel
-} from '@/services/pointsSystem'
+import { useUserLevel } from '@/hooks/useUserLevel'
+import { calculateRewardsProgress } from '@/services/pointsSystem'
 import toast from 'react-hot-toast'
 import { format, levels as levelCopy } from '@/services/copy'
 import { ShimmerEffect } from '@/components/effects/GlowEffect'
@@ -22,13 +19,11 @@ const categoryIcons = {
 
 export function RewardsSection() {
   const { profile } = useAuth()
-  const { points: userPoints } = usePoints() // Pontos reais do usuário logado
+  const { currentId: userLevelId, totalPointsEarned } = useUserLevel()
   const { allExperiences, loading } = useExperiencias()
-  const levelData = calculateLevel(userPoints)
-  const userLevelId = levelData?.current?.id ?? 1
 
-  // Calcular progresso com experiências do Supabase
-  const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId, allExperiences)
+  // Calcular progresso com experiências do Supabase (usa totalPointsEarned)
+  const rewardsWithProgress = calculateRewardsProgress(totalPointsEarned, userLevelId, allExperiences)
     .filter(r => r.categoria !== 'cash') // Filtrar recompensas em dinheiro
 
   // Selecionar experiências para exibição

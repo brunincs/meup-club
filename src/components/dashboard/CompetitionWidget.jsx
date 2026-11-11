@@ -1,8 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePoints } from '@/contexts/PointsContext'
-import { calculateLevel } from '@/services/pointsSystem'
+import { useUserLevel } from '@/hooks/useUserLevel'
 import {
   mockUserEngagement,
   mockNearbyRanking,
@@ -14,9 +13,7 @@ import { TrophyIcon, TrendingUpIcon } from '@/components/ui/Icons'
 
 export function CompetitionWidget() {
   const { profile, user } = useAuth()
-  const { points: userPoints } = usePoints() // Pontos reais do usuário logado
-  const levelData = calculateLevel(userPoints)
-  const currentLevelId = levelData?.current?.id ?? 1
+  const { balance: userPoints, currentId: currentLevelId } = useUserLevel()
   const userPosition = mockUserEngagement.weeklyPosition
   const weeklyReset = getTimeToWeeklyReset()
   const weeklyPrize = getWeeklyPrize(userPosition)

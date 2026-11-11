@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
+import { useUserLevel } from '@/hooks/useUserLevel'
 import { DashboardHeader } from '@/components/dashboard'
 import {
   calculateRewardsProgress,
-  calculateLevel,
   levels as levelThresholds
 } from '@/services/pointsSystem'
 import { useExperiencias } from '@/hooks/useExperiencias'
@@ -778,7 +778,8 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
 
 export function Rewards() {
   const { user, loading } = useAuth()
-  const { points: userPoints, resgatar, refreshPoints, redeemedIds, pendingIds, isLoading: contextLoading } = usePoints()
+  const { resgatar, refreshPoints, redeemedIds, pendingIds, isLoading: contextLoading } = usePoints()
+  const { balance: userPoints, currentId: userLevelId, current: currentLevel, next: nextLevel, progress: levelProgress, pointsToNext } = useUserLevel()
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState('all')
   const [selectedReward, setSelectedReward] = useState(null)
@@ -790,9 +791,6 @@ export function Rewards() {
 
   // Ref para devolver foco após fechar modal (Bug 5)
   const triggerButtonRef = useRef(null)
-
-  const levelData = calculateLevel(userPoints)
-  const userLevelId = levelData?.current?.id ?? 1
 
   // Transformar experiências do Supabase para o formato esperado
   const rewardsTable = allExperiences.map(exp => ({
@@ -1251,7 +1249,7 @@ export function Rewards() {
       {/* ══════════════════════════════════════════════════════════════
           SEÇÃO ESCURA - Progresso da jornada (destaque visual)
           ══════════════════════════════════════════════════════════════ */}
-      {levelData.next && (
+      {nextLevel && (
         <section className="bg-deep-purple py-10">
           <div className="container-premium">
             <motion.div
@@ -1267,28 +1265,28 @@ export function Rewards() {
                   </p>
                   <div className="flex items-center gap-3 mb-4">
                     {(() => {
-                      const NextIcon = getClassIcon(levelData.next.id)
+                      const NextIcon = getClassIcon(nextLevel.id)
                       return <NextIcon size={24} color="#a27937" />
                     })()}
-                    <span className="text-xl font-heading text-ice-white">{levelCopy.names[levelData.next.id]}</span>
+                    <span className="text-xl font-heading text-ice-white">{levelCopy.names[nextLevel.id]}</span>
                   </div>
                   <div
                     className="h-1 bg-dusty-rose/10 rounded-full overflow-hidden max-w-md"
                     role="progressbar"
-                    aria-valuenow={levelData.progress}
+                    aria-valuenow={levelProgress}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-label={`Progresso para ${levelCopy.names[levelData.next.id]}: ${levelData.progress}%`}
+                    aria-label={`Progresso para ${levelCopy.names[nextLevel.id]}: ${levelProgress}%`}
                   >
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${levelData.progress}%` }}
+                      animate={{ width: `${levelProgress}%` }}
                       transition={{ duration: 1 }}
                       className="h-full bg-antique-gold rounded-full"
                     />
                   </div>
                   <p className="text-sm text-dusty-rose mt-3">
-                    <span className="text-antique-gold">{format.pointsShort(levelData.pointsToNext)}</span> pontos para desbloquear novas experiências
+                    <span className="text-antique-gold">{format.pointsShort(pointsToNext)}</span> pontos para desbloquear novas experiências
                   </p>
                 </div>
 

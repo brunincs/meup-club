@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
-import { usePoints } from '@/contexts/PointsContext'
-import { calculateLevel, calculateRewardsProgress } from '@/services/pointsSystem'
+import { useUserLevel } from '@/hooks/useUserLevel'
+import { calculateRewardsProgress } from '@/services/pointsSystem'
 import { format, levels as levelCopy } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
 import { ProgressBar } from '@/components/effects/ProgressRing'
@@ -11,20 +11,18 @@ import { ProgressBar } from '@/components/effects/ProgressRing'
  * Tom acolhedor: "no seu ritmo", "cada viagem te leva mais longe"
  */
 export function EvolutionCard() {
-  const { points: userPoints } = usePoints()
-  const levelData = calculateLevel(userPoints)
-  const userLevelId = levelData?.current?.id ?? 1
+  const { currentId: userLevelId, next, totalPointsEarned, balance: userPoints, pointsToNext, progress } = useUserLevel()
 
   // Próxima experiência alcançável
-  const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId)
+  const rewardsWithProgress = calculateRewardsProgress(totalPointsEarned, userLevelId)
     .filter(r => r.category !== 'cash' && !r.canRedeem && r.isUnlockedByLevel)
     .sort((a, b) => b.progress - a.progress)
 
   const nextExperience = rewardsWithProgress[0]
-  const hasNextLevel = Boolean(levelData?.next)
+  const hasNextLevel = Boolean(next)
 
   const CurrentIcon = getClassIcon(userLevelId)
-  const NextIcon = hasNextLevel ? getClassIcon(levelData.next.id) : null
+  const NextIcon = hasNextLevel ? getClassIcon(next.id) : null
 
   return (
     <motion.div
@@ -69,26 +67,26 @@ export function EvolutionCard() {
               <div className="flex-1">
                 <p className="text-xs text-dusty-rose/60">Próxima classe</p>
                 <p className="text-sm text-ice-white font-heading">
-                  {levelCopy.names[levelData.next.id]}
+                  {levelCopy.names[next.id]}
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-antique-gold font-heading">
-                  {format.pointsShort(levelData.pointsToNext)}
+                  {format.pointsShort(pointsToNext)}
                 </p>
                 <p className="text-[10px] text-dusty-rose/60">restantes</p>
               </div>
             </div>
 
             <ProgressBar
-              progress={levelData.progress}
+              progress={progress}
               height={6}
               color="#a27937"
               bgColor="rgba(163, 150, 149, 0.1)"
             />
 
             <p className="text-[10px] text-dusty-rose/60 mt-2">
-              {levelData.progress}% do caminho percorrido
+              {progress}% do caminho percorrido
             </p>
           </div>
         )}

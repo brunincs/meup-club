@@ -4,6 +4,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase'
+import { formatDateLocal } from '@/utils/dateUtils'
 
 // ============================================
 // FUNÇÕES DO CLIENTE
@@ -247,7 +248,7 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
           id: voucher.id,
           codigo: voucher.codigo,
           valor: voucher.valor,
-          validade: new Date(voucher.validade).toLocaleDateString('pt-BR'),
+          validade: formatDateLocal(voucher.validade),
           status: voucher.status
         } : null,
         createdAt: new Date(s.created_at).toLocaleDateString('pt-BR', {
@@ -260,13 +261,31 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
       return mapped
     })
 
-    // Estatísticas
-    // "aprovados" conta em_preparacao + entregue (são os aprovados ainda não utilizados)
-    const stats = {
-      total: solicitacoes.length,
-      pendentes: solicitacoes.filter(s => s.status === 'pendente' || s.status === 'solicitado').length,
-      aprovados: solicitacoes.filter(s => ['aprovado', 'em_preparacao', 'entregue'].includes(s.status)).length,
-      rejeitados: solicitacoes.filter(s => s.status === 'rejeitado').length
+    // Estatísticas - buscar de TODOS os registros, não dos filtrados
+    let stats = { total: 0, pendentes: 0, aprovados: 0, rejeitados: 0 }
+
+    if (statusFilter) {
+      // Se há filtro, buscar stats separadamente
+      const { data: allData } = await supabase
+        .from('resgate_solicitacoes')
+        .select('status')
+
+      if (allData) {
+        stats = {
+          total: allData.length,
+          pendentes: allData.filter(s => s.status === 'pendente' || s.status === 'solicitado').length,
+          aprovados: allData.filter(s => ['aprovado', 'em_preparacao', 'entregue'].includes(s.status)).length,
+          rejeitados: allData.filter(s => s.status === 'rejeitado').length
+        }
+      }
+    } else {
+      // Sem filtro, usar os dados já carregados
+      stats = {
+        total: solicitacoes.length,
+        pendentes: solicitacoes.filter(s => s.status === 'pendente' || s.status === 'solicitado').length,
+        aprovados: solicitacoes.filter(s => ['aprovado', 'em_preparacao', 'entregue'].includes(s.status)).length,
+        rejeitados: solicitacoes.filter(s => s.status === 'rejeitado').length
+      }
     }
 
     return { success: true, solicitacoes, stats }
@@ -768,7 +787,7 @@ export async function buscarMeusVouchers() {
       codigo: v.codigo,
       valor: v.valor,
       validade: v.validade,
-      validadeFormatada: new Date(v.validade).toLocaleDateString('pt-BR'),
+      validadeFormatada: formatDateLocal(v.validade),
       status: v.status,
       usadoEm: v.usado_em ? new Date(v.usado_em).toLocaleDateString('pt-BR') : null,
       experienciaNome: v.resgate_solicitacoes?.experiencia_nome || 'Voucher',
@@ -888,7 +907,7 @@ export async function buscarMeusResgatesCompletos() {
           id: voucherData.id,
           codigo: voucherData.codigo,
           valor: voucherData.valor,
-          validade: new Date(voucherData.validade).toLocaleDateString('pt-BR'),
+          validade: formatDateLocal(voucherData.validade),
           status: voucherData.status
         } : null,
         arquivos: arquivos.map(a => ({
@@ -908,6 +927,32 @@ export async function buscarMeusResgatesCompletos() {
   } catch (error) {
     console.error('Erro ao buscar resgates:', error)
     return { success: false, error: error.message, resgates: [] }
+  }
+}
+
+/**
+ * Admin desfaz voucher utilizado (volta para disponível)
+ * @param {string} voucherId
+ */
+export async function desfazerVoucherUtilizado(voucherId) {
+  try {
+    const { data, error } = await supabase.rpc('admin_undo_voucher_used', {
+      p_voucher_id: voucherId
+    })
+
+    if (error) {
+      console.error('Erro ao desfazer voucher utilizado:', error)
+      return { success: false, error: error.message }
+    }
+
+    if (!data?.success) {
+      return { success: false, error: data?.error || 'Erro ao desfazer' }
+    }
+
+    return { success: true, message: data.message }
+  } catch (error) {
+    console.error('Erro ao desfazer voucher utilizado:', error)
+    return { success: false, error: error.message }
   }
 }
 
