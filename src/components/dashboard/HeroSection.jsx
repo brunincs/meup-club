@@ -23,7 +23,7 @@ export function HeroSection() {
   const { profile, user, useMock } = useAuth()
   const { points: userPoints } = usePoints()
   const { allExperiences } = useExperiencias()
-  const { current: currentLevel, next: nextLevel, totalPointsEarned, progress, pointsToNext } = useUserLevel()
+  const { current: currentLevel, next: nextLevel, totalPointsEarned, progress, pointsToNext, isLoading: levelLoading } = useUserLevel()
 
   // Nome do usuário: prioriza profile, fallback para user do Auth
   const fullName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
@@ -43,6 +43,19 @@ export function HeroSection() {
     const timer = setTimeout(() => setShowCounter(true), 300)
     return () => clearTimeout(timer)
   }, [])
+
+  // Se ainda não carregou o nível, mostra loading
+  if (levelLoading) {
+    return (
+      <div className="mb-10">
+        <div className="rounded-2xl border border-antique-gold/20 bg-deep-purple/50 p-8 animate-pulse">
+          <div className="h-6 w-40 bg-dusty-rose/20 rounded mb-4" />
+          <div className="h-12 w-32 bg-dusty-rose/20 rounded mb-6" />
+          <div className="h-24 bg-dusty-rose/10 rounded-xl" />
+        </div>
+      </div>
+    )
+  }
 
   const ClassIcon = getClassIcon(currentLevel.id)
   const NextClassIcon = nextLevel ? getClassIcon(nextLevel.id) : null

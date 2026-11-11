@@ -15,30 +15,14 @@ export function useUserLevel() {
   const { totalPointsEarned, levelId, points } = usePoints()
 
   return useMemo(() => {
-    // Se levelId ainda não carregou, retornar valores nulos
-    // para que componentes possam mostrar loading
-    if (levelId === null) {
-      return {
-        current: null,
-        currentId: null,
-        currentName: null,
-        currentShortName: null,
-        next: null,
-        nextId: null,
-        nextName: null,
-        progress: 0,
-        pointsToNext: 0,
-        totalPointsEarned: 0,
-        balance: points,
-        levels,
-        isMaxLevel: false,
-        bonusMultiplier: 1
-      }
-    }
+    // Se levelId ainda não carregou, usar level 1 como placeholder
+    // mas marcar isLoading=true e currentId=null para componentes que precisam
+    const isLoading = levelId === null
+    const effectiveLevelId = levelId ?? 1
 
     // Usa levelId do banco (já calculado pelo backend)
-    const currentLevel = levels.find(l => l.id === levelId) || levels[0]
-    const nextLevel = levels.find(l => l.id === levelId + 1) || null
+    const currentLevel = levels.find(l => l.id === effectiveLevelId) || levels[0]
+    const nextLevel = levels.find(l => l.id === effectiveLevelId + 1) || null
 
     // Calcular progresso baseado em total_points_earned
     const pointsInLevel = totalPointsEarned - currentLevel.minPoints
@@ -49,7 +33,7 @@ export function useUserLevel() {
     return {
       // Dados da classe atual
       current: currentLevel,
-      currentId: levelId,
+      currentId: isLoading ? null : levelId, // null enquanto carrega para ClassExplorer detectar
       currentName: currentLevel.name,
       currentShortName: currentLevel.shortName,
 
@@ -71,7 +55,8 @@ export function useUserLevel() {
 
       // Helpers
       isMaxLevel: !nextLevel,
-      bonusMultiplier: currentLevel.bonusMultiplier || 1
+      bonusMultiplier: currentLevel.bonusMultiplier || 1,
+      isLoading // true quando levelId ainda não carregou do backend
     }
   }, [levelId, totalPointsEarned, points])
 }
