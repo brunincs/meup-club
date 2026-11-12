@@ -80,8 +80,9 @@ async function sha256(data: Uint8Array): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-// Preços do Haiku (por milhão de tokens)
+// Preços por milhão de tokens
 const PRICING = {
+  'claude-3-5-sonnet-20241022': { input: 3.0, output: 15.0 },
   'claude-3-5-haiku-20241022': { input: 1.0, output: 5.0 },
   'claude-3-haiku-20240307': { input: 0.25, output: 1.25 }
 }
@@ -191,8 +192,8 @@ serve(async (req) => {
     // 5. Converter PDF para base64
     const pdfBase64 = btoa(String.fromCharCode(...pdfBytes))
 
-    // 6. Chamar API da Anthropic
-    const model = Deno.env.get('CARD_MODEL') || 'claude-3-5-haiku-20241022'
+    // 6. Chamar API da Anthropic (Sonnet para suporte completo a PDF)
+    const model = Deno.env.get('CARD_MODEL') || 'claude-3-5-sonnet-20241022'
     let anthropicResponse: Response
     let retryCount = 0
     const maxRetries = 1
