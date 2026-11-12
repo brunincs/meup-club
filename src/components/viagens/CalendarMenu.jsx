@@ -157,8 +157,9 @@ export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
       {/* Botão trigger */}
       <button
         ref={refs.setReference}
-        {...getReferenceProps()}
-        onClick={(e) => e.stopPropagation()}
+        {...getReferenceProps({
+          onClick: (e) => e.stopPropagation()
+        })}
         className={`flex items-center gap-1.5 rounded-xl text-xs font-heading font-medium transition-colors ${
           variant === 'full'
             ? 'px-4 py-2 border border-antique-gold/50 text-ice-white hover:bg-antique-gold/10'
