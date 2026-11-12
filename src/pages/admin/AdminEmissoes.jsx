@@ -273,15 +273,119 @@ function RecusarModal({ emissao, onConfirm, onClose }) {
 }
 
 // ============================================
-// COMPONENTE: Bloco de Voo Editável
+// COMPONENTE: Input com estado "não lido"
 // ============================================
-function VooBlock({ voo, index, onUpdate, onRemove, passageiros }) {
-  const isEmpty = (val) => !val || val === ''
+function VooInput({ label, value, onChange, placeholder, className = '', mono = false, center = false, uppercase = false, maxLength, type = 'text', multiline = false }) {
+  const isEmpty = !value || value === ''
+  const baseClass = `w-full px-3 py-2 rounded-lg border text-sm transition-colors text-[#1f1f1f] ${
+    mono ? 'font-mono' : ''
+  } ${center ? 'text-center' : ''}`
+  const stateClass = isEmpty
+    ? 'border-amber-300 bg-white placeholder:text-amber-400'
+    : 'border-dusty-rose/30 bg-white placeholder:text-graphite/40'
+
+  const handleChange = (e) => {
+    let val = e.target.value
+    if (uppercase) val = val.toUpperCase()
+    if (maxLength) val = val.slice(0, maxLength)
+    onChange(val)
+  }
+
+  if (multiline) {
+    return (
+      <div className={className}>
+        {label && <label className="block text-xs text-graphite/60 mb-1">{label}</label>}
+        <textarea
+          value={value || ''}
+          onChange={handleChange}
+          placeholder={isEmpty ? 'não lido' : placeholder}
+          rows={2}
+          className={`${baseClass} ${stateClass} resize-none`}
+        />
+      </div>
+    )
+  }
 
   return (
-    <div className="p-4 rounded-xl bg-white border border-dusty-rose/20 space-y-3">
+    <div className={className}>
+      {label && <label className="block text-xs text-graphite/60 mb-1">{label}</label>}
+      <input
+        type={type}
+        value={value || ''}
+        onChange={handleChange}
+        placeholder={isEmpty ? 'não lido' : placeholder}
+        className={`${baseClass} ${stateClass}`}
+      />
+    </div>
+  )
+}
+
+// ============================================
+// COMPONENTE: Bloco de Localidade (IATA + Aeroporto + Cidade empilhados)
+// ============================================
+function LocalidadeBlock({ label, iata, aeroporto, cidade, onUpdateIata, onUpdateAeroporto, onUpdateCidade }) {
+  const isEmpty = (v) => !v || v === ''
+
+  return (
+    <div className="flex-1 space-y-2">
+      <p className="text-xs text-graphite/60 font-heading font-semibold">{label}</p>
+      {/* IATA */}
+      <input
+        type="text"
+        value={iata || ''}
+        onChange={(e) => onUpdateIata(e.target.value.toUpperCase().slice(0, 3))}
+        placeholder={isEmpty(iata) ? 'não lido' : 'XXX'}
+        className={`w-16 px-3 py-2 rounded-lg border text-sm font-mono font-bold text-center text-[#1f1f1f] ${
+          isEmpty(iata) ? 'border-amber-300 bg-white placeholder:text-amber-400' : 'border-dusty-rose/30 bg-white'
+        }`}
+      />
+      {/* Aeroporto */}
+      <textarea
+        value={aeroporto || ''}
+        onChange={(e) => onUpdateAeroporto(e.target.value)}
+        placeholder={isEmpty(aeroporto) ? 'não lido' : 'Nome do aeroporto'}
+        rows={2}
+        className={`w-full px-3 py-2 rounded-lg border text-sm text-[#1f1f1f] resize-none ${
+          isEmpty(aeroporto) ? 'border-amber-300 bg-white placeholder:text-amber-400' : 'border-dusty-rose/30 bg-white placeholder:text-graphite/40'
+        }`}
+      />
+      {/* Cidade */}
+      <input
+        type="text"
+        value={cidade || ''}
+        onChange={(e) => onUpdateCidade(e.target.value)}
+        placeholder={isEmpty(cidade) ? 'não lido' : 'Cidade/UF'}
+        className={`w-full px-3 py-2 rounded-lg border text-sm text-[#1f1f1f] ${
+          isEmpty(cidade) ? 'border-amber-300 bg-white placeholder:text-amber-400' : 'border-dusty-rose/30 bg-white placeholder:text-graphite/40'
+        }`}
+      />
+    </div>
+  )
+}
+
+// ============================================
+// COMPONENTE: Bloco de Voo Editável (COMPLETO)
+// ============================================
+function VooBlock({ voo, index, onUpdate, onRemove }) {
+  // Extrair data do voo de partida_em ou data_voo
+  const dataVoo = voo.data_voo || (voo.partida_em ? voo.partida_em.split('T')[0] : '')
+
+  // Formatar data para input date (YYYY-MM-DD)
+  const formatDateForInput = (dateStr) => {
+    if (!dateStr) return ''
+    // Se já está em YYYY-MM-DD, retorna
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr
+    // Tenta parsear
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return ''
+    return d.toISOString().split('T')[0]
+  }
+
+  return (
+    <div className="p-4 rounded-xl bg-ice-white border border-dusty-rose/20 space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <span className={`px-2 py-0.5 rounded-lg text-xs font-heading font-medium ${
+        <span className={`px-3 py-1 rounded-lg text-xs font-heading font-semibold ${
           voo.sentido === 'ida' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
         }`}>
           {voo.sentido === 'ida' ? '✈️ IDA' : '✈️ VOLTA'} · Trecho {index + 1}
@@ -289,144 +393,147 @@ function VooBlock({ voo, index, onUpdate, onRemove, passageiros }) {
         <button
           type="button"
           onClick={() => onRemove(index)}
-          className="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs hover:bg-red-200 transition-colors"
+          className="w-7 h-7 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-sm hover:bg-red-200 transition-colors"
         >
           ×
         </button>
       </div>
 
-      {/* Rota */}
-      <div className="grid grid-cols-5 gap-2 items-end">
-        <div className="col-span-2">
-          <label className="block text-xs text-graphite/60 mb-1">Origem</label>
-          <input
-            type="text"
-            value={voo.origem_cidade || ''}
-            onChange={(e) => onUpdate(index, 'origem_cidade', e.target.value)}
-            placeholder="Cidade"
-            className={`w-full px-3 py-2 rounded-lg bg-ice-white border text-sm ${isEmpty(voo.origem_cidade) ? 'border-amber-300 bg-amber-50/50' : 'border-dusty-rose/30'}`}
-          />
+      {/* ORIGEM → DESTINO (duas colunas, no mobile empilha) */}
+      <div className="flex flex-col md:flex-row gap-4 items-stretch">
+        {/* Origem */}
+        <LocalidadeBlock
+          label="ORIGEM"
+          iata={voo.origem_iata}
+          aeroporto={voo.origem_aeroporto}
+          cidade={voo.origem_cidade}
+          onUpdateIata={(v) => onUpdate(index, 'origem_iata', v)}
+          onUpdateAeroporto={(v) => onUpdate(index, 'origem_aeroporto', v)}
+          onUpdateCidade={(v) => onUpdate(index, 'origem_cidade', v)}
+        />
+        {/* Seta */}
+        <div className="flex items-center justify-center py-2 md:py-0">
+          <span className="text-graphite/40 text-2xl font-light">→</span>
         </div>
-        <div>
-          <input
-            type="text"
-            value={voo.origem_iata || ''}
-            onChange={(e) => onUpdate(index, 'origem_iata', e.target.value.toUpperCase().slice(0, 3))}
-            placeholder="IATA"
-            className={`w-full px-3 py-2 rounded-lg bg-ice-white border text-sm text-center font-mono ${isEmpty(voo.origem_iata) ? 'border-amber-300 bg-amber-50/50' : 'border-dusty-rose/30'}`}
-          />
-        </div>
-        <div className="text-center text-graphite/40 self-center">→</div>
-        <div className="col-span-1">
-          <input
-            type="text"
-            value={voo.destino_iata || ''}
-            onChange={(e) => onUpdate(index, 'destino_iata', e.target.value.toUpperCase().slice(0, 3))}
-            placeholder="IATA"
-            className={`w-full px-3 py-2 rounded-lg bg-ice-white border text-sm text-center font-mono ${isEmpty(voo.destino_iata) ? 'border-amber-300 bg-amber-50/50' : 'border-dusty-rose/30'}`}
-          />
-        </div>
+        {/* Destino */}
+        <LocalidadeBlock
+          label="DESTINO"
+          iata={voo.destino_iata}
+          aeroporto={voo.destino_aeroporto}
+          cidade={voo.destino_cidade}
+          onUpdateIata={(v) => onUpdate(index, 'destino_iata', v)}
+          onUpdateAeroporto={(v) => onUpdate(index, 'destino_aeroporto', v)}
+          onUpdateCidade={(v) => onUpdate(index, 'destino_cidade', v)}
+        />
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      {/* Data · Localizador */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
+          <label className="block text-xs text-graphite/60 mb-1">Data</label>
           <input
-            type="text"
-            value={voo.destino_cidade || ''}
-            onChange={(e) => onUpdate(index, 'destino_cidade', e.target.value)}
-            placeholder="Cidade destino"
-            className={`w-full px-3 py-2 rounded-lg bg-ice-white border text-sm ${isEmpty(voo.destino_cidade) ? 'border-amber-300 bg-amber-50/50' : 'border-dusty-rose/30'}`}
+            type="date"
+            value={formatDateForInput(dataVoo)}
+            onChange={(e) => onUpdate(index, 'data_voo', e.target.value)}
+            className={`w-full px-3 py-2 rounded-lg border text-sm text-[#1f1f1f] ${
+              !dataVoo ? 'border-amber-300 bg-white' : 'border-dusty-rose/30 bg-white'
+            }`}
           />
         </div>
-        <div>
-          <input
-            type="text"
-            value={voo.localizador || ''}
-            onChange={(e) => onUpdate(index, 'localizador', e.target.value.toUpperCase())}
-            placeholder="Localizador"
-            className={`w-full px-3 py-2 rounded-lg bg-ice-white border text-sm font-mono ${isEmpty(voo.localizador) ? 'border-amber-300 bg-amber-50/50' : 'border-dusty-rose/30'}`}
-          />
-        </div>
+        <VooInput
+          label="Localizador"
+          value={voo.localizador}
+          onChange={(v) => onUpdate(index, 'localizador', v)}
+          mono uppercase
+          className="sm:col-span-2"
+        />
       </div>
 
-      {/* Companhia e Voo */}
-      <div className="grid grid-cols-3 gap-2">
-        <div>
-          <label className="block text-xs text-graphite/60 mb-1">Companhia</label>
-          <input
-            type="text"
-            value={voo.companhia || ''}
-            onChange={(e) => onUpdate(index, 'companhia', e.target.value)}
-            placeholder="Ex: LATAM"
-            className="w-full px-3 py-2 rounded-lg bg-ice-white border border-dusty-rose/30 text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-xs text-graphite/60 mb-1">Voo</label>
-          <input
-            type="text"
-            value={voo.numero_voo || ''}
-            onChange={(e) => onUpdate(index, 'numero_voo', e.target.value.toUpperCase())}
-            placeholder="LA1234"
-            className="w-full px-3 py-2 rounded-lg bg-ice-white border border-dusty-rose/30 text-sm font-mono"
-          />
-        </div>
-        <div>
-          <label className="block text-xs text-graphite/60 mb-1">Classe</label>
-          <input
-            type="text"
-            value={voo.classe_cabine || ''}
-            onChange={(e) => onUpdate(index, 'classe_cabine', e.target.value)}
-            placeholder="Econômica"
-            className="w-full px-3 py-2 rounded-lg bg-ice-white border border-dusty-rose/30 text-sm"
-          />
-        </div>
+      {/* Companhia · Voo · Classe */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <VooInput
+          label="Companhia"
+          value={voo.companhia}
+          onChange={(v) => onUpdate(index, 'companhia', v)}
+        />
+        <VooInput
+          label="Voo"
+          value={voo.numero_voo}
+          onChange={(v) => onUpdate(index, 'numero_voo', v)}
+          mono uppercase
+        />
+        <VooInput
+          label="Classe"
+          value={voo.classe_cabine}
+          onChange={(v) => onUpdate(index, 'classe_cabine', v)}
+        />
       </div>
 
-      {/* Horários */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* Partida · Chegada · Duração · Tipo */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <VooInput
+          label="Partida"
+          value={voo.partida_local}
+          onChange={(v) => onUpdate(index, 'partida_local', v)}
+          mono center
+          placeholder="14:35"
+        />
+        <VooInput
+          label="Chegada"
+          value={voo.chegada_local}
+          onChange={(v) => onUpdate(index, 'chegada_local', v)}
+          mono center
+          placeholder="15:20"
+        />
+        <VooInput
+          label="Duração"
+          value={voo.duracao}
+          onChange={(v) => onUpdate(index, 'duracao', v)}
+          center
+          placeholder="1h45min"
+        />
         <div>
-          <label className="block text-xs text-graphite/60 mb-1">Partida</label>
-          <input
-            type="text"
-            value={voo.partida_local || ''}
-            onChange={(e) => onUpdate(index, 'partida_local', e.target.value)}
-            placeholder="14:35"
-            className="w-full px-3 py-2 rounded-lg bg-ice-white border border-dusty-rose/30 text-sm font-mono text-center"
-          />
-        </div>
-        <div>
-          <label className="block text-xs text-graphite/60 mb-1">Chegada</label>
-          <input
-            type="text"
-            value={voo.chegada_local || ''}
-            onChange={(e) => onUpdate(index, 'chegada_local', e.target.value)}
-            placeholder="18:20"
-            className="w-full px-3 py-2 rounded-lg bg-ice-white border border-dusty-rose/30 text-sm font-mono text-center"
-          />
-        </div>
-        <div>
-          <label className="block text-xs text-graphite/60 mb-1">Duração</label>
-          <input
-            type="text"
-            value={voo.duracao || ''}
-            onChange={(e) => onUpdate(index, 'duracao', e.target.value)}
-            placeholder="3h 45min"
-            className="w-full px-3 py-2 rounded-lg bg-ice-white border border-dusty-rose/30 text-sm text-center"
-          />
+          <label className="block text-xs text-graphite/60 mb-1">Tipo</label>
+          <select
+            value={voo.direto === false ? 'conexao' : 'direto'}
+            onChange={(e) => {
+              const isDireto = e.target.value === 'direto'
+              onUpdate(index, 'direto', isDireto)
+              if (isDireto) onUpdate(index, 'escalas', 0)
+            }}
+            className="w-full px-3 py-2 rounded-lg border border-dusty-rose/30 bg-white text-sm text-[#1f1f1f]"
+          >
+            <option value="direto">Direto</option>
+            <option value="conexao">Conexão</option>
+          </select>
         </div>
       </div>
 
       {/* Passageiros deste voo */}
       {voo.passageiros && voo.passageiros.length > 0 && (
-        <div className="pt-2 border-t border-dusty-rose/10">
-          <p className="text-xs text-graphite/60 mb-2">Passageiros deste trecho:</p>
-          <div className="space-y-2">
+        <div className="pt-3 border-t border-dusty-rose/10">
+          <p className="text-xs text-graphite/60 font-heading font-semibold mb-2">Passageiros deste trecho:</p>
+          <div className="space-y-3">
             {voo.passageiros.map((pax, paxIndex) => (
-              <div key={paxIndex} className="grid grid-cols-3 gap-2 text-xs">
-                <div className="font-medium text-graphite truncate">{pax.nome}</div>
-                <div className="font-mono text-graphite/70">{pax.eticket || '-'}</div>
-                <div className="text-graphite/60 truncate">{pax.bagagem || '-'}</div>
+              <div key={paxIndex} className="p-3 rounded-lg bg-white border border-dusty-rose/10 space-y-2">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-heading font-medium text-graphite/60 w-14">Nome</span>
+                  <span className={`text-sm font-medium ${!pax.nome ? 'text-amber-500' : 'text-[#1f1f1f]'}`}>
+                    {pax.nome || 'não lido'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-heading font-medium text-graphite/60 w-14">E-ticket</span>
+                  <span className={`text-sm font-mono ${!pax.eticket ? 'text-amber-500' : 'text-[#1f1f1f]'}`}>
+                    {pax.eticket || 'não lido'}
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-xs font-heading font-medium text-graphite/60 w-14 pt-0.5">Bagagem</span>
+                  <span className={`text-sm flex-1 break-words whitespace-pre-wrap ${!pax.bagagem ? 'text-amber-500' : 'text-[#1f1f1f]'}`}>
+                    {pax.bagagem || 'não lido'}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -734,22 +841,36 @@ function LancarEmissaoModal({ onConfirm, onClose, adminId }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-2xl bg-white rounded-2xl border border-dusty-rose/20 shadow-xl overflow-hidden my-4"
+        className="w-full max-w-3xl bg-white rounded-2xl border border-dusty-rose/20 shadow-xl flex flex-col max-h-[90vh]"
       >
-        <div className="px-6 pt-6 pb-4 border-b border-dusty-rose/10 bg-gradient-to-r from-deep-purple/5 to-antique-gold/5">
-          <h3 className="text-lg font-display font-bold text-graphite flex items-center gap-2">
-            <span>🚀</span> Lançar Emissão
-          </h3>
-          <p className="text-sm text-graphite/60 mt-1">
-            Registrar viagem e creditar pontos diretamente
-          </p>
+        {/* Header fixo */}
+        <div className="px-6 pt-6 pb-4 border-b border-dusty-rose/10 bg-gradient-to-r from-deep-purple/5 to-antique-gold/5 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-display font-bold text-graphite flex items-center gap-2">
+                <span>🚀</span> Lançar Emissão
+              </h3>
+              <p className="text-sm text-graphite/60 mt-1">
+                Registrar viagem e creditar pontos diretamente
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-graphite/10 text-graphite flex items-center justify-center hover:bg-graphite/20 transition-colors"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+        {/* Conteúdo com scroll */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="p-6 space-y-5 overflow-y-auto flex-1">
           {/* 1. CLIENTE */}
           <div ref={searchRef} className="relative">
             <label className="block text-xs text-graphite/60 font-heading mb-1.5">
@@ -976,8 +1097,10 @@ function LancarEmissaoModal({ onConfirm, onClose, adminId }) {
             )}
           </div>
 
-          {/* 6. BOTÕES */}
-          <div className="flex gap-3 pt-2">
+          </div>
+
+          {/* RODAPÉ FIXO COM BOTÕES */}
+          <div className="px-6 py-4 border-t border-dusty-rose/10 bg-ice-white flex gap-3 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
@@ -1058,13 +1181,14 @@ function ViagemDataModal({ emissao, onClose, onConfirm }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-2xl bg-white rounded-2xl border border-dusty-rose/20 shadow-xl overflow-hidden my-4"
+        className="w-full max-w-3xl bg-white rounded-2xl border border-dusty-rose/20 shadow-xl flex flex-col max-h-[90vh]"
       >
-        <div className="px-6 pt-6 pb-4 border-b border-dusty-rose/10 bg-gradient-to-r from-blue-50 to-purple-50">
+        {/* Header fixo */}
+        <div className="px-6 pt-6 pb-4 border-b border-dusty-rose/10 bg-gradient-to-r from-blue-50 to-purple-50 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-display font-bold text-graphite flex items-center gap-2">
@@ -1083,7 +1207,8 @@ function ViagemDataModal({ emissao, onClose, onConfirm }) {
           </div>
         </div>
 
-        <div className="p-6 max-h-[60vh] overflow-y-auto">
+        {/* Conteúdo com scroll */}
+        <div className="p-6 overflow-y-auto flex-1">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <motion.div
@@ -1135,62 +1260,131 @@ function ViagemDataModal({ emissao, onClose, onConfirm }) {
                 {voos.length === 0 ? (
                   <p className="text-sm text-graphite/50 text-center py-4">Nenhum trecho registrado</p>
                 ) : (
-                  voos.map((voo, index) => (
-                    <div key={voo.id || index} className="p-4 rounded-xl bg-white border border-dusty-rose/20">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className={`px-2 py-0.5 rounded-lg text-xs font-heading font-medium ${
-                          voo.sentido === 'ida' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
-                        }`}>
-                          {voo.sentido === 'ida' ? '✈️ IDA' : '✈️ VOLTA'}
-                        </span>
-                        <span className="text-xs text-graphite/50 font-mono">
-                          {voo.localizador}
-                        </span>
-                      </div>
+                  voos.map((voo, index) => {
+                    const Campo = ({ value, mono = false }) => (
+                      <span className={`${mono ? 'font-mono' : ''} ${!value ? 'text-amber-500' : 'text-[#1f1f1f]'}`}>
+                        {value || 'não lido'}
+                      </span>
+                    )
+                    const dataVoo = voo.data_voo || (voo.partida_em ? voo.partida_em.split('T')[0] : null)
 
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="text-center">
-                          <p className="text-lg font-mono font-bold text-graphite">{voo.origem_iata}</p>
-                          <p className="text-xs text-graphite/60">{voo.origem_cidade}</p>
-                          <p className="text-sm font-mono text-graphite/80">{voo.partida_local}</p>
+                    return (
+                      <div key={voo.id || index} className="p-4 rounded-xl bg-ice-white border border-dusty-rose/20 space-y-4">
+                        {/* Header */}
+                        <div className="flex items-center justify-between">
+                          <span className={`px-3 py-1 rounded-lg text-xs font-heading font-semibold ${
+                            voo.sentido === 'ida' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                          }`}>
+                            {voo.sentido === 'ida' ? '✈️ IDA' : '✈️ VOLTA'}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-lg text-xs font-heading ${
+                            voo.direto === false ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                          }`}>
+                            {voo.direto === false ? 'Conexão' : 'Direto'}
+                          </span>
                         </div>
-                        <div className="flex-1 flex items-center justify-center">
-                          <div className="flex-1 border-t border-dashed border-graphite/30"></div>
-                          <span className="px-2 text-xs text-graphite/50">{voo.duracao}</span>
-                          <div className="flex-1 border-t border-dashed border-graphite/30"></div>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-lg font-mono font-bold text-graphite">{voo.destino_iata}</p>
-                          <p className="text-xs text-graphite/60">{voo.destino_cidade}</p>
-                          <p className="text-sm font-mono text-graphite/80">{voo.chegada_local}</p>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center gap-4 text-xs text-graphite/60">
-                        <span>{voo.companhia}</span>
-                        <span className="font-mono">{voo.numero_voo}</span>
-                        <span>{voo.classe_cabine}</span>
-                      </div>
+                        {/* ORIGEM → DESTINO (duas colunas) */}
+                        <div className="flex flex-col md:flex-row gap-4 items-stretch">
+                          {/* Origem */}
+                          <div className="flex-1 space-y-1">
+                            <p className="text-xs text-graphite/60 font-heading font-semibold">ORIGEM</p>
+                            <p className="font-mono font-bold text-lg text-[#1f1f1f]">{voo.origem_iata || <span className="text-amber-500">---</span>}</p>
+                            <p className="text-sm text-[#1f1f1f] break-words">{voo.origem_aeroporto || <span className="text-amber-500">não lido</span>}</p>
+                            <p className="text-sm text-[#1f1f1f]">{voo.origem_cidade || <span className="text-amber-500">não lido</span>}</p>
+                          </div>
+                          {/* Seta */}
+                          <div className="flex items-center justify-center py-2 md:py-0">
+                            <span className="text-graphite/40 text-2xl font-light">→</span>
+                          </div>
+                          {/* Destino */}
+                          <div className="flex-1 space-y-1">
+                            <p className="text-xs text-graphite/60 font-heading font-semibold">DESTINO</p>
+                            <p className="font-mono font-bold text-lg text-[#1f1f1f]">{voo.destino_iata || <span className="text-amber-500">---</span>}</p>
+                            <p className="text-sm text-[#1f1f1f] break-words">{voo.destino_aeroporto || <span className="text-amber-500">não lido</span>}</p>
+                            <p className="text-sm text-[#1f1f1f]">{voo.destino_cidade || <span className="text-amber-500">não lido</span>}</p>
+                          </div>
+                        </div>
 
-                      {/* Passageiros do voo */}
-                      {voo.viagem_voo_passageiros && voo.viagem_voo_passageiros.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-dusty-rose/10">
-                          <p className="text-xs text-graphite/60 mb-2">Passageiros:</p>
-                          {voo.viagem_voo_passageiros.map((vvp, pIndex) => (
-                            <div key={pIndex} className="flex items-center justify-between text-xs py-1">
-                              <span className="font-medium text-graphite">
-                                {vvp.viagem_passageiros?.nome || 'Passageiro'}
-                              </span>
-                              <div className="flex items-center gap-3 text-graphite/60">
-                                <span className="font-mono">{vvp.eticket || '-'}</span>
-                                <span>{vvp.bagagem || '-'}</span>
-                              </div>
+                        {/* Data · Localizador */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                          <div>
+                            <span className="text-xs text-graphite/50 block">Data</span>
+                            <span className={`font-mono ${!dataVoo ? 'text-amber-500' : 'text-[#1f1f1f]'}`}>
+                              {dataVoo ? new Date(dataVoo + 'T12:00:00').toLocaleDateString('pt-BR') : 'não lido'}
+                            </span>
+                          </div>
+                          <div className="sm:col-span-2">
+                            <span className="text-xs text-graphite/50 block">Localizador</span>
+                            <Campo value={voo.localizador} mono />
+                          </div>
+                        </div>
+
+                        {/* Companhia · Voo · Classe */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                          <div>
+                            <span className="text-xs text-graphite/50 block">Companhia</span>
+                            <Campo value={voo.companhia} />
+                          </div>
+                          <div>
+                            <span className="text-xs text-graphite/50">Voo: </span>
+                            <Campo value={voo.numero_voo} mono />
+                          </div>
+                          <div>
+                            <span className="text-xs text-graphite/50 block">Classe</span>
+                            <Campo value={voo.classe_cabine} />
+                          </div>
+                        </div>
+
+                        {/* Partida · Chegada · Duração */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                          <div>
+                            <span className="text-xs text-graphite/50 block">Partida</span>
+                            <Campo value={voo.partida_local} mono />
+                          </div>
+                          <div>
+                            <span className="text-xs text-graphite/50 block">Chegada</span>
+                            <Campo value={voo.chegada_local} mono />
+                          </div>
+                          <div>
+                            <span className="text-xs text-graphite/50 block">Duração</span>
+                            <Campo value={voo.duracao} />
+                          </div>
+                        </div>
+
+                        {/* Passageiros do voo */}
+                        {voo.viagem_voo_passageiros && voo.viagem_voo_passageiros.length > 0 && (
+                          <div className="pt-3 border-t border-dusty-rose/10">
+                            <p className="text-xs text-graphite/60 font-heading font-semibold mb-2">Passageiros deste trecho:</p>
+                            <div className="space-y-3">
+                              {voo.viagem_voo_passageiros.map((vvp, pIndex) => (
+                                <div key={pIndex} className="p-3 rounded-lg bg-white border border-dusty-rose/10 space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-xs font-heading font-medium text-graphite/60 w-14">Nome</span>
+                                    <span className={`text-sm font-medium ${!vvp.viagem_passageiros?.nome ? 'text-amber-500' : 'text-[#1f1f1f]'}`}>
+                                      {vvp.viagem_passageiros?.nome || 'não lido'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-xs font-heading font-medium text-graphite/60 w-14">E-ticket</span>
+                                    <span className={`text-sm font-mono ${!vvp.eticket ? 'text-amber-500' : 'text-[#1f1f1f]'}`}>
+                                      {vvp.eticket || 'não lido'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-start gap-3">
+                                    <span className="text-xs font-heading font-medium text-graphite/60 w-14 pt-0.5">Bagagem</span>
+                                    <span className={`text-sm flex-1 break-words whitespace-pre-wrap ${!vvp.bagagem ? 'text-amber-500' : 'text-[#1f1f1f]'}`}>
+                                      {vvp.bagagem || 'não lido'}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })
                 )}
               </div>
 
@@ -1211,9 +1405,9 @@ function ViagemDataModal({ emissao, onClose, onConfirm }) {
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer fixo */}
         {viagem && viagem.dados_status !== 'conferido' && (
-          <div className="px-6 py-4 border-t border-dusty-rose/10 bg-ice-white flex gap-3">
+          <div className="px-6 py-4 border-t border-dusty-rose/10 bg-ice-white flex gap-3 flex-shrink-0">
             <button
               onClick={onClose}
               className="flex-1 px-4 py-3 rounded-xl border border-dusty-rose/30 text-graphite/70 hover:text-graphite hover:border-dusty-rose/50 transition-colors font-heading"
@@ -1231,7 +1425,7 @@ function ViagemDataModal({ emissao, onClose, onConfirm }) {
         )}
 
         {viagem && viagem.dados_status === 'conferido' && (
-          <div className="px-6 py-4 border-t border-dusty-rose/10 bg-green-50">
+          <div className="px-6 py-4 border-t border-dusty-rose/10 bg-green-50 flex-shrink-0">
             <p className="text-center text-sm text-green-700 font-heading">
               ✓ Dados já foram conferidos
             </p>

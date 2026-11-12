@@ -37,21 +37,22 @@ Retorne EXATAMENTE este JSON (sem markdown, sem explicação):
     {
       "sentido": "ida ou volta",
       "ordem": 1,
+      "data_voo": "YYYY-MM-DD",
       "localizador": "ABC123",
       "companhia": "Nome da Cia",
       "numero_voo": "XX1234",
       "classe_cabine": "Econômica/Executiva/etc",
       "origem_iata": "XXX",
-      "origem_aeroporto": "Nome do aeroporto",
-      "origem_cidade": "Cidade",
+      "origem_aeroporto": "Nome completo do aeroporto",
+      "origem_cidade": "Cidade/UF",
       "destino_iata": "YYY",
-      "destino_aeroporto": "Nome do aeroporto",
-      "destino_cidade": "Cidade",
+      "destino_aeroporto": "Nome completo do aeroporto",
+      "destino_cidade": "Cidade/UF",
       "partida_em": "YYYY-MM-DDTHH:MM:SS+HH:MM",
       "chegada_em": "YYYY-MM-DDTHH:MM:SS+HH:MM",
       "partida_local": "HH:MM",
       "chegada_local": "HH:MM",
-      "duracao": "Xh YYmin",
+      "duracao": "XhYYmin",
       "direto": true,
       "escalas": 0,
       "passageiros": [
@@ -80,11 +81,47 @@ async function sha256(data: Uint8Array): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-// Preços por milhão de tokens
-const PRICING = {
+// Preços por milhão de tokens (atualizado 2025)
+const PRICING: Record<string, { input: number; output: number }> = {
+  'claude-haiku-5-5': { input: 1.0, output: 5.0 },
+  'claude-sonnet-4-5-20250514': { input: 3.0, output: 15.0 },
+  // Modelos legados
   'claude-3-5-sonnet-20241022': { input: 3.0, output: 15.0 },
   'claude-3-5-haiku-20241022': { input: 1.0, output: 5.0 },
   'claude-3-haiku-20240307': { input: 0.25, output: 1.25 }
+}
+
+// Mapear erros técnicos para mensagens legíveis
+function traduzirErroIA(erro: string): string {
+  const erroLower = erro.toLowerCase()
+
+  if (erroLower.includes('invalid_model') || erroLower.includes('model') && erroLower.includes('not found')) {
+    return 'Modelo inválido ou descontinuado'
+  }
+  if (erroLower.includes('credit') || erroLower.includes('balance') || erroLower.includes('insufficient')) {
+    return 'Sem créditos na API'
+  }
+  if (erroLower.includes('timeout') || erroLower.includes('timed out')) {
+    return 'Tempo esgotado'
+  }
+  if (erroLower.includes('rate_limit') || erroLower.includes('rate limit')) {
+    return 'Limite de requisições atingido'
+  }
+  if (erroLower.includes('overloaded') || erroLower.includes('capacity')) {
+    return 'Servidor sobrecarregado'
+  }
+  if (erroLower.includes('invalid_api_key') || erroLower.includes('authentication')) {
+    return 'Chave da API inválida'
+  }
+  if (erroLower.includes('pdf') && (erroLower.includes('invalid') || erroLower.includes('corrupt'))) {
+    return 'PDF inválido ou corrompido'
+  }
+
+  // Se for erro curto, retornar direto
+  if (erro.length < 50) return erro
+
+  // Senão, truncar
+  return erro.substring(0, 80) + '...'
 }
 
 serve(async (req) => {
@@ -192,8 +229,14 @@ serve(async (req) => {
     // 5. Converter PDF para base64
     const pdfBase64 = btoa(String.fromCharCode(...pdfBytes))
 
-    // 6. Chamar API da Anthropic (Claude 3.5 Haiku)
-    const model = Deno.env.get('CARD_MODEL') || 'claude-3-5-haiku-latest'
+    // 6. Chamar API da Anthropic
+    const envModel = Deno.env.get('CARD_MODEL')
+    const model = envModel || 'claude-haiku-5-5'
+
+    // Log se env tem valor diferente do esperado
+    if (envModel && envModel !== 'claude-haiku-5-5') {
+      console.log(`CARD_MODEL env definido como: ${envModel}`)
+    }
     let anthropicResponse: Response
     let retryCount = 0
     const maxRetries = 1
@@ -253,12 +296,20 @@ serve(async (req) => {
 
     // 8. Verificar erros da API
     if (!anthropicResponse!.ok || responseData.error) {
-      const errorMessage = responseData.error?.message || 'Erro na API da Anthropic'
-      const isCreditError = errorMessage.toLowerCase().includes('credit') ||
-                           errorMessage.toLowerCase().includes('balance') ||
-                           errorMessage.toLowerCase().includes('insufficient')
+      // Capturar erro completo (técnico) para log
+      const erroCompleto = responseData.error?.message ||
+                          responseData.message ||
+                          (typeof responseData.error === 'string' ? responseData.error : null) ||
+                          `HTTP ${anthropicResponse!.status}: ${JSON.stringify(responseData)}`
 
-      // Registrar erro
+      // Traduzir para mensagem legível
+      const erroLegivel = traduzirErroIA(erroCompleto)
+
+      const isCreditError = erroCompleto.toLowerCase().includes('credit') ||
+                           erroCompleto.toLowerCase().includes('balance') ||
+                           erroCompleto.toLowerCase().includes('insufficient')
+
+      // Registrar erro COMPLETO em ia_uso
       await supabase.from('ia_uso').insert({
         emissao_id,
         modelo: model,
@@ -266,13 +317,13 @@ serve(async (req) => {
         tokens_saida: outputTokens,
         custo_estimado_usd: custoEstimado,
         sucesso: false,
-        erro: errorMessage
+        erro: erroCompleto // Erro técnico completo para debug
       })
 
-      // Atualizar emissão com erro
+      // Atualizar emissão com erro LEGÍVEL
       await supabase
         .from('emissoes')
-        .update({ card_lido: false, card_erro: errorMessage })
+        .update({ card_lido: false, card_erro: erroLegivel })
         .eq('id', emissao_id)
 
       // Se for erro de crédito, criar notificação para admin
@@ -296,7 +347,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: errorMessage,
+          error: erroLegivel,
+          error_detail: erroCompleto, // Para debug no console
           is_credit_error: isCreditError
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
