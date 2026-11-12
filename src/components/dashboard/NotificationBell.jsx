@@ -216,24 +216,23 @@ export function NotificationBell() {
   )
 }
 
-// Mapeamento de identificadores para emojis
+// Mapeamento de identificadores para ícones (SVG simples)
 const ICON_MAP = {
   // Pontos
-  sparkles: '✨',
-  gift: '🎁',
-  star: '⭐',
+  sparkles: '★',
+  gift: '◆',
+  star: '★',
   // Indicação
-  wave: '👋',
-  handshake: '🤝',
-  // Classe
-  plane: '✈️',
-  rocket: '🚀',
+  wave: '◇',
+  handshake: '◇',
+  // Viagem/Check-in
+  plane: '✈',
+  check: '✓',
   // Missões
-  target: '🎯',
-  check: '✅',
+  target: '◎',
   // Fallback
-  bell: '🔔',
-  default: '🔔'
+  bell: '◆',
+  default: '◆'
 }
 
 // Função para obter emoji do identificador
@@ -272,15 +271,18 @@ function NotificationItem({ notification, onMarkAsRead }) {
 
   // Cores baseadas no tipo
   const typeStyles = {
-    points_earned: 'bg-game-green/10 text-game-green',
-    level_up: 'bg-antique-gold/10 text-antique-gold',
-    redemption: 'bg-game-purple/10 text-game-purple',
-    referral_signup: 'bg-game-blue/10 text-game-blue'
+    points_earned: 'bg-game-green/15 text-game-green',
+    level_up: 'bg-antique-gold/15 text-antique-gold',
+    redemption: 'bg-game-purple/15 text-game-purple',
+    referral_signup: 'bg-game-blue/15 text-game-blue',
+    checkin_reminder: 'bg-blue-500/15 text-blue-400',
+    checkin_done: 'bg-green-500/15 text-green-400',
+    emissao_aprovada: 'bg-antique-gold/15 text-antique-gold'
   }
 
-  const iconBgClass = typeStyles[type] || 'bg-dusty-rose/10 text-dusty-rose'
+  const iconBgClass = typeStyles[type] || 'bg-dusty-rose/15 text-dusty-rose'
 
-  // Obter emoji correto e corrigir textos
+  // Obter ícone e corrigir textos
   const displayIcon = getIconEmoji(icon)
   const displayTitle = fixText(title)
   const displayMessage = fixText(message)
@@ -300,30 +302,30 @@ function NotificationItem({ notification, onMarkAsRead }) {
       <button
         onClick={handleClick}
         className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5 ${
-          read ? 'opacity-60' : ''
+          read ? 'opacity-50' : ''
         }`}
       >
         {/* Ícone */}
-        <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-base ${iconBgClass}`}>
+        <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold ${iconBgClass}`}>
           {displayIcon}
         </div>
 
         {/* Conteúdo */}
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium ${read ? 'text-dusty-rose' : 'text-ice-white'}`}>
+          <p className={`text-sm font-heading font-semibold ${read ? 'text-dusty-rose' : 'text-ice-white'}`}>
             {displayTitle}
           </p>
-          <p className="text-xs text-dusty-rose/80 mt-0.5 line-clamp-2">
+          <p className={`text-xs mt-0.5 line-clamp-2 ${read ? 'text-dusty-rose/60' : 'text-ice-white/70'}`}>
             {displayMessage}
           </p>
-          <p className="text-[10px] text-dusty-rose/50 mt-1.5 uppercase tracking-wider">
+          <p className="text-[10px] text-dusty-rose/40 mt-1.5">
             {formatRelativeTime(created_at)}
           </p>
         </div>
 
         {/* Indicador de não lida */}
         {!read && (
-          <div className="flex-shrink-0 mt-1">
+          <div className="flex-shrink-0 mt-1.5">
             <span className="w-2 h-2 rounded-full bg-antique-gold block" />
           </div>
         )}
