@@ -4,13 +4,7 @@ import { format } from '@/services/copy'
 
 /**
  * Modal de detalhe da experiência
- * Exibe informações completas antes do resgate:
- * - Foto grande
- * - Nome + descrição completa
- * - O que inclui
- * - Regras e condições
- * - Custo + saldo do usuário
- * - Botão para iniciar resgate
+ * Estrutura fixa: header com imagem, corpo com scroll, footer sempre visível
  */
 export function ExperienceDetailModal({
   experience,
@@ -20,7 +14,25 @@ export function ExperienceDetailModal({
   canRedeem
 }) {
   const modalRef = useRef(null)
+  const bodyRef = useRef(null)
   const closeButtonRef = useRef(null)
+
+  // BODY SCROLL LOCK
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow
+    const originalPaddingRight = document.body.style.paddingRight
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+
+    document.body.style.overflow = 'hidden'
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+      document.body.style.paddingRight = originalPaddingRight
+    }
+  }, [])
 
   // Fechar com Escape
   useEffect(() => {
@@ -80,7 +92,7 @@ export function ExperienceDetailModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={handleBackdropClick}
       aria-hidden="true"
     >
@@ -90,13 +102,13 @@ export function ExperienceDetailModal({
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        className="w-full sm:max-w-2xl max-h-[95dvh] sm:max-h-[90dvh] flex flex-col rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl overflow-hidden sm:m-4"
         role="dialog"
         aria-modal="true"
         aria-labelledby="detail-modal-title"
       >
-        {/* Header com imagem */}
-        <div className="relative h-56 md:h-72 overflow-hidden">
+        {/* HEADER COM IMAGEM - fixo */}
+        <div className="relative flex-shrink-0 h-44 sm:h-56 md:h-72 overflow-hidden">
           {experience.image && (
             <img
               src={experience.image}
@@ -129,31 +141,35 @@ export function ExperienceDetailModal({
           )}
 
           {/* Nome sobre a imagem */}
-          <div className="absolute bottom-0 left-0 right-0 p-6">
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
             <h2
               id="detail-modal-title"
-              className="text-2xl md:text-3xl font-display font-semibold text-white leading-tight"
+              className="text-xl sm:text-2xl md:text-3xl font-display font-semibold text-white leading-tight"
             >
               {experience.name}
             </h2>
           </div>
         </div>
 
-        {/* Conteúdo */}
-        <div className="p-6">
+        {/* CORPO COM SCROLL */}
+        <div
+          ref={bodyRef}
+          className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           {/* Descrição */}
-          <p className="text-graphite/80 leading-relaxed mb-6">
+          <p className="text-sm sm:text-base text-graphite/80 leading-relaxed mb-4 sm:mb-6">
             {experience.description}
           </p>
 
           {/* O que inclui */}
           {experience.oQueInclui && (
-            <div className="mb-6">
-              <h3 className="text-sm font-heading font-semibold text-deep-purple uppercase tracking-wider mb-3">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-xs sm:text-sm font-heading font-semibold text-deep-purple uppercase tracking-wider mb-2 sm:mb-3">
                 O que inclui
               </h3>
-              <div className="p-4 rounded-xl bg-antique-gold/5 border border-antique-gold/20">
-                <div className="text-sm text-graphite/80 whitespace-pre-line leading-relaxed">
+              <div className="p-3 sm:p-4 rounded-xl bg-antique-gold/5 border border-antique-gold/20">
+                <div className="text-xs sm:text-sm text-graphite/80 whitespace-pre-line leading-relaxed">
                   {experience.oQueInclui}
                 </div>
               </div>
@@ -162,12 +178,12 @@ export function ExperienceDetailModal({
 
           {/* Regras */}
           {experience.regras && (
-            <div className="mb-6">
-              <h3 className="text-sm font-heading font-semibold text-deep-purple uppercase tracking-wider mb-3">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-xs sm:text-sm font-heading font-semibold text-deep-purple uppercase tracking-wider mb-2 sm:mb-3">
                 Regras e condições
               </h3>
-              <div className="p-4 rounded-xl bg-graphite/5 border border-graphite/10">
-                <div className="text-sm text-graphite/70 whitespace-pre-line leading-relaxed">
+              <div className="p-3 sm:p-4 rounded-xl bg-graphite/5 border border-graphite/10">
+                <div className="text-xs sm:text-sm text-graphite/70 whitespace-pre-line leading-relaxed">
                   {experience.regras}
                 </div>
               </div>
@@ -175,50 +191,50 @@ export function ExperienceDetailModal({
           )}
 
           {/* Custo e saldo */}
-          <div className="p-4 rounded-xl bg-deep-purple/5 border border-deep-purple/20 mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-graphite/70">Custo</span>
-              <span className="text-xl font-display font-semibold text-antique-gold">
+          <div className="p-3 sm:p-4 rounded-xl bg-deep-purple/5 border border-deep-purple/20">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-xs sm:text-sm text-graphite/70">Custo</span>
+              <span className="text-lg sm:text-xl font-display font-semibold text-antique-gold">
                 {format.pointsShort(experience.points)} pontos
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-graphite/70">Seu saldo</span>
-              <span className={`text-lg font-heading font-medium ${hasEnoughPoints ? 'text-game-green' : 'text-graphite'}`}>
+              <span className="text-xs sm:text-sm text-graphite/70">Seu saldo</span>
+              <span className={`text-base sm:text-lg font-heading font-medium ${hasEnoughPoints ? 'text-game-green' : 'text-graphite'}`}>
                 {format.pointsShort(userPoints)} pontos
               </span>
             </div>
             {!hasEnoughPoints && (
-              <div className="mt-3 pt-3 border-t border-deep-purple/10">
-                <p className="text-sm text-center text-graphite/60">
+              <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-deep-purple/10">
+                <p className="text-xs sm:text-sm text-center text-graphite/60">
                   Faltam <span className="text-antique-gold font-medium">{format.pointsShort(pointsNeeded)}</span> pontos
                 </p>
               </div>
             )}
           </div>
+        </div>
 
-          {/* Botões */}
-          <div className="flex gap-3">
-            <button
-              onClick={onClose}
-              className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium text-graphite/70 hover:text-deep-purple hover:bg-graphite/5 transition-colors border border-graphite/20"
-            >
-              Voltar
-            </button>
-            <motion.button
-              whileHover={canRedeem ? { scale: 1.02 } : {}}
-              whileTap={canRedeem ? { scale: 0.98 } : {}}
-              onClick={() => canRedeem && onRedeem(experience)}
-              disabled={!canRedeem}
-              className={`flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium transition-all ${
-                canRedeem
-                  ? 'bg-deep-purple text-white hover:bg-bright-purple'
-                  : 'bg-graphite/10 text-graphite/40 cursor-not-allowed'
-              }`}
-            >
-              {canRedeem ? 'Resgatar experiência' : 'Pontos insuficientes'}
-            </motion.button>
-          </div>
+        {/* FOOTER FIXO */}
+        <div className="flex-shrink-0 flex gap-2 sm:gap-3 p-3 sm:p-4 border-t border-graphite/10 bg-white/95 backdrop-blur-sm">
+          <button
+            onClick={onClose}
+            className="flex-1 px-3 sm:px-4 py-3 rounded-xl text-xs sm:text-sm font-heading font-medium text-graphite/70 hover:text-deep-purple hover:bg-graphite/5 transition-colors border border-graphite/20"
+          >
+            Voltar
+          </button>
+          <motion.button
+            whileHover={canRedeem ? { scale: 1.02 } : {}}
+            whileTap={canRedeem ? { scale: 0.98 } : {}}
+            onClick={() => canRedeem && onRedeem(experience)}
+            disabled={!canRedeem}
+            className={`flex-1 px-3 sm:px-4 py-3 rounded-xl text-xs sm:text-sm font-heading font-medium transition-all ${
+              canRedeem
+                ? 'bg-deep-purple text-white hover:bg-bright-purple'
+                : 'bg-graphite/10 text-graphite/40 cursor-not-allowed'
+            }`}
+          >
+            {canRedeem ? 'Resgatar experiência' : 'Pontos insuficientes'}
+          </motion.button>
         </div>
       </motion.div>
     </motion.div>

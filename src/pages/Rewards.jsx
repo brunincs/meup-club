@@ -41,10 +41,11 @@ const badgeConfig = {
 
 /**
  * Modal de confirmação de resgate COM QUANTIDADE
- * Permite escolher quantidade múltipla (ex: 3× Crédito R$100)
+ * Estrutura fixa: header, corpo com scroll, footer sempre visível
  */
 function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
   const modalRef = useRef(null)
+  const bodyRef = useRef(null)
   const confirmButtonRef = useRef(null)
   const cancelButtonRef = useRef(null)
 
@@ -67,6 +68,23 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
   useEffect(() => {
     setQuantity(1)
   }, [reward.id])
+
+  // BODY SCROLL LOCK - travar rolagem da página de fundo
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow
+    const originalPaddingRight = document.body.style.paddingRight
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+
+    document.body.style.overflow = 'hidden'
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+      document.body.style.paddingRight = originalPaddingRight
+    }
+  }, [])
 
   // Handlers de quantidade
   const decreaseQuantity = () => setQuantity(q => Math.max(1, q - 1))
@@ -118,6 +136,19 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
     return () => document.removeEventListener('keydown', handleTab)
   }, [])
 
+  // Scroll input into view quando focado (mobile)
+  useEffect(() => {
+    function handleFocusIn(e) {
+      if (e.target.matches('input, select, textarea') && bodyRef.current) {
+        setTimeout(() => {
+          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 300)
+      }
+    }
+    document.addEventListener('focusin', handleFocusIn)
+    return () => document.removeEventListener('focusin', handleFocusIn)
+  }, [])
+
   // Clicar no backdrop fecha (mas não durante loading)
   const handleBackdropClick = useCallback(() => {
     if (!isLoading) {
@@ -135,51 +166,59 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={handleBackdropClick}
       aria-hidden="true"
     >
       <motion.div
         ref={modalRef}
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-2xl bg-deep-purple border border-dusty-rose/20 shadow-2xl overflow-hidden"
+        className="w-full sm:max-w-md max-h-[95dvh] sm:max-h-[90dvh] flex flex-col rounded-t-2xl sm:rounded-2xl bg-deep-purple border border-dusty-rose/20 shadow-2xl overflow-hidden sm:m-4"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
       >
-        <div className="p-6">
-          <div className="w-14 h-14 rounded-xl bg-antique-gold/10 flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl text-antique-gold">
+        {/* HEADER FIXO */}
+        <div className="flex-shrink-0 p-4 sm:p-6 pb-0 sm:pb-0">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-antique-gold/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <span className="text-xl sm:text-2xl text-antique-gold">
               {categoryIcons[reward.category] || '◇'}
             </span>
           </div>
 
-          <h2 id="modal-title" className="text-xl font-heading font-medium text-ice-white text-center mb-2">
+          <h2 id="modal-title" className="text-lg sm:text-xl font-heading font-medium text-ice-white text-center mb-1 sm:mb-2">
             Solicitar Resgate
           </h2>
 
-          <p id="modal-description" className="text-sm text-dusty-rose text-center mb-6">
+          <p id="modal-description" className="text-xs sm:text-sm text-dusty-rose text-center mb-3 sm:mb-4">
             Você está solicitando o resgate de:
           </p>
+        </div>
 
-          <div className="p-4 rounded-xl bg-dusty-rose/5 border border-dusty-rose/10 mb-6">
-            <h3 className="text-lg font-heading font-medium text-ice-white mb-1">
+        {/* CORPO COM SCROLL */}
+        <div
+          ref={bodyRef}
+          className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 pb-4"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <div className="p-3 sm:p-4 rounded-xl bg-dusty-rose/5 border border-dusty-rose/10 mb-4 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-heading font-medium text-ice-white mb-1">
               {reward.name}
             </h3>
             {reward.subtitle && (
-              <p className="text-sm text-dusty-rose/80">{reward.subtitle}</p>
+              <p className="text-xs sm:text-sm text-dusty-rose/80">{reward.subtitle}</p>
             )}
           </div>
 
           {/* Seletor de Quantidade */}
-          <div className="p-4 rounded-xl bg-dusty-rose/5 border border-dusty-rose/10 mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-dusty-rose">Quantidade</span>
-              <div className="flex items-center gap-3">
+          <div className="p-3 sm:p-4 rounded-xl bg-dusty-rose/5 border border-dusty-rose/10 mb-3 sm:mb-4">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-xs sm:text-sm text-dusty-rose">Quantidade</span>
+              <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   onClick={decreaseQuantity}
                   disabled={quantity <= 1 || isLoading}
@@ -188,7 +227,7 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
                 >
                   −
                 </button>
-                <span className="text-xl font-heading font-semibold text-antique-gold w-8 text-center">
+                <span className="text-lg sm:text-xl font-heading font-semibold text-antique-gold w-8 text-center">
                   {quantity}
                 </span>
                 <button
@@ -207,32 +246,32 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
           </div>
 
           {/* Cálculo do Total */}
-          <div className="space-y-3 mb-4">
-            <div className="flex items-center justify-between text-sm">
+          <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
               <span className="text-dusty-rose">Custo unitário</span>
               <span className="text-dusty-rose/80">
                 {format.pointsShort(unitCost)} pontos
               </span>
             </div>
             {quantity > 1 && (
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs sm:text-sm">
                 <span className="text-dusty-rose">Cálculo</span>
                 <span className="text-dusty-rose/80">
                   {quantity} × {format.pointsShort(unitCost)}
                 </span>
               </div>
             )}
-            <div className="flex items-center justify-between text-sm pt-2 border-t border-dusty-rose/10">
+            <div className="flex items-center justify-between text-xs sm:text-sm pt-2 border-t border-dusty-rose/10">
               <span className="text-ice-white font-medium">Total</span>
-              <span className="text-antique-gold font-semibold text-lg">
+              <span className="text-antique-gold font-semibold text-base sm:text-lg">
                 {format.pointsShort(totalCost)} pontos
               </span>
             </div>
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
               <span className="text-dusty-rose">Seu saldo</span>
               <span className="text-ice-white">{format.pointsShort(userPoints)} pontos</span>
             </div>
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
               <span className="text-dusty-rose">Saldo após</span>
               <span className={remainingPoints >= 0 ? 'text-game-green' : 'text-red-400'}>
                 {format.pointsShort(remainingPoints)} pontos
@@ -242,7 +281,7 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
 
           {/* Formulário de entrega (se necessário) */}
           {needsForm && (
-            <div className="mb-4">
+            <div className="mb-3 sm:mb-4">
               <RedemptionFormByType
                 tipoEntrega={reward.tipoEntrega}
                 subtipoEntrega={reward.subtipoEntrega}
@@ -256,19 +295,20 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
           )}
 
           {/* Aviso sobre reserva de pontos */}
-          <div className="p-3 rounded-xl bg-antique-gold/10 border border-antique-gold/20 mb-4">
-            <p className="text-xs text-antique-gold/90 text-center">
+          <div className="p-2 sm:p-3 rounded-xl bg-antique-gold/10 border border-antique-gold/20">
+            <p className="text-[10px] sm:text-xs text-antique-gold/90 text-center">
               Os pontos são reservados agora. Se o resgate for recusado, voltam para o seu saldo.
             </p>
           </div>
         </div>
 
-        <div className="flex gap-3 p-4 border-t border-dusty-rose/20 bg-dusty-rose/5">
+        {/* FOOTER FIXO */}
+        <div className="flex-shrink-0 flex gap-2 sm:gap-3 p-3 sm:p-4 border-t border-dusty-rose/20 bg-deep-purple/95 backdrop-blur-sm">
           <button
             ref={cancelButtonRef}
             onClick={onCancel}
             disabled={isLoading}
-            className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium text-dusty-rose hover:text-ice-white hover:bg-dusty-rose/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-3 sm:px-4 py-3 rounded-xl text-xs sm:text-sm font-heading font-medium text-dusty-rose hover:text-ice-white hover:bg-dusty-rose/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>
@@ -276,7 +316,7 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
             ref={confirmButtonRef}
             onClick={handleConfirm}
             disabled={isLoading || remainingPoints < 0}
-            className="flex-1 px-4 py-3 rounded-xl text-sm font-heading font-medium bg-antique-gold text-deep-purple hover:bg-accent-light transition-colors disabled:opacity-50 disabled:cursor-wait"
+            className="flex-1 px-3 sm:px-4 py-3 rounded-xl text-xs sm:text-sm font-heading font-medium bg-antique-gold text-deep-purple hover:bg-accent-light transition-colors disabled:opacity-50 disabled:cursor-wait"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">

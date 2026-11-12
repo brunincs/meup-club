@@ -74,8 +74,8 @@ export function RedemptionFormByType({
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  // Buscar CEP via ViaCEP
-  const handleCepBlur = async (cep) => {
+  // Buscar CEP via ViaCEP (dispara ao digitar 8 dígitos)
+  const fetchCep = async (cep) => {
     const cleanCep = cep.replace(/\D/g, '')
     if (cleanCep.length !== 8) return
 
@@ -97,6 +97,18 @@ export function RedemptionFormByType({
       console.error('Erro ao buscar CEP:', error)
     }
     setCepLoading(false)
+  }
+
+  // Handler de CEP com auto-fetch ao completar 8 dígitos
+  const handleCepChange = (value) => {
+    const digits = value.replace(/\D/g, '').slice(0, 8)
+    const formatted = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits
+    handleChange('cep', formatted)
+
+    // Auto-fetch quando completar 8 dígitos
+    if (digits.length === 8) {
+      fetchCep(digits)
+    }
   }
 
   // Se não precisa de form, mostrar apenas confirmação
@@ -345,15 +357,11 @@ export function RedemptionFormByType({
               <input
                 type="text"
                 value={formData.cep || ''}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, '').slice(0, 8)
-                  const formatted = v.length > 5 ? `${v.slice(0, 5)}-${v.slice(5)}` : v
-                  handleChange('cep', formatted)
-                }}
-                onBlur={(e) => handleCepBlur(e.target.value)}
+                onChange={(e) => handleCepChange(e.target.value)}
                 placeholder="00000-000"
                 disabled={disabled}
                 className={inputClass(isDark)}
+                inputMode="numeric"
               />
               {cepLoading && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
