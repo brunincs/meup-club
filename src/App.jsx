@@ -19,7 +19,8 @@ import {
   AdminSubscriptions,
   AdminEmissoes,
   AdminFilaEntregas,
-  AdminFundadores
+  AdminFundadores,
+  AdminFotosDestinos
 } from '@/pages/admin'
 
 function App() {
@@ -163,6 +164,7 @@ function App() {
           <Route path="/admin/emissoes" element={<AdminRoute><AdminEmissoes /></AdminRoute>} />
           <Route path="/admin/fila-entregas" element={<AdminRoute><AdminFilaEntregas /></AdminRoute>} />
           <Route path="/admin/fundadores" element={<AdminRoute><AdminFundadores /></AdminRoute>} />
+          <Route path="/admin/fotos-destinos" element={<AdminRoute><AdminFotosDestinos /></AdminRoute>} />
         </Routes>
         </PointsProvider>
       </AuthProvider>

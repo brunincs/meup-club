@@ -69,6 +69,13 @@ const icons = {
       <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
     </svg>
   ),
+  photo: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  ),
   history: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
       <circle cx="12" cy="12" r="10" />
@@ -139,7 +146,8 @@ const menuGroups = [
     title: 'CATÁLOGO',
     items: [
       { path: '/admin/experiencias', label: 'Experiências', icon: 'star' },
-      { path: '/admin/missoes', label: 'Missões', icon: 'tasks' }
+      { path: '/admin/missoes', label: 'Missões', icon: 'tasks' },
+      { path: '/admin/fotos-destinos', label: 'Fotos Destinos', icon: 'photo' }
     ]
   },
   {
@@ -467,7 +475,7 @@ export function AdminLayout({ children, title = 'Admin', subtitle = '' }) {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-y-auto">
         {/* Mobile Header */}
         <MobileHeader
           onMenuClick={() => setMobileMenuOpen(true)}
