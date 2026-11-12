@@ -263,3 +263,84 @@ export async function fetchErrosRecentesIA() {
 
   return { success: true, erros: data, temErroCreditoRecente }
 }
+
+/**
+ * Ler card Meup diretamente do arquivo (antes de criar emissão)
+ * Usado no modal "Lançar Emissão" para pré-preencher dados
+ */
+export async function lerCardMeupDireto(cardPath) {
+  try {
+    const { data, error } = await supabase.functions.invoke('ler-card-meup-direto', {
+      body: { card_path: cardPath }
+    })
+
+    if (error) {
+      console.error('Erro ao ler card direto:', error)
+      return { success: false, error: error.message }
+    }
+
+    return data
+  } catch (err) {
+    console.error('Erro na chamada da Edge Function:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Lançar emissão completa (emissão + viagem + voos + passageiros)
+ */
+export async function lancarEmissaoCompleta({
+  clienteId,
+  valor,
+  dataEmissao,
+  cardPath,
+  cardUrl,
+  adminId,
+  idempotencyKey,
+  viagemDados,
+  voos,
+  passageiros,
+  cardHash = null
+}) {
+  try {
+    const { data, error } = await supabase.rpc('lancar_emissao_equipe_completa', {
+      p_cliente_id: clienteId,
+      p_valor: valor,
+      p_data_emissao: dataEmissao,
+      p_card_path: cardPath,
+      p_card_url: cardUrl,
+      p_admin_id: adminId,
+      p_idempotency_key: idempotencyKey,
+      p_viagem_dados: viagemDados,
+      p_voos: voos,
+      p_passageiros: passageiros,
+      p_card_hash: cardHash
+    })
+
+    if (error) {
+      console.error('Erro ao lançar emissão completa:', error)
+      return { success: false, error: error.message }
+    }
+
+    return data
+  } catch (err) {
+    console.error('Erro ao lançar emissão:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Buscar cliente por nome (para sugestão de passageiro)
+ */
+export async function buscarClientePorNome(nome) {
+  const { data, error } = await supabase.rpc('buscar_cliente_por_nome', {
+    p_nome: nome
+  })
+
+  if (error) {
+    console.error('Erro ao buscar cliente:', error)
+    return { success: false, error: error.message }
+  }
+
+  return { success: true, clientes: data || [] }
+}
