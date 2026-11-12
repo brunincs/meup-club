@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { AdminLayout, AdminPageHeader, AdminCard, AdminButton } from '@/components/admin/AdminLayout'
 import { fetchAdminStats, fetchAllUsers, fetchAllTransactions, fetchBalanceDiscrepancies } from '@/services/adminService'
+import { fetchIAStats, fetchErrosRecentesIA } from '@/services/viagemService'
 import { format } from '@/services/copy'
 
 function StatCard({ label, value, icon, index }) {
@@ -32,6 +33,8 @@ export function AdminDashboard() {
   const [topUsers, setTopUsers] = useState([])
   const [recentTransactions, setRecentTransactions] = useState([])
   const [discrepancies, setDiscrepancies] = useState([])
+  const [iaStats, setIAStats] = useState(null)
+  const [iaErros, setIAErros] = useState({ erros: [], temErroCreditoRecente: false })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -54,6 +57,15 @@ export function AdminDashboard() {
       const discResult = await fetchBalanceDiscrepancies()
       if (discResult.success) {
         setDiscrepancies(discResult.discrepancies)
+      }
+      // Buscar estatísticas da IA
+      const iaResult = await fetchIAStats(30)
+      if (iaResult.success) {
+        setIAStats(iaResult.stats)
+      }
+      const errosResult = await fetchErrosRecentesIA()
+      if (errosResult.success) {
+        setIAErros(errosResult)
       }
       setLoading(false)
     }
@@ -152,6 +164,60 @@ export function AdminDashboard() {
             index={2}
           />
         </div>
+
+        {/* ════════════════════════════════════════════════════════════
+            CARD IA - Leitura de Cards Meup
+            ════════════════════════════════════════════════════════════ */}
+        {iaStats && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <AdminCard>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-sm font-heading font-semibold text-[#1f1f1f] flex items-center gap-2">
+                    <span className="text-lg">🤖</span>
+                    Leitura Automática de Cards
+                  </h2>
+                  <p className="text-xs text-[#a39695] mt-1">Extração via IA (últimos 30 dias)</p>
+                </div>
+                {iaErros.temErroCreditoRecente && (
+                  <span className="px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
+                    ⚠️ Créditos baixos
+                  </span>
+                )}
+              </div>
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="text-center p-3 rounded-xl bg-[#32113f]/5">
+                  <p className="text-2xl font-display font-bold text-[#32113f]">{iaStats.total_leituras || 0}</p>
+                  <p className="text-xs text-[#a39695]">Leituras</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-green-50">
+                  <p className="text-2xl font-display font-bold text-green-700">{iaStats.leituras_sucesso || 0}</p>
+                  <p className="text-xs text-[#a39695]">Sucesso</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-red-50">
+                  <p className="text-2xl font-display font-bold text-red-700">{iaStats.leituras_erro || 0}</p>
+                  <p className="text-xs text-[#a39695]">Erros</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-amber-50">
+                  <p className="text-2xl font-display font-bold text-amber-700">
+                    ${(iaStats.custo_total_usd || 0).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-[#a39695]">Custo USD</p>
+                </div>
+              </div>
+              {iaStats.leituras_hoje !== undefined && (
+                <div className="mt-4 flex items-center justify-between text-xs text-[#a39695]">
+                  <span>Hoje: {iaStats.leituras_hoje || 0} leituras</span>
+                  <span>Tokens: {((iaStats.tokens_entrada || 0) + (iaStats.tokens_saida || 0)).toLocaleString('pt-BR')}</span>
+                </div>
+              )}
+            </AdminCard>
+          </motion.div>
+        )}
 
         {/* ════════════════════════════════════════════════════════════
             SEÇÃO ESCURA - Destaque visual (Top Clientes + Transações)

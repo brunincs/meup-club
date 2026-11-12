@@ -24,6 +24,13 @@ import {
   reabrirEmissao,
   reverterAprovacaoEmissao
 } from '@/services/reversalService'
+import {
+  lerCardMeup,
+  fetchViagemPorEmissao,
+  confirmarDadosViagem,
+  fetchIAStats,
+  fetchErrosRecentesIA
+} from '@/services/viagemService'
 import { ReversalModal } from '@/components/admin/ReversalModal'
 import toast from 'react-hot-toast'
 
@@ -700,6 +707,12 @@ export function AdminEmissoes() {
       result = await fetchEmissoesPendentes()
     } else if (tab === 'todas') {
       result = await fetchTodasEmissoes()
+    } else if (tab === 'dados_pendentes') {
+      // Buscar aprovadas que têm card mas não foram lidas
+      result = await fetchTodasEmissoes('aprovada')
+      if (result.success) {
+        result.emissoes = result.emissoes.filter(e => e.card_meup_path && !e.card_lido)
+      }
     } else {
       // Map tab value to status
       const statusMap = {
@@ -728,9 +741,58 @@ export function AdminEmissoes() {
     const result = await aprovarEmissao(emissao.id, user?.id)
     if (result.success) {
       toast.success(`Aprovado! +${result.pontos?.toLocaleString('pt-BR')} pontos creditados`)
+
+      // Se tem card, tentar ler automaticamente
+      if (emissao.card_meup_path) {
+        toast.loading('Lendo card automaticamente...', { id: 'ler-card' })
+        const leituraResult = await lerCardMeup(emissao.id)
+        if (leituraResult.success) {
+          if (leituraResult.skipped) {
+            toast.success('Card já havia sido lido', { id: 'ler-card' })
+          } else {
+            toast.success('Dados da viagem extraídos!', { id: 'ler-card' })
+          }
+        } else {
+          toast.error(leituraResult.error || 'Erro ao ler card', { id: 'ler-card' })
+        }
+      }
+
       loadEmissoes()
     } else {
       toast.error(result.error || 'Erro ao aprovar')
+    }
+  }
+
+  // Ler card manualmente
+  const handleLerCard = async (emissao, forceReread = false) => {
+    if (!emissao.card_meup_path) {
+      toast.error('Esta emissão não possui card')
+      return
+    }
+
+    toast.loading(forceReread ? 'Relendo card...' : 'Lendo card...', { id: 'ler-card' })
+    const result = await lerCardMeup(emissao.id, forceReread)
+
+    if (result.success) {
+      if (result.skipped && !forceReread) {
+        toast.success('Card já foi lido anteriormente', { id: 'ler-card' })
+      } else {
+        toast.success('Dados da viagem extraídos!', { id: 'ler-card' })
+      }
+      loadEmissoes()
+    } else {
+      toast.error(result.error || 'Erro ao ler card', { id: 'ler-card' })
+    }
+  }
+
+  // Confirmar dados da viagem
+  const handleConfirmarDados = async (viagemId) => {
+    const result = await confirmarDadosViagem(viagemId)
+    if (result.success) {
+      toast.success('Dados da viagem confirmados!')
+      loadEmissoes()
+    } else {
+      toast.error(result.error || 'Erro ao confirmar')
     }
   }
 
@@ -778,6 +840,21 @@ export function AdminEmissoes() {
   }
 
   const pendentesCount = emissoes.filter(e => e.status === 'pendente').length
+  const dadosPendentesCount = emissoes.filter(e => e.status === 'aprovada' && e.card_meup_path && !e.card_lido).length
+
+  // Badge de status dos dados
+  const getDadosStatusBadge = (emissao) => {
+    if (!emissao.card_meup_path) return null
+    if (emissao.card_erro) {
+      return { label: 'Erro', color: 'bg-red-100 text-red-700' }
+    }
+    if (!emissao.card_lido) {
+      return { label: 'Pendente', color: 'bg-amber-100 text-amber-700' }
+    }
+    // Verificar viagem associada
+    // Por agora, se card_lido = true, assumir lido_automatico
+    return { label: 'Lido', color: 'bg-blue-100 text-blue-700' }
+  }
 
   return (
     <AdminLayout>
@@ -799,6 +876,7 @@ export function AdminEmissoes() {
             { value: 'pendentes', label: 'Pendentes', badge: pendentesCount },
             { value: 'todas', label: 'Todas' },
             { value: 'aprovadas', label: 'Aprovadas' },
+            { value: 'dados_pendentes', label: 'Dados pendentes', badge: dadosPendentesCount },
             { value: 'recusadas', label: 'Recusadas' },
             { value: 'revertidas', label: 'Revertidas' }
           ].map(t => (
@@ -890,6 +968,15 @@ export function AdminEmissoes() {
                             🚀 Equipe
                           </span>
                         )}
+                        {/* Badge de status dos dados do card */}
+                        {emissao.status === 'aprovada' && emissao.card_meup_path && (() => {
+                          const badge = getDadosStatusBadge(emissao)
+                          return badge ? (
+                            <span className={`px-2 py-0.5 rounded-lg text-xs font-heading font-medium ${badge.color}`}>
+                              📋 {badge.label}
+                            </span>
+                          ) : null
+                        })()}
                       </div>
 
                       <p className="text-xs text-graphite/60 font-heading mb-2">
@@ -952,12 +1039,30 @@ export function AdminEmissoes() {
                         </button>
                       )}
                       {emissao.status === 'aprovada' && (
-                        <button
-                          onClick={() => setReversalModal({ emissao, type: 'reverter' })}
-                          className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors"
-                        >
-                          Reverter
-                        </button>
+                        <>
+                          {emissao.card_meup_path && !emissao.card_lido && (
+                            <button
+                              onClick={() => handleLerCard(emissao)}
+                              className="px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-sm"
+                            >
+                              📖 Ler card
+                            </button>
+                          )}
+                          {emissao.card_meup_path && emissao.card_lido && (
+                            <button
+                              onClick={() => handleLerCard(emissao, true)}
+                              className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 transition-colors"
+                            >
+                              🔄 Reler
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setReversalModal({ emissao, type: 'reverter' })}
+                            className="px-4 py-2 rounded-xl text-xs font-heading font-medium bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors"
+                          >
+                            Reverter
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
