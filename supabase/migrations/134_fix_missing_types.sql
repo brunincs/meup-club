@@ -32,8 +32,51 @@ ALTER TABLE notifications ADD CONSTRAINT notifications_type_check CHECK (
 );
 
 -- 2. Remover constraint de point_transactions (mais flexível)
--- Tipos são validados na função, não precisa de constraint
 ALTER TABLE point_transactions DROP CONSTRAINT IF EXISTS point_transactions_type_check;
+
+-- 3. CORRIGIR O TRIGGER que valida tipos de transação
+CREATE OR REPLACE FUNCTION public.validate_point_transaction()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Sanitizar reason
+  IF NEW.reason IS NOT NULL THEN
+    NEW.reason := LEFT(public.sanitize_text(NEW.reason), 500);
+  END IF;
+
+  -- Validar amount
+  IF NEW.amount = 0 THEN
+    RAISE EXCEPTION 'Valor da transação não pode ser zero';
+  END IF;
+
+  -- LISTA UNIFICADA DE TIPOS PERMITIDOS (incluindo level_bonus)
+  IF NEW.type NOT IN (
+    'credit',             -- Crédito genérico (check-in, ajuste)
+    'debit',              -- Débito genérico (ajuste)
+    'referral',           -- Indicação aprovada
+    'referral_bonus',     -- Bônus de indicação
+    'welcome_referral',   -- Bônus boas-vindas (indicado)
+    'task',               -- Missão concluída
+    'redemption',         -- Resgate de experiência (débito)
+    'redemption_refund',  -- Devolução de resgate (crédito)
+    'emissao',            -- Emissão aprovada
+    'birthday',           -- Aniversário
+    'estorno',            -- Reversão
+    'level_bonus',        -- Bônus de nível
+    'admin_adjustment',   -- Ajuste manual admin
+    'reversal',           -- Reversão
+    'refund',             -- Reembolso
+    'pending_release',    -- Liberação de pendente
+    'manual'              -- Manual
+  ) THEN
+    RAISE EXCEPTION 'Tipo de transação inválido: %', NEW.type;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
 
 -- 3. Garantir que a função de crédito aceita level_bonus
 CREATE OR REPLACE FUNCTION creditar_pontos_central(
