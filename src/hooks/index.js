@@ -1,3 +1,5 @@
 export { useMediaQuery, useIsMobile, useIsTablet, useIsDesktop } from './useMediaQuery'
 export { useScrollProgress, useIsScrolled } from './useScrollProgress'
 export { useExperiencias, formatPoints, calculatePoints, getUnlockedExperiences, getNextExperience, PONTOS_POR_REAL, PONTOS_POR_INDICACAO } from './useExperiencias'
+export { useFormValidation, isValidCPF, isValidFullName, isValidEmail, isValidDate, isValidPhone, isValidCEP } from './useFormValidation'
+export { useBodyScrollLock, forceUnlockBodyScroll } from './useBodyScrollLock'

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format } from '@/services/copy'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 /**
  * Modal de detalhe da experiência
@@ -17,22 +18,8 @@ export function ExperienceDetailModal({
   const bodyRef = useRef(null)
   const closeButtonRef = useRef(null)
 
-  // BODY SCROLL LOCK
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow
-    const originalPaddingRight = document.body.style.paddingRight
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-
-    document.body.style.overflow = 'hidden'
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`
-    }
-
-    return () => {
-      document.body.style.overflow = originalOverflow
-      document.body.style.paddingRight = originalPaddingRight
-    }
-  }, [])
+  // BODY SCROLL LOCK - usa hook robusto com contador global
+  useBodyScrollLock()
 
   // Fechar com Escape
   useEffect(() => {

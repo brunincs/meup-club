@@ -16,6 +16,7 @@ import { registrarVisitaExperiencias } from '@/services/supabaseData'
 import { format, levels as levelCopy } from '@/services/copy'
 import { getClassIcon, GiftIcon } from '@/components/ui/Icons'
 import { RedemptionFormByType } from '@/components/redemption/RedemptionFormByType'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 // ============================================
 // FOTO A VALIDAR - trocar pela oficial da Me,up depois
@@ -52,11 +53,66 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
   // Estado de quantidade
   const [quantity, setQuantity] = useState(1)
 
-  // Estado do formulário de entrega
-  const [formData, setFormData] = useState({})
+  // Estado do formulário de entrega (com dados pré-preenchidos se houver)
+  const [formData, setFormData] = useState(reward.prefilledData || {})
+
+  // Estado de erros de validação
+  const [validationErrors, setValidationErrors] = useState([])
 
   // Verificar se precisa de formulário
   const needsForm = reward.tipoEntrega && reward.tipoEntrega !== 'voucher'
+
+  // Validação de campos obrigatórios por tipo
+  const validateFormData = () => {
+    const errors = []
+    const tipo = reward.tipoEntrega
+    const subtipo = reward.subtipoEntrega
+
+    if (tipo === 'servico_voo') {
+      // Serviço de voo requer viagem
+      if (!formData.viagemId) {
+        errors.push('Selecione uma viagem')
+      }
+      // Trecho é obrigatório para assento e bagagem
+      if (['assento', 'bagagem'].includes(subtipo) && !formData.vooId) {
+        errors.push('Selecione um trecho (IDA ou VOLTA)')
+      }
+      // Passageiro é obrigatório para alguns subtipos
+      if (['assento', 'bagagem'].includes(subtipo) && !formData.passageiro?.trim()) {
+        errors.push('Informe o nome do passageiro')
+      }
+      // Aeroporto para sala VIP
+      if (subtipo === 'sala_vip' && !formData.aeroporto?.trim()) {
+        errors.push('Informe o aeroporto')
+      }
+    }
+
+    if (tipo === 'arquivo') {
+      if (!formData.destino?.trim()) errors.push('Informe o destino')
+      if (!formData.duracao) errors.push('Informe a duração')
+      if (!formData.dataIda) errors.push('Informe a data de ida')
+      if (!formData.dataVolta) errors.push('Informe a data de volta')
+      // Seguro viagem requer viajantes
+      if (reward.name.toLowerCase().includes('seguro') && !formData.viajantes?.trim()) {
+        errors.push('Informe os dados dos viajantes')
+      }
+    }
+
+    if (tipo === 'envio_fisico') {
+      if (!formData.destinatario?.trim()) errors.push('Informe o nome do destinatário')
+      if (!formData.cep?.trim() || formData.cep.replace(/\D/g, '').length !== 8) {
+        errors.push('Informe um CEP válido')
+      }
+      if (!formData.logradouro?.trim()) errors.push('Informe o endereço')
+      if (!formData.numero?.trim()) errors.push('Informe o número')
+      if (!formData.bairro?.trim()) errors.push('Informe o bairro')
+      if (!formData.cidade?.trim()) errors.push('Informe a cidade')
+      if (!formData.estado?.trim()) errors.push('Selecione o estado')
+    }
+
+    setValidationErrors(errors)
+    return errors.length === 0
+  }
 
   // Cálculos
   const unitCost = reward.points_required
@@ -64,27 +120,15 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
   const remainingPoints = userPoints - totalCost
   const maxQuantity = Math.floor(userPoints / unitCost)
 
-  // Reset quantidade ao abrir
+  // Reset quantidade e formData ao abrir/mudar reward
   useEffect(() => {
     setQuantity(1)
+    setFormData(reward.prefilledData || {})
+    setValidationErrors([])
   }, [reward.id])
 
-  // BODY SCROLL LOCK - travar rolagem da página de fundo
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow
-    const originalPaddingRight = document.body.style.paddingRight
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-
-    document.body.style.overflow = 'hidden'
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`
-    }
-
-    return () => {
-      document.body.style.overflow = originalOverflow
-      document.body.style.paddingRight = originalPaddingRight
-    }
-  }, [])
+  // BODY SCROLL LOCK - usa hook robusto com contador global
+  useBodyScrollLock()
 
   // Handlers de quantidade
   const decreaseQuantity = () => setQuantity(q => Math.max(1, q - 1))
@@ -158,6 +202,13 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
 
   // Confirmar com quantidade e dados do formulário
   const handleConfirm = () => {
+    // Validar formulário se necessário
+    if (needsForm && !validateFormData()) {
+      // Scroll para mostrar erros
+      bodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    setValidationErrors([])
     onConfirm(quantity, formData)
   }
 
@@ -278,6 +329,22 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
               </span>
             </div>
           </div>
+
+          {/* Erros de validação */}
+          {validationErrors.length > 0 && (
+            <div className="mb-3 sm:mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
+              <p className="text-xs font-heading font-semibold text-red-400 mb-2">
+                Preencha os campos obrigatórios:
+              </p>
+              <ul className="space-y-1">
+                {validationErrors.map((error, idx) => (
+                  <li key={idx} className="text-xs text-red-400/80 flex items-center gap-1.5">
+                    <span>•</span> {error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Formulário de entrega (se necessário) */}
           {needsForm && (
@@ -826,6 +893,9 @@ export function Rewards() {
   const [detailExperience, setDetailExperience] = useState(null)
   const [isRedeeming, setIsRedeeming] = useState(false)
 
+  // Estado para oferecer resgate do outro trecho após sucesso
+  const [outroTrechoOffer, setOutroTrechoOffer] = useState(null) // { experienceId, viagemId, outroVooId, sentidoAtual }
+
   // Hook para carregar experiências do Supabase
   const { allExperiences, loading: experienciasLoading, error: experienciasError } = useExperiencias()
 
@@ -951,6 +1021,43 @@ export function Rewards() {
     setIsRedeeming(false)
   }
 
+  // Handler para aceitar oferta de resgate do outro trecho
+  function handleAceitarOutroTrecho() {
+    if (!outroTrechoOffer) return
+
+    // Encontrar a experiência de assento
+    const experiencia = rewardsWithProgress.find(r => r.id === outroTrechoOffer.experienceId)
+    if (!experiencia) {
+      setOutroTrechoOffer(null)
+      return
+    }
+
+    // Fechar oferta e abrir modal com dados pré-preenchidos
+    const { viagemId, outroVooId, viagemTitulo } = outroTrechoOffer
+    setOutroTrechoOffer(null)
+
+    // Abrir modal de resgate com dados pré-preenchidos
+    setSelectedReward({
+      id: experiencia.id,
+      name: experiencia.name,
+      description: experiencia.description,
+      points_required: experiencia.points,
+      category: experiencia.categoria === 'credito' ? 'travel' : 'experience',
+      tipoEntrega: experiencia.tipoEntrega || 'servico_voo',
+      subtipoEntrega: experiencia.subtipoEntrega || 'assento',
+      // Pré-preencher viagem e voo
+      prefilledData: {
+        viagemId,
+        vooId: outroVooId
+      }
+    })
+  }
+
+  // Handler para fechar oferta do outro trecho
+  function closeOutroTrechoOffer() {
+    setOutroTrechoOffer(null)
+  }
+
   // Handler para confirmar resgate - INTEGRAÇÃO REAL COM SUPABASE
   async function handleConfirmRedeem(quantity = 1, formData = {}) {
     // Prevenir duplo clique
@@ -966,10 +1073,21 @@ export function Rewards() {
       return
     }
 
+    // Validação adicional no handler (backup de segurança)
+    const tipo = selectedReward.tipoEntrega
+    if (tipo === 'servico_voo' && !formData.viagemId) {
+      toast.error('Selecione uma viagem para continuar.')
+      return
+    }
+    if (tipo === 'envio_fisico' && (!formData.destinatario || !formData.cep || !formData.logradouro)) {
+      toast.error('Preencha todos os campos do endereço.')
+      return
+    }
+
     setIsRedeeming(true)
 
     try {
-      // Chamar serviço REAL de resgate com quantidade e dados do formulário
+      // Chamar serviço REAL de resgate com quantidade, dados do formulário e viagem
       const result = await resgatar(
         selectedReward.id,
         selectedReward.name,
@@ -977,7 +1095,9 @@ export function Rewards() {
         1, // classe mínima (será validada no banco)
         quantity, // quantidade
         formData, // dados do formulário de entrega
-        formData.emissaoId || null // ID da emissão (para serviços de voo)
+        formData.emissaoId || null, // ID da emissão (deprecated)
+        formData.viagemId || null, // ID da viagem vinculada
+        formData.vooId || null // ID do voo específico
       )
 
       if (!result.success) {
@@ -996,9 +1116,34 @@ export function Rewards() {
       const rewardName = selectedReward.name
       const rewardQty = quantity
       const newBalance = result.balance_after
+      const subtipo = selectedReward.subtipoEntrega
+      const experienceId = selectedReward.id
+
+      // Verificar se é assento e se há outro trecho disponível
+      const viagemData = formData.viagemData
+      const vooIdResgatado = formData.vooId
 
       // FECHAR MODAL PRIMEIRO
       closeModal()
+
+      // Verificar se deve oferecer resgate do outro trecho (só para assento)
+      if (subtipo === 'assento' && viagemData?.viagem?.voos?.length > 1 && vooIdResgatado) {
+        const voos = viagemData.viagem.voos
+        const vooAtual = voos.find(v => v.id === vooIdResgatado)
+        const outroVoo = voos.find(v => v.id !== vooIdResgatado)
+
+        if (outroVoo) {
+          // Mostrar oferta para resgatar o outro trecho
+          setOutroTrechoOffer({
+            experienceId,
+            viagemId: viagemData.viagem.id,
+            outroVooId: outroVoo.id,
+            sentidoAtual: vooAtual?.sentido || 'ida',
+            sentidoOutro: outroVoo.sentido || 'volta',
+            viagemTitulo: viagemData.viagem.titulo
+          })
+        }
+      }
 
       // Mostrar toast de sucesso com quantidade e novo saldo
       toast.success(
@@ -1044,7 +1189,7 @@ export function Rewards() {
     : rewardsWithProgress
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-20 md:pb-0">
       {/* Skip Link */}
       <a
         href="#main-content"
@@ -1078,6 +1223,58 @@ export function Rewards() {
             onCancel={closeModal}
             isLoading={isRedeeming}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Modal de oferta para resgatar outro trecho */}
+      <AnimatePresence>
+        {outroTrechoOffer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={closeOutroTrechoOffer}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-2xl bg-deep-purple border border-antique-gold/30 shadow-2xl p-6 text-center"
+            >
+              <div className="w-14 h-14 rounded-xl bg-antique-gold/20 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">✈️</span>
+              </div>
+
+              <h3 className="text-lg font-heading font-semibold text-ice-white mb-2">
+                Assento reservado!
+              </h3>
+
+              <p className="text-sm text-dusty-rose mb-4">
+                Deseja escolher o assento da <span className="text-antique-gold font-medium">{outroTrechoOffer.sentidoOutro?.toUpperCase()}</span> também?
+              </p>
+
+              <p className="text-xs text-dusty-rose/60 mb-6">
+                {outroTrechoOffer.viagemTitulo}
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={closeOutroTrechoOffer}
+                  className="flex-1 px-4 py-3 rounded-xl border border-dusty-rose/30 text-dusty-rose text-sm font-heading hover:bg-white/5 transition-colors"
+                >
+                  Não, obrigado
+                </button>
+                <button
+                  onClick={handleAceitarOutroTrecho}
+                  className="flex-1 px-4 py-3 rounded-xl bg-antique-gold text-deep-purple text-sm font-heading font-semibold hover:bg-antique-gold/90 transition-colors"
+                >
+                  Escolher assento
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
