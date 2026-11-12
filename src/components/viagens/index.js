@@ -4,6 +4,7 @@
 
 export { ViagemCard } from './ViagemCard'
 export { DestinationBackground } from './DestinationBackground'
+export { CalendarMenu } from './CalendarMenu'
 export { ViagemCalendar } from './ViagemCalendar'
 export { ViagemListView } from './ViagemListView'
 export { ViagemTrecho } from './ViagemTrecho'

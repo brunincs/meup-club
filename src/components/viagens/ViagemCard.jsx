@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import { ViagemTrecho } from './ViagemTrecho'
 import { PassageiroInfo } from './PassageiroInfo'
 import { DestinationBackground } from './DestinationBackground'
+import { CalendarMenu } from './CalendarMenu'
 import {
   getViagemCompleta,
   getResgatesViagem,
@@ -385,6 +386,16 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
                       </svg>
                       Falar com a equipe
                     </button>
+
+                    {/* Adicionar ao Calendário */}
+                    {detalhes?.voos?.length > 0 && (
+                      <CalendarMenu
+                        voos={detalhes.voos}
+                        viagem={viagem}
+                        viagemId={viagem.id}
+                        variant="full"
+                      />
+                    )}
                   </div>
                 </>
               )}
