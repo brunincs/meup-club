@@ -1,10 +1,23 @@
 // ============================================
 // COMPONENTE: Menu de Adicionar ao Calendário
 // Dropdown com opções: Google, Apple, Outlook
+// Usa Floating UI para posicionamento em portal
 // ============================================
 
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import {
+  useFloating,
+  autoUpdate,
+  offset,
+  flip,
+  shift,
+  useClick,
+  useDismiss,
+  useInteractions,
+  FloatingFocusManager
+} from '@floating-ui/react'
 import {
   gerarICS,
   gerarICSTrecho,
@@ -55,6 +68,7 @@ const ChevronIcon = ({ open }) => (
 
 /**
  * Menu dropdown para adicionar ao calendário
+ * Renderizado em portal com Floating UI para evitar clipping
  * @param {Object} props
  * @param {Array} props.voos - Lista de voos (com passageiros)
  * @param {Object} props.viagem - Dados da viagem
@@ -62,22 +76,28 @@ const ChevronIcon = ({ open }) => (
  * @param {string} props.variant - 'compact' | 'full'
  */
 export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
-  const [open, setOpen] = useState(false)
-  const menuRef = useRef(null)
+  const [isOpen, setIsOpen] = useState(false)
 
-  // Fechar ao clicar fora
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setOpen(false)
-      }
-    }
+  // Floating UI setup
+  const { refs, floatingStyles, context } = useFloating({
+    open: isOpen,
+    onOpenChange: setIsOpen,
+    middleware: [
+      offset(8),
+      flip({ fallbackPlacements: ['top-end', 'top-start', 'bottom-start'] }),
+      shift({ padding: 8 })
+    ],
+    placement: 'bottom-end',
+    whileElementsMounted: autoUpdate
+  })
 
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [open])
+  const click = useClick(context)
+  const dismiss = useDismiss(context, {
+    outsidePress: true,
+    escapeKey: true
+  })
+
+  const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss])
 
   // Sem voos, não renderiza
   if (!voos || voos.length === 0) return null
@@ -94,7 +114,7 @@ export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
     } else {
       toast.error('Dados de voo incompletos')
     }
-    setOpen(false)
+    setIsOpen(false)
   }
 
   const handleApple = (e) => {
@@ -108,7 +128,7 @@ export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
     } else {
       toast.error('Dados de voo incompletos')
     }
-    setOpen(false)
+    setIsOpen(false)
   }
 
   const handleOutlook = (e) => {
@@ -123,7 +143,7 @@ export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
     } else {
       toast.error('Dados de voo incompletos')
     }
-    setOpen(false)
+    setIsOpen(false)
   }
 
   const menuItems = [
@@ -133,10 +153,12 @@ export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
   ]
 
   return (
-    <div className="relative" ref={menuRef}>
+    <>
       {/* Botão trigger */}
       <button
-        onClick={(e) => { e.stopPropagation(); setOpen(!open) }}
+        ref={refs.setReference}
+        {...getReferenceProps()}
+        onClick={(e) => e.stopPropagation()}
         className={`flex items-center gap-1.5 rounded-xl text-xs font-heading font-medium transition-colors ${
           variant === 'full'
             ? 'px-4 py-2 border border-antique-gold/50 text-ice-white hover:bg-antique-gold/10'
@@ -147,53 +169,60 @@ export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
         <span className={variant === 'compact' ? 'hidden sm:inline' : ''}>
           Calendário
         </span>
-        <ChevronIcon open={open} />
+        <ChevronIcon open={isOpen} />
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown em Portal */}
       <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 z-50 min-w-[180px] bg-white rounded-xl shadow-lg border border-dusty-rose/20 overflow-hidden"
-          >
-            <div className="py-1">
-              <div className="px-3 py-1.5 text-[10px] font-heading font-semibold text-graphite/50 uppercase">
-                Adicionar ao calendário
-              </div>
+        {isOpen && createPortal(
+          <FloatingFocusManager context={context} modal={false}>
+            <motion.div
+              ref={refs.setFloating}
+              style={floatingStyles}
+              {...getFloatingProps()}
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="z-[9999] min-w-[180px] bg-white rounded-xl shadow-lg border border-dusty-rose/20 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="py-1">
+                <div className="px-3 py-1.5 text-[10px] font-heading font-semibold text-graphite/50 uppercase">
+                  Adicionar ao calendário
+                </div>
 
-              {menuItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={item.onClick}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm font-heading text-graphite hover:bg-dusty-rose/10 transition-colors"
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </button>
-              ))}
-
-              {/* Separador + Viagem completa (se múltiplos voos) */}
-              {voos.length > 1 && (
-                <>
-                  <div className="my-1 border-t border-dusty-rose/10" />
+                {menuItems.map((item) => (
                   <button
-                    onClick={handleApple}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm font-heading text-deep-purple hover:bg-dusty-rose/10 transition-colors"
+                    key={item.id}
+                    onClick={item.onClick}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm font-heading text-graphite hover:bg-dusty-rose/10 transition-colors"
                   >
-                    <CalendarIcon />
-                    <span>Viagem completa (.ics)</span>
+                    {item.icon}
+                    <span>{item.label}</span>
                   </button>
-                </>
-              )}
-            </div>
-          </motion.div>
+                ))}
+
+                {/* Separador + Viagem completa (se múltiplos voos) */}
+                {voos.length > 1 && (
+                  <>
+                    <div className="my-1 border-t border-dusty-rose/10" />
+                    <button
+                      onClick={handleApple}
+                      className="w-full flex items-center gap-3 px-3 py-2 text-sm font-heading text-deep-purple hover:bg-dusty-rose/10 transition-colors"
+                    >
+                      <CalendarIcon />
+                      <span>Viagem completa (.ics)</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </FloatingFocusManager>,
+          document.body
         )}
       </AnimatePresence>
-    </div>
+    </>
   )
 }
 
