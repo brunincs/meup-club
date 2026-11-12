@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { fetchMySubscription, fetchPlanosConfig, formatCiclo } from '@/services/subscriptionService'
-import { isPaymentEnabled, iniciarAssinaturaWhatsApp, iniciarUpgradeAnualWhatsApp } from '@/services/paymentAdapter'
+import { fetchMySubscription, fetchPlanosConfig } from '@/services/subscriptionService'
+import { isPaymentEnabled, iniciarAssinaturaWhatsApp } from '@/services/paymentAdapter'
 import { formatPrice } from '@/config/contact'
 import toast from 'react-hot-toast'
 
@@ -18,7 +18,8 @@ export function Plans() {
   const [planosConfig, setPlanosConfig] = useState(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
-  const [cicloSelecionado, setCicloSelecionado] = useState('anual') // default anual
+  // Apenas plano anual disponível
+  const cicloSelecionado = 'anual'
 
   useEffect(() => {
     async function load() {
@@ -40,8 +41,6 @@ export function Plans() {
   }, [user])
 
   const isPrime = subscription?.plano === 'prime'
-  const isPrimeAnual = isPrime && subscription?.ciclo === 'anual'
-  const isPrimeMensal = isPrime && subscription?.ciclo === 'mensal'
   const paymentEnabled = isPaymentEnabled()
 
   const handleAssinar = async (ciclo) => {
@@ -68,13 +67,6 @@ export function Plans() {
     setProcessing(false)
   }
 
-  const handleUpgradeAnual = async () => {
-    setProcessing(true)
-    await iniciarUpgradeAnualWhatsApp()
-    toast.success('WhatsApp aberto! Solicite seu upgrade.')
-    setProcessing(false)
-  }
-
   if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-deep-purple to-graphite flex items-center justify-center">
@@ -87,18 +79,13 @@ export function Plans() {
     )
   }
 
-  // Valores do plano
+  // Valores do plano (apenas anual)
   const primeConfig = planosConfig?.prime || {}
   const freeConfig = planosConfig?.free || {}
-  const precoMensal = primeConfig.precoMensal || 49.90
   const precoAnual = primeConfig.precoAnual || 497
-  const precoMensalCheio = primeConfig.precoMensalCheio || 99.90
   const precoAnualCheio = primeConfig.precoAnualCheio || 997
   const ofertaFundador = primeConfig.ofertaFundadorAtiva ?? false
-
-  // Economia de fundador (âncora - oferta)
   const economiaFundadorAnual = (precoAnualCheio - precoAnual).toFixed(0)
-  const economiaFundadorMensal = (precoMensalCheio - precoMensal).toFixed(0)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-deep-purple to-graphite py-12 px-4">
@@ -113,36 +100,6 @@ export function Plans() {
           </p>
         </div>
 
-        {/* Toggle Anual/Mensal */}
-        {!isPrime && (
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white/10 border border-white/20">
-              <button
-                onClick={() => setCicloSelecionado('mensal')}
-                className={`px-5 py-2 rounded-full text-sm font-heading font-medium transition-all ${
-                  cicloSelecionado === 'mensal'
-                    ? 'bg-white/20 text-white'
-                    : 'text-dusty-rose hover:text-white'
-                }`}
-              >
-                Mensal
-              </button>
-              <button
-                onClick={() => setCicloSelecionado('anual')}
-                className={`px-5 py-2 rounded-full text-sm font-heading font-medium transition-all flex items-center gap-2 ${
-                  cicloSelecionado === 'anual'
-                    ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'
-                    : 'text-dusty-rose hover:text-white'
-                }`}
-              >
-                Anual
-                <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs">
-                  1.5x
-                </span>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Status atual (se logado e Prime) */}
         {isPrime && (
@@ -244,40 +201,22 @@ export function Plans() {
               <h2 className="text-2xl font-display font-bold text-white">Meup Prime</h2>
             </div>
 
-            {/* Preço baseado no toggle */}
+            {/* Preço anual */}
             <div className="mb-6">
-              {cicloSelecionado === 'anual' || isPrimeAnual ? (
-                <>
-                  {ofertaFundador && !isPrime && (
-                    <p className="text-dusty-rose/50 line-through text-lg">
-                      R${formatPrice(precoAnualCheio, false)}/ano
-                    </p>
-                  )}
-                  <p className="text-4xl font-display font-bold text-white">
-                    R${formatPrice(precoAnual, false)}<span className="text-lg text-dusty-rose/60">/ano</span>
-                  </p>
-                  <p className="text-sm text-amber-300 mt-1">
-                    {ofertaFundador && !isPrime
-                      ? `Economize R$${economiaFundadorAnual} + multiplicador 1.5x`
-                      : 'Multiplicador 1.5x em viagens'
-                    }
-                  </p>
-                </>
-              ) : (
-                <>
-                  {ofertaFundador && !isPrime && (
-                    <p className="text-dusty-rose/50 line-through text-lg">
-                      R${formatPrice(precoMensalCheio)}/mês
-                    </p>
-                  )}
-                  <p className="text-4xl font-display font-bold text-white">
-                    R${formatPrice(precoMensal)}<span className="text-lg text-dusty-rose/60">/mês</span>
-                  </p>
-                  <p className="text-sm text-dusty-rose/60 mt-1">
-                    ou R${formatPrice(precoAnual, false)}/ano com multiplicador 1.5x
-                  </p>
-                </>
+              {ofertaFundador && !isPrime && (
+                <p className="text-dusty-rose/50 line-through text-lg">
+                  R${formatPrice(precoAnualCheio, false)}/ano
+                </p>
               )}
+              <p className="text-4xl font-display font-bold text-white">
+                R${formatPrice(precoAnual, false)}<span className="text-lg text-dusty-rose/60">/ano</span>
+              </p>
+              <p className="text-sm text-amber-300 mt-1">
+                {ofertaFundador && !isPrime
+                  ? `Economize R$${economiaFundadorAnual} + multiplicador 1.5x`
+                  : 'Multiplicador 1.5x em viagens'
+                }
+              </p>
             </div>
 
             <ul className="space-y-3 text-sm text-dusty-rose/80 mb-8">
@@ -296,9 +235,7 @@ export function Plans() {
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">★</span>
                 Multiplicador viagem:{' '}
-                <span className="text-white font-semibold">
-                  {cicloSelecionado === 'anual' || isPrimeAnual ? '1.5x' : '1x (1.5x no anual)'}
-                </span>
+                <span className="text-white font-semibold">1.5x</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">★</span>
@@ -308,20 +245,8 @@ export function Plans() {
 
             {/* CTAs */}
             {isPrime ? (
-              <div className="space-y-3">
-                <div className="py-3 text-center text-amber-300 font-heading font-semibold">
-                  ✓ Você é Prime {formatCiclo(subscription?.ciclo)}
-                </div>
-                {/* Nudge para upgrade se mensal */}
-                {isPrimeMensal && (
-                  <button
-                    onClick={handleUpgradeAnual}
-                    disabled={processing}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
-                  >
-                    {processing ? 'Abrindo...' : 'Upgrade para Anual (1.5x)'}
-                  </button>
-                )}
+              <div className="py-3 text-center text-amber-300 font-heading font-semibold">
+                ✓ Você é Prime Anual
               </div>
             ) : (
               <button
@@ -333,7 +258,7 @@ export function Plans() {
                   ? 'Abrindo WhatsApp...'
                   : ofertaFundador
                     ? 'Garantir vaga de fundador'
-                    : `Assinar ${cicloSelecionado === 'anual' ? 'Anual' : 'Mensal'}`
+                    : 'Assinar Anual'
                 }
               </button>
             )}
