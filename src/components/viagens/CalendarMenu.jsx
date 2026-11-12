@@ -4,7 +4,7 @@
 // Usa Floating UI para posicionamento em portal
 // ============================================
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -12,11 +12,7 @@ import {
   autoUpdate,
   offset,
   flip,
-  shift,
-  useClick,
-  useDismiss,
-  useInteractions,
-  FloatingFocusManager
+  shift
 } from '@floating-ui/react'
 import {
   gerarICS,
@@ -78,8 +74,8 @@ const ChevronIcon = ({ open }) => (
 export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
   const [isOpen, setIsOpen] = useState(false)
 
-  // Floating UI setup
-  const { refs, floatingStyles, context } = useFloating({
+  // Floating UI setup - apenas posicionamento
+  const { refs, floatingStyles } = useFloating({
     open: isOpen,
     onOpenChange: setIsOpen,
     middleware: [
@@ -91,13 +87,31 @@ export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
     whileElementsMounted: autoUpdate
   })
 
-  const click = useClick(context)
-  const dismiss = useDismiss(context, {
-    outsidePress: true,
-    escapeKey: true
-  })
+  // Fechar ao clicar fora ou pressionar Escape
+  useEffect(() => {
+    if (!isOpen) return
 
-  const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss])
+    const handleClickOutside = (e) => {
+      const floating = refs.floating.current
+      const reference = refs.reference.current
+      if (floating && !floating.contains(e.target) && reference && !reference.contains(e.target)) {
+        setIsOpen(false)
+      }
+    }
+
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, refs.floating, refs.reference])
 
   // Sem voos, não renderiza
   if (!voos || voos.length === 0) return null
@@ -157,9 +171,10 @@ export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
       {/* Botão trigger */}
       <button
         ref={refs.setReference}
-        {...getReferenceProps({
-          onClick: (e) => e.stopPropagation()
-        })}
+        onClick={(e) => {
+          e.stopPropagation()
+          setIsOpen(!isOpen)
+        }}
         className={`flex items-center gap-1.5 rounded-xl text-xs font-heading font-medium transition-colors ${
           variant === 'full'
             ? 'px-4 py-2 border border-antique-gold/50 text-ice-white hover:bg-antique-gold/10'
@@ -176,18 +191,16 @@ export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
       {/* Dropdown em Portal */}
       <AnimatePresence>
         {isOpen && createPortal(
-          <FloatingFocusManager context={context} modal={false}>
-            <motion.div
-              ref={refs.setFloating}
-              style={floatingStyles}
-              {...getFloatingProps()}
-              initial={{ opacity: 0, y: -8, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="z-[9999] min-w-[180px] bg-white rounded-xl shadow-lg border border-dusty-rose/20 overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <motion.div
+            ref={refs.setFloating}
+            style={floatingStyles}
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="z-[9999] min-w-[180px] bg-white rounded-xl shadow-lg border border-dusty-rose/20 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
               <div className="py-1">
                 <div className="px-3 py-1.5 text-[10px] font-heading font-semibold text-graphite/50 uppercase">
                   Adicionar ao calendário
@@ -218,8 +231,7 @@ export function CalendarMenu({ voos, viagem, viagemId, variant = 'compact' }) {
                   </>
                 )}
               </div>
-            </motion.div>
-          </FloatingFocusManager>,
+          </motion.div>,
           document.body
         )}
       </AnimatePresence>
