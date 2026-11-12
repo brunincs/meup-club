@@ -270,19 +270,29 @@ export async function fetchErrosRecentesIA() {
  */
 export async function lerCardMeupDireto(cardPath) {
   try {
+    console.log('Chamando ler-card-meup-direto com path:', cardPath)
     const { data, error } = await supabase.functions.invoke('ler-card-meup-direto', {
       body: { card_path: cardPath }
     })
 
+    console.log('Resposta da Edge Function:', { data, error })
+
     if (error) {
       console.error('Erro ao ler card direto:', error)
-      return { success: false, error: error.message }
+      // Tentar extrair mais detalhes do erro
+      const errorMsg = error.message || error.context?.body || 'Erro ao chamar função de leitura'
+      return { success: false, error: errorMsg }
     }
 
-    return data
+    // Se data contém erro lógico
+    if (data && !data.success) {
+      return { success: false, error: data.error || 'Erro ao processar card' }
+    }
+
+    return data || { success: false, error: 'Resposta vazia da função' }
   } catch (err) {
     console.error('Erro na chamada da Edge Function:', err)
-    return { success: false, error: err.message }
+    return { success: false, error: err.message || 'Erro de conexão' }
   }
 }
 

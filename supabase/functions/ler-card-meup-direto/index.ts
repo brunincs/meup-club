@@ -99,7 +99,7 @@ serve(async (req) => {
     if (!card_path) {
       return new Response(
         JSON.stringify({ success: false, error: 'card_path é obrigatório' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
@@ -111,7 +111,7 @@ serve(async (req) => {
     if (!anthropicApiKey) {
       return new Response(
         JSON.stringify({ success: false, error: 'ANTHROPIC_API_KEY não configurada' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
@@ -127,7 +127,7 @@ serve(async (req) => {
           leituras_hoje: limiteData[0]?.leituras_hoje,
           limite: limiteData[0]?.limite
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
@@ -139,7 +139,7 @@ serve(async (req) => {
     if (downloadError || !pdfData) {
       return new Response(
         JSON.stringify({ success: false, error: 'Erro ao baixar card: ' + (downloadError?.message || 'arquivo não encontrado') }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
@@ -230,7 +230,7 @@ serve(async (req) => {
           error: errorMessage,
           is_credit_error: isCreditError
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
@@ -256,7 +256,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: false, error: 'Erro ao processar resposta da IA' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
@@ -296,7 +296,7 @@ serve(async (req) => {
     console.error('Erro na Edge Function:', error)
     return new Response(
       JSON.stringify({ success: false, error: (error as Error).message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
   }
 })
