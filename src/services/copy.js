@@ -11,7 +11,7 @@ export const levels = {
     2: 'Econômica Premium',
     3: 'Executiva',
     4: 'Primeira Classe',
-    5: 'Meup Exclusive'  // Nome de marca - mantido em inglês propositalmente
+    5: 'Me,up Exclusive'  // Nome de marca com vírgula
   },
   shortNames: {
     1: 'Econômica',
