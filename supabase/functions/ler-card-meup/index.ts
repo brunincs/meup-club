@@ -192,8 +192,8 @@ serve(async (req) => {
     // 5. Converter PDF para base64
     const pdfBase64 = btoa(String.fromCharCode(...pdfBytes))
 
-    // 6. Chamar API da Anthropic (Claude 3 Haiku - barato e funcional)
-    const model = Deno.env.get('CARD_MODEL') || 'claude-3-haiku-20240307'
+    // 6. Chamar API da Anthropic (Claude 3.5 Haiku)
+    const model = Deno.env.get('CARD_MODEL') || 'claude-3-5-haiku-latest'
     let anthropicResponse: Response
     let retryCount = 0
     const maxRetries = 1
