@@ -398,7 +398,7 @@ export function AdminResgates() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
                   className={`p-4 rounded-2xl border bg-white shadow-sm ${
-                    sol.status === 'pendente'
+                    (sol.status === 'pendente' || sol.status === 'solicitado')
                       ? 'border-amber-200'
                       : 'border-dusty-rose/20'
                   }`}
@@ -509,7 +509,7 @@ export function AdminResgates() {
 
                     {/* Ações */}
                     <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 w-full sm:w-auto mt-3 sm:mt-0">
-                      {sol.status === 'pendente' && (
+                      {(sol.status === 'pendente' || sol.status === 'solicitado') && (
                         <>
                           <button
                             onClick={(e) => {
