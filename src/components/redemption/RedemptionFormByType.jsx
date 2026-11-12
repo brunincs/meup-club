@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { EmissaoSelector } from './EmissaoSelector'
+import { TrechoSelector } from '@/components/viagens/TrechoSelector'
 
 // Configuração de tipos de entrega
 const TIPO_ENTREGA_CONFIG = {
@@ -135,23 +136,26 @@ export function RedemptionFormByType({
 
     return (
       <FormContainer isDark={isDark} title={subtipo.label}>
-        {/* Seletor de Emissão */}
+        {/* Seletor de Viagem + Trecho */}
         {fields.includes('emissao') && (
           <FormField label="Viagem" required isDark={isDark}>
-            <EmissaoSelector
-              value={formData.emissaoId}
-              onChange={(id, emissao) => {
-                handleChange('emissaoId', id)
-                handleChange('emissaoData', emissao)
+            <TrechoSelector
+              viagemId={formData.viagemId}
+              vooId={formData.vooId}
+              onChange={(viagemId, vooId, dados) => {
+                handleChange('viagemId', viagemId)
+                handleChange('vooId', vooId)
+                handleChange('viagemData', dados)
               }}
               isDark={isDark}
               disabled={disabled}
+              showTrecho={fields.includes('trecho')}
             />
           </FormField>
         )}
 
-        {/* Trecho (ida/volta/ambos) */}
-        {fields.includes('trecho') && (
+        {/* Trecho (fallback se não tiver viagem selecionada) */}
+        {fields.includes('trecho') && !formData.viagemId && (
           <FormField label="Trecho" required isDark={isDark}>
             <select
               value={formData.trecho || ''}

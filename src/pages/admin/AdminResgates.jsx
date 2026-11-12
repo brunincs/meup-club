@@ -449,6 +449,29 @@ export function AdminResgates() {
                         )}
                       </div>
 
+                      {/* Viagem/Voo vinculado */}
+                      {(sol.viagem || sol.voo) && (
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-heading">
+                          {sol.viagem && (
+                            <span className="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                              ✈ {sol.viagem.titulo}
+                            </span>
+                          )}
+                          {sol.voo && (
+                            <>
+                              <span className="px-2 py-1 rounded-lg bg-purple-50 text-purple-700 border border-purple-200">
+                                {sol.voo.sentido?.toUpperCase()}: {sol.voo.rota}
+                              </span>
+                              {sol.voo.localizador && (
+                                <span className="px-2 py-1 rounded-lg bg-antique-gold/10 text-deep-purple font-mono font-bold">
+                                  {sol.voo.localizador}
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
+
                       {/* Comentário admin (se rejeitado) */}
                       {sol.adminComentario && (
                         <p className="mt-2 text-xs text-red-600/80 font-heading italic">

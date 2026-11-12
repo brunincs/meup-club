@@ -14,7 +14,8 @@ import {
   MissionsSection,
   PlanStatusCard,
   TripSubmitCard,
-  FoundersCard
+  FoundersCard,
+  NextTripCard
 } from '@/components/dashboard'
 import { EvolutionCard } from '@/components/dashboard/EvolutionCard'
 import { getMyReferrals } from '@/services/referralService'
@@ -111,7 +112,10 @@ export function Dashboard() {
               </SafeSection>
             </div>
             {/* Lançar Viagem - ocupa 1 coluna */}
-            <div>
+            <div className="space-y-4">
+              <SafeSection name="Próxima Viagem">
+                <NextTripCard />
+              </SafeSection>
               <SafeSection name="Lançar Viagem">
                 <TripSubmitCard variant="light" />
               </SafeSection>

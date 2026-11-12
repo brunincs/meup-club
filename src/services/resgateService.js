@@ -174,7 +174,7 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
   try {
     let query = supabase
       .from('resgate_solicitacoes')
-      .select('id, user_id, experiencia_id, experiencia_nome, pontos, quantidade, status, admin_comentario, created_at, processed_at')
+      .select('id, user_id, experiencia_id, experiencia_nome, pontos, quantidade, status, admin_comentario, created_at, processed_at, viagem_id, voo_id')
       .order('created_at', { ascending: false })
 
     if (statusFilter) {
@@ -224,9 +224,45 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
       }
     }
 
+    // Buscar viagens vinculadas
+    const viagemIds = [...new Set((data || []).map(s => s.viagem_id).filter(Boolean))]
+    let viagensMap = {}
+    if (viagemIds.length > 0) {
+      const { data: viagensData } = await supabase
+        .from('viagens')
+        .select('id, titulo, data_ida, data_volta')
+        .in('id', viagemIds)
+
+      if (viagensData) {
+        viagensMap = viagensData.reduce((acc, v) => {
+          acc[v.id] = v
+          return acc
+        }, {})
+      }
+    }
+
+    // Buscar voos vinculados
+    const vooIds = [...new Set((data || []).map(s => s.voo_id).filter(Boolean))]
+    let voosMap = {}
+    if (vooIds.length > 0) {
+      const { data: voosData } = await supabase
+        .from('viagem_voos')
+        .select('id, sentido, origem_iata, destino_iata, localizador, companhia, numero_voo')
+        .in('id', vooIds)
+
+      if (voosData) {
+        voosMap = voosData.reduce((acc, v) => {
+          acc[v.id] = v
+          return acc
+        }, {})
+      }
+    }
+
     const solicitacoes = (data || []).map(s => {
       const quantidade = s.quantidade || 1
       const voucher = vouchersMap[s.id]
+      const viagem = s.viagem_id ? viagensMap[s.viagem_id] : null
+      const voo = s.voo_id ? voosMap[s.voo_id] : null
       const mapped = {
         id: s.id,
         userId: s.user_id,
@@ -250,6 +286,22 @@ export async function fetchSolicitacoesResgate(statusFilter = null) {
           valor: voucher.valor,
           validade: formatDateLocal(voucher.validade),
           status: voucher.status
+        } : null,
+        // Dados da viagem vinculada
+        viagem: viagem ? {
+          id: viagem.id,
+          titulo: viagem.titulo,
+          dataIda: viagem.data_ida,
+          dataVolta: viagem.data_volta
+        } : null,
+        // Dados do voo vinculado
+        voo: voo ? {
+          id: voo.id,
+          sentido: voo.sentido,
+          rota: `${voo.origem_iata} → ${voo.destino_iata}`,
+          localizador: voo.localizador,
+          companhia: voo.companhia,
+          numeroVoo: voo.numero_voo
         } : null,
         createdAt: new Date(s.created_at).toLocaleDateString('pt-BR', {
           day: '2-digit', month: '2-digit', year: 'numeric',
@@ -492,16 +544,18 @@ export async function buscarExperienciasResgatadas() {
 // ============================================
 
 /**
- * Solicita resgate v2 com formulário de dados e emissão
+ * Solicita resgate v2 com formulário de dados, viagem e voo
  * @param {string} experienciaId
  * @param {string} experienciaNome
  * @param {number} pontosUnitarios
  * @param {number} classeMinima
  * @param {number} quantidade
  * @param {Object} formData - Dados do formulário
- * @param {string} emissaoId - ID da emissão (para serviços de voo)
+ * @param {string} emissaoId - ID da emissão (para serviços de voo) - DEPRECATED
+ * @param {string} viagemId - ID da viagem vinculada
+ * @param {string} vooId - ID do voo específico
  */
-export async function solicitarResgateV2(experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1, formData = {}, emissaoId = null) {
+export async function solicitarResgateV2(experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1, formData = {}, emissaoId = null, viagemId = null, vooId = null) {
   try {
     const { data, error } = await supabase.rpc('client_request_redemption_v2', {
       p_experience_id: experienciaId,
@@ -510,7 +564,9 @@ export async function solicitarResgateV2(experienciaId, experienciaNome, pontosU
       p_min_class: classeMinima,
       p_quantity: quantidade,
       p_form_data: formData,
-      p_emissao_id: emissaoId
+      p_emissao_id: emissaoId,
+      p_viagem_id: viagemId,
+      p_voo_id: vooId
     })
 
     if (error) {

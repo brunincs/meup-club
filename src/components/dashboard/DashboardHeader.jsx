@@ -16,6 +16,7 @@ const navItems = [
   { path: '/dashboard', label: 'Clube', icon: '◆' },
   { path: '/tarefas', label: 'Missões', icon: '◇' },
   { path: '/recompensas', label: 'Experiências', icon: '✦' },
+  { path: '/minhas-viagens', label: 'Minhas Viagens', icon: '✈' },
   { path: '/meus-resgates', label: 'Meus Resgates', icon: '★' },
 ]
 
