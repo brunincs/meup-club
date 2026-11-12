@@ -818,7 +818,7 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
 
 export function Rewards() {
   const { user, loading } = useAuth()
-  const { resgatar, refreshPoints, redeemedIds, pendingIds, isLoading: contextLoading } = usePoints()
+  const { resgatar, refreshPoints, redeemedIds, pendingIds, isLoading: contextLoading, blockedPoints, availablePoints } = usePoints()
   const { balance: userPoints, currentId: userLevelId, current: currentLevel, next: nextLevel, progress: levelProgress, pointsToNext } = useUserLevel()
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState('all')
@@ -852,7 +852,8 @@ export function Rewards() {
     subtipoEntrega: exp.subtipoEntrega || null
   }))
 
-  const rewardsWithProgress = calculateRewardsProgress(userPoints, userLevelId, rewardsTable)
+  // Usar availablePoints para verificar se pode resgatar (exclui pontos bloqueados)
+  const rewardsWithProgress = calculateRewardsProgress(availablePoints, userLevelId, rewardsTable)
 
   // Experiências são repetíveis - não filtrar por redeemedIds
   const availableCount = rewardsWithProgress.filter(r => r.canRedeem).length

@@ -436,3 +436,77 @@ export async function fetchAdminStats() {
     }
   }
 }
+
+// ============================================
+// VERIFICAÇÃO DE DISCREPÂNCIAS
+// ============================================
+
+/**
+ * Verifica discrepâncias entre saldo (profile.points) e soma de transações
+ * Retorna lista de usuários com saldo inconsistente
+ */
+export async function fetchBalanceDiscrepancies() {
+  const { data, error } = await supabase.rpc('admin_check_balance_discrepancies')
+
+  if (error) {
+    console.error('Erro ao verificar discrepâncias:', error)
+    return { success: false, error: error.message, discrepancies: [] }
+  }
+
+  return {
+    success: true,
+    discrepancies: (data || []).map(d => ({
+      userId: d.user_id,
+      userName: d.user_name,
+      userEmail: d.user_email,
+      profilePoints: d.profile_points,
+      transactionsSum: d.transactions_sum,
+      discrepancy: d.discrepancy
+    }))
+  }
+}
+
+// ============================================
+// PONTOS PENDENTES
+// ============================================
+
+/**
+ * Busca pontos pendentes de liberação de um usuário
+ */
+export async function fetchUserPendingPoints(userId) {
+  const { data, error } = await supabase.rpc('get_user_pending_points', {
+    p_user_id: userId
+  })
+
+  if (error) {
+    console.error('Erro ao buscar pontos pendentes:', error)
+    return { success: false, error: error.message, pendingPoints: [] }
+  }
+
+  return {
+    success: true,
+    pendingPoints: (data || []).map(p => ({
+      id: p.id,
+      pontos: p.pontos,
+      motivo: p.motivo,
+      liberarEm: p.liberar_em,
+      diasRestantes: p.dias_restantes
+    }))
+  }
+}
+
+/**
+ * Busca total de pontos pendentes de um usuário
+ */
+export async function fetchUserPendingPointsTotal(userId = null) {
+  const { data, error } = await supabase.rpc('get_user_pending_points_total', {
+    p_user_id: userId
+  })
+
+  if (error) {
+    console.error('Erro ao buscar total pendente:', error)
+    return { success: false, total: 0 }
+  }
+
+  return { success: true, total: data || 0 }
+}

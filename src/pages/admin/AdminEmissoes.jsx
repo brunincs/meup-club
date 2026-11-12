@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AdminLayout } from '@/components/admin/AdminLayout'
+import { AdminLayout, AdminPageHeader, AdminButton } from '@/components/admin/AdminLayout'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   fetchEmissoesPendentes,
@@ -783,30 +783,15 @@ export function AdminEmissoes() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-display font-bold text-graphite">Emissões</h1>
-            <p className="text-sm text-graphite/70 mt-1 font-heading">
-              Aprovar viagens e creditar pontos
-              {tab === 'pendentes' && pendentesCount > 0 && (
-                <span className="text-amber-600 font-medium ml-2">
-                  · {pendentesCount} pendente{pendentesCount > 1 ? 's' : ''}
-                </span>
-              )}
-            </p>
-          </div>
-
-          {/* Botão Lançar Emissão */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowLancarModal(true)}
-            className="px-5 py-2.5 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold hover:bg-accent-light transition-colors shadow-sm flex items-center gap-2"
-          >
-            <span>🚀</span>
-            Lançar Emissão
-          </motion.button>
-        </div>
+        <AdminPageHeader
+          title="Emissões"
+          subtitle={`Aprovar viagens e creditar pontos${tab === 'pendentes' && pendentesCount > 0 ? ` · ${pendentesCount} pendente${pendentesCount > 1 ? 's' : ''}` : ''}`}
+          actions={
+            <AdminButton onClick={() => setShowLancarModal(true)}>
+              <span>🚀</span> Lançar Emissão
+            </AdminButton>
+          }
+        />
 
         {/* Tabs */}
         <div className="flex gap-2 border-b border-dusty-rose/20 pb-3 overflow-x-auto">

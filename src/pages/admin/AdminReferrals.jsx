@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AdminLayout } from '@/components/admin/AdminLayout'
+import { AdminLayout, AdminPageHeader } from '@/components/admin/AdminLayout'
 import {
   getAllReferrals,
   approveReferral,
@@ -261,25 +261,18 @@ export function AdminReferrals() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-display font-bold text-graphite">Indicações</h1>
-            <p className="text-sm text-dusty-rose mt-1 font-heading">
-              {stats.pending > 0 && (
-                <span className="text-amber-600 font-medium">{stats.pending} pendentes · </span>
-              )}
-              {stats.total} total
-            </p>
-          </div>
-
-          {/* Info de pontos */}
-          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 border border-green-200">
-            <span className="text-green-600">◇</span>
-            <span className="text-sm text-green-700">
-              <strong>{format.pointsShort(PONTOS_POR_INDICACAO_FREE)}</strong> (Free) ou <strong>{format.pointsShort(PONTOS_POR_INDICACAO_PRIME)}</strong> (Prime) por aprovação
-            </span>
-          </div>
-        </div>
+        <AdminPageHeader
+          title="Indicações"
+          subtitle={`${stats.pending > 0 ? stats.pending + ' pendentes · ' : ''}${stats.total} total`}
+          actions={
+            <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 border border-green-200">
+              <span className="text-green-600">◇</span>
+              <span className="text-sm text-green-700">
+                <strong>{format.pointsShort(PONTOS_POR_INDICACAO_FREE)}</strong> (Free) ou <strong>{format.pointsShort(PONTOS_POR_INDICACAO_PRIME)}</strong> (Prime)
+              </span>
+            </div>
+          }
+        />
 
         {/* Filtros */}
         <div className="flex flex-wrap gap-2">

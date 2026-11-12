@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { AdminLayout } from '@/components/admin/AdminLayout'
+import { AdminLayout, AdminPageHeader, AdminCard } from '@/components/admin/AdminLayout'
 import { CreditAdjustModal } from '@/components/admin/CreditAdjustModal'
 import { fetchAllUsers, creditPoints, fetchUserTransactions, fetchClientProfile, revealClientCpf } from '@/services/adminService'
 import { fetchSolicitacoesCliente } from '@/services/experienciasService'
@@ -710,12 +710,10 @@ export function AdminUsers() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-display font-bold text-graphite">Clientes</h1>
-          <p className="text-sm text-graphite/70 mt-1 font-heading">
-            {users.length} cliente{users.length !== 1 ? 's' : ''} cadastrado{users.length !== 1 ? 's' : ''}
-          </p>
-        </div>
+        <AdminPageHeader
+          title="Clientes"
+          subtitle={`${users.length} cliente${users.length !== 1 ? 's' : ''} cadastrado${users.length !== 1 ? 's' : ''}`}
+        />
 
         {/* Search */}
         <div>
@@ -724,7 +722,7 @@ export function AdminUsers() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nome ou email..."
-            className="w-full px-4 py-3 rounded-xl bg-white border border-dusty-rose/30 text-graphite placeholder:text-dusty-rose/60 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-[#ddd1d0]/50 text-[#1f1f1f] placeholder:text-[#a39695] focus:outline-none focus:border-[#a27937]/50 focus:ring-2 focus:ring-[#a27937]/20 transition-all font-heading"
           />
         </div>
 

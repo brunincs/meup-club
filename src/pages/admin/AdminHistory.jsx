@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { AdminLayout } from '@/components/admin/AdminLayout'
+import { AdminLayout, AdminPageHeader } from '@/components/admin/AdminLayout'
 import { fetchAllTransactions } from '@/services/adminService'
 
 // Configuração de tipos de transação
@@ -124,12 +124,10 @@ export function AdminHistory() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-display font-bold text-graphite">Histórico de Transações</h1>
-          <p className="text-sm text-graphite/70 mt-1 font-heading">
-            Registro de todas as movimentações de pontos
-          </p>
-        </div>
+        <AdminPageHeader
+          title="Histórico de Transações"
+          subtitle="Registro de todas as movimentações de pontos"
+        />
 
         {/* Filters */}
         <div className="flex flex-wrap gap-2">

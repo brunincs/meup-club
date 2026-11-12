@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { AdminLayout } from '@/components/admin/AdminLayout'
+import { AdminLayout, AdminPageHeader } from '@/components/admin/AdminLayout'
 import { fetchAllSubscriptions } from '@/services/adminService'
 import { formatCiclo, getDaysRemaining, confirmarPrimeAnual } from '@/services/subscriptionService'
 import { getWhatsAppUrl } from '@/config/contact'
@@ -75,12 +75,10 @@ export function AdminSubscriptions() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-display font-bold text-graphite">Assinaturas Prime</h1>
-          <p className="text-sm text-graphite/70 mt-1 font-heading">
-            {subscriptions.length} assinante{subscriptions.length !== 1 ? 's' : ''} ativo{subscriptions.length !== 1 ? 's' : ''}
-          </p>
-        </div>
+        <AdminPageHeader
+          title="Assinaturas Prime"
+          subtitle={`${subscriptions.length} assinante${subscriptions.length !== 1 ? 's' : ''} ativo${subscriptions.length !== 1 ? 's' : ''}`}
+        />
 
         {/* Filtros (mensal removido - todo Prime é anual) */}
         <div className="flex flex-wrap gap-2">

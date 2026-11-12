@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AdminLayout } from '@/components/admin/AdminLayout'
+import { AdminLayout, AdminPageHeader, AdminButton } from '@/components/admin/AdminLayout'
 import {
   fetchExperiencias,
   createExperiencia,
@@ -372,21 +372,13 @@ export function AdminExperiencias() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-display font-bold text-graphite">Experiências</h1>
-            <p className="text-sm text-graphite/70 mt-1 font-heading">
-              <span className="text-green-600 font-medium">{ativasCount} ativas</span>
-              <span> · {experiencias.length} total</span>
-            </p>
-          </div>
-          <button
-            onClick={openCreate}
-            className="px-5 py-2.5 rounded-xl bg-antique-gold text-deep-purple text-sm font-heading font-semibold hover:bg-accent-light transition-colors shadow-sm"
-          >
-            + Nova Experiência
-          </button>
-        </div>
+        <AdminPageHeader
+          title="Experiências"
+          subtitle={`${ativasCount} ativas · ${experiencias.length} total`}
+          actions={
+            <AdminButton onClick={openCreate}>+ Nova Experiência</AdminButton>
+          }
+        />
 
         {/* Filtros */}
         <div className="flex gap-2">

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { AdminLayout } from '@/components/admin/AdminLayout'
-import { fetchAdminStats, fetchAllUsers, fetchAllTransactions } from '@/services/adminService'
+import { AdminLayout, AdminPageHeader, AdminCard, AdminButton } from '@/components/admin/AdminLayout'
+import { fetchAdminStats, fetchAllUsers, fetchAllTransactions, fetchBalanceDiscrepancies } from '@/services/adminService'
 import { format } from '@/services/copy'
 
 function StatCard({ label, value, icon, index }) {
@@ -11,17 +11,18 @@ function StatCard({ label, value, icon, index }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="p-5 rounded-2xl bg-white border border-dusty-rose/20 shadow-sm"
     >
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-deep-purple/10 flex items-center justify-center">
-          <span className="text-xl text-deep-purple">{icon}</span>
+      <AdminCard>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-[#32113f]/10 flex items-center justify-center">
+            <span className="text-xl text-[#32113f]">{icon}</span>
+          </div>
+          <div>
+            <p className="text-2xl font-display font-bold text-[#1f1f1f]">{value}</p>
+            <p className="text-sm text-[#a39695] font-heading">{label}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-2xl font-display font-bold text-graphite">{value}</p>
-          <p className="text-sm text-graphite/70 font-heading">{label}</p>
-        </div>
-      </div>
+      </AdminCard>
     </motion.div>
   )
 }
@@ -30,6 +31,7 @@ export function AdminDashboard() {
   const [stats, setStats] = useState({ totalUsers: 0, totalPointsDistributed: 0, totalTransactions: 0 })
   const [topUsers, setTopUsers] = useState([])
   const [recentTransactions, setRecentTransactions] = useState([])
+  const [discrepancies, setDiscrepancies] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -47,6 +49,11 @@ export function AdminDashboard() {
       const transResult = await fetchAllTransactions()
       if (transResult.success) {
         setRecentTransactions(transResult.transactions.slice(0, 5))
+      }
+      // Verificar discrepâncias de saldo
+      const discResult = await fetchBalanceDiscrepancies()
+      if (discResult.success) {
+        setDiscrepancies(discResult.discrepancies)
       }
       setLoading(false)
     }
@@ -70,13 +77,57 @@ export function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-8">
+        {/* Header */}
+        <AdminPageHeader
+          title="Dashboard"
+          subtitle="Visão geral do Me,up Club"
+        />
+
         {/* ════════════════════════════════════════════════════════════
-            HEADER - Título com Playfair
+            ALERTA DE DISCREPÂNCIAS
             ════════════════════════════════════════════════════════════ */}
-        <div>
-          <h1 className="text-2xl font-display font-bold text-graphite">Dashboard</h1>
-          <p className="text-sm text-graphite/70 mt-1 font-heading">Visão geral do Me,up Club</p>
-        </div>
+        {discrepancies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 rounded-2xl bg-red-50 border border-red-200"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">⚠️</span>
+              <div className="flex-1">
+                <h3 className="text-sm font-heading font-semibold text-red-800">
+                  Discrepância de saldo detectada
+                </h3>
+                <p className="text-xs text-red-700 mt-1">
+                  {discrepancies.length} usuário(s) com saldo inconsistente entre profile e transações.
+                </p>
+                <div className="mt-3 space-y-2">
+                  {discrepancies.slice(0, 3).map(d => (
+                    <div key={d.userId} className="flex items-center justify-between text-xs bg-white/50 rounded-lg p-2">
+                      <div>
+                        <span className="font-medium text-graphite">{d.userName}</span>
+                        <span className="text-graphite/60 ml-2">{d.userEmail}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-graphite/60">Saldo: {d.profilePoints.toLocaleString('pt-BR')}</span>
+                        <span className="mx-1">→</span>
+                        <span className="text-graphite/60">Tx: {d.transactionsSum.toLocaleString('pt-BR')}</span>
+                        <span className={`ml-2 font-semibold ${d.discrepancy > 0 ? 'text-red-600' : 'text-amber-600'}`}>
+                          ({d.discrepancy > 0 ? '+' : ''}{d.discrepancy.toLocaleString('pt-BR')})
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {discrepancies.length > 3 && (
+                    <p className="text-xs text-red-600/80 text-center">
+                      +{discrepancies.length - 3} outros usuários com discrepância
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* ════════════════════════════════════════════════════════════
             STATS - Cards brancos com boa legibilidade
@@ -202,30 +253,23 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* ════════════════════════════════════════════════════════════
-            AÇÕES RÁPIDAS - Fundo claro
-            ════════════════════════════════════════════════════════════ */}
+        {/* Ações Rápidas */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="p-6 rounded-2xl bg-white border border-dusty-rose/20 shadow-sm"
         >
-          <h2 className="text-sm font-heading font-semibold text-graphite mb-4">Ações Rápidas</h2>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              to="/admin/usuarios"
-              className="px-5 py-2.5 rounded-xl bg-antique-gold text-deep-purple text-sm font-heading font-semibold hover:bg-accent-light transition-colors shadow-sm"
-            >
-              Creditar Pontos
-            </Link>
-            <Link
-              to="/admin/historico"
-              className="px-5 py-2.5 rounded-xl bg-deep-purple/10 text-deep-purple text-sm font-heading font-medium hover:bg-deep-purple/20 transition-colors"
-            >
-              Ver Histórico
-            </Link>
-          </div>
+          <AdminCard>
+            <h2 className="text-sm font-heading font-semibold text-[#1f1f1f] mb-4">Ações Rápidas</h2>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/admin/usuarios">
+                <AdminButton variant="primary">Creditar Pontos</AdminButton>
+              </Link>
+              <Link to="/admin/historico">
+                <AdminButton variant="secondary">Ver Histórico</AdminButton>
+              </Link>
+            </div>
+          </AdminCard>
         </motion.div>
       </div>
     </AdminLayout>
