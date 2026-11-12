@@ -204,7 +204,8 @@ serve(async (req) => {
           headers: {
             'Content-Type': 'application/json',
             'x-api-key': anthropicApiKey,
-            'anthropic-version': '2023-06-01'
+            'anthropic-version': '2023-06-01',
+            'anthropic-beta': 'pdfs-2024-09-25'
           },
           body: JSON.stringify({
             model,
