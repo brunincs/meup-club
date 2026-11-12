@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchMySubscription, fetchPlanosConfig } from '@/services/subscriptionService'
+import { getPrecoFundadorAtual } from '@/services/fundadoresService'
 import { isPaymentEnabled, iniciarAssinaturaWhatsApp } from '@/services/paymentAdapter'
 import { formatPrice } from '@/config/contact'
 import toast from 'react-hot-toast'
@@ -16,6 +17,7 @@ export function Plans() {
   const navigate = useNavigate()
   const [subscription, setSubscription] = useState(null)
   const [planosConfig, setPlanosConfig] = useState(null)
+  const [loteData, setLoteData] = useState({ lote_numero: 1, preco: 497, vagas_restantes: 100 })
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
   // Apenas plano anual disponível
@@ -23,9 +25,16 @@ export function Plans() {
 
   useEffect(() => {
     async function load() {
-      const configResult = await fetchPlanosConfig()
+      const [configResult, loteResult] = await Promise.all([
+        fetchPlanosConfig(),
+        getPrecoFundadorAtual()
+      ])
+
       if (configResult.success) {
         setPlanosConfig(configResult.planos)
+      }
+      if (loteResult.success) {
+        setLoteData(loteResult)
       }
 
       // Só busca subscription se estiver logado
@@ -79,13 +88,15 @@ export function Plans() {
     )
   }
 
-  // Valores do plano (apenas anual)
+  // Valores do plano (apenas anual) - preço vem do lote atual
   const primeConfig = planosConfig?.prime || {}
   const freeConfig = planosConfig?.free || {}
-  const precoAnual = primeConfig.precoAnual || 497
-  const precoAnualCheio = primeConfig.precoAnualCheio || 997
-  const ofertaFundador = primeConfig.ofertaFundadorAtiva ?? false
+  const precoAnual = loteData.preco || 497
+  const precoAnualCheio = 997
+  const loteAtual = loteData.lote_numero || 1
+  const ofertaFundador = loteAtual > 0 && loteData.vagas_restantes > 0
   const economiaFundadorAnual = (precoAnualCheio - precoAnual).toFixed(0)
+  const descontoPercent = Math.round((1 - precoAnual / precoAnualCheio) * 100)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-deep-purple to-graphite py-12 px-4">
@@ -109,7 +120,7 @@ export function Plans() {
             className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/30 text-center"
           >
             <p className="text-amber-200 font-heading">
-              Você é <span className="font-bold">Meup Prime {formatCiclo(subscription?.ciclo)}</span>
+              Você é <span className="font-bold">Meup Prime Anual</span>
             </p>
           </motion.div>
         )}
@@ -183,7 +194,7 @@ export function Plans() {
             {/* Badge Fundador ou Recomendado */}
             {!isPrime && ofertaFundador && (
               <div className="absolute -top-3 right-6 px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 rounded-full text-xs text-white font-heading font-bold shadow-lg">
-                50% OFF · Fundador
+                {descontoPercent}% OFF · Lote {loteAtual}
               </div>
             )}
             {!isPrime && !ofertaFundador && cicloSelecionado === 'anual' && (
@@ -299,7 +310,7 @@ export function Plans() {
             animate={{ opacity: 1 }}
             className="text-center text-sm text-amber-300/80 mt-8 font-heading"
           >
-            100 vagas de fundador · Preço de lançamento por tempo limitado
+            {loteData.vagas_restantes} vagas no Lote {loteAtual} · Preço de lançamento limitado
           </motion.p>
         )}
 

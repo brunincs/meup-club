@@ -56,6 +56,30 @@ export async function getMyPendingPoints() {
 }
 
 /**
+ * Busca preço atual do lote de fundador
+ * Retorna lote_numero, preco, vagas_restantes
+ */
+export async function getPrecoFundadorAtual() {
+  try {
+    const { data, error } = await supabase.rpc('get_preco_fundador_atual')
+
+    if (error) throw error
+
+    const loteData = data?.[0] || {}
+    return {
+      success: true,
+      lote_numero: loteData.lote_numero || 1,
+      preco: parseFloat(loteData.preco) || 497,
+      vagas_restantes: loteData.vagas_restantes || 0,
+      total_vendidas: loteData.total_vendidas || 0
+    }
+  } catch (error) {
+    console.error('Erro ao buscar preço do lote:', error)
+    return { success: false, lote_numero: 1, preco: 497, vagas_restantes: 100 }
+  }
+}
+
+/**
  * Busca URL do regulamento
  */
 export async function getRegulamentoUrl() {

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { fetchPlanosConfig } from '@/services/subscriptionService'
-import { getFundadoresCount, getRegulamentoUrl } from '@/services/fundadoresService'
+import { getFundadoresCount, getRegulamentoUrl, getPrecoFundadorAtual } from '@/services/fundadoresService'
 import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 import { formatPrice } from '@/config/contact'
 
@@ -15,13 +15,15 @@ export function PrimeOfferAlternada() {
   const [config, setConfig] = useState(null)
   const [loading, setLoading] = useState(true)
   const [vagasData, setVagasData] = useState({ vagas_usadas: 0, vagas_total: 100 })
+  const [loteData, setLoteData] = useState({ lote_numero: 1, preco: 497, vagas_restantes: 100 })
   const [regulamentoUrl, setRegulamentoUrl] = useState('')
 
   useEffect(() => {
     async function load() {
-      const [planosResult, vagasResult, regUrl] = await Promise.all([
+      const [planosResult, vagasResult, loteResult, regUrl] = await Promise.all([
         fetchPlanosConfig(),
         getFundadoresCount(),
+        getPrecoFundadorAtual(),
         getRegulamentoUrl()
       ])
       if (planosResult.success) {
@@ -29,6 +31,9 @@ export function PrimeOfferAlternada() {
       }
       if (vagasResult.success) {
         setVagasData(vagasResult)
+      }
+      if (loteResult.success) {
+        setLoteData(loteResult)
       }
       setRegulamentoUrl(regUrl)
       setLoading(false)
@@ -43,17 +48,21 @@ export function PrimeOfferAlternada() {
   const prime = config?.prime || {}
   const free = config?.free || {}
 
-  // Preços (apenas anual, mensal removido)
-  const precoAnual = prime.precoAnual || 497
-  const precoAnualCheio = prime.precoAnualCheio || 997
-  const ofertaFundador = prime.ofertaFundadorAtiva ?? true
+  // Preços por lote (sistema de 3 lotes: 20@497, 40@597, 40@697)
+  const precoAnual = loteData.preco || 497
+  const precoAnualCheio = 997
+  const loteAtual = loteData.lote_numero || 1
+  const ofertaFundador = loteAtual > 0 && loteData.vagas_restantes > 0
 
   // Economia de FUNDADOR (âncora - oferta)
   const economiaFundadorAnual = (precoAnualCheio - precoAnual).toFixed(0)
+  const descontoPercent = Math.round((1 - precoAnual / precoAnualCheio) * 100)
 
-  // Vagas restantes
-  const vagasRestantes = vagasData.vagas_total - vagasData.vagas_usadas
-  const porcentagemUsada = (vagasData.vagas_usadas / vagasData.vagas_total) * 100
+  // Vagas restantes (do lote atual)
+  const vagasRestantes = loteData.vagas_restantes || 0
+  const totalVagas = 100 // Total de todos os lotes
+  const vagasVendidas = loteData.total_vendidas || 0
+  const porcentagemUsada = (vagasVendidas / totalVagas) * 100
 
   return (
     <section id="prime-offer" className="relative py-16 md:py-24 bg-deep-purple overflow-hidden">
@@ -166,10 +175,10 @@ export function PrimeOfferAlternada() {
             viewport={{ once: true }}
             className="relative p-6 rounded-2xl bg-gradient-to-br from-[#4a2259] via-[#3d1a4a] to-[#2d1237] border-2 border-antique-gold/70 shadow-2xl shadow-antique-gold/25 flex flex-col ring-1 ring-antique-gold/20"
           >
-            {/* Badge Fundador */}
+            {/* Badge Fundador com desconto dinâmico */}
             {ofertaFundador && (
               <div className="absolute -top-3 right-4 px-3 py-1 bg-antique-gold rounded-full text-xs text-deep-purple font-heading font-bold shadow-lg">
-                50% OFF · Fundador
+                {descontoPercent}% OFF · Lote {loteAtual}
               </div>
             )}
 
@@ -340,7 +349,7 @@ export function PrimeOfferAlternada() {
               {vagasRestantes > 0 && (
                 <div className="mb-5">
                   <p className="text-sm text-ice-white/80 mb-2">
-                    Restam <span className="text-antique-gold font-semibold">{vagasRestantes}</span> de {vagasData.vagas_total} vagas
+                    <span className="text-antique-gold font-semibold">{vagasRestantes}</span> vagas restantes no Lote {loteAtual} · R${formatPrice(precoAnual, false)}
                   </p>
                   <div className="h-2 bg-ice-white/10 rounded-full overflow-hidden">
                     <div
@@ -348,6 +357,9 @@ export function PrimeOfferAlternada() {
                       style={{ width: `${porcentagemUsada}%` }}
                     />
                   </div>
+                  <p className="text-xs text-ice-white/50 mt-1">
+                    {vagasVendidas} de {totalVagas} vagas de fundador vendidas
+                  </p>
                 </div>
               )}
 
