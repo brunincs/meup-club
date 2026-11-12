@@ -151,8 +151,8 @@ serve(async (req) => {
     // 4. Converter PDF para base64
     const pdfBase64 = btoa(String.fromCharCode(...pdfBytes))
 
-    // 5. Chamar API da Anthropic (Sonnet para suporte completo a PDF)
-    const model = Deno.env.get('CARD_MODEL') || 'claude-3-5-sonnet-20241022'
+    // 5. Chamar API da Anthropic (Claude 3 Haiku - barato e funcional)
+    const model = Deno.env.get('CARD_MODEL') || 'claude-3-haiku-20240307'
     let anthropicResponse: Response
     let retryCount = 0
     const maxRetries = 1
@@ -203,15 +203,23 @@ serve(async (req) => {
 
     const responseData = await anthropicResponse!.json()
 
+    // Log completo para debug
+    console.log('Anthropic response status:', anthropicResponse!.status)
+    console.log('Anthropic response data:', JSON.stringify(responseData, null, 2))
+
     // 6. Registrar uso da IA (sem emissao_id)
     const inputTokens = responseData.usage?.input_tokens || 0
     const outputTokens = responseData.usage?.output_tokens || 0
-    const pricing = PRICING[model as keyof typeof PRICING] || PRICING['claude-3-5-haiku-20241022']
+    const pricing = PRICING[model as keyof typeof PRICING] || PRICING['claude-3-5-sonnet-20241022']
     const custoEstimado = (inputTokens * pricing.input + outputTokens * pricing.output) / 1_000_000
 
     // 7. Verificar erros da API
     if (!anthropicResponse!.ok || responseData.error) {
-      const errorMessage = responseData.error?.message || 'Erro na API da Anthropic'
+      // Capturar erro completo
+      const errorMessage = responseData.error?.message ||
+                          responseData.message ||
+                          (typeof responseData.error === 'string' ? responseData.error : null) ||
+                          JSON.stringify(responseData)
       const isCreditError = errorMessage.toLowerCase().includes('credit') ||
                            errorMessage.toLowerCase().includes('balance') ||
                            errorMessage.toLowerCase().includes('insufficient')
