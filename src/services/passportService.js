@@ -219,6 +219,7 @@ export async function fetchRecentActivity(userId, limit = 5) {
       .select('id, amount, type, reason, created_at, balance_after')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
       .limit(limit)
 
     if (error) throw error
@@ -241,6 +242,7 @@ export async function fetchAllTransactions(userId) {
       .select('id, amount, type, reason, created_at, balance_after')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
 
     if (error) throw error
 

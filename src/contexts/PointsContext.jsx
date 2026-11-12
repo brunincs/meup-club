@@ -28,6 +28,10 @@ export function PointsProvider({ children }) {
 
   // Pontos: vem do profile real ou do demo
   const [points, setPoints] = useState(0)
+  // Pontos bloqueados (não podem ser gastos)
+  const [blockedPoints, setBlockedPoints] = useState(0)
+  // Pontos disponíveis para resgate (points - blockedPoints)
+  const availablePoints = Math.max(0, points - blockedPoints)
   // Total de pontos ganhos (usado para calcular classe)
   const [totalPointsEarned, setTotalPointsEarned] = useState(0)
   // Level ID do banco (já calculado pelo backend)
@@ -39,10 +43,12 @@ export function PointsProvider({ children }) {
   useEffect(() => {
     if (profile?.points !== undefined) {
       setPoints(profile.points)
+      setBlockedPoints(profile.pontos_bloqueados || 0)
       setTotalPointsEarned(profile.total_points_earned || profile.points)
       setLevelId(profile.level_id || 1)
     } else if (useMock) {
       setPoints(demoUser.points)
+      setBlockedPoints(0)
       setTotalPointsEarned(demoUser.points)
       setLevelId(2)
     }
@@ -195,6 +201,8 @@ export function PointsProvider({ children }) {
 
   const value = {
     points,
+    blockedPoints,     // Pontos bloqueados (período de arrependimento)
+    availablePoints,   // Pontos disponíveis para resgate
     totalPointsEarned, // Total de pontos ganhos (para classe)
     levelId,           // Classe do usuário (1-5)
     redeemedIds,

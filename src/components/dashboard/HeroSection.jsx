@@ -9,6 +9,7 @@ import { AnimatedCounter, CountUp } from '@/components/effects/AnimatedCounter'
 import { ProgressBar } from '@/components/effects/ProgressRing'
 import { GlowBorder } from '@/components/effects/GlowEffect'
 import { getClassIcon } from '@/components/ui/Icons'
+import { fetchUserPendingPointsTotal } from '@/services/adminService'
 
 // ============================================
 // FOTO A VALIDAR - trocar pela oficial da Me,up depois
@@ -21,7 +22,7 @@ const HERO_IMAGE = 'https://images.unsplash.com/photo-1506929562872-bb421503ef21
 
 export function HeroSection() {
   const { profile, user, useMock } = useAuth()
-  const { points: userPoints } = usePoints()
+  const { points: userPoints, blockedPoints, availablePoints } = usePoints()
   const { allExperiences } = useExperiencias()
   const { current: currentLevel, next: nextLevel, totalPointsEarned, progress, pointsToNext, isLoading: levelLoading } = useUserLevel()
 
@@ -33,6 +34,10 @@ export function HeroSection() {
   const todayPoints = useMock ? 320 : 0
   const weekPoints = useMock ? 1250 : 0
 
+  // Detalhes dos pontos bloqueados
+  const [blockedDetails, setBlockedDetails] = useState(null)
+  const [showBlockedPopover, setShowBlockedPopover] = useState(false)
+
   // Próxima experiência (do Supabase)
   const nextExperience = getNextExperience(allExperiences, userPoints)
 
@@ -43,6 +48,23 @@ export function HeroSection() {
     const timer = setTimeout(() => setShowCounter(true), 300)
     return () => clearTimeout(timer)
   }, [])
+
+  // Buscar detalhes dos pontos bloqueados
+  useEffect(() => {
+    async function loadBlockedDetails() {
+      if (!user?.id || useMock || blockedPoints <= 0) return
+      try {
+        const { supabase } = await import('@/lib/supabase')
+        const { data } = await supabase.rpc('get_blocked_points_details', { p_user_id: user.id })
+        if (data && data.length > 0) {
+          setBlockedDetails(data[0])
+        }
+      } catch (e) {
+        console.error('Erro ao buscar detalhes bloqueados:', e)
+      }
+    }
+    loadBlockedDetails()
+  }, [user?.id, useMock, blockedPoints])
 
   // Se ainda não carregou o nível, mostra loading
   if (levelLoading) {
@@ -107,8 +129,8 @@ export function HeroSection() {
                 </motion.div>
               </div>
 
-              {/* Contador de Pontos */}
-              <div className="mb-6">
+              {/* Contador de Pontos DISPONÍVEIS */}
+              <div className="mb-4">
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -117,15 +139,63 @@ export function HeroSection() {
                 >
                   {showCounter ? (
                     <span className="text-4xl lg:text-5xl font-display font-bold text-antique-gold">
-                      <CountUp end={userPoints} duration={1.5} separator="." />
+                      <CountUp end={availablePoints} duration={1.5} separator="." />
                     </span>
                   ) : (
                     <span className="text-4xl lg:text-5xl font-display font-bold text-antique-gold">0</span>
                   )}
                 </motion.div>
                 <p className="text-sm font-heading font-medium text-dusty-rose uppercase tracking-wider">
-                  pontos acumulados
+                  pontos disponíveis
                 </p>
+
+                {/* Selo de pontos bloqueados */}
+                {blockedPoints > 0 && (
+                  <div className="relative mt-2">
+                    <button
+                      onClick={() => setShowBlockedPopover(!showBlockedPopover)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-heading hover:bg-amber-500/25 transition-colors"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5">
+                        <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      <span>{blockedPoints.toLocaleString('pt-BR')} bloqueados</span>
+                      {blockedDetails?.proxima_liberacao_str && (
+                        <span className="text-amber-400/70">· liberam em {blockedDetails.proxima_liberacao_str}</span>
+                      )}
+                    </button>
+
+                    {/* Popover com detalhes */}
+                    {showBlockedPopover && blockedDetails?.detalhes && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute left-0 top-full mt-2 z-50 w-72 p-3 rounded-xl bg-deep-purple border border-amber-500/30 shadow-xl"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-amber-300 font-heading font-semibold">Pontos bloqueados</span>
+                          <button onClick={() => setShowBlockedPopover(false)} className="text-dusty-rose/60 hover:text-ice-white">
+                            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4">
+                              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          {blockedDetails.detalhes.map((item, i) => (
+                            <div key={i} className="flex items-center justify-between text-xs">
+                              <span className="text-dusty-rose">{item.motivo}</span>
+                              <span className="text-amber-400 font-mono">+{item.pontos.toLocaleString('pt-BR')}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-3 pt-2 border-t border-amber-500/20 text-[10px] text-dusty-rose/60 text-center">
+                          Liberados automaticamente após período de arrependimento
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Ganhos do período */}
@@ -135,14 +205,18 @@ export function HeroSection() {
                 transition={{ delay: 0.5 }}
                 className="flex flex-wrap items-center gap-3 mb-6"
               >
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-game-green/10 border border-game-green/20">
-                  <span className="text-game-green text-sm font-heading font-semibold">+{todayPoints.toLocaleString('pt-BR')}</span>
-                  <span className="text-dusty-rose text-xs">hoje</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-dusty-rose/10 border border-dusty-rose/20">
-                  <span className="text-ice-white text-sm font-heading font-medium">+{weekPoints.toLocaleString('pt-BR')}</span>
-                  <span className="text-dusty-rose/60 text-xs">semana</span>
-                </div>
+                {(todayPoints > 0 || useMock) && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-game-green/10 border border-game-green/20">
+                    <span className="text-game-green text-sm font-heading font-semibold">+{todayPoints.toLocaleString('pt-BR')}</span>
+                    <span className="text-dusty-rose text-xs">hoje</span>
+                  </div>
+                )}
+                {(weekPoints > 0 || useMock) && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-dusty-rose/10 border border-dusty-rose/20">
+                    <span className="text-ice-white text-sm font-heading font-medium">+{weekPoints.toLocaleString('pt-BR')}</span>
+                    <span className="text-dusty-rose/60 text-xs">semana</span>
+                  </div>
+                )}
               </motion.div>
 
               {/* Progresso para próximo nível */}

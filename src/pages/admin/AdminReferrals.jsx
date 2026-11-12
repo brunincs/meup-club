@@ -174,16 +174,36 @@ export function AdminReferrals() {
     if (!modal?.referral) return
 
     setActionLoading(true)
-    const result = await approveReferral(modal.referral.id)
 
-    if (result.success) {
-      toast.success(`Indicação aprovada! +${format.pointsShort(result.points_awarded)} pontos creditados`)
+    // Timeout de 15 segundos
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Tempo limite excedido. Tente novamente.')), 15000)
+    )
+
+    try {
+      const result = await Promise.race([
+        approveReferral(modal.referral.id),
+        timeoutPromise
+      ])
+
+      // Fechar modal ANTES de mostrar toast
       setModal(null)
-      loadReferrals()
-    } else {
-      toast.error(result.error || 'Erro ao aprovar indicação')
+      setActionLoading(false)
+
+      if (result.success) {
+        const message = result.message
+          ? `${result.message}`
+          : `Indicação aprovada! +${format.pointsShort(result.points_awarded)} pontos creditados`
+        toast.success(message)
+        loadReferrals()
+      } else {
+        toast.error(result.error || 'Erro ao aprovar indicação')
+      }
+    } catch (error) {
+      setModal(null)
+      setActionLoading(false)
+      toast.error(error.message || 'Erro ao processar. Tente novamente.')
     }
-    setActionLoading(false)
   }
 
   // Rejeitar indicação
