@@ -510,3 +510,60 @@ export async function fetchUserPendingPointsTotal(userId = null) {
 
   return { success: true, total: data || 0 }
 }
+
+// ============================================
+// CHECK-INS DE VOOS
+// ============================================
+
+/**
+ * Busca check-ins das próximas 48h para o dashboard admin
+ */
+export async function fetchCheckinsProximos() {
+  const { data, error } = await supabase.rpc('get_checkins_proximos')
+
+  if (error) {
+    console.error('Erro ao buscar check-ins próximos:', error)
+    return { success: false, error: error.message, checkins: [] }
+  }
+
+  return {
+    success: true,
+    checkins: (data || []).map(c => ({
+      vooId: c.voo_id,
+      viagemId: c.viagem_id,
+      userId: c.user_id,
+      clienteNome: c.cliente_nome,
+      clienteEmail: c.cliente_email,
+      origemCidade: c.origem_cidade,
+      destinoCidade: c.destino_cidade,
+      origemIata: c.origem_iata,
+      destinoIata: c.destino_iata,
+      numeroVoo: c.numero_voo,
+      companhia: c.companhia,
+      localizador: c.localizador,
+      partidaEm: c.partida_em,
+      partidaLocal: c.partida_local,
+      sentido: c.sentido,
+      checkinFeitoEm: c.checkin_feito_em,
+      checkinFeitoPor: c.checkin_feito_por,
+      checkinFeitoPorNome: c.checkin_feito_por_nome
+    }))
+  }
+}
+
+/**
+ * Marca check-in de um voo como feito
+ */
+export async function marcarCheckinFeito(vooId, adminId) {
+  const { data, error } = await supabase.rpc('marcar_checkin_feito', {
+    p_voo_id: vooId,
+    p_admin_id: adminId
+  })
+
+  if (error) {
+    console.error('Erro ao marcar check-in:', error)
+    return { success: false, error: error.message }
+  }
+
+  return data
+}

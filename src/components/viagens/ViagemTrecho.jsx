@@ -37,9 +37,21 @@ export function ViagemTrecho({ voo, onCopyLocalizador }) {
     <div className="p-4 rounded-xl bg-ice-white border border-dusty-rose/10">
       {/* Header do trecho */}
       <div className="flex items-center justify-between mb-4">
-        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-heading font-bold uppercase tracking-wider border ${sentidoColor[voo.sentido] || sentidoColor.trecho}`}>
-          {sentidoLabel[voo.sentido] || voo.sentido}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-heading font-bold uppercase tracking-wider border ${sentidoColor[voo.sentido] || sentidoColor.trecho}`}>
+            {sentidoLabel[voo.sentido] || voo.sentido}
+          </span>
+
+          {/* Selo de check-in feito */}
+          {voo.checkin_feito_em && (
+            <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-100 text-green-700 text-[10px] font-heading font-bold border border-green-200">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Check-in feito
+            </span>
+          )}
+        </div>
 
         {/* Localizador */}
         {voo.localizador && (

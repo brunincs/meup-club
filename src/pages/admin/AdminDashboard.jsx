@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { AdminLayout, AdminPageHeader, AdminCard, AdminButton } from '@/components/admin/AdminLayout'
-import { fetchAdminStats, fetchAllUsers, fetchAllTransactions, fetchBalanceDiscrepancies } from '@/services/adminService'
+import { fetchAdminStats, fetchAllUsers, fetchAllTransactions, fetchBalanceDiscrepancies, fetchCheckinsProximos, marcarCheckinFeito } from '@/services/adminService'
+import { useAuth } from '@/contexts/AuthContext'
 import { fetchIAStats, fetchErrosRecentesIA } from '@/services/viagemService'
 import { format } from '@/services/copy'
 
@@ -29,12 +30,15 @@ function StatCard({ label, value, icon, index }) {
 }
 
 export function AdminDashboard() {
+  const { profile } = useAuth()
   const [stats, setStats] = useState({ totalUsers: 0, totalPointsDistributed: 0, totalTransactions: 0 })
   const [topUsers, setTopUsers] = useState([])
   const [recentTransactions, setRecentTransactions] = useState([])
   const [discrepancies, setDiscrepancies] = useState([])
   const [iaStats, setIAStats] = useState(null)
   const [iaErros, setIAErros] = useState({ erros: [], temErroCreditoRecente: false })
+  const [checkins, setCheckins] = useState([])
+  const [checkinsLoading, setCheckinsLoading] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -67,10 +71,40 @@ export function AdminDashboard() {
       if (errosResult.success) {
         setIAErros(errosResult)
       }
+      // Buscar check-ins das próximas 48h
+      const checkinsResult = await fetchCheckinsProximos()
+      if (checkinsResult.success) {
+        setCheckins(checkinsResult.checkins)
+      }
       setLoading(false)
     }
     loadData()
   }, [])
+
+  // Função para marcar check-in como feito
+  async function handleMarcarCheckin(vooId) {
+    if (!profile?.id) return
+    setCheckinsLoading(true)
+    const result = await marcarCheckinFeito(vooId, profile.id)
+    if (result.success) {
+      // Atualizar lista local
+      setCheckins(prev => prev.map(c =>
+        c.vooId === vooId
+          ? { ...c, checkinFeitoEm: new Date().toISOString(), checkinFeitoPorNome: profile.name }
+          : c
+      ))
+    }
+    setCheckinsLoading(false)
+  }
+
+  // Formatar horário local do voo
+  function formatHorarioVoo(checkin) {
+    if (checkin.partidaLocal) return checkin.partidaLocal
+    if (checkin.partidaEm) {
+      return new Date(checkin.partidaEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    }
+    return '--:--'
+  }
 
   if (loading) {
     return (
@@ -215,6 +249,91 @@ export function AdminDashboard() {
                   <span>Tokens: {((iaStats.tokens_entrada || 0) + (iaStats.tokens_saida || 0)).toLocaleString('pt-BR')}</span>
                 </div>
               )}
+            </AdminCard>
+          </motion.div>
+        )}
+
+        {/* ════════════════════════════════════════════════════════════
+            CHECK-INS DAS PRÓXIMAS 48H
+            ════════════════════════════════════════════════════════════ */}
+        {checkins.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+          >
+            <AdminCard>
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h2 className="text-sm font-heading font-semibold text-[#1f1f1f] flex items-center gap-2">
+                    <span className="text-lg">✈️</span>
+                    Check-ins das próximas 48h
+                  </h2>
+                  <p className="text-xs text-[#a39695] mt-1">
+                    {checkins.filter(c => !c.checkinFeitoEm).length} pendentes de {checkins.length} voos
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {checkins.map((checkin) => (
+                  <div
+                    key={checkin.vooId}
+                    className={`flex items-center justify-between p-3 rounded-xl border ${
+                      checkin.checkinFeitoEm
+                        ? 'bg-green-50 border-green-200'
+                        : 'bg-amber-50 border-amber-200'
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-heading font-medium text-[#1f1f1f]">
+                          {checkin.clienteNome}
+                        </span>
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-[#32113f]/10 text-[#32113f] uppercase">
+                          {checkin.sentido || 'trecho'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-[#a39695]">
+                        <span className="font-medium text-[#1f1f1f]">
+                          {checkin.origemIata} → {checkin.destinoIata}
+                        </span>
+                        <span>·</span>
+                        <span>{checkin.companhia}{checkin.numeroVoo}</span>
+                        <span>·</span>
+                        <span className="font-mono">{formatHorarioVoo(checkin)}</span>
+                        {checkin.localizador && (
+                          <>
+                            <span>·</span>
+                            <span className="font-mono text-[#32113f]">{checkin.localizador}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="ml-4">
+                      {checkin.checkinFeitoEm ? (
+                        <div className="text-right">
+                          <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium">
+                            <span>✓</span> Feito
+                          </span>
+                          <p className="text-[10px] text-green-600 mt-0.5">
+                            por {checkin.checkinFeitoPorNome}
+                          </p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleMarcarCheckin(checkin.vooId)}
+                          disabled={checkinsLoading}
+                          className="px-3 py-1.5 rounded-lg bg-[#32113f] text-white text-xs font-heading font-medium hover:bg-[#421e53] transition-colors disabled:opacity-50"
+                        >
+                          Check-in feito
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </AdminCard>
           </motion.div>
         )}
