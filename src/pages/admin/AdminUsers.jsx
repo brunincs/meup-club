@@ -255,7 +255,7 @@ function PrimeModal({ user, onClose, onSuccess }) {
   }, [user.id])
 
   const primeConfig = planosConfig?.prime || {}
-  const precoMensal = primeConfig.precoMensal || 49.90
+  // Apenas plano anual disponível
   const precoAnual = primeConfig.precoAnual || 497
 
   const handleAtivar = async (ciclo) => {
@@ -338,33 +338,8 @@ function PrimeModal({ user, onClose, onSuccess }) {
             {/* Ações */}
             {status?.isPrime ? (
               <div className="space-y-3">
-                {/* Trocar ciclo */}
-                <p className="text-xs text-graphite/60 font-heading text-center">Trocar ciclo:</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handleAtivar('mensal')}
-                    disabled={processing || status.ciclo === 'mensal'}
-                    className={`px-4 py-3 rounded-xl font-heading font-semibold transition-colors disabled:opacity-50 ${
-                      status.ciclo === 'mensal'
-                        ? 'bg-deep-purple/20 text-deep-purple border-2 border-deep-purple'
-                        : 'bg-deep-purple text-white hover:bg-deep-purple/90'
-                    }`}
-                  >
-                    {status.ciclo === 'mensal' ? '✓ Mensal' : 'Mensal'}
-                    <span className="block text-xs font-normal opacity-80">R${formatPrice(precoMensal)}/mês</span>
-                  </button>
-                  <button
-                    onClick={() => handleAtivar('anual')}
-                    disabled={processing || status.ciclo === 'anual'}
-                    className={`px-4 py-3 rounded-xl font-heading font-semibold transition-colors disabled:opacity-50 ${
-                      status.ciclo === 'anual'
-                        ? 'bg-amber-100 text-amber-700 border-2 border-amber-500'
-                        : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700'
-                    }`}
-                  >
-                    {status.ciclo === 'anual' ? '✓ Anual' : 'Anual'}
-                    <span className="block text-xs font-normal opacity-80">R${formatPrice(precoAnual, false)}/ano (1.5x)</span>
-                  </button>
+                <div className="py-3 text-center text-amber-600 font-heading font-semibold bg-amber-50 rounded-xl">
+                  ✓ Prime Anual Ativo
                 </div>
                 {/* Cancelar */}
                 <button
@@ -378,24 +353,14 @@ function PrimeModal({ user, onClose, onSuccess }) {
             ) : (
               <div className="space-y-3">
                 <p className="text-xs text-graphite/60 font-heading text-center">Ativar Meup Prime:</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handleAtivar('mensal')}
-                    disabled={processing}
-                    className="px-4 py-3 rounded-xl bg-deep-purple text-white font-heading font-semibold hover:bg-deep-purple/90 transition-colors disabled:opacity-50"
-                  >
-                    {processing ? '...' : 'Mensal'}
-                    <span className="block text-xs font-normal opacity-80">R${formatPrice(precoMensal)}/mês</span>
-                  </button>
-                  <button
-                    onClick={() => handleAtivar('anual')}
-                    disabled={processing}
-                    className="px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
-                  >
-                    {processing ? '...' : 'Anual'}
-                    <span className="block text-xs font-normal opacity-80">R${formatPrice(precoAnual, false)}/ano (1.5x)</span>
-                  </button>
-                </div>
+                <button
+                  onClick={() => handleAtivar('anual')}
+                  disabled={processing}
+                  className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
+                >
+                  {processing ? 'Ativando...' : 'Ativar Prime Anual'}
+                  <span className="block text-xs font-normal opacity-80">R${formatPrice(precoAnual, false)}/ano (1.5x)</span>
+                </button>
               </div>
             )}
 

@@ -170,14 +170,10 @@ export async function isPrimeActive(userId) {
 }
 
 /**
- * Formata o ciclo para exibição
+ * Formata o ciclo para exibição (apenas anual disponível)
  */
 export function formatCiclo(ciclo) {
-  const map = {
-    mensal: 'Mensal',
-    anual: 'Anual'
-  }
-  return map[ciclo] || ciclo
+  return ciclo === 'anual' ? 'Anual' : ciclo
 }
 
 /**

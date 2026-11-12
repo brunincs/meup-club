@@ -124,13 +124,11 @@ export function PlanStatusCard() {
   }
 
   const isPrime = subscription?.plano === 'prime'
-  const isPrimeAnual = isPrime && subscription?.ciclo === 'anual'
-  const isPrimeMensal = isPrime && subscription?.ciclo === 'mensal'
   const daysRemaining = subscription?.daysRemaining ?? null
   const isExpiringSoon = isPrime && daysRemaining !== null && daysRemaining <= 14
 
   // Prime Anual - Badge compacto (com banner se expirando)
-  if (isPrimeAnual) {
+  if (isPrime) {
     return (
       <div>
         {isExpiringSoon && (
@@ -157,51 +155,6 @@ export function PlanStatusCard() {
               </p>
             </div>
           </div>
-        </motion.div>
-      </div>
-    )
-  }
-
-  // Prime Mensal - Nudge para upgrade (com banner se expirando)
-  if (isPrimeMensal) {
-    return (
-      <div>
-        {isExpiringSoon && (
-          <ExpirationBanner
-            daysRemaining={daysRemaining}
-            ciclo={subscription.ciclo}
-            onRenew={handleRenovar}
-            processing={processing}
-          />
-        )}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-500/20"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">👑</span>
-              <div>
-                <p className="text-sm font-heading font-semibold text-amber-200">
-                  Meup Prime Mensal
-                </p>
-                <p className="text-xs text-dusty-rose/70">
-                  Desbloqueie o multiplicador 1.5x
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={handleUpgrade}
-              disabled={processing}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50 whitespace-nowrap"
-            >
-              {processing ? 'Abrindo...' : 'Upgrade Anual'}
-            </button>
-          </div>
-          <p className="mt-2 text-xs text-amber-300/70">
-            2 meses grátis + multiplicador 1.5x em todas as viagens
-          </p>
         </motion.div>
       </div>
     )
