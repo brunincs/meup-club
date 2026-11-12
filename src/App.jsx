@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PointsProvider } from '@/contexts/PointsContext'
@@ -131,6 +131,7 @@ function App() {
                     {/* Protected routes - só acessíveis para quem está logado */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/recompensas" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+          <Route path="/rewards" element={<Navigate to="/recompensas" replace />} />
           <Route path="/tarefas" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/missoes" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
