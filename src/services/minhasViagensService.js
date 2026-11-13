@@ -220,8 +220,8 @@ export function formatDiasParaViagem(dias, dataVoo = null) {
  */
 export async function getPassageirosVoo(vooId, subtipoEntrega = null) {
   try {
-    // Usar função original - assinatura TEXT já aplicada via migração 162
-    const { data, error } = await supabase.rpc('get_passageiros_voo', {
+    // Usar nova função para contornar cache PostgREST
+    const { data, error } = await supabase.rpc('buscar_passageiros_voo', {
       p_voo_id: String(vooId),
       p_subtipo_entrega: subtipoEntrega
     })
