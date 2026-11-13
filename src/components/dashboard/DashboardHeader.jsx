@@ -248,9 +248,6 @@ export function DashboardHeader() {
           })}
         </div>
       </nav>
-
-      {/* Espaçador para conteúdo não ficar atrás da barra mobile */}
-      <div className="md:hidden h-16" />
     </>
   )
 }

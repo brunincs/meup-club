@@ -582,16 +582,16 @@ function ProfileModal({ user, onClose, onViewTransactions, onViewTasks }) {
               )}
 
               {/* Ações Rápidas */}
-              <div className="flex gap-3 pt-4 border-t border-dusty-rose/20">
+              <div className="flex flex-wrap gap-3 pt-4 border-t border-dusty-rose/20">
                 <button
                   onClick={() => { onClose(); onViewTransactions(user); }}
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors border border-dusty-rose/30"
+                  className="flex-1 min-w-[140px] px-4 py-2.5 rounded-xl text-sm font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors border border-dusty-rose/30"
                 >
                   Ver Histórico de Pontos
                 </button>
                 <button
                   onClick={() => { onClose(); onViewTasks(user); }}
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors border border-dusty-rose/30"
+                  className="flex-1 min-w-[140px] px-4 py-2.5 rounded-xl text-sm font-heading text-graphite/70 hover:text-graphite hover:bg-dusty-rose/10 transition-colors border border-dusty-rose/30"
                 >
                   Ver Tarefas
                 </button>
