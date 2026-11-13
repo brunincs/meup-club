@@ -66,7 +66,10 @@ export function PassageiroSelector({
     if (result.success) {
       setPassageiros(result.passageiros)
     } else {
-      setError(result.error)
+      // Log técnico no console para debug
+      console.error('[PassageiroSelector] Erro técnico:', result.error)
+      // Mensagem amigável para o cliente
+      setError('Não conseguimos carregar os passageiros. Tente novamente ou fale com a equipe.')
     }
 
     setLoading(false)
