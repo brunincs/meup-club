@@ -72,7 +72,7 @@ export function Dashboard() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-20 md:pb-0">
       {/* Header */}
       <DashboardHeader />
 

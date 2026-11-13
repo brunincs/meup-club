@@ -186,7 +186,7 @@ export function Leaderboard() {
   const weeklyReset = getTimeToWeeklyReset()
 
   return (
-    <div className="min-h-screen bg-deep-purple">
+    <div className="min-h-screen bg-deep-purple pb-20 md:pb-0">
       <DashboardHeader />
 
       <main className="container-premium py-12">

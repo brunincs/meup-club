@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserLevel } from '@/hooks/useUserLevel'
 import { DashboardHeader } from '@/components/dashboard'
+import { CustomSelect } from '@/components/ui'
 import {
   updateUserProfile,
   fetchReferralStats,
@@ -380,19 +381,14 @@ function EditProfileForm({ profile, onSave, saving }) {
 
             {/* Estado */}
             <div>
-              <label className="block text-xs text-[#32113f] font-medium mb-2">
-                Estado
-              </label>
-              <select
+              <CustomSelect
+                label="Estado"
                 value={form.state}
-                onChange={(e) => handleChange('state', e.target.value)}
-                className={`${inputClass} ${inputNormalClass}`}
-              >
-                <option value="">Selecione</option>
-                {BRAZILIAN_STATES.map(uf => (
-                  <option key={uf} value={uf}>{uf}</option>
-                ))}
-              </select>
+                onChange={(val) => handleChange('state', val)}
+                options={BRAZILIAN_STATES.map(uf => ({ value: uf, label: uf }))}
+                placeholder="Selecione"
+                variant="light"
+              />
             </div>
           </div>
         </div>
@@ -805,7 +801,7 @@ export function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa]">
+    <div className="min-h-screen bg-[#f8f9fa] pb-20 md:pb-0">
       <DashboardHeader />
 
       <main className="container-premium py-8 md:py-12">

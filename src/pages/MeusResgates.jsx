@@ -161,7 +161,7 @@ export function MeusResgates() {
   const ativosCount = resgates.filter(r => ['pendente', 'solicitado', 'aprovado', 'em_preparacao'].includes(r.status)).length
 
   return (
-    <div className="min-h-screen bg-ice-white">
+    <div className="min-h-screen bg-ice-white pb-20 md:pb-0">
       <DashboardHeader />
 
       <div className="container-premium py-8">

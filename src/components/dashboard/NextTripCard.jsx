@@ -84,7 +84,7 @@ export function NextTripCard() {
               ? 'bg-blue-500 text-white'
               : 'bg-deep-purple/20 text-antique-gold'
         }`}>
-          {isHoje ? '🎉 Hoje!' : isAmanha ? '⏰ Amanhã!' : formatDiasParaViagem(dias)}
+          {isHoje ? '🎉 Hoje!' : isAmanha ? '⏰ Amanhã!' : formatDiasParaViagem(dias, viagem.data_ida)}
         </div>
 
         {/* Ícone animado */}

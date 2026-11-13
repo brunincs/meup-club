@@ -15,7 +15,7 @@ export function MinhasViagens() {
   const [viagemCalendario, setViagemCalendario] = useState(null)
 
   return (
-    <div className="min-h-screen bg-ice-white">
+    <div className="min-h-screen bg-ice-white pb-20 md:pb-0">
       {/* Header */}
       <DashboardHeader />
 
