@@ -2,7 +2,60 @@
 // COMPONENTE: Trecho de Voo (IDA/VOLTA)
 // ============================================
 
-import { motion } from 'framer-motion'
+import { useMemo } from 'react'
+
+// Configuração de antecedência de check-in por companhia (em horas)
+const CHECKIN_ANTECEDENCIA = {
+  'LATAM': 48,
+  'GOL': 48,
+  'Azul': 48,
+  'Avianca': 48,
+  'default': 48
+}
+
+/**
+ * Calcula status do check-in baseado na data do voo
+ * @param {Object} voo - Dados do voo
+ * @returns {{ status: string, dataAbre?: Date, label: string }}
+ */
+function calcularStatusCheckin(voo) {
+  // Se já foi feito
+  if (voo.checkin_feito_em) {
+    return { status: 'feito', label: 'Check-in feito' }
+  }
+
+  // Calcular data de abertura
+  const dataVoo = voo.data_voo || voo.partida_em?.split('T')[0]
+  if (!dataVoo) {
+    return { status: 'desconhecido', label: '' }
+  }
+
+  const partida = voo.partida_em ? new Date(voo.partida_em) : new Date(dataVoo + 'T12:00:00')
+  const companhia = voo.companhia || 'default'
+  const antecedenciaHoras = CHECKIN_ANTECEDENCIA[companhia] || CHECKIN_ANTECEDENCIA.default
+
+  const dataAbre = new Date(partida.getTime() - antecedenciaHoras * 60 * 60 * 1000)
+  const agora = new Date()
+
+  // Verificar se já passou o voo
+  if (agora > partida) {
+    return { status: 'passado', label: '' }
+  }
+
+  // Verificar se está dentro da janela de check-in
+  if (agora >= dataAbre) {
+    return { status: 'aberto', label: 'Check-in aberto' }
+  }
+
+  // Ainda não abriu
+  const dia = String(dataAbre.getDate()).padStart(2, '0')
+  const mes = String(dataAbre.getMonth() + 1).padStart(2, '0')
+  return {
+    status: 'aguardando',
+    dataAbre,
+    label: `Check-in abre ${dia}/${mes}`
+  }
+}
 
 /**
  * Exibe informações de um trecho de voo
@@ -16,11 +69,8 @@ export function ViagemTrecho({ voo, onCopyLocalizador }) {
     trecho: `TRECHO ${voo.ordem || 1}`
   }
 
-  const sentidoColor = {
-    ida: 'bg-blue-100 text-blue-700 border-blue-200',
-    volta: 'bg-purple-100 text-purple-700 border-purple-200',
-    trecho: 'bg-gray-100 text-gray-700 border-gray-200'
-  }
+  // Status do check-in (calculado)
+  const checkinStatus = useMemo(() => calcularStatusCheckin(voo), [voo])
 
   const handleCopy = async (text, label) => {
     try {
@@ -37,18 +87,27 @@ export function ViagemTrecho({ voo, onCopyLocalizador }) {
     <div className="p-4 rounded-xl bg-ice-white border border-dusty-rose/10">
       {/* Header do trecho */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-heading font-bold uppercase tracking-wider border ${sentidoColor[voo.sentido] || sentidoColor.trecho}`}>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Badge IDA/VOLTA com cores da marca */}
+          <span className="px-2.5 py-1 rounded-lg text-[10px] font-heading font-bold uppercase tracking-wider bg-deep-purple text-ice-white border border-antique-gold/30">
             {sentidoLabel[voo.sentido] || voo.sentido}
           </span>
 
-          {/* Selo de check-in feito */}
-          {voo.checkin_feito_em && (
-            <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-100 text-green-700 text-[10px] font-heading font-bold border border-green-200">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              Check-in feito
+          {/* Status de check-in */}
+          {checkinStatus.label && (
+            <span className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-heading font-bold border ${
+              checkinStatus.status === 'feito'
+                ? 'bg-ice-white text-deep-purple border-antique-gold/30'
+                : checkinStatus.status === 'aberto'
+                  ? 'bg-antique-gold/10 text-deep-purple border-antique-gold/30'
+                  : 'bg-dusty-rose/10 text-deep-purple border-dusty-rose/20'
+            }`}>
+              {checkinStatus.status === 'feito' && (
+                <svg className="w-3 h-3 text-antique-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              {checkinStatus.label}
             </span>
           )}
         </div>
@@ -100,7 +159,7 @@ export function ViagemTrecho({ voo, onCopyLocalizador }) {
             </span>
           )}
           {!voo.direto && voo.escalas > 0 && (
-            <span className="text-[10px] text-amber-600 font-heading">
+            <span className="text-[10px] text-deep-purple/70 font-heading">
               {voo.escalas} escala{voo.escalas > 1 ? 's' : ''}
             </span>
           )}
@@ -152,7 +211,12 @@ export function ViagemTrecho({ voo, onCopyLocalizador }) {
 
         {/* Direto */}
         {voo.direto && (
-          <span className="text-green-600">Voo direto</span>
+          <span className="flex items-center gap-1 text-deep-purple">
+            <svg className="w-3 h-3 text-antique-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Voo direto
+          </span>
         )}
       </div>
     </div>

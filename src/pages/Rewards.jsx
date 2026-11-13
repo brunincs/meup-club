@@ -78,8 +78,11 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
         errors.push('Selecione um trecho (IDA ou VOLTA)')
       }
       // Passageiro é obrigatório para alguns subtipos
-      if (['assento', 'bagagem'].includes(subtipo) && !formData.passageiro?.trim()) {
-        errors.push('Informe o nome do passageiro')
+      if (['assento', 'bagagem'].includes(subtipo)) {
+        const hasPassageiro = formData.passageiroId || (formData.passageiroIds?.length > 0)
+        if (!hasPassageiro) {
+          errors.push('Selecione o passageiro')
+        }
       }
       // Aeroporto para sala VIP
       if (subtipo === 'sala_vip' && !formData.aeroporto?.trim()) {
@@ -353,6 +356,8 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
                 tipoEntrega={reward.tipoEntrega}
                 subtipoEntrega={reward.subtipoEntrega}
                 experienciaNome={reward.name}
+                pontosUnitarios={unitCost}
+                allowMultiPassenger={false}
                 onChange={setFormData}
                 initialData={formData}
                 disabled={isLoading}

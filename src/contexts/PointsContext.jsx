@@ -90,9 +90,11 @@ export function PointsProvider({ children }) {
    * @param {number} quantidade - Quantidade a resgatar (default: 1)
    * @param {Object} formData - Dados do formulário de entrega (opcional)
    * @param {string} emissaoId - ID da emissão para serviços de voo (opcional)
+   * @param {string} viagemId - ID da viagem vinculada (opcional)
+   * @param {string} vooId - ID do voo vinculado (opcional)
    * @returns {Object} { success, error, message, quantity, totalPoints, balance_after }
    */
-  const resgatar = useCallback(async (experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1, formData = {}, emissaoId = null) => {
+  const resgatar = useCallback(async (experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1, formData = {}, emissaoId = null, viagemId = null, vooId = null) => {
     const totalPoints = pontosUnitarios * quantidade
 
     if (useMock) {
@@ -109,10 +111,10 @@ export function PointsProvider({ children }) {
       }
     }
 
-    // Modo real: chama o serviço Supabase v2 com suporte a formulário
+    // Modo real: chama o serviço Supabase v2 com suporte a formulário e viagem
     setIsLoading(true)
     try {
-      const result = await solicitarResgateV2(experienciaId, experienciaNome, pontosUnitarios, classeMinima, quantidade, formData, emissaoId)
+      const result = await solicitarResgateV2(experienciaId, experienciaNome, pontosUnitarios, classeMinima, quantidade, formData, emissaoId, viagemId, vooId)
       // Não adiciona mais a pendingIds - experiências são repetíveis
       return result
     } finally {

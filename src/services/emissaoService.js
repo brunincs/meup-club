@@ -672,6 +672,133 @@ export async function fetchUserValidEmissions(userId = null) {
 // HELPERS
 // ============================================
 
+// ============================================
+// FLUXO UNIFICADO DE APROVAÇÃO
+// ============================================
+
+/**
+ * Aprovar emissão usando função unificada
+ * Sempre cria viagem completa + credita pontos + paga indicação
+ *
+ * @param {string} emissaoId - ID da emissão
+ * @param {string} adminId - ID do admin
+ * @param {Object} viagemDados - {titulo, origem, destino, data_ida, data_volta}
+ * @param {Array} voos - Array de voos com dados completos
+ * @param {Array} passageiros - Array de {nome}
+ */
+export async function aprovarEmissaoUnificada(emissaoId, adminId, viagemDados, voos, passageiros) {
+  try {
+    const { data, error } = await supabase.rpc('aprovar_emissao_unificada', {
+      p_emissao_id: emissaoId,
+      p_admin_id: adminId,
+      p_viagem_dados: viagemDados,
+      p_voos: voos,
+      p_passageiros: passageiros,
+      p_skip_pontos: false
+    })
+
+    if (error) throw error
+
+    return data
+  } catch (error) {
+    console.error('Erro ao aprovar emissão unificada:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Completar viagem para emissão já aprovada (sem creditar pontos)
+ *
+ * @param {string} emissaoId - ID da emissão
+ * @param {string} adminId - ID do admin
+ * @param {Object} viagemDados - {titulo, origem, destino, data_ida, data_volta}
+ * @param {Array} voos - Array de voos
+ * @param {Array} passageiros - Array de {nome}
+ */
+export async function completarViagemEmissao(emissaoId, adminId, viagemDados, voos, passageiros) {
+  try {
+    const { data, error } = await supabase.rpc('completar_viagem_emissao', {
+      p_emissao_id: emissaoId,
+      p_admin_id: adminId,
+      p_viagem_dados: viagemDados,
+      p_voos: voos,
+      p_passageiros: passageiros
+    })
+
+    if (error) throw error
+
+    return data
+  } catch (error) {
+    console.error('Erro ao completar viagem:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Buscar emissões aprovadas que não têm viagem associada
+ */
+export async function fetchEmissoesSemViagem() {
+  try {
+    const { data, error } = await supabase.rpc('get_emissoes_sem_viagem')
+
+    if (error) throw error
+
+    const emissoes = (data || []).map(e => ({
+      id: e.id,
+      userId: e.user_id,
+      userName: e.user_name || 'Cliente',
+      userEmail: e.user_email || '',
+      valor: e.valor,
+      pontosCreditados: e.pontos_creditados,
+      dataEmissao: e.data_emissao,
+      cardUrl: e.card_url,
+      cardPath: e.card_path,
+      cardMeupPath: e.card_meup_path,
+      createdAt: new Date(e.created_at).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      processedAt: e.processed_at ? new Date(e.processed_at).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) : null
+    }))
+
+    return { success: true, emissoes }
+  } catch (error) {
+    console.error('Erro ao buscar emissões sem viagem:', error)
+    return { success: false, error: error.message, emissoes: [] }
+  }
+}
+
+/**
+ * Validar se voos têm pelo menos 1 trecho completo
+ * @param {Array} voos - Array de voos
+ * @returns {boolean}
+ */
+export function validarTrechosCompletos(voos) {
+  if (!voos || voos.length === 0) return false
+
+  return voos.some(voo =>
+    (voo.origem_iata || voo.origem_cidade) &&
+    (voo.destino_iata || voo.destino_cidade) &&
+    voo.data_voo &&
+    voo.companhia &&
+    voo.numero_voo &&
+    voo.localizador
+  )
+}
+
+// ============================================
+// HELPERS
+// ============================================
+
 /**
  * Formatar status para exibição
  */

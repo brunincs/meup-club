@@ -18,7 +18,11 @@ import {
   calcularPontos,
   getEmissaoPointsPreview,
   getSignedCardUrl,
-  downloadCardMeup
+  downloadCardMeup,
+  aprovarEmissaoUnificada,
+  completarViagemEmissao,
+  fetchEmissoesSemViagem,
+  validarTrechosCompletos
 } from '@/services/emissaoService'
 import {
   reabrirEmissao,
@@ -1437,19 +1441,345 @@ function ViagemDataModal({ emissao, onClose, onConfirm }) {
 }
 
 // ============================================
+// MODAL DE APROVAR/COMPLETAR VIAGEM UNIFICADO
+// ============================================
+function AprovarViagemModal({ emissao, onConfirm, onClose, adminId, isCompletarViagem = false }) {
+  const [loading, setLoading] = useState(false)
+  const [lendoCard, setLendoCard] = useState(false)
+  const [erroLeitura, setErroLeitura] = useState(null)
+
+  // Dados da viagem
+  const [viagemDados, setViagemDados] = useState({
+    titulo: '',
+    origem: '',
+    destino: '',
+    data_ida: '',
+    data_volta: '',
+    emitido_em: ''
+  })
+  const [voos, setVoos] = useState([])
+  const [passageiros, setPassageiros] = useState([])
+
+  // Ler card automaticamente ao abrir
+  useEffect(() => {
+    const lerCard = async () => {
+      if (!emissao?.cardPath && !emissao?.cardMeupPath) return
+
+      setLendoCard(true)
+      setErroLeitura(null)
+
+      try {
+        const cardPath = emissao.cardMeupPath || emissao.cardPath
+        const { lerCardMeupDireto } = await import('@/services/viagemService')
+        const result = await lerCardMeupDireto(cardPath)
+
+        if (result.success && result.dados) {
+          const dados = result.dados
+          setViagemDados({
+            titulo: dados.titulo || '',
+            origem: dados.origem || '',
+            destino: dados.destino || '',
+            data_ida: dados.data_ida || '',
+            data_volta: dados.data_volta || '',
+            emitido_em: dados.emitido_em || ''
+          })
+          setVoos(dados.voos || [])
+          setPassageiros(dados.passageiros || [])
+        } else {
+          setErroLeitura(result.error || 'Erro ao ler card')
+        }
+      } catch (err) {
+        setErroLeitura(err.message || 'Erro ao processar card')
+      } finally {
+        setLendoCard(false)
+      }
+    }
+
+    lerCard()
+  }, [emissao])
+
+  // Atualizar voo
+  const handleUpdateVoo = (index, field, value) => {
+    const novosVoos = [...voos]
+    novosVoos[index] = { ...novosVoos[index], [field]: value }
+    setVoos(novosVoos)
+  }
+
+  // Remover voo
+  const handleRemoveVoo = (index) => {
+    setVoos(voos.filter((_, i) => i !== index))
+  }
+
+  // Adicionar voo
+  const handleAddVoo = () => {
+    setVoos([...voos, {
+      sentido: voos.length === 0 ? 'ida' : 'volta',
+      ordem: voos.length + 1,
+      origem_cidade: '',
+      origem_iata: '',
+      destino_cidade: '',
+      destino_iata: '',
+      localizador: '',
+      companhia: '',
+      numero_voo: '',
+      data_voo: '',
+      classe_cabine: '',
+      partida_local: '',
+      chegada_local: '',
+      duracao: '',
+      passageiros: []
+    }])
+  }
+
+  // Adicionar passageiro
+  const handleAddPassageiro = () => {
+    setPassageiros([...passageiros, { nome: '' }])
+  }
+
+  // Atualizar passageiro
+  const handleUpdatePassageiro = (index, nome) => {
+    const novos = [...passageiros]
+    novos[index] = { nome }
+    setPassageiros(novos)
+  }
+
+  // Remover passageiro
+  const handleRemovePassageiro = (index) => {
+    setPassageiros(passageiros.filter((_, i) => i !== index))
+  }
+
+  // Validar antes de submit
+  const podeSubmit = () => {
+    if (passageiros.length === 0 || !passageiros.some(p => p.nome?.trim())) return false
+    return validarTrechosCompletos(voos)
+  }
+
+  // Submit
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (loading) return
+
+    if (!podeSubmit()) {
+      toast.error('Preencha pelo menos 1 trecho completo e 1 passageiro')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      let result
+      if (isCompletarViagem) {
+        result = await completarViagemEmissao(
+          emissao.id,
+          adminId,
+          viagemDados,
+          voos,
+          passageiros
+        )
+      } else {
+        result = await aprovarEmissaoUnificada(
+          emissao.id,
+          adminId,
+          viagemDados,
+          voos,
+          passageiros
+        )
+      }
+
+      if (result.success) {
+        onConfirm(result)
+      } else {
+        toast.error(result.error || 'Erro ao processar')
+      }
+    } catch (err) {
+      toast.error(err.message || 'Erro ao processar')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-3xl bg-white rounded-2xl border border-dusty-rose/20 shadow-xl flex flex-col max-h-[90vh]"
+      >
+        {/* Header */}
+        <div className={`px-6 pt-6 pb-4 border-b border-dusty-rose/10 flex-shrink-0 ${
+          isCompletarViagem ? 'bg-gradient-to-r from-purple-50 to-blue-50' : 'bg-gradient-to-r from-green-50 to-blue-50'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-display font-bold text-graphite flex items-center gap-2">
+                <span>{isCompletarViagem ? '✈️' : '✓'}</span>
+                {isCompletarViagem ? 'Completar Viagem' : 'Aprovar Emissão'}
+              </h3>
+              <p className="text-sm text-graphite/60 mt-1">
+                {emissao.userName} · R$ {emissao.valor?.toLocaleString('pt-BR')}
+                {!isCompletarViagem && ` · +${emissao.pontosEstimados?.toLocaleString('pt-BR')} pts`}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-graphite/10 text-graphite flex items-center justify-center hover:bg-graphite/20 transition-colors"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        {/* Conteúdo */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="p-6 space-y-5 overflow-y-auto flex-1">
+            {/* Status de leitura */}
+            {lendoCard && (
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="w-5 h-5 border-2 border-blue-300 border-t-blue-600 rounded-full"
+                />
+                <span className="text-sm text-blue-700 font-heading">Lendo card automaticamente...</span>
+              </div>
+            )}
+
+            {erroLeitura && (
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                <p className="text-sm text-amber-700 font-heading">
+                  ⚠️ {erroLeitura}. Preencha os dados manualmente.
+                </p>
+              </div>
+            )}
+
+            {/* Dados da viagem */}
+            <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200/50 space-y-4">
+              <p className="text-xs text-blue-700 font-heading font-semibold flex items-center gap-1">
+                <span>✈️</span> Dados da Viagem
+              </p>
+
+              {/* Voos */}
+              <div className="space-y-3">
+                {voos.map((voo, index) => (
+                  <VooBlock
+                    key={index}
+                    voo={voo}
+                    index={index}
+                    onUpdate={handleUpdateVoo}
+                    onRemove={handleRemoveVoo}
+                  />
+                ))}
+
+                <button
+                  type="button"
+                  onClick={handleAddVoo}
+                  className="w-full py-2 rounded-lg border-2 border-dashed border-blue-300 text-blue-600 text-sm font-heading hover:bg-blue-50 transition-colors"
+                >
+                  + Adicionar trecho
+                </button>
+              </div>
+
+              {/* Passageiros */}
+              <div className="pt-3 border-t border-blue-200/50">
+                <p className="text-xs text-blue-700 font-heading font-semibold mb-2">Passageiros *</p>
+                <div className="space-y-2">
+                  {passageiros.map((pax, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={pax.nome}
+                        onChange={(e) => handleUpdatePassageiro(index, e.target.value)}
+                        placeholder="Nome completo"
+                        className="flex-1 px-3 py-2 rounded-lg bg-white border border-dusty-rose/30 text-sm text-graphite"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePassageiro(index)}
+                        className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs hover:bg-red-200"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleAddPassageiro}
+                    className="text-sm text-blue-600 font-heading hover:text-blue-800"
+                  >
+                    + Adicionar passageiro
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Aviso de validação */}
+            {!podeSubmit() && !lendoCard && (
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+                <p className="text-xs text-amber-700 font-heading">
+                  ⚠️ Preencha pelo menos 1 trecho completo (origem, destino, data, companhia, voo, localizador) e 1 passageiro
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-dusty-rose/10 bg-ice-white flex gap-3 flex-shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 px-4 py-3 rounded-xl border border-dusty-rose/30 text-graphite/70 hover:text-graphite hover:border-dusty-rose/50 transition-colors font-heading disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading || lendoCard || !podeSubmit()}
+              className={`flex-1 px-4 py-3 rounded-xl font-heading font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                isCompletarViagem
+                  ? 'bg-purple-500 text-white hover:bg-purple-600'
+                  : 'bg-green-500 text-white hover:bg-green-600'
+              }`}
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <motion.span
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                  />
+                  Processando...
+                </span>
+              ) : isCompletarViagem ? (
+                'Completar Viagem'
+              ) : (
+                `Aprovar (+${emissao.pontosEstimados?.toLocaleString('pt-BR')} pts)`
+              )}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  )
+}
+
+// ============================================
 // PÁGINA PRINCIPAL
 // ============================================
 export function AdminEmissoes() {
   const { user } = useAuth()
   const [emissoes, setEmissoes] = useState([])
+  const [emissoesSemViagem, setEmissoesSemViagem] = useState([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState('pendentes') // 'pendentes', 'todas', 'aprovadas', 'recusadas', 'revertidas'
+  const [tab, setTab] = useState('pendentes') // 'pendentes', 'todas', 'aprovadas', 'sem_viagem', 'dados_pendentes', 'recusadas', 'revertidas'
   const [previewPath, setPreviewPath] = useState(null)
   const [recusarEmissaoData, setRecusarEmissaoData] = useState(null)
   const [showLancarModal, setShowLancarModal] = useState(false)
   const [viagemDataModal, setViagemDataModal] = useState(null) // emissão para ver dados
   const [reversalModal, setReversalModal] = useState(null) // { emissao, type: 'reabrir' | 'reverter' }
   const [reversalLoading, setReversalLoading] = useState(false)
+  const [aprovarModal, setAprovarModal] = useState(null) // emissão para aprovar com viagem
+  const [completarViagemModal, setCompletarViagemModal] = useState(null) // emissão para completar viagem
 
   // Carregar emissões
   const loadEmissoes = async () => {
@@ -1460,6 +1790,15 @@ export function AdminEmissoes() {
       result = await fetchEmissoesPendentes()
     } else if (tab === 'todas') {
       result = await fetchTodasEmissoes()
+    } else if (tab === 'sem_viagem') {
+      // Buscar emissões aprovadas que não têm viagem
+      result = await fetchEmissoesSemViagem()
+      if (result.success) {
+        setEmissoesSemViagem(result.emissoes)
+        setEmissoes(result.emissoes)
+        setLoading(false)
+        return
+      }
     } else if (tab === 'dados_pendentes') {
       // Buscar aprovadas que têm card mas não foram lidas
       result = await fetchTodasEmissoes('aprovada')
@@ -1485,35 +1824,53 @@ export function AdminEmissoes() {
     setLoading(false)
   }
 
+  // Carregar contagem de emissões sem viagem para badge
+  const loadEmissoesSemViagemCount = async () => {
+    const result = await fetchEmissoesSemViagem()
+    if (result.success) {
+      setEmissoesSemViagem(result.emissoes)
+    }
+  }
+
+  useEffect(() => {
+    loadEmissoesSemViagemCount()
+  }, [])
+
   useEffect(() => {
     loadEmissoes()
   }, [tab])
 
-  // Aprovar emissão
-  const handleAprovar = async (emissao) => {
-    const result = await aprovarEmissao(emissao.id, user?.id)
+  // Aprovar emissão - abre modal para preencher dados da viagem
+  const handleAprovar = (emissao) => {
+    setAprovarModal(emissao)
+  }
+
+  // Completar viagem de emissão já aprovada
+  const handleCompletarViagem = (emissao) => {
+    setCompletarViagemModal(emissao)
+  }
+
+  // Callback quando aprovação unificada é concluída
+  const handleAprovacaoUnificadaConcluida = (result) => {
     if (result.success) {
       toast.success(`Aprovado! +${result.pontos?.toLocaleString('pt-BR')} pontos creditados`)
-
-      // Se tem card, tentar ler automaticamente
-      if (emissao.card_meup_path) {
-        toast.loading('Lendo card automaticamente...', { id: 'ler-card' })
-        const leituraResult = await lerCardMeup(emissao.id)
-        if (leituraResult.success) {
-          if (leituraResult.skipped) {
-            toast.success('Card já havia sido lido', { id: 'ler-card' })
-          } else {
-            toast.success('Dados da viagem extraídos!', { id: 'ler-card' })
-          }
-        } else {
-          toast.error(leituraResult.error || 'Erro ao ler card', { id: 'ler-card' })
-        }
+      if (result.referral_result?.pontos > 0) {
+        toast.success(`Indicação paga: +${result.referral_result.pontos} pts para indicador`)
       }
-
-      loadEmissoes()
-    } else {
-      toast.error(result.error || 'Erro ao aprovar')
     }
+    setAprovarModal(null)
+    loadEmissoes()
+    loadEmissoesSemViagemCount()
+  }
+
+  // Callback quando completar viagem é concluído
+  const handleCompletarViagemConcluida = (result) => {
+    if (result.success) {
+      toast.success('Viagem criada com sucesso!')
+    }
+    setCompletarViagemModal(null)
+    loadEmissoes()
+    loadEmissoesSemViagemCount()
   }
 
   // Ler card manualmente
@@ -1594,6 +1951,7 @@ export function AdminEmissoes() {
 
   const pendentesCount = emissoes.filter(e => e.status === 'pendente').length
   const dadosPendentesCount = emissoes.filter(e => e.status === 'aprovada' && e.card_meup_path && !e.card_lido).length
+  const semViagemCount = emissoesSemViagem.length
 
   // Badge de status dos dados
   const getDadosStatusBadge = (emissao) => {
@@ -1629,6 +1987,7 @@ export function AdminEmissoes() {
             { value: 'pendentes', label: 'Pendentes', badge: pendentesCount },
             { value: 'todas', label: 'Todas' },
             { value: 'aprovadas', label: 'Aprovadas' },
+            { value: 'sem_viagem', label: 'Sem Viagem', badge: semViagemCount, badgeColor: 'bg-purple-500' },
             { value: 'dados_pendentes', label: 'Dados pendentes', badge: dadosPendentesCount },
             { value: 'recusadas', label: 'Recusadas' },
             { value: 'revertidas', label: 'Revertidas' }
@@ -1644,7 +2003,7 @@ export function AdminEmissoes() {
             >
               {t.label}
               {t.badge > 0 && tab !== t.value && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-semibold">
+                <span className={`absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center font-semibold ${t.badgeColor || 'bg-amber-500'}`}>
                   {t.badge}
                 </span>
               )}
@@ -1793,7 +2152,16 @@ export function AdminEmissoes() {
                       )}
                       {emissao.status === 'aprovada' && (
                         <>
-                          {emissao.card_meup_path && !emissao.card_lido && (
+                          {/* Botão Completar Viagem para emissões sem viagem */}
+                          {tab === 'sem_viagem' && (
+                            <button
+                              onClick={() => handleCompletarViagem(emissao)}
+                              className="px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-purple-500 text-white hover:bg-purple-600 transition-colors shadow-sm"
+                            >
+                              ✈️ Completar viagem
+                            </button>
+                          )}
+                          {tab !== 'sem_viagem' && emissao.card_meup_path && !emissao.card_lido && (
                             <button
                               onClick={() => handleLerCard(emissao)}
                               className="px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-sm"
@@ -1801,7 +2169,7 @@ export function AdminEmissoes() {
                               📖 Ler card
                             </button>
                           )}
-                          {emissao.card_meup_path && emissao.card_lido && (
+                          {tab !== 'sem_viagem' && emissao.card_meup_path && emissao.card_lido && (
                             <>
                               <button
                                 onClick={() => setViagemDataModal(emissao)}
@@ -1897,6 +2265,32 @@ export function AdminEmissoes() {
               setViagemDataModal(null)
               loadEmissoes()
             }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Aprovar Emissão (Unificado) */}
+      <AnimatePresence>
+        {aprovarModal && (
+          <AprovarViagemModal
+            emissao={aprovarModal}
+            adminId={user?.id}
+            onConfirm={handleAprovacaoUnificadaConcluida}
+            onClose={() => setAprovarModal(null)}
+            isCompletarViagem={false}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Completar Viagem */}
+      <AnimatePresence>
+        {completarViagemModal && (
+          <AprovarViagemModal
+            emissao={completarViagemModal}
+            adminId={user?.id}
+            onConfirm={handleCompletarViagemConcluida}
+            onClose={() => setCompletarViagemModal(null)}
+            isCompletarViagem={true}
           />
         )}
       </AnimatePresence>

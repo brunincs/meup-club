@@ -199,6 +199,23 @@
   h3, h4, h5, h6 {
     font-family: var(--font-heading);
   }
+
+  /* Select options - corrige fundo branco ilegível */
+  select option {
+    background-color: var(--color-deep-purple);
+    color: var(--color-ice-white);
+  }
+
+  select option:checked,
+  select option:hover {
+    background-color: var(--color-bright-purple);
+    color: var(--color-ice-white);
+  }
+
+  select option:disabled {
+    color: var(--color-dusty-rose);
+    opacity: 0.7;
+  }
 }
 
 /* Component classes */

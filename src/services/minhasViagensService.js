@@ -168,22 +168,82 @@ export async function getCardSignedUrl(cardPath) {
 }
 
 /**
+ * Busca resgates de assento para voos de uma viagem
+ * @param {string} viagemId
+ * @returns {Promise<{success: boolean, resgates?: Array, error?: string}>}
+ */
+export async function getResgatesVooAssento(viagemId) {
+  try {
+    const { data, error } = await supabase.rpc('get_resgates_voo_assento', {
+      p_viagem_id: viagemId
+    })
+
+    if (error) {
+      console.error('[getResgatesVooAssento] Erro:', error)
+      return { success: false, error: error.message, resgates: [] }
+    }
+
+    return { success: true, resgates: data || [] }
+  } catch (error) {
+    console.error('[getResgatesVooAssento] Exceção:', error)
+    return { success: false, error: error.message, resgates: [] }
+  }
+}
+
+/**
  * Formata contagem de dias para exibição
  * @param {number} dias
+ * @param {Date} dataVoo - Data do primeiro voo (para exibir DD/MM quando > 30 dias)
  * @returns {string}
  */
-export function formatDiasParaViagem(dias) {
+export function formatDiasParaViagem(dias, dataVoo = null) {
   if (dias === null || dias === undefined) return ''
-  if (dias === 0) return 'Hoje!'
-  if (dias === 1) return 'Amanhã!'
-  if (dias < 0) return 'Realizada'
-  if (dias <= 7) return `${dias} dias`
-  if (dias <= 30) {
-    const semanas = Math.floor(dias / 7)
-    return semanas === 1 ? '1 semana' : `${semanas} semanas`
+  if (dias === 0) return 'Embarque hoje'
+  if (dias === 1) return 'Embarque amanhã'
+  if (dias < 0) return 'Concluída'
+  if (dias <= 30) return `Embarque em ${dias} dias`
+  // Mais de 30 dias: mostrar data DD/MM
+  if (dataVoo) {
+    const data = new Date(dataVoo)
+    const dia = String(data.getDate()).padStart(2, '0')
+    const mes = String(data.getMonth() + 1).padStart(2, '0')
+    return `Embarque em ${dia}/${mes}`
   }
-  const meses = Math.floor(dias / 30)
-  return meses === 1 ? '1 mês' : `${meses} meses`
+  return `Embarque em ${dias} dias`
+}
+
+/**
+ * Busca passageiros de um voo com status de resgate
+ * @param {string} vooId - ID do voo
+ * @param {string} subtipoEntrega - Subtipo para verificar duplicatas (assento, bagagem, etc)
+ * @returns {Promise<{success: boolean, passageiros?: Array, error?: string}>}
+ */
+export async function getPassageirosVoo(vooId, subtipoEntrega = null) {
+  try {
+    const { data, error } = await supabase.rpc('get_passageiros_voo', {
+      p_voo_id: vooId,
+      p_subtipo_entrega: subtipoEntrega
+    })
+
+    if (error) {
+      console.error('[getPassageirosVoo] Erro:', error)
+      return { success: false, error: error.message, passageiros: [] }
+    }
+
+    // Mapear para formato mais amigável
+    const passageiros = (data || []).map(p => ({
+      id: p.passageiro_id,
+      nome: p.nome,
+      eticket: p.eticket,
+      jaSolicitado: p.ja_solicitado,
+      resgateStatus: p.resgate_status
+    }))
+
+    return { success: true, passageiros }
+  } catch (error) {
+    console.error('[getPassageirosVoo] Exceção:', error)
+    return { success: false, error: error.message, passageiros: [] }
+  }
 }
 
 /**

@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { EmissaoSelector } from './EmissaoSelector'
 import { TrechoSelector } from '@/components/viagens/TrechoSelector'
+import { PassageiroSelector } from './PassageiroSelector'
+import { CustomSelect } from '@/components/ui'
 
 // Configuração de tipos de entrega
 const TIPO_ENTREGA_CONFIG = {
@@ -54,10 +56,12 @@ export function RedemptionFormByType({
   tipoEntrega = 'voucher',
   subtipoEntrega = null,
   experienciaNome = '',
+  pontosUnitarios = 0,
   onChange,
   initialData = {},
   disabled = false,
-  isDark = true
+  isDark = true,
+  allowMultiPassenger = false // Permitir múltiplos passageiros (ex: assento para casal)
 }) {
   const [formData, setFormData] = useState(initialData)
   const [cepLoading, setCepLoading] = useState(false)
@@ -136,38 +140,38 @@ export function RedemptionFormByType({
 
     return (
       <FormContainer isDark={isDark} title={subtipo.label}>
-        {/* Seletor de Viagem + Trecho */}
+        {/* Seletor de Viagem + Trecho (TrechoSelector já tem labels próprios) */}
         {fields.includes('emissao') && (
-          <FormField label="Viagem" required isDark={isDark}>
-            <TrechoSelector
-              viagemId={formData.viagemId}
-              vooId={formData.vooId}
-              onChange={(viagemId, vooId, dados) => {
-                handleChange('viagemId', viagemId)
-                handleChange('vooId', vooId)
-                handleChange('viagemData', dados)
-              }}
-              isDark={isDark}
-              disabled={disabled}
-              showTrecho={fields.includes('trecho')}
-            />
-          </FormField>
+          <TrechoSelector
+            viagemId={formData.viagemId}
+            vooId={formData.vooId}
+            onChange={(viagemId, vooId, dados) => {
+              handleChange('viagemId', viagemId)
+              handleChange('vooId', vooId)
+              handleChange('viagemData', dados)
+            }}
+            isDark={isDark}
+            disabled={disabled}
+            showTrecho={fields.includes('trecho')}
+            subtipoEntrega={subtipoEntrega}
+          />
         )}
 
         {/* Trecho (fallback se não tiver viagem selecionada) */}
         {fields.includes('trecho') && !formData.viagemId && (
           <FormField label="Trecho" required isDark={isDark}>
-            <select
+            <CustomSelect
               value={formData.trecho || ''}
-              onChange={(e) => handleChange('trecho', e.target.value)}
+              onChange={(val) => handleChange('trecho', val)}
+              options={[
+                { value: 'ida', label: 'Somente Ida' },
+                { value: 'volta', label: 'Somente Volta' },
+                { value: 'ambos', label: 'Ida e Volta' }
+              ]}
+              placeholder="Selecione o trecho"
               disabled={disabled}
-              className={selectClass(isDark)}
-            >
-              <option value="">Selecione o trecho</option>
-              <option value="ida">Somente Ida</option>
-              <option value="volta">Somente Volta</option>
-              <option value="ambos">Ida e Volta</option>
-            </select>
+              variant={isDark ? 'dark' : 'light'}
+            />
           </FormField>
         )}
 
@@ -185,35 +189,54 @@ export function RedemptionFormByType({
           </FormField>
         )}
 
-        {/* Passageiro */}
-        {fields.includes('passageiro') && (
-          <FormField label="Nome do Passageiro" required isDark={isDark}>
-            <input
-              type="text"
-              value={formData.passageiro || ''}
-              onChange={(e) => handleChange('passageiro', e.target.value)}
-              placeholder="Nome completo conforme documento"
-              disabled={disabled}
-              className={inputClass(isDark)}
-            />
-          </FormField>
+        {/* Passageiro - Usar selector quando há voo selecionado */}
+        {fields.includes('passageiro') && formData.vooId && (
+          <PassageiroSelector
+            vooId={formData.vooId}
+            subtipoEntrega={subtipoEntrega}
+            value={formData.passageiroIds || formData.passageiroId}
+            onChange={(ids, passageiros) => {
+              // Suportar tanto single quanto multi select
+              if (Array.isArray(ids)) {
+                handleChange('passageiroIds', ids)
+                handleChange('passageiros', passageiros)
+                // Para compatibilidade, manter passageiro como string do primeiro
+                if (passageiros.length > 0) {
+                  handleChange('passageiro', passageiros.map(p => p.nome).join(', '))
+                  handleChange('passageiroId', passageiros[0].id)
+                }
+              } else {
+                handleChange('passageiroId', ids)
+                handleChange('passageiroIds', ids ? [ids] : [])
+                handleChange('passageiros', passageiros)
+                if (passageiros.length > 0) {
+                  handleChange('passageiro', passageiros[0].nome)
+                }
+              }
+            }}
+            multiSelect={allowMultiPassenger}
+            pontosUnitarios={pontosUnitarios}
+            isDark={isDark}
+            disabled={disabled}
+          />
         )}
 
         {/* Preferência de assento */}
         {fields.includes('preferencia') && (
           <FormField label="Preferência de Assento" isDark={isDark}>
-            <select
+            <CustomSelect
               value={formData.preferencia || ''}
-              onChange={(e) => handleChange('preferencia', e.target.value)}
+              onChange={(val) => handleChange('preferencia', val)}
+              options={[
+                { value: 'janela', label: 'Janela' },
+                { value: 'corredor', label: 'Corredor' },
+                { value: 'saida_emergencia', label: 'Saída de Emergência' },
+                { value: 'frente', label: 'Frente do Avião' }
+              ]}
+              placeholder="Sem preferência"
               disabled={disabled}
-              className={selectClass(isDark)}
-            >
-              <option value="">Sem preferência</option>
-              <option value="janela">Janela</option>
-              <option value="corredor">Corredor</option>
-              <option value="saida_emergencia">Saída de Emergência</option>
-              <option value="frente">Frente do Avião</option>
-            </select>
+              variant={isDark ? 'dark' : 'light'}
+            />
           </FormField>
         )}
 
@@ -307,20 +330,21 @@ export function RedemptionFormByType({
         {isRoteiro && (
           <>
             <FormField label="Estilo de Viagem" isDark={isDark}>
-              <select
+              <CustomSelect
                 value={formData.estilo || ''}
-                onChange={(e) => handleChange('estilo', e.target.value)}
+                onChange={(val) => handleChange('estilo', val)}
+                options={[
+                  { value: 'cultural', label: 'Cultural (museus, história)' },
+                  { value: 'gastronomico', label: 'Gastronômico' },
+                  { value: 'aventura', label: 'Aventura e Natureza' },
+                  { value: 'romantico', label: 'Romântico' },
+                  { value: 'familia', label: 'Em Família' },
+                  { value: 'luxo', label: 'Luxo e Bem-estar' }
+                ]}
+                placeholder="Selecione..."
                 disabled={disabled}
-                className={selectClass(isDark)}
-              >
-                <option value="">Selecione...</option>
-                <option value="cultural">Cultural (museus, história)</option>
-                <option value="gastronomico">Gastronômico</option>
-                <option value="aventura">Aventura e Natureza</option>
-                <option value="romantico">Romântico</option>
-                <option value="familia">Em Família</option>
-                <option value="luxo">Luxo e Bem-estar</option>
-              </select>
+                variant={isDark ? 'dark' : 'light'}
+              />
             </FormField>
             <FormField label="Interesses e preferências" isDark={isDark}>
               <textarea
@@ -439,17 +463,17 @@ export function RedemptionFormByType({
             />
           </FormField>
           <FormField label="Estado" required isDark={isDark}>
-            <select
+            <CustomSelect
               value={formData.estado || ''}
-              onChange={(e) => handleChange('estado', e.target.value)}
+              onChange={(val) => handleChange('estado', val)}
+              options={['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'].map(uf => ({
+                value: uf,
+                label: uf
+              }))}
+              placeholder="UF"
               disabled={disabled}
-              className={selectClass(isDark)}
-            >
-              <option value="">UF</option>
-              {['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'].map(uf => (
-                <option key={uf} value={uf}>{uf}</option>
-              ))}
-            </select>
+              variant={isDark ? 'dark' : 'light'}
+            />
           </FormField>
         </div>
 

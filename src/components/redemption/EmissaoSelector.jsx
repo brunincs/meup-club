@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { fetchUserValidEmissions } from '@/services/emissaoService'
+import { CustomSelect } from '@/components/ui'
 
 /**
  * Dropdown para selecionar emissão válida
@@ -40,8 +41,7 @@ export function EmissaoSelector({ value, onChange, isDark = true, disabled = fal
     load()
   }, [])
 
-  const handleChange = (e) => {
-    const id = e.target.value
+  const handleChange = (id) => {
     const selected = emissoes.find(em => em.id === id)
     onChange(id, selected || null)
   }
@@ -98,25 +98,21 @@ export function EmissaoSelector({ value, onChange, isDark = true, disabled = fal
   }
 
   // Dropdown
+  const options = emissoes.map(em => ({
+    value: em.id,
+    label: em.displayText
+  }))
+
   return (
     <div>
-      <select
+      <CustomSelect
         value={value || ''}
         onChange={handleChange}
+        options={options}
+        placeholder="Selecione sua viagem"
         disabled={disabled}
-        className={`w-full px-3 py-2.5 rounded-xl text-sm font-heading appearance-none cursor-pointer focus:outline-none focus:ring-2 transition-all ${
-          isDark
-            ? 'bg-white/5 border border-dusty-rose/20 text-ice-white focus:border-antique-gold/50 focus:ring-antique-gold/20'
-            : 'bg-white border border-dusty-rose/30 text-graphite focus:border-deep-purple/50 focus:ring-deep-purple/20'
-        } ${!value ? (isDark ? 'text-dusty-rose/50' : 'text-graphite/40') : ''}`}
-      >
-        <option value="">Selecione sua viagem</option>
-        {emissoes.map(em => (
-          <option key={em.id} value={em.id}>
-            {em.displayText}
-          </option>
-        ))}
-      </select>
+        variant={isDark ? 'dark' : 'light'}
+      />
 
       {/* Info da emissão selecionada */}
       {value && (() => {

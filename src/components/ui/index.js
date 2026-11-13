@@ -1,4 +1,5 @@
 export { AnimatedSection } from './AnimatedSection'
 export { Button } from './Button'
 export { Card } from './Card'
+export { CustomSelect } from './CustomSelect'
 export { Input } from './Input'

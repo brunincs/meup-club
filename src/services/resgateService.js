@@ -544,7 +544,7 @@ export async function buscarExperienciasResgatadas() {
 // ============================================
 
 /**
- * Solicita resgate v2 com formulário de dados, viagem e voo
+ * Solicita resgate v2 com formulário de dados, viagem, voo e passageiro
  * @param {string} experienciaId
  * @param {string} experienciaNome
  * @param {number} pontosUnitarios
@@ -554,8 +554,9 @@ export async function buscarExperienciasResgatadas() {
  * @param {string} emissaoId - ID da emissão (para serviços de voo) - DEPRECATED
  * @param {string} viagemId - ID da viagem vinculada
  * @param {string} vooId - ID do voo específico
+ * @param {string} passageiroId - ID do passageiro específico
  */
-export async function solicitarResgateV2(experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1, formData = {}, emissaoId = null, viagemId = null, vooId = null) {
+export async function solicitarResgateV2(experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, quantidade = 1, formData = {}, emissaoId = null, viagemId = null, vooId = null, passageiroId = null) {
   try {
     const { data, error } = await supabase.rpc('client_request_redemption_v2', {
       p_experience_id: experienciaId,
@@ -566,7 +567,8 @@ export async function solicitarResgateV2(experienciaId, experienciaNome, pontosU
       p_form_data: formData,
       p_emissao_id: emissaoId,
       p_viagem_id: viagemId,
-      p_voo_id: vooId
+      p_voo_id: vooId,
+      p_passageiro_id: passageiroId
     })
 
     if (error) {
@@ -584,10 +586,61 @@ export async function solicitarResgateV2(experienciaId, experienciaNome, pontosU
       quantity: data.quantity || quantidade,
       totalPoints: data.total_points || (pontosUnitarios * quantidade),
       balance_after: data.balance_after,
+      passageiroId: data.passageiro_id,
+      passageiroNome: data.passageiro_nome,
       message: data.message || 'Pontos reservados! Aguardando aprovação.'
     }
   } catch (error) {
     console.error('Erro inesperado na solicitação v2:', error)
+    return { success: false, error: 'Erro inesperado. Tente novamente.' }
+  }
+}
+
+/**
+ * Solicita resgate para múltiplos passageiros de uma vez
+ * Cria um resgate por passageiro, debitando pontos uma única vez
+ * @param {string} experienciaId
+ * @param {string} experienciaNome
+ * @param {number} pontosUnitarios - Custo por passageiro
+ * @param {number} classeMinima
+ * @param {Object} formData - Dados do formulário
+ * @param {string} viagemId - ID da viagem
+ * @param {string} vooId - ID do voo
+ * @param {string[]} passageiroIds - Array de IDs de passageiros
+ */
+export async function solicitarResgateMultiplo(experienciaId, experienciaNome, pontosUnitarios, classeMinima = 1, formData = {}, viagemId = null, vooId = null, passageiroIds = []) {
+  try {
+    const { data, error } = await supabase.rpc('client_request_redemption_multi', {
+      p_experience_id: experienciaId,
+      p_experience_name: experienciaNome,
+      p_points_cost: pontosUnitarios,
+      p_min_class: classeMinima,
+      p_form_data: formData,
+      p_viagem_id: viagemId,
+      p_voo_id: vooId,
+      p_passageiro_ids: passageiroIds
+    })
+
+    if (error) {
+      console.error('Erro ao solicitar resgate múltiplo:', error)
+      return { success: false, error: error.message || 'Erro ao processar solicitação.' }
+    }
+
+    if (!data.success) {
+      return { success: false, error: data.error }
+    }
+
+    return {
+      success: true,
+      requestIds: data.request_ids,
+      quantity: data.quantity,
+      totalPoints: data.total_points,
+      balance_after: data.balance_after,
+      passageirosDuplicados: data.passageiros_duplicados || [],
+      message: data.message || 'Resgates solicitados! Aguardando aprovação.'
+    }
+  } catch (error) {
+    console.error('Erro inesperado na solicitação múltipla:', error)
     return { success: false, error: 'Erro inesperado. Tente novamente.' }
   }
 }

@@ -8,6 +8,7 @@ import {
   toggleExperienciaAtiva
 } from '@/services/experienciasService'
 import { levels } from '@/services/pointsSystem'
+import { CustomSelect } from '@/components/ui'
 import toast from 'react-hot-toast'
 
 // Configuração de selos
@@ -128,20 +129,16 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
               />
             </div>
             <div>
-              <label className="block text-xs text-graphite/60 font-heading mb-1.5">
-                Classe mínima
-              </label>
-              <select
+              <CustomSelect
+                label="Classe mínima"
                 value={formData.classe_minima}
-                onChange={(e) => setFormData({ ...formData, classe_minima: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
-              >
-                {levels.map(level => (
-                  <option key={level.id} value={level.id}>
-                    {level.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({ ...formData, classe_minima: val })}
+                options={levels.map(level => ({
+                  value: level.id,
+                  label: level.name
+                }))}
+                variant="light"
+              />
             </div>
           </div>
 
@@ -165,19 +162,18 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
           {/* Selo e Ordem */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-graphite/60 font-heading mb-1.5">
-                Selo (opcional)
-              </label>
-              <select
+              <CustomSelect
+                label="Selo (opcional)"
                 value={formData.selo}
-                onChange={(e) => setFormData({ ...formData, selo: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
-              >
-                <option value="">Nenhum</option>
-                <option value="popular">Popular</option>
-                <option value="limitado">Limitado</option>
-                <option value="sonhos">Sonhos</option>
-              </select>
+                onChange={(val) => setFormData({ ...formData, selo: val })}
+                options={[
+                  { value: 'popular', label: 'Popular' },
+                  { value: 'limitado', label: 'Limitado' },
+                  { value: 'sonhos', label: 'Sonhos' }
+                ]}
+                placeholder="Nenhum"
+                variant="light"
+              />
             </div>
             <div>
               <label className="block text-xs text-graphite/60 font-heading mb-1.5">
@@ -201,39 +197,37 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
             </p>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-graphite/60 font-heading mb-1.5">
-                  Como será entregue?
-                </label>
-                <select
+                <CustomSelect
+                  label="Como será entregue?"
                   value={formData.tipo_entrega}
-                  onChange={(e) => setFormData({
+                  onChange={(val) => setFormData({
                     ...formData,
-                    tipo_entrega: e.target.value,
-                    subtipo_entrega: e.target.value === 'servico_voo' ? formData.subtipo_entrega : ''
+                    tipo_entrega: val,
+                    subtipo_entrega: val === 'servico_voo' ? formData.subtipo_entrega : ''
                   })}
-                  className="w-full px-4 py-3 rounded-xl bg-white border border-dusty-rose/30 text-graphite focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
-                >
-                  <option value="voucher">Voucher / Crédito</option>
-                  <option value="servico_voo">Serviço de Voo</option>
-                  <option value="arquivo">Arquivo Digital</option>
-                  <option value="envio_fisico">Envio Físico</option>
-                </select>
+                  options={[
+                    { value: 'voucher', label: 'Voucher / Crédito' },
+                    { value: 'servico_voo', label: 'Serviço de Voo' },
+                    { value: 'arquivo', label: 'Arquivo Digital' },
+                    { value: 'envio_fisico', label: 'Envio Físico' }
+                  ]}
+                  variant="light"
+                />
               </div>
               {formData.tipo_entrega === 'servico_voo' && (
                 <div>
-                  <label className="block text-xs text-graphite/60 font-heading mb-1.5">
-                    Subtipo de Serviço
-                  </label>
-                  <select
+                  <CustomSelect
+                    label="Subtipo de Serviço"
                     value={formData.subtipo_entrega}
-                    onChange={(e) => setFormData({ ...formData, subtipo_entrega: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-white border border-dusty-rose/30 text-graphite focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="assento">Escolha de Assento</option>
-                    <option value="bagagem">Bagagem Extra</option>
-                    <option value="sala_vip">Acesso a Lounge/Sala VIP</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, subtipo_entrega: val })}
+                    options={[
+                      { value: 'assento', label: 'Escolha de Assento' },
+                      { value: 'bagagem', label: 'Bagagem Extra' },
+                      { value: 'sala_vip', label: 'Acesso a Lounge/Sala VIP' }
+                    ]}
+                    placeholder="Selecione..."
+                    variant="light"
+                  />
                 </div>
               )}
             </div>
