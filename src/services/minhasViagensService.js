@@ -221,7 +221,7 @@ export function formatDiasParaViagem(dias, dataVoo = null) {
 export async function getPassageirosVoo(vooId, subtipoEntrega = null) {
   try {
     const { data, error } = await supabase.rpc('get_passageiros_voo', {
-      p_voo_id: vooId,
+      p_voo_id: String(vooId),
       p_subtipo_entrega: subtipoEntrega
     })
 
