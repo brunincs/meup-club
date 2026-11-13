@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { ProgressRing } from '@/components/effects/ProgressRing'
 import { GlowBorder } from '@/components/effects/GlowEffect'
 import { getMissionAction, isExternalMission, requiresApproval } from '@/services/missionActions'
+import { MissionStatusBadge } from '@/components/ui'
 
 const missionTypeConfig = {
   action: {
@@ -42,6 +43,7 @@ export function MissionCard({
   const config = missionTypeConfig[type] || missionTypeConfig.action
   const isCompleted = mission.completed || mission.progressPercent >= 100
   const isPending = mission.pending
+  const isRejected = mission.rejected
   const isInProgress = mission.progressPercent > 0 && mission.progressPercent < 100
   const isLight = variant === 'light'
 
@@ -49,6 +51,15 @@ export function MissionCard({
   const action = getMissionAction(mission.name)
   const isExternal = isExternalMission(mission.name)
   const needsApproval = requiresApproval(mission.name)
+
+  // Determinar status para o badge
+  const getBadgeStatus = () => {
+    if (isCompleted) return 'aprovada'
+    if (isPending) return 'pendente'
+    if (isRejected) return 'rejeitada'
+    return null
+  }
+  const badgeStatus = getBadgeStatus()
 
   const CardWrapper = type === 'action' ? GlowBorder : motion.div
 
@@ -142,6 +153,18 @@ export function MissionCard({
           </p>
         )}
 
+        {/* Status rejeitada com motivo */}
+        {isRejected && (
+          <div className="mb-4">
+            <MissionStatusBadge status="rejeitada" className="mb-2" />
+            {mission.motivoRejeicao && (
+              <p className={`text-xs p-2 rounded-lg ${isLight ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                <span className="font-semibold">Motivo:</span> {mission.motivoRejeicao}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Reward & Actions */}
         <div className="flex-1 flex items-end justify-between gap-3">
           <div>
@@ -154,14 +177,10 @@ export function MissionCard({
           {/* Botões de ação */}
           <div className="flex items-center gap-2">
             {isCompleted ? (
-              // Badge inerte - NÃO é botão, só status visual
-              <span className="px-4 py-2 rounded-lg text-xs font-heading font-semibold bg-game-green text-deep-purple shadow-lg shadow-game-green/20 select-none">
-                {needsApproval ? 'Aprovada' : 'Concluída'} ✓
-              </span>
+              // Badge inerte - usando componente unificado
+              <MissionStatusBadge status="aprovada" />
             ) : isPending ? (
-              <span className={`text-xs px-3 py-2 rounded-lg ${isLight ? 'bg-antique-gold/10 text-antique-gold' : 'bg-antique-gold/20 text-antique-gold'}`}>
-                Pendente
-              </span>
+              <MissionStatusBadge status="pendente" />
             ) : isLoading ? (
               <span className={`text-xs px-4 py-2 rounded-lg ${isLight ? 'bg-graphite/10 text-graphite/60' : 'bg-dusty-rose/10 text-dusty-rose'}`}>
                 <motion.span
@@ -171,6 +190,22 @@ export function MissionCard({
                 />
                 Enviando...
               </span>
+            ) : isRejected ? (
+              // Rejeitada - mostrar botão "Tentar novamente"
+              needsApproval && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCompleteClick}
+                  className={`px-3 py-2 rounded-lg text-xs font-heading font-semibold transition-colors ${
+                    isLight
+                      ? 'bg-deep-purple text-ice-white hover:bg-bright-purple'
+                      : 'bg-antique-gold text-deep-purple hover:bg-accent-light'
+                  }`}
+                >
+                  Tentar novamente
+                </motion.button>
+              )
             ) : (
               <>
                 {/* Botão "Ir Fazer" */}

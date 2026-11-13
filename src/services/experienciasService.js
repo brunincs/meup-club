@@ -467,7 +467,7 @@ export async function verificarSolicitacaoPendente(userId, tarefaId) {
 /**
  * Busca status de todas as missões do usuário para exibição
  * Combina missões manuais (tarefa_solicitacoes) e automáticas (missoes_automaticas_concluidas)
- * Retorna mapa de tarefaId -> status ('aprovada', 'pendente', 'rejeitada')
+ * Retorna mapa de tarefaId -> { status, motivo } ou string (legado)
  */
 export async function fetchStatusSolicitacoes(userId) {
   try {
@@ -478,11 +478,12 @@ export async function fetchStatusSolicitacoes(userId) {
 
     if (error) {
       console.warn('RPC get_user_mission_status falhou, usando fallback:', error)
-      // Fallback: buscar apenas de tarefa_solicitacoes (comportamento antigo)
+      // Fallback: buscar apenas de tarefa_solicitacoes (com motivo)
       return await fetchStatusSolicitacoesFallback(userId)
     }
 
-    // A função RPC retorna JSONB já no formato { tarefa_id: status }
+    // A função RPC retorna JSONB - pode ser { tarefa_id: status } ou { tarefa_id: { status, motivo } }
+    // Para retrocompatibilidade, normalizar para objeto
     const statusMap = data || {}
 
     return { success: true, statusMap }
@@ -500,18 +501,21 @@ async function fetchStatusSolicitacoesFallback(userId) {
   try {
     const { data, error } = await supabase
       .from('tarefa_solicitacoes')
-      .select('tarefa_id, status, created_at')
+      .select('tarefa_id, status, admin_comentario, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     if (error) throw error
 
-    // Criar mapa de tarefa_id -> status mais recente
+    // Criar mapa de tarefa_id -> { status, motivo }
     const statusMap = {}
     for (const s of (data || [])) {
       // Só guarda a primeira (mais recente) de cada tarefa
       if (!statusMap[s.tarefa_id]) {
-        statusMap[s.tarefa_id] = s.status
+        statusMap[s.tarefa_id] = {
+          status: s.status,
+          motivo: s.admin_comentario || null
+        }
       }
     }
 

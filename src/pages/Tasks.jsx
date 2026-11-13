@@ -12,6 +12,7 @@ import {
 } from '@/services/experienciasService'
 import { format } from '@/services/copy'
 import { TargetIcon, CheckIcon, CalendarIcon, SparkleIcon, ClockIcon } from '@/components/ui/Icons'
+import { MissionStatusBadge } from '@/components/ui'
 import { getMissionAction, isExternalMission, requiresApproval, isAutomaticMission, shouldHideFromList } from '@/services/missionActions'
 import { registrarCompartilhamento } from '@/services/supabaseData'
 import { useConfetti } from '@/components/effects/ConfettiEffect'
@@ -169,6 +170,17 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
   const isExternal = isExternalMission(task.name)
   const needsApproval = requiresApproval(task.name)
 
+  // Determinar status para o badge
+  const getBadgeStatus = () => {
+    if (isCompleted) return 'aprovada'
+    if (isPending) return 'pendente'
+    if (isRejected) return 'rejeitada'
+    if (isExternal) return 'externo'
+    return null
+  }
+
+  const badgeStatus = getBadgeStatus()
+
   return (
     <motion.div
       layout
@@ -181,31 +193,14 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
           : isPending
             ? 'border-antique-gold/30 bg-antique-gold/5'
             : isRejected
-              ? 'border-red-400/30 bg-red-400/5'
+              ? 'border-red-400/30 bg-red-50'
               : 'border-graphite/10 bg-white hover:border-antique-gold/40 shadow-sm hover:shadow-md'
       }`}
     >
-      {/* Status badge */}
-      {isCompleted && (
-        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-game-green/20 border border-game-green/30">
-          <span className="text-[10px] uppercase tracking-wider text-game-green font-medium">
-            {needsApproval ? 'Aprovada' : 'Concluída'}
-          </span>
-        </div>
-      )}
-      {isPending && (
-        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-antique-gold/20 border border-antique-gold/30">
-          <span className="text-[10px] uppercase tracking-wider text-antique-gold font-medium">Aguardando</span>
-        </div>
-      )}
-      {isRejected && (
-        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-red-400/20 border border-red-400/30">
-          <span className="text-[10px] uppercase tracking-wider text-red-400 font-medium">Rejeitada</span>
-        </div>
-      )}
-      {isExternal && !isCompleted && !isPending && (
-        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-dusty-rose/20 border border-dusty-rose/30">
-          <span className="text-[10px] uppercase tracking-wider text-dusty-rose font-medium">Externo ↗</span>
+      {/* Status badge - usando componente unificado */}
+      {badgeStatus && (
+        <div className="absolute top-4 right-4">
+          <MissionStatusBadge status={badgeStatus} />
         </div>
       )}
 
@@ -231,16 +226,23 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
           {/* Content */}
           <div className="flex-1 min-w-0">
             <h3 className={`font-heading font-medium mb-1 ${
-              isCompleted ? 'text-game-green' : isPending ? 'text-antique-gold' : 'text-deep-purple'
+              isCompleted ? 'text-game-green' : isPending ? 'text-antique-gold' : isRejected ? 'text-deep-purple' : 'text-deep-purple'
             }`}>
               {task.name}
             </h3>
-            <p className="text-sm text-graphite/70 mb-4 line-clamp-2">
+            <p className="text-sm text-graphite/70 mb-2 line-clamp-2">
               {task.description}
             </p>
 
+            {/* Motivo da rejeição */}
+            {isRejected && task.motivoRejeicao && (
+              <p className="text-xs text-red-600 mb-4 p-2 rounded-lg bg-red-50 border border-red-200">
+                <span className="font-semibold">Motivo:</span> {task.motivoRejeicao}
+              </p>
+            )}
+
             {/* Progress */}
-            {hasProgress && !isCompleted && !isPending && (
+            {hasProgress && !isCompleted && !isPending && !isRejected && (
               <div className="mb-4">
                 <div className="flex items-center justify-between text-xs mb-2">
                   <span className="text-graphite/60">Progresso</span>
@@ -275,20 +277,23 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
                 <span className="text-xs text-graphite/60 ml-1">pontos</span>
               </div>
 
+              {/* Botões - não mostrar se concluída ou pendente */}
               {!isCompleted && !isPending && (
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0">
-                  {/* Botão "Ir Fazer" - sempre aparece */}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onGoTo?.(task)}
-                    className="px-4 py-2.5 rounded-xl text-sm font-heading font-medium bg-graphite/10 text-deep-purple hover:bg-graphite/20 transition-all whitespace-nowrap"
-                  >
-                    {action?.label || 'Ir Fazer'} {isExternal ? '↗' : '→'}
-                  </motion.button>
+                  {/* Botão "Ir Fazer" - aparece se NÃO rejeitada */}
+                  {!isRejected && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => onGoTo?.(task)}
+                      className="px-4 py-2.5 rounded-xl text-sm font-heading font-medium bg-graphite/10 text-deep-purple hover:bg-graphite/20 transition-all whitespace-nowrap"
+                    >
+                      {action?.label || 'Ir Fazer'} {isExternal ? '↗' : '→'}
+                    </motion.button>
+                  )}
 
                   {/* Botão "Fiz isso" - SÓ para missões externas (Instagram/Google) */}
-                  {needsApproval && (
+                  {needsApproval && !isRejected && (
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -309,10 +314,36 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
                           />
                           Enviando...
                         </span>
-                      ) : isRejected ? (
-                        'Tentar novamente'
                       ) : (
                         'Fiz isso'
+                      )}
+                    </motion.button>
+                  )}
+
+                  {/* Botão "Tentar novamente" - SÓ quando rejeitada */}
+                  {isRejected && needsApproval && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => onComplete(task)}
+                      disabled={isLoading}
+                      className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all whitespace-nowrap ${
+                        isLoading
+                          ? 'bg-graphite/10 text-graphite/60 cursor-wait'
+                          : 'bg-deep-purple text-ice-white hover:bg-bright-purple shadow-lg shadow-deep-purple/20'
+                      }`}
+                    >
+                      {isLoading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <motion.span
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            className="w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block"
+                          />
+                          Enviando...
+                        </span>
+                      ) : (
+                        'Tentar novamente'
                       )}
                     </motion.button>
                   )}
@@ -396,7 +427,10 @@ export function Tasks() {
         return !shouldHideFromList(t.nome)
       })
       .map(task => {
-        const status = solicitacoesStatus[task.id]
+        // statusMap pode ser string (legado) ou objeto { status, motivo }
+        const statusData = solicitacoesStatus[task.id]
+        const status = typeof statusData === 'object' ? statusData?.status : statusData
+        const motivoRejeicao = typeof statusData === 'object' ? statusData?.motivo : null
         const needsApproval = requiresApproval(task.nome)
         const isAutomatic = isAutomaticMission(task.nome)
 
@@ -409,6 +443,7 @@ export function Tasks() {
           completed: status === 'aprovada',
           pending: status === 'pendente',
           rejected: status === 'rejeitada',
+          motivoRejeicao,  // Motivo da rejeição (se houver)
           target: 1,
           progress: status === 'aprovada' ? 1 : 0,
           needsApproval,  // SÓ true para Instagram/Google
@@ -665,7 +700,7 @@ export function Tasks() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-20 md:pb-0">
       {/* Skip Link (Bug 5) */}
       <a
         href="#main-content"

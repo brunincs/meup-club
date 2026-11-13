@@ -21,6 +21,79 @@ const tipoConfig = {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// MODAL DE REJEIÇÃO COM MOTIVO OBRIGATÓRIO
+// ══════════════════════════════════════════════════════════════════════════════
+function RejeicaoModal({ solicitacao, onClose, onConfirm, isLoading }) {
+  const [motivo, setMotivo] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!motivo.trim()) {
+      toast.error('Informe o motivo da rejeição')
+      return
+    }
+    onConfirm(motivo.trim())
+  }
+
+  return (
+    <div className="fixed inset-0 bg-graphite/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md bg-white rounded-2xl border border-dusty-rose/20 shadow-xl overflow-hidden"
+      >
+        <div className="px-6 pt-6 pb-4 border-b border-dusty-rose/10">
+          <h3 className="text-lg font-display font-bold text-graphite">
+            Rejeitar Solicitação
+          </h3>
+          <p className="text-sm text-graphite/60 mt-1">
+            {solicitacao?.userName} - {solicitacao?.tarefaNome}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs text-graphite/60 font-heading mb-1.5">
+              Motivo da rejeição <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              placeholder="Ex: Print não mostra a avaliação completa, tente novamente com uma captura melhor."
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-red-400/50 focus:ring-2 focus:ring-red-400/20 transition-all resize-none font-heading"
+              required
+              autoFocus
+            />
+            <p className="text-xs text-graphite/50 mt-1.5">
+              Este motivo será exibido para o cliente na tela de missões.
+            </p>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1 px-4 py-3 rounded-xl border border-dusty-rose/30 text-graphite/70 hover:text-graphite hover:border-dusty-rose/50 transition-colors font-heading disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading || !motivo.trim()}
+              className="flex-1 px-4 py-3 rounded-xl bg-red-500 text-white font-heading font-semibold hover:bg-red-600 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Rejeitando...' : 'Confirmar Rejeição'}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  )
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // MODAL DE CRIAR/EDITAR TAREFA
 // ══════════════════════════════════════════════════════════════════════════════
 function TarefaModal({ tarefa, onClose, onSave }) {
@@ -194,6 +267,8 @@ export function AdminTarefasNew() {
   const [tab, setTab] = useState('tarefas') // 'tarefas' ou 'pendentes'
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTarefa, setEditingTarefa] = useState(null)
+  const [rejeicaoModal, setRejeicaoModal] = useState(null) // solicitação sendo rejeitada
+  const [rejeitando, setRejeitando] = useState(false)
 
   // Carregar tarefas
   const loadTarefas = async () => {
@@ -271,11 +346,22 @@ export function AdminTarefasNew() {
     }
   }
 
-  // Rejeitar solicitação
-  const handleRejeitar = async (solicitacao) => {
-    const result = await rejeitarSolicitacao(solicitacao.id, user?.id)
+  // Abrir modal de rejeição (motivo obrigatório)
+  const handleRejeitar = (solicitacao) => {
+    setRejeicaoModal(solicitacao)
+  }
+
+  // Confirmar rejeição com motivo
+  const handleConfirmarRejeicao = async (motivo) => {
+    if (!rejeicaoModal) return
+
+    setRejeitando(true)
+    const result = await rejeitarSolicitacao(rejeicaoModal.id, user?.id, motivo)
+    setRejeitando(false)
+
     if (result.success) {
       toast.success('Solicitação rejeitada')
+      setRejeicaoModal(null)
       loadSolicitacoes()
     } else {
       toast.error(result.error || 'Erro ao rejeitar')
@@ -545,7 +631,7 @@ export function AdminTarefasNew() {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modal de Criar/Editar Tarefa */}
       <AnimatePresence>
         {modalOpen && (
           <TarefaModal
@@ -555,6 +641,18 @@ export function AdminTarefasNew() {
               setEditingTarefa(null)
             }}
             onSave={handleSave}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Rejeição */}
+      <AnimatePresence>
+        {rejeicaoModal && (
+          <RejeicaoModal
+            solicitacao={rejeicaoModal}
+            onClose={() => setRejeicaoModal(null)}
+            onConfirm={handleConfirmarRejeicao}
+            isLoading={rejeitando}
           />
         )}
       </AnimatePresence>
