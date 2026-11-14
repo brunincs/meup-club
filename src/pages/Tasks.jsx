@@ -17,6 +17,7 @@ import { MissionStatusBadge } from '@/components/ui'
 import { getMissionAction, isExternalMission, requiresApproval, isAutomaticMission, shouldHideFromList } from '@/services/missionActions'
 import { registrarCompartilhamento } from '@/services/supabaseData'
 import { useConfetti } from '@/components/effects/ConfettiEffect'
+import { InstagramInput } from '@/components/shared/LightInput'
 
 // ============================================
 // FOTO A VALIDAR - trocar pela oficial da Me,up depois
@@ -508,18 +509,11 @@ export function Tasks() {
 
   // Validar e formatar @ do Instagram
   const validateInstagramHandle = (handle) => {
-    if (!handle || handle.trim() === '') {
-      return { valid: false, error: 'Digite seu @ do Instagram' }
-    }
+    const username = (handle || '').trim()
 
-    // Adicionar @ se não tiver
-    let formatted = handle.trim()
-    if (!formatted.startsWith('@')) {
-      formatted = '@' + formatted
+    if (!username) {
+      return { valid: false, error: 'Digite seu usuário do Instagram' }
     }
-
-    // Remover @ para validar
-    const username = formatted.substring(1)
 
     // Validar: só letras, números, ponto e underscore, até 30 chars
     const regex = /^[a-zA-Z0-9._]{1,30}$/
@@ -527,7 +521,8 @@ export function Tasks() {
       return { valid: false, error: 'Use apenas letras, números, . e _ (máx 30 caracteres)' }
     }
 
-    return { valid: true, formatted }
+    // Adicionar @ para enviar
+    return { valid: true, formatted: '@' + username }
   }
 
   // Verificar se é missão de Instagram
@@ -1024,47 +1019,41 @@ export function Tasks() {
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6"
             >
-              <h3 className="text-lg font-display font-semibold text-deep-purple mb-2">
+              <h3 className="text-lg font-display font-bold mb-2" style={{ color: '#32113f' }}>
                 Qual seu @ do Instagram?
               </h3>
-              <p className="text-sm text-graphite/70 mb-4">
-                Para verificar que você segue @meup.viagens, precisamos do seu @.
+              <p className="text-sm font-heading mb-4" style={{ color: '#5c5c5c' }}>
+                Para confirmarmos que você segue @meup.viagens, informe o seu @.
               </p>
 
-              <input
-                type="text"
+              <InstagramInput
                 value={instagramHandle}
-                onChange={(e) => {
-                  setInstagramHandle(e.target.value)
+                onChange={(val) => {
+                  setInstagramHandle(val)
                   setInstagramError('')
                 }}
-                placeholder="@seu.usuario"
-                className={`w-full px-4 py-3 rounded-xl border text-base font-heading ${
-                  instagramError
-                    ? 'border-red-400 bg-red-50'
-                    : 'border-graphite/20 bg-ice-white focus:border-antique-gold'
-                } focus:outline-none transition-colors`}
+                error={!!instagramError}
+                errorMessage={instagramError}
+                onSubmit={handleSubmitInstagram}
                 autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSubmitInstagram()
-                }}
               />
-
-              {instagramError && (
-                <p className="text-xs text-red-500 mt-2">{instagramError}</p>
-              )}
 
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setInstagramModal(null)}
-                  className="flex-1 px-4 py-3 rounded-xl border border-graphite/20 text-graphite/70 font-heading font-medium hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-3 rounded-xl border font-heading font-medium hover:bg-gray-50 transition-colors"
+                  style={{ borderColor: '#ddd1d0', color: '#5c5c5c' }}
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSubmitInstagram}
-                  disabled={loadingTaskId}
-                  className="flex-1 px-4 py-3 rounded-xl bg-deep-purple text-ice-white font-heading font-medium hover:bg-bright-purple transition-colors disabled:opacity-50"
+                  disabled={loadingTaskId || !instagramHandle.trim()}
+                  className="flex-1 px-4 py-3 rounded-xl font-heading font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: (!instagramHandle.trim() || loadingTaskId) ? '#ddd1d0' : '#32113f',
+                    color: (!instagramHandle.trim() || loadingTaskId) ? '#8a8a8a' : '#edf0f1'
+                  }}
                 >
                   {loadingTaskId ? 'Enviando...' : 'Enviar'}
                 </button>
