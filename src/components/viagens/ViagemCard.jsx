@@ -21,12 +21,76 @@ import { usePoints } from '@/contexts/PointsContext'
 
 const WHATSAPP_NUMBER = '5516988126568'
 
+// Configuração de antecedência de check-in por companhia (em horas)
+const CHECKIN_ANTECEDENCIA = {
+  'LATAM': 48,
+  'GOL': 48,
+  'Azul': 48,
+  'Avianca': 48,
+  'default': 48
+}
+
+/**
+ * Calcula status resumido de check-in para card fechado
+ * Baseado nas datas de ida/volta da viagem
+ */
+function calcularStatusCheckinResumo(viagem) {
+  const agora = new Date()
+  const antecedenciaHoras = CHECKIN_ANTECEDENCIA[viagem.companhias?.[0]] || CHECKIN_ANTECEDENCIA.default
+
+  // Se não tem data de ida, não mostra nada
+  if (!viagem.data_ida) return null
+
+  const dataIda = new Date(viagem.data_ida + 'T12:00:00')
+  const dataAbreIda = new Date(dataIda.getTime() - antecedenciaHoras * 60 * 60 * 1000)
+
+  // Se a viagem já passou
+  if (agora > dataIda) return null
+
+  const temVolta = viagem.data_volta && viagem.data_volta !== viagem.data_ida
+  const dataVolta = temVolta ? new Date(viagem.data_volta + 'T12:00:00') : null
+  const dataAbreVolta = dataVolta ? new Date(dataVolta.getTime() - antecedenciaHoras * 60 * 60 * 1000) : null
+
+  // Viagem só de ida
+  if (!temVolta) {
+    if (agora >= dataAbreIda) {
+      return { text: 'Check-in aberto', open: true }
+    }
+    return {
+      text: `Check-in abre ${dataAbreIda.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`,
+      done: false
+    }
+  }
+
+  // Viagem ida e volta
+  const idaAberto = agora >= dataAbreIda
+  const voltaAberto = dataAbreVolta && agora >= dataAbreVolta
+
+  if (idaAberto && voltaAberto) {
+    return { text: 'Check-ins abertos', open: true }
+  }
+
+  if (idaAberto) {
+    return {
+      text: `Ida aberto · Volta abre ${dataAbreVolta.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`,
+      partial: true
+    }
+  }
+
+  return {
+    text: `Check-in abre ${dataAbreIda.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`,
+    done: false
+  }
+}
+
 /**
  * Card de viagem com estado fechado/aberto
  * @param {Object} viagem - Dados básicos da viagem (da lista)
  * @param {boolean} defaultOpen - Se deve iniciar aberto
+ * @param {boolean} isFirst - Se é o primeiro card da lista
+ * @param {boolean} hasMultiple - Se há múltiplas viagens na lista
  */
-export function ViagemCard({ viagem, defaultOpen = false }) {
+export function ViagemCard({ viagem, defaultOpen = false, isFirst = false, hasMultiple = false }) {
   const navigate = useNavigate()
   const { availablePoints } = usePoints()
   const [isOpen, setIsOpen] = useState(defaultOpen)
@@ -38,8 +102,11 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
   const diasParaViagem = viagem.dias_para_viagem
   const isHoje = diasParaViagem === 0
   const isAmanha = diasParaViagem === 1
-  const isProxima = diasParaViagem > 0
+  const isProxima = diasParaViagem > 0 || isHoje
   const isRealizada = diasParaViagem < 0 || viagem.status === 'realizada'
+
+  // Status do check-in para card fechado
+  const checkinResumo = useMemo(() => calcularStatusCheckinResumo(viagem), [viagem])
 
   // Verificar se pode resgatar (tem pontos e viagem futura)
   const podeResgatar = isProxima && availablePoints > 0
@@ -145,6 +212,9 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
     return map[status] || status
   }
 
+  // Borda esquerda dourada no primeiro card quando há múltiplas viagens próximas
+  const showLeftBorder = isFirst && hasMultiple && isProxima && !isRealizada
+
   return (
     <motion.div
       layout
@@ -153,7 +223,9 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
       className="rounded-2xl border overflow-hidden bg-white shadow-sm"
       style={{
         borderColor: '#ddd1d0',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        borderLeftWidth: showLeftBorder ? '3px' : '1px',
+        borderLeftColor: showLeftBorder ? '#a27937' : '#ddd1d0'
       }}
     >
       {/* Header (sempre visível) - Clicável para expandir */}
@@ -216,6 +288,20 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
               </span>
             )}
           </div>
+
+          {/* Linha de status do check-in */}
+          {checkinResumo && !isRealizada && (
+            <div className="flex items-center gap-1.5 mt-1">
+              {checkinResumo.done && (
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="#a27937" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              <span className="text-xs font-heading" style={{ color: '#5c5c5c' }}>
+                {checkinResumo.text}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Status/Contagem - Badge */}
@@ -223,16 +309,16 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
           <div
             className="inline-block px-2.5 py-1 rounded-lg text-xs font-heading font-semibold"
             style={
-              isHoje
-                ? { backgroundColor: '#a27937', color: '#ffffff' }
-                : isAmanha
+              isRealizada
+                ? { backgroundColor: '#ddd1d0', color: '#32113f' }
+                : isHoje
                   ? { backgroundColor: '#a27937', color: '#ffffff' }
-                  : isProxima
-                    ? { backgroundColor: '#32113f', color: '#edf0f1' }
-                    : { backgroundColor: '#f3f4f6', color: '#6b7280' }
+                  : isAmanha
+                    ? { backgroundColor: '#a27937', color: '#ffffff' }
+                    : { backgroundColor: '#32113f', color: '#edf0f1' }
             }
           >
-            {formatDiasParaViagem(diasParaViagem, viagem.data_ida)}
+            {isRealizada ? 'Concluída' : formatDiasParaViagem(diasParaViagem, viagem.data_ida)}
           </div>
 
           {/* Chevron / Ver detalhes */}
@@ -367,12 +453,13 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
                       </div>
                     )}
 
-                    {/* WhatsApp */}
+                    {/* WhatsApp - Contorno dourado */}
                     <button
                       onClick={handleWhatsApp}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] text-xs font-heading font-medium hover:bg-[#25D366]/20 transition-colors border border-[#25D366]/30"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-heading font-medium hover:bg-gray-50 transition-colors border"
+                      style={{ borderColor: '#a27937', color: '#32113f' }}
                     >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="#a27937" viewBox="0 0 24 24">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                       </svg>
                       Falar com a equipe

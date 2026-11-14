@@ -76,6 +76,8 @@ export function ViagemListView() {
               key={viagem.id}
               viagem={viagem}
               defaultOpen={idx === 0 && tab === 'proximas'}
+              isFirst={idx === 0}
+              hasMultiple={viagens.length >= 2}
             />
           ))}
         </motion.div>
