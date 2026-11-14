@@ -73,17 +73,22 @@ export function NextTripCard() {
   return (
     <Link
       to="/minhas-viagens"
-      className="block p-6 rounded-2xl bg-gradient-to-br from-antique-gold/20 to-antique-gold/5 border border-antique-gold/20 hover:border-antique-gold/40 transition-all group"
+      className="block p-6 rounded-2xl bg-white shadow-sm hover:shadow-md transition-all group"
+      style={{
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        borderColor: '#ddd1d0'
+      }}
     >
       {/* Badge de contagem */}
       <div className="flex items-start justify-between mb-4">
-        <div className={`px-3 py-1 rounded-full text-xs font-heading font-bold ${
-          isHoje
-            ? 'bg-antique-gold text-deep-purple'
-            : isAmanha
-              ? 'bg-blue-500 text-white'
-              : 'bg-deep-purple/20 text-antique-gold'
-        }`}>
+        <div
+          className="px-3 py-1 rounded-full text-xs font-heading font-bold"
+          style={{
+            backgroundColor: isHoje ? '#a27937' : '#32113f',
+            color: '#edf0f1'
+          }}
+        >
           {isHoje ? '🎉 Hoje!' : isAmanha ? '⏰ Amanhã!' : formatDiasParaViagem(dias, viagem.data_ida)}
         </div>
 
@@ -91,18 +96,22 @@ export function NextTripCard() {
         <motion.div
           animate={isHoje || isAmanha ? { y: [0, -3, 0] } : {}}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ color: '#a27937' }}
         >
           <span className="text-2xl">✈</span>
         </motion.div>
       </div>
 
       {/* Título da viagem */}
-      <h4 className="text-lg font-display font-semibold text-ice-white mb-1 truncate group-hover:text-antique-gold transition-colors">
+      <h4
+        className="text-lg font-display font-bold mb-1 truncate transition-colors"
+        style={{ color: '#32113f' }}
+      >
         {viagem.titulo}
       </h4>
 
       {/* Datas */}
-      <p className="text-sm text-dusty-rose font-heading mb-3">
+      <p className="text-sm font-heading mb-3" style={{ color: '#1f1f1f' }}>
         {viagem.data_ida && new Date(viagem.data_ida + 'T12:00:00').toLocaleDateString('pt-BR', {
           day: 'numeric',
           month: 'long'
@@ -116,11 +125,11 @@ export function NextTripCard() {
       </p>
 
       {/* Meta info */}
-      <div className="flex items-center gap-3 text-xs text-dusty-rose/70 font-heading">
+      <div className="flex items-center gap-3 text-xs font-heading" style={{ color: '#5c5c5c' }}>
         {/* Companhia */}
         {viagem.companhia && (
           <span className="flex items-center gap-1">
-            <span className="text-antique-gold/60">•</span>
+            <span style={{ color: '#a27937' }}>•</span>
             {viagem.companhia}
           </span>
         )}
@@ -128,18 +137,18 @@ export function NextTripCard() {
         {/* Passageiros */}
         {viagem.total_passageiros > 0 && (
           <span className="flex items-center gap-1">
-            <span className="text-antique-gold/60">•</span>
+            <span style={{ color: '#a27937' }}>•</span>
             {viagem.total_passageiros} passageiro{viagem.total_passageiros > 1 ? 's' : ''}
           </span>
         )}
       </div>
 
       {/* Call to action */}
-      <div className="mt-4 pt-3 border-t border-antique-gold/10 flex items-center justify-between">
-        <span className="text-xs text-antique-gold/70 font-heading">
+      <div className="mt-4 pt-3 flex items-center justify-between" style={{ borderTop: '1px solid #ddd1d0' }}>
+        <span className="text-xs font-heading" style={{ color: '#a27937' }}>
           Ver detalhes
         </span>
-        <svg className="w-4 h-4 text-antique-gold/50 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: '#a27937' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </div>
