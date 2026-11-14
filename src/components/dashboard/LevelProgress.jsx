@@ -5,6 +5,19 @@ import { levels, getNextRewards } from '@/services/pointsSystem'
 import { levels as levelCopy, format } from '@/services/copy'
 import { getClassIcon } from '@/components/ui/Icons'
 
+// Bônus ÚNICO ao subir de classe (valores do plano_config)
+// NÃO é multiplicador - é pago uma vez só quando atinge o nível
+const CLASS_BONUS = {
+  2: 1000,   // Econômica Premium (5.000 pts)
+  3: 3000,   // Executiva (20.000 pts)
+  4: 5000,   // Primeira Classe (50.000 pts)
+  5: 10000   // Meup Exclusive (100.000 pts)
+}
+
+function getClassBonus(levelId) {
+  return CLASS_BONUS[levelId] || 0
+}
+
 export function LevelProgress() {
   const { profile } = useAuth()
   const { totalPointsEarned, levelId, points } = usePoints()
@@ -99,17 +112,17 @@ export function LevelProgress() {
           </div>
         )}
 
-        {/* Level bonus */}
-        {current.bonusMultiplier > 1 && (
-          <div className="p-4 rounded-xl bg-game-green/10 border border-game-green/20">
+        {/* Bônus ao subir de classe (só mostra se tem próxima classe) */}
+        {next && (
+          <div className="p-4 rounded-xl bg-antique-gold/10 border border-antique-gold/20">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-game-green/20 flex items-center justify-center">
-                <span className="text-game-green">✦</span>
+              <div className="w-9 h-9 rounded-lg bg-antique-gold/20 flex items-center justify-center">
+                <span className="text-antique-gold">✦</span>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-dusty-rose">Bônus de classe</p>
+                <p className="text-[10px] uppercase tracking-wider text-dusty-rose">Bônus único</p>
                 <p className="text-sm font-heading font-medium text-ice-white">
-                  +{Math.round((current.bonusMultiplier - 1) * 100)}% em cada indicação
+                  Ao chegar em {levelCopy.names[next.id]}: +{format.pointsShort(getClassBonus(next.id))} pontos
                 </p>
               </div>
             </div>

@@ -7,6 +7,7 @@ import { DashboardHeader } from '@/components/dashboard'
 import {
   fetchTarefas,
   solicitarTarefa,
+  solicitarTarefaComDados,
   fetchStatusSolicitacoes,
   verificarSolicitacaoPendente
 } from '@/services/experienciasService'
@@ -170,12 +171,11 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
   const isExternal = isExternalMission(task.name)
   const needsApproval = requiresApproval(task.name)
 
-  // Determinar status para o badge
+  // Determinar status para o badge (removido "externo" - o botão "Seguir ↗" já indica)
   const getBadgeStatus = () => {
     if (isCompleted) return 'aprovada'
     if (isPending) return 'pendente'
     if (isRejected) return 'rejeitada'
-    if (isExternal) return 'externo'
     return null
   }
 
@@ -370,6 +370,12 @@ export function Tasks() {
   const [activeTab, setActiveTab] = useState('daily')
   const [loadingTaskId, setLoadingTaskId] = useState(null)
   const tabListRef = useRef(null)
+  const [showCompleted, setShowCompleted] = useState(false) // Seção recolhida de concluídas
+
+  // Estado para modal do Instagram
+  const [instagramModal, setInstagramModal] = useState(null) // Task que precisa de @ do Instagram
+  const [instagramHandle, setInstagramHandle] = useState('')
+  const [instagramError, setInstagramError] = useState('')
 
   // Estado para tarefas do banco
   const [tarefas, setTarefas] = useState([])
@@ -452,9 +458,13 @@ export function Tasks() {
       })
   }, [tarefas, solicitacoesStatus])
 
-  // Memoizar tasks filtradas
-  const filteredTasks = useMemo(() => {
-    return getTasksWithStatus(activeTab)
+  // Memoizar tasks filtradas - separar pendentes de concluídas
+  const { pendingTasks, completedTasks } = useMemo(() => {
+    const allTasks = getTasksWithStatus(activeTab)
+    return {
+      pendingTasks: allTasks.filter(t => !t.completed),
+      completedTasks: allTasks.filter(t => t.completed)
+    }
   }, [activeTab, getTasksWithStatus])
 
   // Calcular resumo de todas as categorias
@@ -496,6 +506,36 @@ export function Tasks() {
   const totalCompleted = tasksSummary.daily.completed + tasksSummary.weekly.completed + tasksSummary.oneTime.completed
   const totalTasks = tasksSummary.daily.total + tasksSummary.weekly.total + tasksSummary.oneTime.total
 
+  // Validar e formatar @ do Instagram
+  const validateInstagramHandle = (handle) => {
+    if (!handle || handle.trim() === '') {
+      return { valid: false, error: 'Digite seu @ do Instagram' }
+    }
+
+    // Adicionar @ se não tiver
+    let formatted = handle.trim()
+    if (!formatted.startsWith('@')) {
+      formatted = '@' + formatted
+    }
+
+    // Remover @ para validar
+    const username = formatted.substring(1)
+
+    // Validar: só letras, números, ponto e underscore, até 30 chars
+    const regex = /^[a-zA-Z0-9._]{1,30}$/
+    if (!regex.test(username)) {
+      return { valid: false, error: 'Use apenas letras, números, . e _ (máx 30 caracteres)' }
+    }
+
+    return { valid: true, formatted }
+  }
+
+  // Verificar se é missão de Instagram
+  const isInstagramMission = (taskName) => {
+    const name = (taskName || '').toLowerCase()
+    return name.includes('instagram') || name.includes('seguir')
+  }
+
   // Handler para completar task
   // SÓ cria solicitação pendente para Instagram/Google (needsApproval = true)
   const handleCompleteTask = useCallback(async (task) => {
@@ -536,7 +576,20 @@ export function Tasks() {
       return
     }
 
-    // SÓ Instagram e Google chegam aqui
+    // Se é missão de Instagram, abrir modal para pedir @
+    if (isInstagramMission(task.name || task.nome)) {
+      setInstagramModal(task)
+      setInstagramHandle('')
+      setInstagramError('')
+      return
+    }
+
+    // Outras missões que precisam de aprovação (Google, etc)
+    await submitTaskRequest(task)
+  }, [user])
+
+  // Submeter solicitação de tarefa (chamado após validações)
+  const submitTaskRequest = useCallback(async (task, dadosExtras = {}) => {
     setLoadingTaskId(task.id)
 
     try {
@@ -551,8 +604,11 @@ export function Tasks() {
         return
       }
 
-      // Criar solicitação no banco (SÓ para Instagram/Google)
-      const result = await solicitarTarefa(user.id, task.id)
+      // Criar solicitação com ou sem dados extras
+      const hasExtras = Object.keys(dadosExtras).length > 0
+      const result = hasExtras
+        ? await solicitarTarefaComDados(user.id, task.id, dadosExtras)
+        : await solicitarTarefa(user.id, task.id)
 
       if (result.success) {
         setSolicitacoesStatus(prev => ({ ...prev, [task.id]: 'pendente' }))
@@ -587,6 +643,24 @@ export function Tasks() {
       setLoadingTaskId(null)
     }
   }, [user])
+
+  // Submeter missão de Instagram com @
+  const handleSubmitInstagram = async () => {
+    if (!instagramModal) return
+
+    const validation = validateInstagramHandle(instagramHandle)
+    if (!validation.valid) {
+      setInstagramError(validation.error)
+      return
+    }
+
+    setInstagramError('')
+    setInstagramModal(null)
+
+    await submitTaskRequest(instagramModal, {
+      instagram_handle: validation.formatted
+    })
+  }
 
   // Handler para ir fazer a tarefa
   const handleGoToTask = useCallback(async (task) => {
@@ -858,9 +932,10 @@ export function Tasks() {
             aria-labelledby={`tab-${activeTab}`}
             tabIndex={0}
           >
+            {/* Missões pendentes */}
             <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <AnimatePresence mode="popLayout">
-                {filteredTasks.map(task => (
+                {pendingTasks.map(task => (
                   <MissionCardLight
                     key={task.id}
                     task={task}
@@ -872,21 +947,132 @@ export function Tasks() {
               </AnimatePresence>
             </motion.div>
 
-            {/* Empty state */}
-            {filteredTasks.length === 0 && (
+            {/* Empty state - nenhuma pendente */}
+            {pendingTasks.length === 0 && (
               <div className="text-center py-16">
-                <div className="w-16 h-16 rounded-2xl bg-deep-purple/10 flex items-center justify-center mx-auto mb-4">
-                  <CheckIcon size={32} color="var(--antique-gold)" />
+                <div className="w-16 h-16 rounded-2xl bg-game-green/10 flex items-center justify-center mx-auto mb-4">
+                  <CheckIcon size={32} color="#22c55e" />
                 </div>
-                <h3 className="text-lg text-deep-purple mb-2">Nenhuma missão disponível</h3>
+                <h3 className="text-lg font-heading font-medium text-deep-purple mb-2">
+                  Você concluiu todas as missões
+                </h3>
                 <p className="text-sm text-graphite/70">
-                  Todas as missões desta categoria foram concluídas.
+                  Novas missões em breve.
                 </p>
+              </div>
+            )}
+
+            {/* Seção recolhida de concluídas */}
+            {completedTasks.length > 0 && (
+              <div className="mt-8">
+                <button
+                  onClick={() => setShowCompleted(!showCompleted)}
+                  className="flex items-center gap-2 text-sm font-heading font-medium text-graphite/70 hover:text-deep-purple transition-colors mb-4"
+                >
+                  <motion.span
+                    animate={{ rotate: showCompleted ? 90 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    ▶
+                  </motion.span>
+                  Concluídas ({completedTasks.length})
+                </button>
+
+                <AnimatePresence>
+                  {showCompleted && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {completedTasks.map(task => (
+                          <MissionCardLight
+                            key={task.id}
+                            task={task}
+                            onComplete={handleCompleteTask}
+                            onGoTo={handleGoToTask}
+                            isLoading={loadingTaskId === task.id}
+                          />
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
           </div>
         </main>
       </section>
+
+      {/* Modal Instagram @ */}
+      <AnimatePresence>
+        {instagramModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setInstagramModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6"
+            >
+              <h3 className="text-lg font-display font-semibold text-deep-purple mb-2">
+                Qual seu @ do Instagram?
+              </h3>
+              <p className="text-sm text-graphite/70 mb-4">
+                Para verificar que você segue @meup.viagens, precisamos do seu @.
+              </p>
+
+              <input
+                type="text"
+                value={instagramHandle}
+                onChange={(e) => {
+                  setInstagramHandle(e.target.value)
+                  setInstagramError('')
+                }}
+                placeholder="@seu.usuario"
+                className={`w-full px-4 py-3 rounded-xl border text-base font-heading ${
+                  instagramError
+                    ? 'border-red-400 bg-red-50'
+                    : 'border-graphite/20 bg-ice-white focus:border-antique-gold'
+                } focus:outline-none transition-colors`}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSubmitInstagram()
+                }}
+              />
+
+              {instagramError && (
+                <p className="text-xs text-red-500 mt-2">{instagramError}</p>
+              )}
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setInstagramModal(null)}
+                  className="flex-1 px-4 py-3 rounded-xl border border-graphite/20 text-graphite/70 font-heading font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSubmitInstagram}
+                  disabled={loadingTaskId}
+                  className="flex-1 px-4 py-3 rounded-xl bg-deep-purple text-ice-white font-heading font-medium hover:bg-bright-purple transition-colors disabled:opacity-50"
+                >
+                  {loadingTaskId ? 'Enviando...' : 'Enviar'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

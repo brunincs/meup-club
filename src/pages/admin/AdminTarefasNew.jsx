@@ -595,6 +595,20 @@ export function AdminTarefasNew() {
                         <span className="font-medium">{sol.userName}</span>
                         {sol.userEmail && <span className="text-graphite/50"> · {sol.userEmail}</span>}
                       </p>
+                      {/* Instagram handle com link */}
+                      {sol.instagramHandle && (
+                        <p className="text-xs font-heading mt-1">
+                          <span className="text-graphite/50">Instagram: </span>
+                          <a
+                            href={`https://instagram.com/${sol.instagramHandle.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                          >
+                            {sol.instagramHandle} ↗
+                          </a>
+                        </p>
+                      )}
                       <p className="text-xs text-graphite/50 font-heading mt-1">
                         Solicitado em {sol.createdAt}
                       </p>

@@ -525,24 +525,8 @@ export function MissionsSection({ variant = 'dark' }) {
     }
   }, [user, checkinStatus.podeFazer, checkinStatus.isLoading, fireConfetti, refreshPoints, isPrime, planosConfig])
 
-  // Calcular tempo restante para próximo check-in
-  const getTempoRestante = useCallback(() => {
-    if (!checkinStatus.proximoCheckin) return null
-
-    const agora = new Date()
-    const proximo = new Date(checkinStatus.proximoCheckin)
-    const diff = proximo - agora
-
-    if (diff <= 0) return null
-
-    const horas = Math.floor(diff / (1000 * 60 * 60))
-    const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-    if (horas > 0) {
-      return `${horas}h ${minutos}m`
-    }
-    return `${minutos}m`
-  }, [checkinStatus.proximoCheckin])
+  // Não usa mais contagem de tempo - apenas "Volte amanhã"
+  // O check-in reseta à meia-noite em America/Sao_Paulo
 
   // Loading state
   if (isLoading) {
@@ -642,7 +626,7 @@ export function MissionsSection({ variant = 'dark' }) {
               <p className={`text-sm ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
                 {checkinStatus.podeFazer
                   ? `Ganhe ${pontosCheckin} pontos por dia!`
-                  : `Volte em ${getTempoRestante() || 'algumas horas'}`
+                  : 'Volte amanhã para o próximo check-in'
                 }
               </p>
             </div>

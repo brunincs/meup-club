@@ -295,6 +295,29 @@ export async function solicitarTarefa(userId, tarefaId) {
 }
 
 /**
+ * Cliente solicita conclusão de uma tarefa COM dados extras (ex: Instagram @)
+ * @param {string} userId - ID do usuário
+ * @param {string} tarefaId - ID da tarefa
+ * @param {object} dadosExtras - Dados extras (ex: { instagram_handle: '@meup.viagens' })
+ */
+export async function solicitarTarefaComDados(userId, tarefaId, dadosExtras = {}) {
+  try {
+    const { data, error } = await supabase.rpc('solicitar_tarefa_com_dados', {
+      p_user_id: userId,
+      p_tarefa_id: tarefaId,
+      p_dados_extras: dadosExtras
+    })
+
+    if (error) throw error
+
+    return data
+  } catch (error) {
+    console.error('Erro ao solicitar tarefa com dados:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
  * Busca solicitações pendentes (admin)
  */
 export async function fetchSolicitacoesPendentes() {
@@ -322,6 +345,8 @@ export async function fetchSolicitacoesPendentes() {
       tarefaPontos: s.tarefas?.pontos || 0,
       tarefaIcone: s.tarefas?.icone || '✓',
       status: s.status,
+      dadosExtras: s.dados_extras || {},
+      instagramHandle: s.dados_extras?.instagram_handle || null,
       createdAt: new Date(s.created_at).toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: '2-digit',

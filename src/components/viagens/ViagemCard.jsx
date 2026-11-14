@@ -1,6 +1,7 @@
 // ============================================
 // COMPONENTE: Card de Viagem (Expansível)
 // Fechado: resumo | Aberto: detalhes completos
+// Versão CLEAN sem foto de fundo
 // ============================================
 
 import { useState, useEffect, useMemo } from 'react'
@@ -9,7 +10,6 @@ import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { ViagemTrecho } from './ViagemTrecho'
 import { PassageiroInfo } from './PassageiroInfo'
-import { DestinationBackground } from './DestinationBackground'
 import { CalendarMenu } from './CalendarMenu'
 import {
   getViagemCompleta,
@@ -40,24 +40,6 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
   const isAmanha = diasParaViagem === 1
   const isProxima = diasParaViagem > 0
   const isRealizada = diasParaViagem < 0 || viagem.status === 'realizada'
-
-  // Extrair destino da viagem para foto de background
-  const destinoInfo = useMemo(() => {
-    // Tentar pegar destino direto ou do título (formato "Origem → Destino")
-    if (viagem.destino) {
-      return { cidade: viagem.destino, iata: viagem.destino_iata }
-    }
-    // Extrair do título
-    const titulo = viagem.titulo || ''
-    const match = titulo.match(/→\s*([^→]+)$/)
-    if (match) {
-      const destino = match[1].trim()
-      // Remover possível IATA entre parênteses
-      const cidadeMatch = destino.match(/^([^(]+)/)
-      return { cidade: cidadeMatch ? cidadeMatch[1].trim() : destino, iata: null }
-    }
-    return { cidade: null, iata: null }
-  }, [viagem.titulo, viagem.destino, viagem.destino_iata])
 
   // Verificar se pode resgatar (tem pontos e viagem futura)
   const podeResgatar = isProxima && availablePoints > 0
@@ -164,55 +146,50 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
   }
 
   return (
-    <DestinationBackground
-      cidade={destinoInfo.cidade}
-      iata={destinoInfo.iata}
-      className={`rounded-2xl border overflow-hidden ${
-        isHoje
-          ? 'border-antique-gold/40'
-          : isProxima
-            ? 'border-dusty-rose/30'
-            : 'border-dusty-rose/20'
-      }`}
-      showCredit={true}
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl border overflow-hidden bg-white shadow-sm"
+      style={{
+        borderColor: '#ddd1d0',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+      }}
     >
-      <motion.div
-        layout
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="transition-colors"
-      >
       {/* Header (sempre visível) - Clicável para expandir */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-4 text-left flex items-center gap-4 hover:bg-black/[0.02] transition-colors"
+        className="w-full p-4 text-left flex items-center gap-4 hover:bg-gray-50 transition-colors"
       >
-        {/* Ícone/Indicador */}
+        {/* Ícone do avião */}
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
           isHoje
-            ? 'bg-antique-gold/20'
+            ? 'bg-[#a27937]/20'
             : isAmanha
-              ? 'bg-antique-gold/15'
+              ? 'bg-[#a27937]/15'
               : isProxima
-                ? 'bg-antique-gold/10'
-                : 'bg-dusty-rose/10'
+                ? 'bg-[#a27937]/10'
+                : 'bg-gray-100'
         }`}>
-          <svg className="w-6 h-6 text-antique-gold" fill="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6" fill="#a27937" viewBox="0 0 24 24">
             <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
           </svg>
         </div>
 
         {/* Info principal */}
         <div className="flex-1 min-w-0">
-          {/* Título */}
-          <h3 className="text-base font-display font-semibold text-ice-white truncate">
+          {/* Título - Playfair 700, #32113f */}
+          <h3
+            className="text-base font-display font-bold truncate"
+            style={{ color: '#32113f' }}
+          >
             {viagem.titulo}
           </h3>
 
           {/* Datas e meta */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-            {/* Intervalo de datas */}
-            <span className="text-sm text-dusty-rose font-heading">
+            {/* Intervalo de datas - #1f1f1f */}
+            <span className="text-sm font-heading" style={{ color: '#1f1f1f' }}>
               {viagem.data_ida && new Date(viagem.data_ida + 'T12:00:00').toLocaleDateString('pt-BR', {
                 day: 'numeric',
                 month: 'short'
@@ -225,46 +202,53 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
               )}
             </span>
 
-            {/* Companhia */}
+            {/* Companhia - #5c5c5c */}
             {viagem.companhias?.[0] && (
-              <span className="text-xs text-dusty-rose/80 font-heading">
+              <span className="text-xs font-heading" style={{ color: '#5c5c5c' }}>
                 {viagem.companhias[0]}
               </span>
             )}
 
-            {/* Passageiros */}
+            {/* Passageiros - #5c5c5c */}
             {viagem.total_passageiros > 0 && (
-              <span className="text-xs text-dusty-rose/80 font-heading">
+              <span className="text-xs font-heading" style={{ color: '#5c5c5c' }}>
                 {viagem.total_passageiros} passageiro{viagem.total_passageiros > 1 ? 's' : ''}
               </span>
             )}
           </div>
         </div>
 
-        {/* Status/Contagem - Badge com fundo */}
+        {/* Status/Contagem - Badge */}
         <div className="flex-shrink-0 text-right">
-          <div className={`inline-block px-2.5 py-1 rounded-lg text-xs font-heading font-semibold ${
-            isHoje
-              ? 'bg-antique-gold text-deep-purple'
-              : isAmanha
-                ? 'bg-antique-gold/80 text-deep-purple'
-                : isProxima
-                  ? 'bg-deep-purple border border-antique-gold/30 text-ice-white'
-                  : 'bg-dusty-rose/20 text-dusty-rose'
-          }`}>
+          <div
+            className="inline-block px-2.5 py-1 rounded-lg text-xs font-heading font-semibold"
+            style={
+              isHoje
+                ? { backgroundColor: '#a27937', color: '#ffffff' }
+                : isAmanha
+                  ? { backgroundColor: '#a27937', color: '#ffffff' }
+                  : isProxima
+                    ? { backgroundColor: '#32113f', color: '#edf0f1' }
+                    : { backgroundColor: '#f3f4f6', color: '#6b7280' }
+            }
+          >
             {formatDiasParaViagem(diasParaViagem, viagem.data_ida)}
           </div>
 
-          {/* Chevron */}
-          <motion.div
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-            className="mt-1"
-          >
-            <svg className="w-5 h-5 text-dusty-rose/50 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </motion.div>
+          {/* Chevron / Ver detalhes */}
+          <div className="mt-1 flex items-center justify-end gap-1">
+            <span className="text-xs font-heading" style={{ color: '#a27937' }}>
+              Ver detalhes
+            </span>
+            <motion.div
+              animate={{ rotate: isOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="#a27937" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </motion.div>
+          </div>
         </div>
       </button>
 
@@ -278,14 +262,15 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 space-y-4 border-t border-dusty-rose/20 pt-4">
+            <div className="px-4 pb-4 space-y-4 border-t pt-4" style={{ borderColor: '#ddd1d0' }}>
               {/* Loading */}
               {loading && (
                 <div className="py-8 flex items-center justify-center">
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    className="w-6 h-6 border-2 border-dusty-rose/30 border-t-antique-gold rounded-full"
+                    className="w-6 h-6 border-2 rounded-full"
+                    style={{ borderColor: '#ddd1d0', borderTopColor: '#a27937' }}
                   />
                 </div>
               )}
@@ -300,6 +285,7 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
                         <ViagemTrecho
                           voo={voo.voo || voo}
                           onCopyLocalizador={handleCopy}
+                          variant="light"
                         />
 
                         {/* Passageiros do voo */}
@@ -310,6 +296,7 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
                                 key={pax.passageiro?.id || paxIdx}
                                 passageiro={pax}
                                 onCopy={handleCopy}
+                                variant="light"
                               />
                             ))}
                           </div>
@@ -320,14 +307,14 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
 
                   {/* Resgates vinculados */}
                   {resgates.length > 0 && (
-                    <div className="p-3 rounded-xl bg-ice-white/5 border border-ice-white/10">
-                      <h4 className="text-xs font-heading font-semibold text-ice-white mb-2">
+                    <div className="p-3 rounded-xl bg-gray-50 border" style={{ borderColor: '#ddd1d0' }}>
+                      <h4 className="text-xs font-heading font-semibold mb-2" style={{ color: '#32113f' }}>
                         Resgates desta viagem
                       </h4>
                       <div className="space-y-1.5">
                         {resgates.map(resgate => (
                           <div key={resgate.id} className="flex items-center justify-between text-xs font-heading">
-                            <span className="text-dusty-rose">{resgate.experiencia_nome}</span>
+                            <span style={{ color: '#5c5c5c' }}>{resgate.experiencia_nome}</span>
                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${getResgateStatusBadge(resgate.status)}`}>
                               {traduzirStatus(resgate.status)}
                             </span>
@@ -339,37 +326,41 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
 
                   {/* Botões de ação */}
                   <div className="flex flex-wrap gap-2 pt-2">
-                    {/* Ver Card PDF - Botão secundário */}
+                    {/* Ver Card PDF */}
                     {viagem.card_path && (
                       <button
                         onClick={handleOpenCard}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-antique-gold text-ice-white text-xs font-heading font-medium hover:bg-antique-gold/10 transition-colors"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-heading font-medium hover:bg-gray-50 transition-colors"
+                        style={{ borderColor: '#a27937', color: '#32113f' }}
                       >
-                        <svg className="w-4 h-4 text-antique-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="#a27937">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         Ver Card Meup
                       </button>
                     )}
 
-                    {/* Resgatar para esta viagem - Botão primário ou desabilitado */}
+                    {/* Resgatar para esta viagem */}
                     {isProxima && (
                       <div className="relative group">
                         <button
                           onClick={podeResgatar ? handleResgatarViagem : undefined}
                           disabled={!podeResgatar}
-                          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-heading font-medium transition-colors ${
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-heading font-medium transition-colors"
+                          style={
                             podeResgatar
-                              ? 'bg-antique-gold text-white hover:bg-antique-gold/90'
-                              : 'bg-dusty-rose/20 text-dusty-rose/50 cursor-not-allowed'
-                          }`}
+                              ? { backgroundColor: '#a27937', color: '#ffffff' }
+                              : { backgroundColor: '#f3f4f6', color: '#9ca3af', cursor: 'not-allowed' }
+                          }
                         >
                           <span className="text-sm">✦</span>
                           Resgatar para esta viagem
                         </button>
                         {/* Tooltip quando desabilitado */}
                         {!podeResgatar && motivoNaoPodeResgatar && (
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded bg-graphite text-ice-white text-[10px] font-heading whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[10px] font-heading whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                            style={{ backgroundColor: '#1f1f1f', color: '#ffffff' }}
+                          >
                             {motivoNaoPodeResgatar}
                           </div>
                         )}
@@ -404,6 +395,5 @@ export function ViagemCard({ viagem, defaultOpen = false }) {
         )}
       </AnimatePresence>
     </motion.div>
-    </DestinationBackground>
   )
 }
