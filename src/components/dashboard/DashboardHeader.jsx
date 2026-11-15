@@ -63,7 +63,7 @@ export function DashboardHeader() {
   const { profile, user, signOut } = useAuth()
   const { availablePoints: userPoints, levelId } = usePoints()
   const { isFundador } = useFundador()
-  const { canInstall, isInstalled, openInstallPrompt } = usePWA()
+  const { canInstall, isInstalled, openInstallPrompt, install, isIOS } = usePWA()
 
   const userName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
   const isAdmin = profile?.role === 'admin'
@@ -146,9 +146,15 @@ export function DashboardHeader() {
               {/* Ícone Instalar App - só mobile, só se não instalado */}
               {!isInstalled && (
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     trackPWAEvent(PWA_EVENTS.INSTALL_ICON_CLICKED)
-                    openInstallPrompt()
+                    // Android/Chrome/Desktop: dispara prompt nativo direto
+                    // iOS: mostra instruções (não tem prompt nativo)
+                    if (!isIOS && canInstall) {
+                      await install()
+                    } else {
+                      openInstallPrompt()
+                    }
                   }}
                   className="md:hidden w-9 h-9 rounded-full bg-antique-gold/10 border border-antique-gold/30 flex items-center justify-center hover:bg-antique-gold/20 transition-colors"
                   aria-label="Instalar app"
@@ -220,9 +226,15 @@ export function DashboardHeader() {
                           {/* Instalar app - só aparece se não estiver instalado */}
                           {canInstall && !isInstalled && (
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 setShowUserMenu(false)
-                                openInstallPrompt()
+                                // Android/Chrome/Desktop: dispara prompt nativo direto
+                                // iOS: mostra instruções
+                                if (!isIOS && canInstall) {
+                                  await install()
+                                } else {
+                                  openInstallPrompt()
+                                }
                               }}
                               className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-dusty-rose hover:text-ice-white hover:bg-white/5 transition-all w-full text-left"
                             >
