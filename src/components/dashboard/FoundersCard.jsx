@@ -10,12 +10,13 @@ import { getMyFundadorData, getFundadoresCount, getRegulamentoUrl } from '@/serv
 import { SubscribeButton } from '@/components/ui/SubscribeButton'
 import { SeloFundador } from '@/components/ui/SeloFundador'
 
-export function FoundersCard({ variant = 'default', showAfterPositiveAction = false }) {
+export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false }) {
   const { profile } = useAuth()
   const [fundadorData, setFundadorData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [regulamentoUrl, setRegulamentoUrl] = useState('')
 
+  const isLight = variant === 'light'
   const planoEfetivo = profile?.plano_efetivo || profile?.plano || 'free'
   const isPrime = planoEfetivo === 'prime'
 
@@ -34,9 +35,13 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 p-6 animate-pulse">
-        <div className="h-6 w-32 bg-dusty-rose/20 rounded mb-4" />
-        <div className="h-4 w-48 bg-dusty-rose/10 rounded" />
+      <div className={`rounded-2xl border p-6 animate-pulse ${
+        isLight
+          ? 'border-nude-rose bg-white'
+          : 'border-dusty-rose/20 bg-deep-purple/30'
+      }`}>
+        <div className={`h-6 w-32 rounded mb-4 ${isLight ? 'bg-graphite/10' : 'bg-dusty-rose/20'}`} />
+        <div className={`h-4 w-48 rounded ${isLight ? 'bg-graphite/5' : 'bg-dusty-rose/10'}`} />
       </div>
     )
   }
@@ -53,7 +58,11 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border-2 border-amber-400/50 bg-gradient-to-br from-amber-900/30 to-amber-800/20 p-6 relative overflow-hidden"
+        className={`rounded-2xl border-2 p-6 relative overflow-hidden ${
+          isLight
+            ? 'border-antique-gold/40 bg-gradient-to-br from-antique-gold/10 to-antique-gold/5'
+            : 'border-amber-400/50 bg-gradient-to-br from-amber-900/30 to-amber-800/20'
+        }`}
       >
         {/* Layout Mobile: empilhado */}
         <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
@@ -75,17 +84,17 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
           </div>
 
           {/* Título */}
-          <h3 className="text-lg font-display font-bold text-amber-400 mb-2">
+          <h3 className={`text-lg font-display font-bold mb-2 ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>
             Seu número da sorte
           </h3>
 
           {/* Número grande */}
-          <p className="text-4xl sm:text-3xl font-display font-bold text-ice-white tracking-wider mb-3">
+          <p className={`text-4xl sm:text-3xl font-display font-bold tracking-wider mb-3 ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
             {fundadorData.numero_sorte}
           </p>
 
           {/* Texto explicativo */}
-          <p className="text-sm text-amber-200/70 mb-4 max-w-xs">
+          <p className={`text-sm mb-4 max-w-xs ${isLight ? 'text-graphite/70' : 'text-amber-200/70'}`}>
             Concorrendo a 500 mil pontos na Ação Fundadores
           </p>
 
@@ -94,7 +103,7 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
             href={regulamentoUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-amber-400 hover:text-amber-300 underline"
+            className={`text-xs underline ${isLight ? 'text-antique-gold hover:text-deep-purple' : 'text-amber-400 hover:text-amber-300'}`}
           >
             Ver regulamento
           </a>
@@ -122,23 +131,31 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={`rounded-2xl border p-6 ${
-        variant === 'highlight' || showAfterPositiveAction
-          ? 'border-amber-400/50 bg-gradient-to-br from-amber-900/30 to-deep-purple/50'
-          : 'border-dusty-rose/20 bg-deep-purple/30'
+        isLight
+          ? showAfterPositiveAction
+            ? 'border-antique-gold/40 bg-gradient-to-br from-antique-gold/10 to-white'
+            : 'border-nude-rose bg-white shadow-sm'
+          : showAfterPositiveAction
+            ? 'border-amber-400/50 bg-gradient-to-br from-amber-900/30 to-deep-purple/50'
+            : 'border-dusty-rose/20 bg-deep-purple/30'
       }`}
     >
       <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
+        <div className={`w-12 h-12 rounded-xl border flex items-center justify-center flex-shrink-0 ${
+          isLight
+            ? 'bg-antique-gold/10 border-antique-gold/30'
+            : 'bg-amber-400/20 border-amber-400/30'
+        }`}>
           <span className="text-xl">🏆</span>
         </div>
 
         <div className="flex-1">
-          <h3 className="text-base font-display font-bold text-amber-400 mb-1">
+          <h3 className={`text-base font-display font-bold mb-1 ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>
             Torne-se Fundador
           </h3>
-          <p className="text-sm text-dusty-rose mb-2">
-            Prime por <span className="line-through text-dusty-rose/60">R$ 997</span>{' '}
-            <span className="text-amber-400 font-semibold">R$ 497/ano</span> e concorra a 500 mil pontos
+          <p className={`text-sm mb-2 ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
+            Prime por <span className={`line-through ${isLight ? 'text-graphite/40' : 'text-dusty-rose/60'}`}>R$ 997</span>{' '}
+            <span className={`font-semibold ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>R$ 497/ano</span> e concorra a 500 mil pontos
           </p>
 
           {(() => {
@@ -148,12 +165,16 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
               <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <span className={`text-xs px-2 py-1 rounded-lg ${
                   isUltimas
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
-                    : 'bg-ice-white/10 text-ice-white/60'
+                    ? isLight
+                      ? 'bg-antique-gold/10 text-antique-gold border border-antique-gold/30'
+                      : 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                    : isLight
+                      ? 'bg-graphite/5 text-graphite/60'
+                      : 'bg-ice-white/10 text-ice-white/60'
                 }`}>
                   {isUltimas ? `Últimas ${vagasRestantes} vagas` : `Restam ${vagasRestantes} vagas`}
                 </span>
-                <span className="text-xs text-amber-400">
+                <span className={`text-xs ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>
                   Pix ou 6x R$ 82,83
                 </span>
               </div>
@@ -170,7 +191,7 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
               href={regulamentoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-dusty-rose hover:text-ice-white underline"
+              className={`text-xs underline ${isLight ? 'text-graphite/60 hover:text-deep-purple' : 'text-dusty-rose hover:text-ice-white'}`}
             >
               Regulamento
             </a>

@@ -15,10 +15,10 @@ export const levels = {
   },
   shortNames: {
     1: 'Econômica',
-    2: 'Econ. Premium',
+    2: 'Econômica Premium',
     3: 'Executiva',
-    4: 'Primeira',
-    5: 'Exclusive'
+    4: 'Primeira Classe',
+    5: 'Me,up Exclusive'
   },
   icons: {
     1: '✈️',

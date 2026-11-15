@@ -9,11 +9,12 @@ import { getProximaViagem, formatDiasParaViagem } from '@/services/minhasViagens
 import { usePWA } from '@/hooks/usePWA'
 import { PushPrompt } from '@/components/pwa'
 
-export function NextTripCard() {
+export function NextTripCard({ variant = 'dark' }) {
   const [viagem, setViagem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showPushPrompt, setShowPushPrompt] = useState(false)
   const { shouldShowPushPrompt, pushEnabled } = usePWA()
+  const isLight = variant === 'light'
 
   useEffect(() => {
     loadViagem()
@@ -47,12 +48,16 @@ export function NextTripCard() {
   // Loading state
   if (loading) {
     return (
-      <div className="p-6 rounded-2xl bg-white/5 border border-dusty-rose/10 backdrop-blur-sm">
+      <div className={`p-6 rounded-2xl border ${
+        isLight
+          ? 'bg-white border-nude-rose shadow-sm'
+          : 'bg-white/5 border-dusty-rose/10 backdrop-blur-sm'
+      }`}>
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-dusty-rose/10 animate-pulse" />
+          <div className={`w-12 h-12 rounded-xl animate-pulse ${isLight ? 'bg-graphite/10' : 'bg-dusty-rose/10'}`} />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-24 bg-dusty-rose/10 rounded animate-pulse" />
-            <div className="h-3 w-32 bg-dusty-rose/10 rounded animate-pulse" />
+            <div className={`h-4 w-24 rounded animate-pulse ${isLight ? 'bg-graphite/10' : 'bg-dusty-rose/10'}`} />
+            <div className={`h-3 w-32 rounded animate-pulse ${isLight ? 'bg-graphite/5' : 'bg-dusty-rose/10'}`} />
           </div>
         </div>
       </div>
@@ -64,21 +69,25 @@ export function NextTripCard() {
     return (
       <Link
         to="/minhas-viagens"
-        className="block p-6 rounded-2xl bg-gradient-to-br from-deep-purple/50 to-deep-purple/30 border border-dusty-rose/10 hover:border-antique-gold/30 transition-colors group"
+        className={`block p-6 rounded-2xl border transition-colors group ${
+          isLight
+            ? 'bg-white border-nude-rose shadow-sm hover:border-antique-gold/30'
+            : 'bg-gradient-to-br from-deep-purple/50 to-deep-purple/30 border-dusty-rose/10 hover:border-antique-gold/30'
+        }`}
       >
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-antique-gold/10 flex items-center justify-center group-hover:bg-antique-gold/20 transition-colors">
             <span className="text-2xl">✈</span>
           </div>
           <div className="flex-1">
-            <h4 className="text-sm font-heading font-semibold text-ice-white mb-0.5">
+            <h4 className={`text-sm font-heading font-semibold mb-0.5 ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
               Suas Viagens
             </h4>
-            <p className="text-xs text-dusty-rose">
+            <p className={`text-xs ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>
               Veja suas viagens confirmadas
             </p>
           </div>
-          <svg className="w-5 h-5 text-dusty-rose/50 group-hover:text-antique-gold transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className={`w-5 h-5 transition-colors ${isLight ? 'text-graphite/30 group-hover:text-antique-gold' : 'text-dusty-rose/50 group-hover:text-antique-gold'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>

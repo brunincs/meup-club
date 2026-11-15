@@ -7,12 +7,13 @@ import { getMissionAction, shouldHideFromList } from '@/services/missionActions'
 import { format } from '@/services/copy'
 import { TargetIcon, CheckIcon } from '@/components/ui/Icons'
 
-export function TasksWidget() {
+export function TasksWidget({ variant = 'dark' }) {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [tarefas, setTarefas] = useState([])
   const [statusMap, setStatusMap] = useState({})
   const [isLoading, setIsLoading] = useState(true)
+  const isLight = variant === 'light'
 
   // Carregar tarefas reais do banco
   useEffect(() => {
@@ -82,11 +83,15 @@ export function TasksWidget() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 p-5">
+      <div className={`rounded-2xl border p-5 ${
+        isLight
+          ? 'border-nude-rose bg-white'
+          : 'border-dusty-rose/20 bg-deep-purple/30'
+      }`}>
         <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-dusty-rose/10 rounded w-24" />
-          <div className="h-8 bg-dusty-rose/10 rounded" />
-          <div className="h-8 bg-dusty-rose/10 rounded" />
+          <div className={`h-4 rounded w-24 ${isLight ? 'bg-graphite/10' : 'bg-dusty-rose/10'}`} />
+          <div className={`h-8 rounded ${isLight ? 'bg-graphite/5' : 'bg-dusty-rose/10'}`} />
+          <div className={`h-8 rounded ${isLight ? 'bg-graphite/5' : 'bg-dusty-rose/10'}`} />
         </div>
       </div>
     )
@@ -112,23 +117,27 @@ export function TasksWidget() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
-      className="rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 overflow-hidden"
+      className={`rounded-2xl border overflow-hidden ${
+        isLight
+          ? 'border-nude-rose bg-white shadow-sm'
+          : 'border-dusty-rose/20 bg-deep-purple/30'
+      }`}
     >
       {/* Header */}
-      <div className="p-5 border-b border-dusty-rose/20">
+      <div className={`p-5 border-b ${isLight ? 'border-nude-rose' : 'border-dusty-rose/20'}`}>
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-[10px] uppercase tracking-wider text-dusty-rose mb-1 flex items-center gap-2">
+            <h3 className={`text-[10px] uppercase tracking-wider mb-1 flex items-center gap-2 ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>
               <TargetIcon size={14} color="#a27937" />
               Missões
             </h3>
-            <p className="text-sm text-dusty-rose">
+            <p className={`text-sm ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
               {stats.completed}/{stats.total} concluídas
             </p>
           </div>
           <Link
             to="/tarefas"
-            className="text-xs text-dusty-rose hover:text-antique-gold transition-colors"
+            className={`text-xs transition-colors ${isLight ? 'text-graphite/60 hover:text-antique-gold' : 'text-dusty-rose hover:text-antique-gold'}`}
           >
             Ver todas →
           </Link>
@@ -136,8 +145,8 @@ export function TasksWidget() {
       </div>
 
       {/* Progress */}
-      <div className="px-5 py-3 border-b border-dusty-rose/20">
-        <div className="h-1 bg-dusty-rose/10 rounded-full overflow-hidden">
+      <div className={`px-5 py-3 border-b ${isLight ? 'border-nude-rose' : 'border-dusty-rose/20'}`}>
+        <div className={`h-1 rounded-full overflow-hidden ${isLight ? 'bg-nude-rose' : 'bg-dusty-rose/10'}`}>
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%` }}
@@ -146,7 +155,7 @@ export function TasksWidget() {
           />
         </div>
         <div className="flex items-center justify-between mt-2">
-          <span className="text-[10px] text-dusty-rose/60">Progresso</span>
+          <span className={`text-[10px] ${isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>Progresso</span>
           <span className="text-[10px] text-game-green">
             +{format.pointsShort(stats.earnedPoints)} pontos
           </span>
@@ -154,7 +163,7 @@ export function TasksWidget() {
       </div>
 
       {/* Missions list */}
-      <div className="divide-y divide-dusty-rose/10">
+      <div className={`divide-y ${isLight ? 'divide-nude-rose' : 'divide-dusty-rose/10'}`}>
         {tasksToShow.map((task, index) => (
           <motion.div
             key={task.id}
@@ -162,21 +171,25 @@ export function TasksWidget() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 * index }}
             onClick={() => handleTaskClick(task)}
-            className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-deep-purple/30 transition-colors"
+            className={`flex items-center gap-4 px-5 py-4 cursor-pointer transition-colors ${
+              isLight ? 'hover:bg-ice-white' : 'hover:bg-deep-purple/30'
+            }`}
           >
             {/* Status */}
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-deep-purple/50 flex items-center justify-center text-sm text-antique-gold border border-antique-gold/20">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm text-antique-gold border border-antique-gold/20 ${
+                isLight ? 'bg-antique-gold/10' : 'bg-deep-purple/50'
+              }`}>
                 ◇
               </div>
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-heading text-ice-white">
+              <div className={`text-sm font-heading ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
                 {task.name}
               </div>
-              <p className="text-xs text-dusty-rose/60 truncate">{task.description}</p>
+              <p className={`text-xs truncate ${isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>{task.description}</p>
             </div>
 
             {/* Points */}
@@ -189,8 +202,12 @@ export function TasksWidget() {
 
       {/* Footer */}
       <Link to="/tarefas">
-        <div className="px-5 py-4 border-t border-dusty-rose/20 hover:bg-deep-purple/50 transition-colors">
-          <p className="text-center text-xs text-dusty-rose">
+        <div className={`px-5 py-4 border-t transition-colors ${
+          isLight
+            ? 'border-nude-rose hover:bg-ice-white'
+            : 'border-dusty-rose/20 hover:bg-deep-purple/50'
+        }`}>
+          <p className={`text-center text-xs ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>
             Ver todas as conquistas
           </p>
         </div>

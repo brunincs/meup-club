@@ -13,9 +13,10 @@ const cardVariants = {
   })
 }
 
-export function StatsCards({ stats }) {
+export function StatsCards({ stats, variant = 'dark' }) {
   const { profile } = useAuth()
   const { current: level, balance: points } = useUserLevel()
+  const isLight = variant === 'light'
 
   const ClassIcon = getClassIcon(level.id)
 
@@ -49,25 +50,31 @@ export function StatsCards({ stats }) {
           initial="hidden"
           animate="visible"
           variants={cardVariants}
-          className="relative overflow-hidden p-6 rounded-2xl border border-dusty-rose/20 bg-deep-purple/30 hover:border-antique-gold/20 transition-all"
+          className={`relative overflow-hidden p-6 rounded-2xl border transition-all ${
+            isLight
+              ? 'border-nude-rose bg-white shadow-sm hover:border-antique-gold/30'
+              : 'border-dusty-rose/20 bg-deep-purple/30 hover:border-antique-gold/20'
+          }`}
         >
           {/* Decorativo */}
-          <div className="absolute -top-8 -right-8 w-24 h-24 bg-antique-gold/5 rounded-full blur-2xl pointer-events-none" />
+          <div className={`absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl pointer-events-none ${
+            isLight ? 'bg-antique-gold/10' : 'bg-antique-gold/5'
+          }`} />
 
           <div className="relative">
             <div className="flex items-start justify-between mb-4">
-              <span className="text-[10px] uppercase tracking-wider text-dusty-rose">
+              <span className={`text-[10px] uppercase tracking-wider ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>
                 {card.label}
               </span>
               <div className="w-8 h-8 rounded-lg bg-antique-gold/10 flex items-center justify-center">
                 {card.icon}
               </div>
             </div>
-            <div className="text-2xl font-display font-bold text-ice-white mb-1">
+            <div className={`text-2xl font-display font-bold mb-1 ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
               {card.value}
             </div>
             {card.suffix && (
-              <div className="text-xs text-dusty-rose">{card.suffix}</div>
+              <div className={`text-xs ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>{card.suffix}</div>
             )}
           </div>
         </motion.div>

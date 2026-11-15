@@ -8,12 +8,13 @@ import { useExperiencias, formatPoints } from '@/hooks/useExperiencias'
 // Imagem fallback genérica
 const fallbackImage = 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=400&h=250&fit=crop&crop=center&q=80'
 
-export function ExperiencesCarousel() {
+export function ExperiencesCarousel({ variant = 'dark' }) {
   const scrollRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
   const { balance: userPoints, currentId: userLevelId } = useUserLevel()
+  const isLight = variant === 'light'
 
   // Buscar experiências do Supabase (mesma fonte do admin)
   const { allExperiences, loading } = useExperiencias()
@@ -77,12 +78,12 @@ export function ExperiencesCarousel() {
     return (
       <div className="animate-pulse">
         <div className="flex items-center justify-between mb-6">
-          <div className="h-6 w-48 bg-white/10 rounded" />
-          <div className="h-4 w-20 bg-white/10 rounded" />
+          <div className={`h-6 w-48 rounded ${isLight ? 'bg-graphite/10' : 'bg-white/10'}`} />
+          <div className={`h-4 w-20 rounded ${isLight ? 'bg-graphite/5' : 'bg-white/10'}`} />
         </div>
         <div className="flex gap-4 overflow-hidden">
           {[1, 2, 3].map(i => (
-            <div key={i} className="flex-shrink-0 w-[280px] h-[240px] bg-white/5 rounded-2xl" />
+            <div key={i} className={`flex-shrink-0 w-[280px] h-[240px] rounded-2xl ${isLight ? 'bg-graphite/5' : 'bg-white/5'}`} />
           ))}
         </div>
       </div>
@@ -103,16 +104,16 @@ export function ExperiencesCarousel() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-display font-semibold text-ice-white">
+          <h3 className={`text-lg font-display font-semibold ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
             Experiências do Clube
           </h3>
-          <p className="text-sm text-dusty-rose">
+          <p className={`text-sm ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>
             Arraste para explorar
           </p>
         </div>
         <Link
           to="/recompensas"
-          className="text-xs text-dusty-rose hover:text-antique-gold transition-colors"
+          className={`text-xs transition-colors ${isLight ? 'text-graphite/60 hover:text-antique-gold' : 'text-dusty-rose hover:text-antique-gold'}`}
         >
           Ver todas →
         </Link>
@@ -144,8 +145,12 @@ export function ExperiencesCarousel() {
             >
               <div className={`relative rounded-2xl border overflow-hidden transition-all ${
                 canRedeem
-                  ? 'border-antique-gold/30 bg-antique-gold/5'
-                  : 'border-dusty-rose/20 bg-deep-purple/30'
+                  ? isLight
+                    ? 'border-antique-gold/40 bg-gradient-to-br from-antique-gold/10 to-white'
+                    : 'border-antique-gold/30 bg-antique-gold/5'
+                  : isLight
+                    ? 'border-nude-rose bg-white shadow-sm'
+                    : 'border-dusty-rose/20 bg-deep-purple/30'
               }`}>
                 {/* Imagem */}
                 <div className="relative h-32 overflow-hidden">
@@ -156,11 +161,19 @@ export function ExperiencesCarousel() {
                     draggable={false}
                     onError={(e) => { e.target.src = fallbackImage }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-deep-purple via-deep-purple/50 to-transparent" />
+                  <div className={`absolute inset-0 ${
+                    isLight
+                      ? 'bg-gradient-to-t from-white via-white/50 to-transparent'
+                      : 'bg-gradient-to-t from-deep-purple via-deep-purple/50 to-transparent'
+                  }`} />
 
                   {/* Badge de classe */}
                   <div className="absolute top-3 right-3">
-                    <span className="px-2 py-1 text-[10px] uppercase tracking-wider bg-deep-purple/80 text-dusty-rose rounded-lg border border-dusty-rose/20">
+                    <span className={`px-2 py-1 text-[10px] uppercase tracking-wider rounded-lg border ${
+                      isLight
+                        ? 'bg-white/90 text-deep-purple border-nude-rose'
+                        : 'bg-deep-purple/80 text-dusty-rose border-dusty-rose/20'
+                    }`}>
                       {levelCopy.shortNames[reward.requiredLevelId] || 'Econômica'}
                     </span>
                   </div>
@@ -182,28 +195,30 @@ export function ExperiencesCarousel() {
                 {/* Conteudo */}
                 <div className="p-4">
                   <h4 className={`text-sm font-heading font-medium mb-1 ${
-                    canRedeem ? 'text-ice-white' : 'text-dusty-rose'
+                    canRedeem
+                      ? isLight ? 'text-deep-purple' : 'text-ice-white'
+                      : isLight ? 'text-graphite' : 'text-dusty-rose'
                   }`}>
                     {reward.name}
                   </h4>
-                  <p className="text-xs text-dusty-rose/70 mb-3 line-clamp-1">
+                  <p className={`text-xs mb-3 line-clamp-1 ${isLight ? 'text-graphite/60' : 'text-dusty-rose/70'}`}>
                     {reward.subtitle}
                   </p>
 
                   {/* Barra de progresso */}
                   {!canRedeem && (
                     <div className="mb-3">
-                      <div className="h-1 bg-dusty-rose/10 rounded-full overflow-hidden">
+                      <div className={`h-1 rounded-full overflow-hidden ${isLight ? 'bg-nude-rose' : 'bg-dusty-rose/10'}`}>
                         <div
                           className={`h-full rounded-full transition-all ${
-                            isAlmostThere ? 'bg-antique-gold' : 'bg-dusty-rose/40'
+                            isAlmostThere ? 'bg-antique-gold' : isLight ? 'bg-graphite/30' : 'bg-dusty-rose/40'
                           }`}
                           style={{ width: `${reward.progress}%` }}
                         />
                       </div>
                       <div className="flex justify-between mt-1">
-                        <span className="text-[10px] text-dusty-rose/60">{reward.progress}%</span>
-                        <span className={`text-[10px] ${isAlmostThere ? 'text-antique-gold' : 'text-dusty-rose/60'}`}>
+                        <span className={`text-[10px] ${isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>{reward.progress}%</span>
+                        <span className={`text-[10px] ${isAlmostThere ? 'text-antique-gold' : isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>
                           {format.pointsShort(reward.pointsNeeded)} pts
                         </span>
                       </div>
@@ -213,7 +228,7 @@ export function ExperiencesCarousel() {
                   {/* Footer */}
                   <div className="flex items-center justify-between">
                     <span className={`text-sm font-display ${
-                      canRedeem ? 'text-antique-gold' : 'text-dusty-rose'
+                      canRedeem ? 'text-antique-gold' : isLight ? 'text-graphite/70' : 'text-dusty-rose'
                     }`}>
                       {format.pointsShort(reward.points_required)} pts
                     </span>
@@ -234,8 +249,8 @@ export function ExperiencesCarousel() {
       {/* Indicador de scroll */}
       <div className="flex justify-center gap-1 mt-4">
         <div className="w-8 h-1 bg-antique-gold/40 rounded-full" />
-        <div className="w-2 h-1 bg-dusty-rose/20 rounded-full" />
-        <div className="w-2 h-1 bg-dusty-rose/20 rounded-full" />
+        <div className={`w-2 h-1 rounded-full ${isLight ? 'bg-graphite/10' : 'bg-dusty-rose/20'}`} />
+        <div className={`w-2 h-1 rounded-full ${isLight ? 'bg-graphite/10' : 'bg-dusty-rose/20'}`} />
       </div>
     </motion.div>
   )

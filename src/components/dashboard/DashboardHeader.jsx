@@ -282,7 +282,8 @@ export function DashboardHeader() {
       </header>
 
       {/* Barra de Navegação Mobile - Fixa no Rodapé */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-deep-purple/98 backdrop-blur-xl border-t border-dusty-rose/20 pb-safe">
+      {/* Fundo branco, borda #ddd1d0, ativo #a27937, inativo #5c5c5c */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-nude-rose" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="flex items-center justify-around h-16">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path
@@ -291,7 +292,7 @@ export function DashboardHeader() {
                 key={item.path}
                 to={item.path}
                 className={`flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors ${
-                  isActive ? 'text-antique-gold' : 'text-dusty-rose/70'
+                  isActive ? 'text-antique-gold' : 'text-[#5c5c5c]'
                 }`}
               >
                 <MobileIcon name={item.mobileIcon} className="w-5 h-5" />

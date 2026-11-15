@@ -72,144 +72,105 @@ export function Dashboard() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
+    <div className="min-h-screen pb-20 md:pb-0 bg-ice-white">
       {/* Header */}
       <DashboardHeader />
 
       {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO 1 - ESCURA: Hero com pontos e classe (destaque visual)
+          SEÇÃO HERO - Única seção escura: pontos e classe
           ══════════════════════════════════════════════════════════════ */}
       <section className="bg-deep-purple pt-12 pb-8">
         <div className="container-premium">
           <SafeSection name="Hero" silent>
             <HeroSection />
           </SafeSection>
-          {/* Status do plano */}
-          <div className="mt-6">
-            <SafeSection name="Plano" silent>
-              <PlanStatusCard />
-            </SafeSection>
-          </div>
-          {/* Ação Fundadores */}
-          <div className="mt-6">
-            <SafeSection name="Fundadores" silent>
-              <FoundersCard />
-            </SafeSection>
-          </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO 2 - CLARA: Missões e Lançar Viagem (área de leitura)
+          CONTEÚDO PRINCIPAL - Fundo claro (#edf0f1) - cards brancos
           ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-ice-white py-10">
-        <div className="container-premium">
+      <div className="py-6">
+        <div className="container-premium space-y-6">
+          {/* Plano + Fundadores lado a lado no desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SafeSection name="Plano" silent>
+              <PlanStatusCard variant="light" />
+            </SafeSection>
+            <SafeSection name="Fundadores" silent>
+              <FoundersCard variant="light" />
+            </SafeSection>
+          </div>
+
+          {/* Missões + Próxima Viagem */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Missões - ocupa 2 colunas */}
             <div className="lg:col-span-2">
               <SafeSection name="Missões">
                 <MissionsSection variant="light" />
               </SafeSection>
             </div>
-            {/* Lançar Viagem - ocupa 1 coluna */}
             <div className="space-y-4">
               <SafeSection name="Próxima Viagem">
-                <NextTripCard />
+                <NextTripCard variant="light" />
               </SafeSection>
               <SafeSection name="Lançar Viagem">
                 <TripSubmitCard variant="light" />
               </SafeSection>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO 3 - ESCURA: Stats e Carrossel de Experiências (visual)
-          ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-deep-purple py-10">
-        <div className="container-premium">
-          {/* Stats cards */}
-          <div className="mb-8">
+          {/* Stats + Experiências */}
+          <div className="space-y-6">
             <SafeSection name="Estatísticas" silent>
-              <StatsCards stats={referralStats} />
+              <StatsCards stats={referralStats} variant="light" />
+            </SafeSection>
+            <SafeSection name="Experiências">
+              <ExperiencesCarousel variant="light" />
             </SafeSection>
           </div>
 
-          {/* Carrossel de experiências */}
-          <SafeSection name="Experiências">
-            <ExperiencesCarousel />
-          </SafeSection>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO 4 - CLARA: Código de indicação e histórico (leitura)
-          ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-ice-white py-10">
-        <div className="container-premium">
+          {/* Indicações */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ReferralCode variant="light" />
             <MyReferrals variant="light" />
           </div>
-        </div>
-      </section>
 
-      {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO 5 - ESCURA: Explorador de classes (visual interativo)
-          ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-deep-purple py-10">
-        <div className="container-premium">
+          {/* Explorador de Classes */}
           <SafeSection name="Classes">
-            <ClassExplorer />
+            <ClassExplorer variant="light" />
           </SafeSection>
-        </div>
-      </section>
 
-      {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO 6 - CLARA: Simulador de pontos (interativo)
-          ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-ice-white py-10">
-        <div className="container-premium">
-          <div className="text-center mb-6">
-            <h3 className="text-lg font-display font-semibold text-deep-purple mb-2">
-              Simule seus ganhos
-            </h3>
-            <p className="text-sm text-deep-purple/70">
-              Veja quanto você pode acumular viajando ou indicando
-            </p>
+          {/* Simulador */}
+          <div>
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-display font-semibold text-deep-purple mb-2">
+                Simule seus ganhos
+              </h3>
+              <p className="text-sm text-graphite/70">
+                Veja quanto você pode acumular viajando ou indicando
+              </p>
+            </div>
+            <div className="max-w-xl mx-auto">
+              <SafeSection name="Simulador">
+                <PointsSimulatorTabs variant="light" compact={true} />
+              </SafeSection>
+            </div>
           </div>
-          <div className="max-w-xl mx-auto">
-            <SafeSection name="Simulador">
-              <PointsSimulatorTabs variant="light" compact={true} />
-            </SafeSection>
-          </div>
-        </div>
-      </section>
 
-      {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO 7 - ESCURA: Progresso e widgets (visual)
-          ══════════════════════════════════════════════════════════════ */}
-      <section className="bg-deep-purple py-10">
-        <div className="container-premium">
+          {/* Progresso e widgets */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Progresso de nível */}
             <SafeSection name="Progresso">
-              <LevelProgress />
+              <LevelProgress variant="light" />
             </SafeSection>
-
-            {/* Sua Evolução */}
             <SafeSection name="Evolução">
-              <EvolutionCard />
+              <EvolutionCard variant="light" />
             </SafeSection>
-
-            {/* Tasks */}
             <SafeSection name="Tarefas">
-              <TasksWidget />
+              <TasksWidget variant="light" />
             </SafeSection>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   )
 }

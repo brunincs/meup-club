@@ -6,8 +6,9 @@ import { getClassIcon } from '@/components/ui/Icons'
 import { useUserLevel } from '@/hooks/useUserLevel'
 import { fetchExperienciasComPrecos } from '@/services/experienciasService'
 
-export function ClassExplorer() {
+export function ClassExplorer({ variant = 'dark' }) {
   const { currentId: userLevelId, totalPointsEarned } = useUserLevel()
+  const isLight = variant === 'light'
 
   const [selectedClass, setSelectedClass] = useState(null)
   const [experiencias, setExperiencias] = useState([])
@@ -54,15 +55,17 @@ export function ClassExplorer() {
   // Se ainda não temos classe definida, mostrar loading
   if (!activeClass) {
     return (
-      <div className="p-6 rounded-2xl border border-dusty-rose/20 bg-deep-purple/30">
+      <div className={`p-6 rounded-2xl border ${
+        isLight ? 'border-nude-rose bg-white' : 'border-dusty-rose/20 bg-deep-purple/30'
+      }`}>
         <div className="animate-pulse space-y-4">
-          <div className="h-6 w-48 mx-auto rounded bg-dusty-rose/20" />
+          <div className={`h-6 w-48 mx-auto rounded ${isLight ? 'bg-graphite/10' : 'bg-dusty-rose/20'}`} />
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="w-[90px] h-16 rounded-xl bg-dusty-rose/10" />
+              <div key={i} className={`w-[90px] h-16 rounded-xl ${isLight ? 'bg-graphite/5' : 'bg-dusty-rose/10'}`} />
             ))}
           </div>
-          <div className="h-40 rounded-2xl bg-dusty-rose/10" />
+          <div className={`h-40 rounded-2xl ${isLight ? 'bg-graphite/5' : 'bg-dusty-rose/10'}`} />
         </div>
       </div>
     )
@@ -80,10 +83,10 @@ export function ClassExplorer() {
     >
       {/* Header */}
       <div className="text-center mb-8">
-        <h3 className="text-lg font-display font-semibold text-ice-white mb-2">
+        <h3 className={`text-lg font-display font-semibold mb-2 ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
           Explore as Classes
         </h3>
-        <p className="text-sm text-dusty-rose">
+        <p className={`text-sm ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>
           Deslize para ver os benefícios de cada nível
         </p>
       </div>
@@ -106,8 +109,12 @@ export function ClassExplorer() {
                 isActive
                   ? 'bg-antique-gold/20 border-antique-gold/40'
                   : isLocked
-                    ? 'bg-deep-purple/30 border-dusty-rose/10 opacity-60'
-                    : 'bg-deep-purple/30 border-dusty-rose/20 hover:border-dusty-rose/40'
+                    ? isLight
+                      ? 'bg-graphite/5 border-graphite/10 opacity-60'
+                      : 'bg-deep-purple/30 border-dusty-rose/10 opacity-60'
+                    : isLight
+                      ? 'bg-white border-nude-rose hover:border-antique-gold/30'
+                      : 'bg-deep-purple/30 border-dusty-rose/20 hover:border-dusty-rose/40'
               }`}
             >
               {/* Badge de nível atual */}
@@ -122,7 +129,7 @@ export function ClassExplorer() {
                 color={isActive ? '#a27937' : isLocked ? '#a39695' : '#ddd1d0'}
               />
               <span className={`text-[10px] font-heading font-medium ${
-                isActive ? 'text-antique-gold' : 'text-dusty-rose'
+                isActive ? 'text-antique-gold' : isLight ? 'text-graphite/70' : 'text-dusty-rose'
               }`}>
                 {levelCopy.shortNames[level.id]}
               </span>
@@ -141,8 +148,12 @@ export function ClassExplorer() {
           transition={{ duration: 0.2 }}
           className={`p-6 rounded-2xl border ${
             isUnlocked
-              ? 'bg-antique-gold/5 border-antique-gold/20'
-              : 'bg-deep-purple/30 border-dusty-rose/20'
+              ? isLight
+                ? 'bg-gradient-to-br from-antique-gold/10 to-white border-antique-gold/30'
+                : 'bg-antique-gold/5 border-antique-gold/20'
+              : isLight
+                ? 'bg-white border-nude-rose shadow-sm'
+                : 'bg-deep-purple/30 border-dusty-rose/20'
           }`}
         >
           <div className="flex flex-col lg:flex-row gap-6">
@@ -156,11 +167,13 @@ export function ClassExplorer() {
                 </div>
                 <div>
                   <h4 className={`text-xl font-heading font-medium ${
-                    isUnlocked ? 'text-ice-white' : 'text-dusty-rose'
+                    isUnlocked
+                      ? isLight ? 'text-deep-purple' : 'text-ice-white'
+                      : isLight ? 'text-graphite/70' : 'text-dusty-rose'
                   }`}>
                     {levelCopy.names[activeClass]}
                   </h4>
-                  <p className="text-xs text-dusty-rose">
+                  <p className={`text-xs ${isLight ? 'text-graphite/60' : 'text-dusty-rose'}`}>
                     {selectedLevel?.minPoints.toLocaleString('pt-BR')}+ pontos
                   </p>
                 </div>
@@ -174,7 +187,7 @@ export function ClassExplorer() {
                       viewBox="0 0 24 24"
                       fill="none"
                       className={`w-4 h-4 flex-shrink-0 ${
-                        isUnlocked ? 'text-antique-gold' : 'text-dusty-rose/60'
+                        isUnlocked ? 'text-antique-gold' : isLight ? 'text-graphite/40' : 'text-dusty-rose/60'
                       }`}
                     >
                       <path
@@ -186,7 +199,9 @@ export function ClassExplorer() {
                       />
                     </svg>
                     <span className={`text-sm ${
-                      isUnlocked ? 'text-ice-white' : 'text-dusty-rose/80'
+                      isUnlocked
+                        ? isLight ? 'text-deep-purple' : 'text-ice-white'
+                        : isLight ? 'text-graphite/70' : 'text-dusty-rose/80'
                     }`}>
                       {perk}
                     </span>
@@ -196,8 +211,12 @@ export function ClassExplorer() {
 
               {/* Status */}
               {!isUnlocked && (
-                <div className="mt-4 p-3 rounded-lg bg-dusty-rose/10 border border-dusty-rose/20">
-                  <p className="text-xs text-dusty-rose">
+                <div className={`mt-4 p-3 rounded-lg border ${
+                  isLight
+                    ? 'bg-antique-gold/5 border-antique-gold/20'
+                    : 'bg-dusty-rose/10 border-dusty-rose/20'
+                }`}>
+                  <p className={`text-xs ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
                     Faltam <span className="text-antique-gold font-bold">
                       {(selectedLevel.minPoints - totalPointsEarned).toLocaleString('pt-BR')}
                     </span> pontos para desbloquear
@@ -208,7 +227,7 @@ export function ClassExplorer() {
 
             {/* Experiências da classe */}
             <div className="lg:w-64">
-              <p className="text-[10px] uppercase tracking-wider text-dusty-rose mb-3">
+              <p className={`text-[10px] uppercase tracking-wider mb-3 ${isLight ? 'text-graphite/50' : 'text-dusty-rose'}`}>
                 Experiências desta classe
               </p>
               <div className="space-y-2">
@@ -224,22 +243,28 @@ export function ClassExplorer() {
                       key={exp.id}
                       className={`p-3 rounded-lg border ${
                         isUnlocked
-                          ? 'bg-deep-purple/30 border-dusty-rose/20'
-                          : 'bg-deep-purple/20 border-dusty-rose/10 opacity-60'
+                          ? isLight
+                            ? 'bg-ice-white border-nude-rose'
+                            : 'bg-deep-purple/30 border-dusty-rose/20'
+                          : isLight
+                            ? 'bg-graphite/5 border-graphite/10 opacity-60'
+                            : 'bg-deep-purple/20 border-dusty-rose/10 opacity-60'
                       }`}
                     >
                       <p className={`text-sm font-heading font-medium ${
-                        isUnlocked ? 'text-ice-white' : 'text-dusty-rose'
+                        isUnlocked
+                          ? isLight ? 'text-deep-purple' : 'text-ice-white'
+                          : isLight ? 'text-graphite/60' : 'text-dusty-rose'
                       }`}>
                         {exp.nome}
                       </p>
-                      <p className="text-[10px] text-dusty-rose/60">
+                      <p className={`text-[10px] ${isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>
                         {(exp.pontos_usuario || exp.pontos).toLocaleString('pt-BR')} pts
                       </p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-dusty-rose/60 italic">
+                  <p className={`text-xs italic ${isLight ? 'text-graphite/50' : 'text-dusty-rose/60'}`}>
                     Experiências premium disponíveis
                   </p>
                 )}

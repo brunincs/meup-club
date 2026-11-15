@@ -84,8 +84,11 @@ function ExpirationBanner({ daysRemaining, ciclo, onRenew, processing }) {
  * - Free: Card "Assine o Prime" com CTA
  * - Prime Mensal: Nudge "Passe pro anual: 1.5x + 2 meses grátis"
  * - Prime Anual: Badge sem nudge
+ *
+ * @param {string} variant - 'dark' (default) ou 'light' (fundo branco)
  */
-export function PlanStatusCard() {
+export function PlanStatusCard({ variant = 'dark' }) {
+  const isLight = variant === 'light'
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
@@ -117,9 +120,11 @@ export function PlanStatusCard() {
 
   if (loading) {
     return (
-      <div className="p-4 rounded-xl bg-white/5 border border-white/10 animate-pulse">
-        <div className="h-4 bg-white/10 rounded w-24 mb-2" />
-        <div className="h-3 bg-white/5 rounded w-32" />
+      <div className={`p-4 rounded-xl border animate-pulse ${
+        isLight ? 'bg-white border-nude-rose' : 'bg-white/5 border-white/10'
+      }`}>
+        <div className={`h-4 rounded w-24 mb-2 ${isLight ? 'bg-graphite/10' : 'bg-white/10'}`} />
+        <div className={`h-3 rounded w-32 ${isLight ? 'bg-graphite/5' : 'bg-white/5'}`} />
       </div>
     )
   }
@@ -143,15 +148,19 @@ export function PlanStatusCard() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-gradient-to-r from-amber-500/15 to-amber-600/10 border border-amber-500/30"
+          className={`p-4 rounded-xl border shadow-sm ${
+            isLight
+              ? 'bg-white border-nude-rose'
+              : 'bg-gradient-to-r from-amber-500/15 to-amber-600/10 border-amber-500/30'
+          }`}
         >
           <div className="flex items-center gap-3">
             <CrownIcon size={20} color="#a27937" />
             <div>
-              <p className="text-sm font-heading font-semibold text-amber-200">
+              <p className={`text-sm font-heading font-semibold ${isLight ? 'text-deep-purple' : 'text-amber-200'}`}>
                 Me,up Prime
               </p>
-              <p className="text-xs text-dusty-rose/70">
+              <p className={`text-xs ${isLight ? 'text-graphite/70' : 'text-dusty-rose/70'}`}>
                 Seus pontos valem mais: 1,5 por real
               </p>
             </div>
@@ -166,14 +175,18 @@ export function PlanStatusCard() {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 rounded-xl bg-gradient-to-r from-deep-purple/80 to-graphite/50 border border-antique-gold/20"
+      className={`p-4 rounded-xl border shadow-sm ${
+        isLight
+          ? 'bg-white border-nude-rose'
+          : 'bg-gradient-to-r from-deep-purple/80 to-graphite/50 border-antique-gold/20'
+      }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <p className="text-sm font-heading font-semibold text-ice-white">
+          <p className={`text-sm font-heading font-semibold ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
             Acelere sua jornada
           </p>
-          <p className="text-xs text-dusty-rose/70">
+          <p className={`text-xs ${isLight ? 'text-graphite/70' : 'text-dusty-rose/70'}`}>
             1,5x nas viagens no Prime anual + check-in triplo
           </p>
         </div>
