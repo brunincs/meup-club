@@ -7,7 +7,8 @@
 // FÁCIL DE EDITAR: mude aqui quando precisar atualizar os links
 export const EXTERNAL_LINKS = {
   instagram: 'https://www.instagram.com/meup.viagens/',
-  google_review: 'https://share.google/36FFEc6vFwKCR1dxo'
+  google_review: 'https://share.google/36FFEc6vFwKCR1dxo',
+  whatsapp_comunidade: 'https://chat.whatsapp.com/LINK_DA_COMUNIDADE' // TODO: Configurar link real da comunidade
 }
 
 // Mapeamento de missões para ações
@@ -118,6 +119,29 @@ export const MISSION_ACTIONS = {
     type: 'external',
     route: EXTERNAL_LINKS.google_review,
     label: 'Avaliar',
+    requiresApproval: true,
+    isAutomatic: false
+  },
+
+  // === WHATSAPP COMUNIDADE ===
+  'comunidade whatsapp': {
+    type: 'external',
+    route: EXTERNAL_LINKS.whatsapp_comunidade,
+    label: 'Entrar no grupo',
+    requiresApproval: true, // Admin verifica se entrou
+    isAutomatic: false
+  },
+  'entrar na comunidade': {
+    type: 'external',
+    route: EXTERNAL_LINKS.whatsapp_comunidade,
+    label: 'Entrar no grupo',
+    requiresApproval: true,
+    isAutomatic: false
+  },
+  'whatsapp': {
+    type: 'external',
+    route: EXTERNAL_LINKS.whatsapp_comunidade,
+    label: 'Entrar no grupo',
     requiresApproval: true,
     isAutomatic: false
   },

@@ -6,7 +6,7 @@ import { PWAProvider } from '@/contexts/PWAContext'
 import { ProtectedRoute, AdminRoute } from '@/components/auth'
 import { RootLayout } from '@/layouts'
 import { InstallPrompt, UpdatePrompt } from '@/components/pwa'
-import { Home, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans, MeusResgates, MinhasViagens } from '@/pages'
+import { Home, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans, MeusResgates, MinhasViagens, NotFound } from '@/pages'
 import {
   AdminDashboard,
   AdminReferrals,
@@ -140,6 +140,7 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/recompensas" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
           <Route path="/rewards" element={<Navigate to="/recompensas" replace />} />
+          <Route path="/experiencias" element={<Navigate to="/recompensas" replace />} />
           <Route path="/tarefas" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/missoes" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
@@ -172,6 +173,9 @@ function App() {
           <Route path="/admin/fila-entregas" element={<AdminRoute><AdminFilaEntregas /></AdminRoute>} />
           <Route path="/admin/fundadores" element={<AdminRoute><AdminFundadores /></AdminRoute>} />
           <Route path="/admin/fotos-destinos" element={<AdminRoute><AdminFotosDestinos /></AdminRoute>} />
+
+          {/* 404 - Catch all */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
         </PWAProvider>
         </PointsProvider>

@@ -65,7 +65,7 @@ export function FinalCTAAlternada() {
             transition={{ delay: 0.2 }}
             className="text-base md:text-lg text-ice-white/80 mb-8 max-w-xl mx-auto"
           >
-            Crie sua conta grátis e comece a juntar pontos hoje — ou garanta o Meup Prime no preço de fundador, enquanto há vaga.
+            Crie sua conta grátis e comece a juntar pontos hoje — ou garanta o Me,up Prime no preço de fundador, enquanto há vaga.
           </motion.p>
 
           {/* CTA Buttons */}

@@ -92,7 +92,7 @@ export const levels = [
   },
   {
     id: 5,
-    name: 'Meup Exclusive',
+    name: 'Me,up Exclusive',
     shortName: 'Exclusive',
     minPoints: 100000,
     maxPoints: Infinity,
@@ -561,7 +561,7 @@ export function groupRewardsByTier(rewards) {
     2: 'Premium Economy',
     3: 'Classe Executiva',
     4: 'Primeira Classe',
-    5: 'Meup Exclusive'
+    5: 'Me,up Exclusive'
   }
 
   const tierIcons = {

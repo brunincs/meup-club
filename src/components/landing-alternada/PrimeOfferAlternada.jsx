@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { GoldLine } from '@/components/ui/GoldLine'
+import { CrownIcon, GiftIcon } from '@/components/ui/Icons'
 import { fetchPlanosConfig } from '@/services/subscriptionService'
 import { getFundadoresCount, getRegulamentoUrl, getPrecoFundadorAtual } from '@/services/fundadoresService'
 import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
@@ -184,7 +185,7 @@ export function PrimeOfferAlternada() {
 
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-xl">👑</span>
+                <CrownIcon size={22} color="#a27937" />
                 <h3 className="text-xl font-display font-bold text-white">Me,up Prime</h3>
               </div>
 
@@ -207,7 +208,7 @@ export function PrimeOfferAlternada() {
                   à vista no Pix ou 6x de R$ 82,83 sem juros
                 </p>
                 <p className="text-xs text-antique-gold mt-2 flex items-center gap-1">
-                  <span>🎁</span> +2.000 pts de boas-vindas
+                  <GiftIcon size={14} color="#a27937" /> +2.000 pts de boas-vindas
                 </p>
               </div>
 
@@ -357,9 +358,16 @@ export function PrimeOfferAlternada() {
                       style={{ width: `${porcentagemUsada}%` }}
                     />
                   </div>
-                  <p className="text-xs text-ice-white/50 mt-1">
-                    {vagasVendidas} de {totalVagas} vagas de fundador vendidas
-                  </p>
+                  {/* Só mostrar "X vendidas" quando >= 10, senão mostrar só "100 vagas no Lote 1" */}
+                  {vagasVendidas >= 10 ? (
+                    <p className="text-xs text-ice-white/50 mt-1">
+                      {vagasVendidas} de {totalVagas} vagas de fundador vendidas
+                    </p>
+                  ) : vagasVendidas > 0 ? (
+                    <p className="text-xs text-ice-white/50 mt-1">
+                      {totalVagas} vagas no Lote 1
+                    </p>
+                  ) : null}
                 </div>
               )}
 

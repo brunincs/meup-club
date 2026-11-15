@@ -45,7 +45,7 @@ function ExpirationBanner({ daysRemaining, ciclo, onRenew, processing }) {
       : 'Lembrete: renovação em breve'
 
   const subtitle = isUrgent
-    ? 'Renove agora para continuar aproveitando o Meup Prime'
+    ? 'Renove agora para continuar aproveitando o Me,up Prime'
     : `Sua assinatura ${ciclo === 'anual' ? 'anual' : 'mensal'} expira em ${daysRemaining} dias`
 
   return (

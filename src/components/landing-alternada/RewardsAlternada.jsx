@@ -150,36 +150,38 @@ export function RewardsAlternada() {
           ))}
         </motion.div>
 
-        {/* Experiencias dos Sonhos */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={fadeUp}
-          className="text-center mt-8 mb-4"
-        >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] uppercase tracking-wider bg-gradient-to-r from-antique-gold/20 to-antique-gold/10 border border-antique-gold/40 text-antique-gold font-heading font-semibold">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-            </svg>
-            Topo do Clube
-          </span>
-          <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mt-4 mb-2">
-            Experiências dos Sonhos
-          </h3>
-          <p className="text-ice-white/70 text-sm max-w-md mx-auto">
-            As recompensas mais exclusivas para quem acumula no longo prazo.
-          </p>
-        </motion.div>
+        {/* Experiencias dos Sonhos - só mostrar se houver itens */}
+        {dreamExperiences.length > 0 && (
+          <>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={fadeUp}
+              className="text-center mt-8 mb-4"
+            >
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] uppercase tracking-wider bg-gradient-to-r from-antique-gold/20 to-antique-gold/10 border border-antique-gold/40 text-antique-gold font-heading font-semibold">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                Topo do Clube
+              </span>
+              <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mt-4 mb-2">
+                Experiências dos Sonhos
+              </h3>
+              <p className="text-ice-white/70 text-sm max-w-md mx-auto">
+                As recompensas mais exclusivas para quem acumula no longo prazo.
+              </p>
+            </motion.div>
 
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 max-w-2xl mx-auto"
-        >
-          {dreamExperiences.map((reward) => (
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 max-w-2xl mx-auto"
+            >
+              {dreamExperiences.map((reward) => (
             <motion.div
               key={reward.id}
               variants={staggerItem}
@@ -251,6 +253,8 @@ export function RewardsAlternada() {
             </motion.div>
           ))}
         </motion.div>
+          </>
+        )}
       </div>
     </section>
   )

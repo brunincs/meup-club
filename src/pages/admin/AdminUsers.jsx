@@ -311,7 +311,7 @@ function PrimeModal({ user, onClose, onSuccess }) {
                 <div>
                   <p className="text-xs text-graphite/60 uppercase tracking-wide">Plano Atual</p>
                   <p className={`text-xl font-display font-bold ${status?.isPrime ? 'text-amber-700' : 'text-graphite'}`}>
-                    {status?.isPrime ? `Meup Prime ${formatCiclo(status.ciclo)}` : 'Free'}
+                    {status?.isPrime ? `Me,up Prime ${formatCiclo(status.ciclo)}` : 'Free'}
                   </p>
                 </div>
                 {status?.isPrime && (
@@ -352,7 +352,7 @@ function PrimeModal({ user, onClose, onSuccess }) {
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-xs text-graphite/60 font-heading text-center">Ativar Meup Prime:</p>
+                <p className="text-xs text-graphite/60 font-heading text-center">Ativar Me,up Prime:</p>
                 <button
                   onClick={() => handleAtivar('anual')}
                   disabled={processing}

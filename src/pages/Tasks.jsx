@@ -507,6 +507,18 @@ export function Tasks() {
   const totalCompleted = tasksSummary.daily.completed + tasksSummary.weekly.completed + tasksSummary.oneTime.completed
   const totalTasks = tasksSummary.daily.total + tasksSummary.weekly.total + tasksSummary.oneTime.total
 
+  // Abrir na aba que tem pendências (prioridade: conquistas > ações)
+  useEffect(() => {
+    if (isLoadingTarefas) return
+    const dailyPending = tasksSummary.daily.total - tasksSummary.daily.completed
+    const oneTimePending = tasksSummary.oneTime.total - tasksSummary.oneTime.completed
+
+    // Se ações está completo mas conquistas tem pendentes, ir para conquistas
+    if (dailyPending === 0 && oneTimePending > 0) {
+      setActiveTab('oneTime')
+    }
+  }, [isLoadingTarefas, tasksSummary])
+
   // Validar e formatar @ do Instagram
   const validateInstagramHandle = (handle) => {
     const username = (handle || '').trim()

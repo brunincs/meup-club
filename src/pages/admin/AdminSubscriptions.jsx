@@ -52,7 +52,7 @@ export function AdminSubscriptions() {
     const daysRemaining = getDaysRemaining(sub.current_period_end)
     const firstName = sub.profiles?.name?.split(' ')[0] || ''
     const cicloLabel = sub.ciclo === 'anual' ? 'Anual' : 'Mensal'
-    const message = `Olá ${firstName}! Passando para lembrar que seu Meup Prime ${cicloLabel} expira em ${daysRemaining} dia${daysRemaining !== 1 ? 's' : ''}. Renove e continue aproveitando seus benefícios exclusivos!`
+    const message = `Olá ${firstName}! Passando para lembrar que seu Me,up Prime ${cicloLabel} expira em ${daysRemaining} dia${daysRemaining !== 1 ? 's' : ''}. Renove e continue aproveitando seus benefícios exclusivos!`
     const url = getWhatsAppUrl(message)
     window.open(url, '_blank')
     toast.success('WhatsApp aberto para lembrete')

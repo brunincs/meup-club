@@ -263,8 +263,8 @@ export async function iniciarAssinaturaWhatsApp(ciclo) {
 
   // Se oferta de fundador ativa, usar mensagem específica
   const message = ofertaFundador
-    ? `Olá! Quero garantir minha vaga de fundador no Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
-    : `Olá! Quero assinar o Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
+    ? `Olá! Quero garantir minha vaga de fundador no Me,up Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
+    : `Olá! Quero assinar o Me,up Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
 
   const url = getWhatsAppUrl(message)
 
@@ -284,8 +284,8 @@ export async function iniciarUpgradeAnualWhatsApp() {
   const precoAnual = primeConfig.precoAnual || FALLBACK_PRICES.precoAnual
 
   const message = ofertaFundador
-    ? `Olá! Quero fazer upgrade para o Meup Prime Anual com preço de fundador (R$${formatPrice(precoAnual, false)}/ano) e desbloquear o multiplicador 1.5x!`
-    : 'Olá! Quero fazer upgrade do meu Meup Prime mensal para anual e desbloquear o multiplicador 1.5x!'
+    ? `Olá! Quero fazer upgrade para o Me,up Prime Anual com preço de fundador (R$${formatPrice(precoAnual, false)}/ano) e desbloquear o multiplicador 1.5x!`
+    : 'Olá! Quero fazer upgrade do meu Me,up Prime mensal para anual e desbloquear o multiplicador 1.5x!'
 
   const url = getWhatsAppUrl(message)
 
@@ -310,7 +310,7 @@ export async function garantirVagaFundadorWhatsApp(ciclo = 'anual') {
     ? `R$${formatPrice(precoAnual, false)}/ano`
     : `R$${formatPrice(precoMensal)}/mês`
 
-  const message = `Olá! Quero garantir minha vaga de fundador no Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
+  const message = `Olá! Quero garantir minha vaga de fundador no Me,up Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} (${preco}).`
   const url = getWhatsAppUrl(message)
 
   window.open(url, '_blank')
@@ -341,7 +341,7 @@ export async function iniciarRenovacaoWhatsApp(ciclo, daysRemaining) {
     : `Minha assinatura expira em ${daysRemaining} dias.`
 
   const tipoPreco = ofertaFundador ? 'com preço de fundador ' : ''
-  const message = `Olá! ${urgencia} Quero renovar meu Meup Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} ${tipoPreco}(${preco}).`
+  const message = `Olá! ${urgencia} Quero renovar meu Me,up Prime ${ciclo === 'anual' ? 'Anual' : 'Mensal'} ${tipoPreco}(${preco}).`
   const url = getWhatsAppUrl(message)
 
   window.open(url, '_blank')
@@ -390,6 +390,6 @@ export async function iniciarRenovacaoWhatsApp(ciclo, daysRemaining) {
 ### Estrutura de dados no gateway:
    - metadata.user_id = ID do usuário no Meup Club
    - metadata.ciclo = 'mensal' | 'anual'
-   - description = 'Meup Prime - [Mensal|Anual]'
+   - description = 'Me,up Prime - [Mensal|Anual]'
 
 */

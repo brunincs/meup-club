@@ -209,7 +209,7 @@ export function HeroSection() {
               </div>
 
               {/* Progresso para próximo nível */}
-              {nextLevel && (
+              {nextLevel ? (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -217,7 +217,7 @@ export function HeroSection() {
                   className="p-4 rounded-xl bg-deep-purple/60 border border-dusty-rose/20 mb-6"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-dusty-rose">{levelCopy.names[nextLevel.id] || nextLevel.name}</span>
+                    <span className="text-xs text-dusty-rose">Próxima classe: {levelCopy.names[nextLevel.id] || nextLevel.name}</span>
                     <span className="text-xs font-heading text-antique-gold">
                       faltam {pointsToNext.toLocaleString('pt-BR')} pts
                     </span>
@@ -228,6 +228,21 @@ export function HeroSection() {
                     gradient={['#a27937', '#c9a962']}
                     bgColor="rgba(163, 150, 149, 0.15)"
                   />
+                  {/* Bônus ao atingir */}
+                  <p className="text-[10px] text-dusty-rose/70 mt-2 text-center">
+                    bônus de +{(nextLevel.id === 2 ? 1000 : nextLevel.id === 3 ? 3000 : nextLevel.id === 4 ? 5000 : 10000).toLocaleString('pt-BR')} ao chegar
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="p-4 rounded-xl bg-deep-purple/60 border border-antique-gold/30 mb-6 text-center"
+                >
+                  <span className="text-sm text-antique-gold font-heading font-semibold">
+                    Você está no topo do clube
+                  </span>
                 </motion.div>
               )}
 

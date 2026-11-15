@@ -197,7 +197,7 @@ export const mockAchievements = [
   {
     id: 'level_exclusive',
     name: 'Exclusive',
-    description: 'Meup Exclusive',
+    description: 'Me,up Exclusive',
     icon: '◆',
     unlocked: false
   }

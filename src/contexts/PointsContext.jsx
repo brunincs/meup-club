@@ -8,6 +8,21 @@ import {
   buscarStatusResgates
 } from '@/services/resgateService'
 import { supabase } from '@/lib/supabase'
+import { levels } from '@/services/pointsSystem'
+
+/**
+ * Calcula o levelId baseado em totalPointsEarned
+ * ÚNICA FONTE DE VERDADE para classe - não usa level_id do banco
+ */
+function calculateLevelFromPoints(totalPoints) {
+  // Encontra o nível mais alto onde totalPoints >= minPoints
+  for (let i = levels.length - 1; i >= 0; i--) {
+    if (totalPoints >= levels[i].minPoints) {
+      return levels[i].id
+    }
+  }
+  return 1 // Default: Econômica
+}
 
 /**
  * PointsContext - Fonte única de verdade para pontos do usuário
@@ -40,17 +55,20 @@ export function PointsProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false)
 
   // Sincroniza pontos quando o profile carrega
+  // IMPORTANTE: levelId é CALCULADO a partir de totalPointsEarned, não lido do banco
   useEffect(() => {
     if (profile?.points !== undefined) {
+      const totalEarned = profile.total_points_earned || profile.points
       setPoints(profile.points)
       setBlockedPoints(profile.pontos_bloqueados || 0)
-      setTotalPointsEarned(profile.total_points_earned || profile.points)
-      setLevelId(profile.level_id || 1)
+      setTotalPointsEarned(totalEarned)
+      // Calcula levelId dinamicamente ao invés de usar profile.level_id (que pode estar errado)
+      setLevelId(calculateLevelFromPoints(totalEarned))
     } else if (useMock) {
       setPoints(demoUser.points)
       setBlockedPoints(0)
       setTotalPointsEarned(demoUser.points)
-      setLevelId(2)
+      setLevelId(calculateLevelFromPoints(demoUser.points))
     }
   }, [profile, useMock])
 

@@ -71,14 +71,11 @@ function PassportHeader({ profile, levelData, userPoints }) {
       <div className="relative p-6 md:p-8">
         {/* Título do passaporte */}
         <div className="text-center mb-6">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-[#a27937] mb-1">
-            República Federativa do Brasil
-          </p>
           <h2 className="font-display text-lg text-[#edf0f1] tracking-wide">
-            PASSAPORTE DE VIAGEM
+            PASSAPORTE ME,UP CLUB
           </h2>
           <p className="text-[10px] uppercase tracking-[0.2em] text-[#ddd1d0]/60 mt-1">
-            Me,up Club
+            Sua jornada de viagens
           </p>
         </div>
 
@@ -140,7 +137,7 @@ function PassportHeader({ profile, levelData, userPoints }) {
           {/* Pontos acumulados */}
           <div className="text-center md:text-right flex-shrink-0">
             <p className="text-[9px] uppercase tracking-wider text-[#a39695] mb-1">
-              Milhas / Points
+              PONTOS
             </p>
             <p className="font-display text-4xl md:text-5xl text-[#a27937] font-light">
               {format.pointsShort(userPoints)}
@@ -544,7 +541,7 @@ function RecentActivity({ activities, userId }) {
     debit: { icon: '-', color: 'text-red-400', bg: 'bg-red-400/20', label: 'Débito' },
     task: { icon: '✓', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20', label: 'Missão' },
     referral: { icon: '◇', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20', label: 'Indicação' },
-    welcome_referral: { icon: '🎁', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20', label: 'Boas-vindas' },
+    welcome_referral: { icon: '✦', color: 'text-[#a27937]', bg: 'bg-[#a27937]/20', label: 'Boas-vindas' },
     redemption: { icon: '★', color: 'text-purple-400', bg: 'bg-purple-400/20', label: 'Resgate' },
     adjustment: { icon: '⚙', color: 'text-blue-400', bg: 'bg-blue-400/20', label: 'Ajuste' },
     admin: { icon: '⚡', color: 'text-blue-400', bg: 'bg-blue-400/20', label: 'Admin' }
@@ -755,7 +752,7 @@ function NotificationSettings() {
     const result = await enablePush()
     if (result.success) {
       await subscribeToPush()
-      toast.success('Notificacoes ativadas!')
+      toast.success('Notificações ativadas!')
     }
   }
 
@@ -769,7 +766,7 @@ function NotificationSettings() {
     }
     setPrefs(newPrefs)
     await updateNotificationPreferences(newPrefs)
-    toast.success('Notificacoes desativadas')
+    toast.success('Notificações desativadas')
   }
 
   if (loading) {
@@ -785,16 +782,19 @@ function NotificationSettings() {
   }
 
   const notifTypes = [
-    { key: 'viagens', label: 'Viagens', desc: 'Check-in, atualizacoes de voo' },
-    { key: 'pontos', label: 'Pontos', desc: 'Pontos liberados, bonus' },
-    { key: 'missoes', label: 'Missoes', desc: 'Aprovacoes, novas missoes' },
-    { key: 'novidades', label: 'Novidades', desc: 'Dicas, promocoes' }
+    { key: 'viagens', label: 'Viagens', desc: 'Check-in, atualizações de voo' },
+    { key: 'pontos', label: 'Pontos', desc: 'Pontos liberados, bônus' },
+    { key: 'missoes', label: 'Missões', desc: 'Aprovações, novas missões' },
+    { key: 'novidades', label: 'Novidades', desc: 'Dicas, promoções' }
   ]
 
   return (
     <div className="rounded-2xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
       <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 font-medium flex items-center gap-2">
-        <span>🔔</span> Notificacoes
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        Notificações
       </h3>
 
       {/* Push permission status */}

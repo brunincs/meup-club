@@ -89,7 +89,7 @@ export const CLASS_NAMES = {
     description: 'Exclusividade absoluta'
   },
   5: {
-    name: 'Meup Exclusive',
+    name: 'Me,up Exclusive',
     shortName: 'Exclusive',
     icon: '💎',
     color: 'from-slate-800 to-slate-900',

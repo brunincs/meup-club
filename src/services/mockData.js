@@ -96,8 +96,8 @@ export const mockReferrals = [
 // RANKING MOCK - ORDENADO POR PONTOS
 // ============================================
 export const mockRanking = [
-  { position: 1, name: 'Marina S.', points: 48750, levelId: 5, level: 'Meup Exclusive', avatar: 'M' },
-  { position: 2, name: 'Ricardo L.', points: 42300, levelId: 5, level: 'Meup Exclusive', avatar: 'R' },
+  { position: 1, name: 'Marina S.', points: 48750, levelId: 5, level: 'Me,up Exclusive', avatar: 'M' },
+  { position: 2, name: 'Ricardo L.', points: 42300, levelId: 5, level: 'Me,up Exclusive', avatar: 'R' },
   { position: 3, name: 'Fernanda C.', points: 28920, levelId: 4, level: 'Primeira Classe', avatar: 'F' },
   { position: 4, name: 'Bruno M.', points: 21450, levelId: 4, level: 'Primeira Classe', avatar: 'B' },
   { position: 5, name: 'Carolina T.', points: 18100, levelId: 4, level: 'Primeira Classe', avatar: 'C' },

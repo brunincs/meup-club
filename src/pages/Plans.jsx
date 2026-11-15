@@ -104,7 +104,7 @@ export function Plans() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">
-            Meup Prime
+            Me,up Prime
           </h1>
           <p className="text-dusty-rose/80 font-heading max-w-lg mx-auto">
             Multiplique seus pontos, desbloqueie benefícios exclusivos e acelere sua jornada.
@@ -120,7 +120,7 @@ export function Plans() {
             className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/30 text-center"
           >
             <p className="text-amber-200 font-heading">
-              Você é <span className="font-bold">Meup Prime Anual</span>
+              Você é <span className="font-bold">Me,up Prime Anual</span>
             </p>
           </motion.div>
         )}
@@ -209,7 +209,7 @@ export function Plans() {
             )}
 
             <div className="flex items-center gap-2 mb-2">
-              <h2 className="text-2xl font-display font-bold text-white">Meup Prime</h2>
+              <h2 className="text-2xl font-display font-bold text-white">Me,up Prime</h2>
             </div>
 
             {/* Preço anual */}

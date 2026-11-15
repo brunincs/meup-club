@@ -26,7 +26,7 @@ const FAQ_ITEMS = [
   {
     id: 4,
     question: 'Qual a diferença entre plano e classe?',
-    answer: 'Plano é sua assinatura (Free ou Prime) — define os benefícios que você tem. Classe é seu nível no ranking (5 níveis, da Econômica à Meup Exclusive) — definida pelos pontos acumulados. Você pode ser Free na Primeira Classe ou Prime na Econômica.'
+    answer: 'Plano é sua assinatura (Free ou Prime) — define os benefícios que você tem. Classe é seu nível no ranking (5 níveis, da Econômica à Me,up Exclusive) — definida pelos pontos acumulados. Você pode ser Free na Primeira Classe ou Prime na Econômica.'
   },
   {
     id: 5,

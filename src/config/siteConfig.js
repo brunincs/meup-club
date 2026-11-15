@@ -99,7 +99,7 @@ export const siteConfig = {
       beneficio: 'Bônus de 5.000 pts ao subir de classe.',
     },
     {
-      nome: 'Meup Exclusive',
+      nome: 'Me,up Exclusive',
       pontosMinimos: 100000,
       requisito: 'a partir de 100.000 pts',
       beneficio: 'Bônus de 10.000 pts ao subir de classe.',

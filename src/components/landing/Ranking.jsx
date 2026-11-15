@@ -12,7 +12,7 @@ import { PlaneIcon, StarIcon, BriefcaseIcon, CrownIcon, DiamondIcon } from '@/co
  * ║                                                                            ║
  * ║  Classes (do projeto):                                                     ║
  * ║  1. Econômica → 2. Econômica Premium → 3. Executiva →                      ║
- * ║  4. Primeira Classe → 5. Meup Exclusive                                    ║
+ * ║  4. Primeira Classe → 5. Me,up Exclusive                                    ║
  * ╚════════════════════════════════════════════════════════════════════════════╝
  */
 
@@ -61,7 +61,7 @@ const classLevels = [
   },
   {
     id: 5,
-    name: 'Meup Exclusive',
+    name: 'Me,up Exclusive',
     shortName: 'Exclusive',
     benefit: '100.000+ pts · Bônus de 10.000 pts ao subir',
     icon: DiamondIcon,
