@@ -112,6 +112,9 @@ export function usePWA() {
 
   // Get install prompt variant
   const getInstallVariant = useCallback(() => {
+    // Chrome on iOS 16.4+ can install directly
+    if (deviceInfo.isIOSChromeCanInstall) return 'ios-chrome'
+    // In-app browsers and old iOS Chrome need Safari
     if (deviceInfo.isIOSNonSafari) return 'ios-non-safari'
     if (deviceInfo.isIOSSafari) return 'ios-safari'
     return 'standard' // Android/Chrome/Desktop
@@ -124,6 +127,8 @@ export function usePWA() {
     isDesktop: deviceInfo.isDesktop,
     isStandalone: deviceInfo.isStandalone,
     isIOSSafari: deviceInfo.isIOSSafari,
+    isIOSChrome: deviceInfo.isIOSChrome,
+    isIOSChromeCanInstall: deviceInfo.isIOSChromeCanInstall,
     isIOSNonSafari: deviceInfo.isIOSNonSafari,
 
     // Install

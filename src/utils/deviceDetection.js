@@ -3,26 +3,52 @@
  * Detects browser, platform, and PWA installation status
  */
 
+/**
+ * Get iOS version from user agent
+ * Returns major version number (e.g., 16) or 0 if not iOS
+ */
+function getIOSVersion() {
+  const ua = navigator.userAgent
+  const match = ua.match(/OS (\d+)_/)
+  return match ? parseInt(match[1], 10) : 0
+}
+
 export function getDeviceInfo() {
   const ua = navigator.userAgent
 
   // iOS detection
   const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream
+  const iOSVersion = isIOS ? getIOSVersion() : 0
 
   // Standalone mode (already installed as PWA)
   const isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
     window.navigator.standalone === true
 
-  // iOS browsers that are NOT Safari (can't install PWA)
-  const isIOSNonSafari =
+  // Chrome on iOS (CriOS)
+  const isIOSChrome = isIOS && /CriOS/.test(ua)
+
+  // iOS 16.4+ allows PWA install from Chrome
+  const isIOSChromeCanInstall = isIOSChrome && iOSVersion >= 16
+
+  // In-app browsers that CANNOT install PWA (always redirect to Safari)
+  const isIOSInAppBrowser =
     isIOS &&
-    /CriOS|FxiOS|EdgiOS|GSA|Instagram|FBAN|FBAV|WhatsApp|LinkedIn|TikTok|Snapchat|Twitter/.test(
-      ua
-    )
+    /GSA|Instagram|FBAN|FBAV|WhatsApp|LinkedIn|TikTok|Snapchat|Twitter/.test(ua)
+
+  // Other iOS browsers (Firefox, Edge) - still need Safari for iOS < 16.4
+  const isIOSOtherBrowser =
+    isIOS && /FxiOS|EdgiOS/.test(ua)
+
+  // iOS browsers that need "open in Safari" message
+  // Excludes Chrome on iOS 16.4+ which can install directly
+  const isIOSNonSafari =
+    isIOSInAppBrowser ||
+    isIOSOtherBrowser ||
+    (isIOSChrome && iOSVersion < 16)
 
   // iOS Safari specifically
-  const isIOSSafari = isIOS && !isIOSNonSafari
+  const isIOSSafari = isIOS && !isIOSChrome && !isIOSInAppBrowser && !isIOSOtherBrowser
 
   // Android detection
   const isAndroid = /Android/.test(ua)
@@ -56,8 +82,12 @@ export function getDeviceInfo() {
 
   return {
     isIOS,
+    iOSVersion,
     isIOSSafari,
-    isIOSNonSafari,
+    isIOSChrome,
+    isIOSChromeCanInstall,  // Chrome on iOS 16.4+ can install
+    isIOSInAppBrowser,       // GSA, Instagram, Facebook, WhatsApp, etc.
+    isIOSNonSafari,          // Needs "open in Safari" message
     isAndroid,
     isDesktop,
     isStandalone,

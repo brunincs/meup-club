@@ -10,6 +10,7 @@ import { useEffect } from 'react'
  * Variants:
  * - standard: Android/Chrome/Desktop with native install prompt
  * - ios-safari: iOS Safari with step-by-step guide
+ * - ios-chrome: iOS Chrome (16.4+) with Chrome-specific step-by-step guide
  * - ios-non-safari: iOS in-app browser with "open in Safari" instructions
  */
 export function InstallPrompt() {
@@ -50,6 +51,9 @@ export function InstallPrompt() {
           )}
           {variant === 'ios-safari' && (
             <IOSSafariPrompt onDismiss={dismissInstall} />
+          )}
+          {variant === 'ios-chrome' && (
+            <IOSChromePrompt onDismiss={dismissInstall} />
           )}
           {variant === 'ios-non-safari' && (
             <IOSNonSafariPrompt
@@ -154,6 +158,86 @@ function IOSSafariPrompt({ onDismiss }) {
             <p className="text-sm text-graphite">
               Role e toque em{' '}
               <span className="font-medium">"Adicionar a Tela de Início"</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Step 3 */}
+        <div className="flex items-start gap-3">
+          <div className="w-7 h-7 rounded-full bg-deep-purple text-ice-white flex items-center justify-center text-sm font-medium flex-shrink-0">
+            3
+          </div>
+          <div className="flex-1 pt-0.5">
+            <p className="text-sm text-graphite">
+              Toque em{' '}
+              <span className="font-medium">"Adicionar"</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 pt-4 border-t border-dusty-rose/20">
+        <button
+          onClick={onDismiss}
+          className="w-full px-4 py-2.5 rounded-xl text-sm font-medium text-dusty-rose hover:bg-ice-white transition-colors"
+        >
+          Entendi
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * iOS Chrome install instructions (iOS 16.4+)
+ * Chrome on iOS 16.4+ supports PWA installation
+ */
+function IOSChromePrompt({ onDismiss }) {
+  return (
+    <div className="p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-heading font-semibold text-graphite text-base">
+          Adicionar à Tela de Início
+        </h3>
+        <button
+          onClick={onDismiss}
+          className="w-8 h-8 rounded-full hover:bg-ice-white flex items-center justify-center text-dusty-rose transition-colors"
+          aria-label="Fechar"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        {/* Step 1 */}
+        <div className="flex items-start gap-3">
+          <div className="w-7 h-7 rounded-full bg-deep-purple text-ice-white flex items-center justify-center text-sm font-medium flex-shrink-0">
+            1
+          </div>
+          <div className="flex-1 pt-0.5">
+            <p className="text-sm text-graphite">
+              Toque no ícone{' '}
+              <span className="inline-flex items-center justify-center w-6 h-6 bg-ice-white rounded border border-dusty-rose/30 mx-1">
+                <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </span>
+              {' '}na barra do Chrome
+            </p>
+          </div>
+        </div>
+
+        {/* Step 2 */}
+        <div className="flex items-start gap-3">
+          <div className="w-7 h-7 rounded-full bg-deep-purple text-ice-white flex items-center justify-center text-sm font-medium flex-shrink-0">
+            2
+          </div>
+          <div className="flex-1 pt-0.5">
+            <p className="text-sm text-graphite">
+              Toque em{' '}
+              <span className="font-medium">"Adicionar à Tela de Início"</span>
             </p>
           </div>
         </div>
