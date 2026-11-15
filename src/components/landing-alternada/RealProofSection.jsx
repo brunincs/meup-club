@@ -70,7 +70,7 @@ export function RealProofSection() {
 
           {/* WhatsApp - COM link */}
           <motion.a
-            href="https://wa.me/5516988126568?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Meup%20Club."
+            href="https://wa.me/5516988126568?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Me%2Cup%20Club."
             target="_blank"
             rel="noopener noreferrer"
             initial={{ opacity: 0, y: 20 }}

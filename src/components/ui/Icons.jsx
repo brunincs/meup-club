@@ -218,6 +218,89 @@ export function ClockIcon({ size = 24, color = 'currentColor', className = '' })
 }
 
 // ============================================
+// ÍCONES DE PREFERÊNCIAS / PERFIL
+// ============================================
+
+export function SunIcon({ size = 24, color = 'currentColor', className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="5" />
+      <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" />
+    </svg>
+  )
+}
+
+export function HeartIcon({ size = 24, color = 'currentColor', filled = false, className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? color : 'none'} stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  )
+}
+
+export function MountainIcon({ size = 24, color = 'currentColor', className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M8 3L12 10L16 3" />
+      <path d="M3 21L8 12L12 18L16 12L21 21H3Z" />
+    </svg>
+  )
+}
+
+export function LockIcon({ size = 24, color = 'currentColor', className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  )
+}
+
+export function GlobeIcon({ size = 24, color = 'currentColor', className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12H22" />
+      <path d="M12 2C14.5 4.5 16 8 16 12C16 16 14.5 19.5 12 22C9.5 19.5 8 16 8 12C8 8 9.5 4.5 12 2Z" />
+    </svg>
+  )
+}
+
+export function ClipboardIcon({ size = 24, color = 'currentColor', className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M16 4H18C19.1 4 20 4.9 20 6V20C20 21.1 19.1 22 18 22H6C4.9 22 4 21.1 4 20V6C4 4.9 4.9 4 6 4H8" />
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+      <path d="M8 12H16" />
+      <path d="M8 16H12" />
+    </svg>
+  )
+}
+
+export function FamilyIcon({ size = 24, color = 'currentColor', className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="9" cy="7" r="3" />
+      <circle cx="17" cy="7" r="2" />
+      <path d="M3 21V18C3 16.3 4.3 15 6 15H12C13.7 15 15 16.3 15 18V21" />
+      <path d="M15 15H18C19.7 15 21 16.3 21 18V21" />
+    </svg>
+  )
+}
+
+export function MuseumIcon({ size = 24, color = 'currentColor', className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 21H21" />
+      <path d="M5 21V11" />
+      <path d="M19 21V11" />
+      <path d="M9 21V17H15V21" />
+      <path d="M12 3L3 9H21L12 3Z" />
+    </svg>
+  )
+}
+
+// ============================================
 // FUNÇÃO HELPER PARA OBTER COMPONENTE ÍCONE DE CLASSE
 // ============================================
 

@@ -28,7 +28,7 @@ export function FooterAlternada() {
               <span className="font-display font-bold text-deep-purple">M</span>
             </motion.div>
             <div>
-              <span className="font-display font-semibold text-lg text-ice-white">Meup</span>
+              <span className="font-display font-semibold text-lg text-ice-white">Me,up</span>
               <span className="font-display font-light text-lg text-dusty-rose ml-1">Club</span>
             </div>
           </motion.div>

@@ -27,6 +27,18 @@ import {
   unsubscribeFromPush
 } from '@/services/pushService'
 import { levels as levelCopy, format } from '@/services/copy'
+import {
+  SunIcon,
+  BriefcaseIcon,
+  MountainIcon,
+  HeartIcon,
+  FamilyIcon,
+  MuseumIcon,
+  LockIcon,
+  GlobeIcon,
+  ClipboardIcon,
+  TargetIcon
+} from '@/components/ui/Icons'
 import toast from 'react-hot-toast'
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -40,12 +52,12 @@ const BRAZILIAN_STATES = [
 ]
 
 const TRAVEL_TYPES = [
-  { id: 'lazer', label: 'Lazer', icon: '☀️' },
-  { id: 'negocios', label: 'Negócios', icon: '💼' },
-  { id: 'aventura', label: 'Aventura', icon: '🏔️' },
-  { id: 'romantico', label: 'Romântico', icon: '💕' },
-  { id: 'familia', label: 'Família', icon: '👨‍👩‍👧‍👦' },
-  { id: 'cultural', label: 'Cultural', icon: '🏛️' }
+  { id: 'lazer', label: 'Lazer', Icon: SunIcon },
+  { id: 'negocios', label: 'Negócios', Icon: BriefcaseIcon },
+  { id: 'aventura', label: 'Aventura', Icon: MountainIcon },
+  { id: 'romantico', label: 'Romântico', Icon: HeartIcon },
+  { id: 'familia', label: 'Família', Icon: FamilyIcon },
+  { id: 'cultural', label: 'Cultural', Icon: MuseumIcon }
 ]
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -402,7 +414,7 @@ function EditProfileForm({ profile, onSave, saving }) {
         <div className="rounded-xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] flex items-center gap-2 font-medium">
-              <span>🔒</span> Documento (opcional)
+              <LockIcon size={14} color="#5c005a" /> Documento (opcional)
             </h3>
             <span className="text-[10px] text-[#a39695]">
               Apenas para emissão de passagens
@@ -442,7 +454,7 @@ function EditProfileForm({ profile, onSave, saving }) {
         {/* Preferências de Viagem */}
         <div className="rounded-xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
           <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 flex items-center gap-2 font-medium">
-            <span>🌍</span> Preferências de Viagem
+            <GlobeIcon size={14} color="#5c005a" /> Preferências de Viagem
           </h3>
 
           {/* Tipos de viagem */}
@@ -462,7 +474,7 @@ function EditProfileForm({ profile, onSave, saving }) {
                       : 'bg-[#edf0f1] text-[#32113f] hover:bg-[#ddd1d0] border border-[#ddd1d0]'
                   }`}
                 >
-                  {type.icon} {type.label}
+                  <type.Icon size={14} color="currentColor" /> {type.label}
                 </button>
               ))}
             </div>
@@ -577,7 +589,7 @@ function RecentActivity({ activities, userId }) {
     return (
       <div className="rounded-2xl bg-gradient-to-br from-[#32113f] to-[#5c005a] p-6">
         <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] mb-4 font-medium flex items-center gap-2">
-          <span>📋</span> Extrato de Pontos
+          <ClipboardIcon size={14} color="currentColor" /> Extrato de Pontos
         </h3>
         <p className="text-sm text-[#ddd1d0]/60 text-center py-8">
           Nenhuma transação registrada ainda.
@@ -591,7 +603,7 @@ function RecentActivity({ activities, userId }) {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[10px] uppercase tracking-wider text-[#a27937] font-medium flex items-center gap-2">
-          <span>📋</span> {expanded ? 'Extrato Completo' : 'Atividades Recentes'}
+          <ClipboardIcon size={14} color="currentColor" /> {expanded ? 'Extrato Completo' : 'Atividades Recentes'}
         </h3>
         <button
           onClick={handleExpand}
@@ -1059,7 +1071,7 @@ export function Profile() {
             {levelData?.next && (
               <div className="rounded-2xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
                 <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 font-medium flex items-center gap-2">
-                  <span>🎯</span> Próxima Classe
+                  <TargetIcon size={14} color="#5c005a" /> Próxima Classe
                 </h3>
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-2xl">{levelCopy.icons[levelData.next.id]}</span>

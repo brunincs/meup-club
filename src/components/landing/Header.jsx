@@ -33,7 +33,7 @@ export function Header() {
               <span className="font-display font-bold text-deep-purple text-sm">M</span>
             </div>
             <div className="hidden sm:block">
-              <span className="font-display font-semibold text-deep-purple">Meup</span>
+              <span className="font-display font-semibold text-deep-purple">Me,up</span>
               <span className="font-display font-light text-deep-purple/60 ml-1">Club</span>
             </div>
           </Link>

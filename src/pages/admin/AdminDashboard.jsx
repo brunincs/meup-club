@@ -200,7 +200,7 @@ export function AdminDashboard() {
         </div>
 
         {/* ════════════════════════════════════════════════════════════
-            CARD IA - Leitura de Cards Meup
+            CARD IA - Leitura de Cards Me,up
             ════════════════════════════════════════════════════════════ */}
         {iaStats && (
           <motion.div

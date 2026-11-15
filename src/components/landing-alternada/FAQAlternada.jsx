@@ -185,7 +185,7 @@ export function FAQAlternada() {
           <p className="text-sm text-deep-purple/60 font-heading">
             Ainda tem dúvidas?{' '}
             <a
-              href="https://wa.me/5516988126568?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20o%20Meup%20Club."
+              href="https://wa.me/5516988126568?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20o%20Me%2Cup%20Club."
               target="_blank"
               rel="noopener noreferrer"
               className="text-antique-gold hover:underline"

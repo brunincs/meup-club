@@ -30,7 +30,7 @@ export function SubscribeButton({
     // Por enquanto, abre WhatsApp
     // TODO: Substituir por checkout Asaas
     const planLabel = plan === 'anual' ? 'Prime Anual (Fundador)' : 'Prime Mensal'
-    const message = `Olá! Quero assinar o Meup ${planLabel}. Pode me ajudar?`
+    const message = `Olá! Quero assinar o Me,up ${planLabel}. Pode me ajudar?`
     const url = getWhatsAppUrl(message)
     window.open(url, '_blank')
   }

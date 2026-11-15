@@ -220,7 +220,7 @@ export function TripSubmitCard({ variant = 'dark' }) {
               className="text-center py-2"
             >
               <p className={`text-sm mb-4 ${isDark ? 'text-dusty-rose' : 'text-graphite/70'}`}>
-                Anexe seu card Meup e ganhe pontos pela sua viagem
+                Anexe seu card Me,up e ganhe pontos pela sua viagem
               </p>
               <button
                 onClick={() => setShowForm(true)}
@@ -290,7 +290,7 @@ function EmissaoForm({ userId, isDark, onSuccess, onCancel }) {
     e.preventDefault()
 
     if (!file) {
-      toast.error('Anexe o card Meup')
+      toast.error('Anexe o card Me,up')
       return
     }
 
@@ -346,7 +346,7 @@ function EmissaoForm({ userId, isDark, onSuccess, onCancel }) {
         <label className={`block text-xs font-heading mb-2 ${
           isDark ? 'text-dusty-rose' : 'text-graphite/60'
         }`}>
-          Card Meup <span className="text-red-400">*</span>
+          Card Me,up <span className="text-red-400">*</span>
         </label>
 
         <input
