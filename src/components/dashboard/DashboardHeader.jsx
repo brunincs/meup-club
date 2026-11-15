@@ -9,6 +9,7 @@ import { levels } from '@/services/pointsSystem'
 import { levels as levelCopy } from '@/services/copy'
 import { NotificationBell } from './NotificationBell'
 import { SeloFundador } from '@/components/ui/SeloFundador'
+import { trackPWAEvent, PWA_EVENTS } from '@/services/pwaAnalytics'
 
 // Navegação com labels curtos para o menu (páginas mantêm títulos completos)
 const navItems = [
@@ -60,7 +61,7 @@ function MobileIcon({ name, className = 'w-5 h-5' }) {
 
 export function DashboardHeader() {
   const { profile, user, signOut } = useAuth()
-  const { points: userPoints, levelId } = usePoints()
+  const { availablePoints: userPoints, levelId } = usePoints()
   const { isFundador } = useFundador()
   const { canInstall, isInstalled, openInstallPrompt } = usePWA()
 
@@ -141,6 +142,28 @@ export function DashboardHeader() {
 
               {/* Notificações (sininho) */}
               <NotificationBell />
+
+              {/* Ícone Instalar App - só mobile, só se não instalado */}
+              {!isInstalled && (
+                <button
+                  onClick={() => {
+                    trackPWAEvent(PWA_EVENTS.INSTALL_ICON_CLICKED)
+                    openInstallPrompt()
+                  }}
+                  className="md:hidden w-9 h-9 rounded-full bg-antique-gold/10 border border-antique-gold/30 flex items-center justify-center hover:bg-antique-gold/20 transition-colors"
+                  aria-label="Instalar app"
+                >
+                  <svg
+                    className="w-4.5 h-4.5 text-antique-gold"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </button>
+              )}
 
               {/* Avatar com Menu - Desktop */}
               <div className="relative hidden sm:block">

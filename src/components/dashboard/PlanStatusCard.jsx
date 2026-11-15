@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { fetchMySubscription, formatCiclo } from '@/services/subscriptionService'
 import { iniciarUpgradeAnualWhatsApp, iniciarRenovacaoWhatsApp } from '@/services/paymentAdapter'
+import { CrownIcon } from '@/components/ui/Icons'
 import toast from 'react-hot-toast'
 
 /**
@@ -145,13 +146,13 @@ export function PlanStatusCard() {
           className="p-4 rounded-xl bg-gradient-to-r from-amber-500/15 to-amber-600/10 border border-amber-500/30"
         >
           <div className="flex items-center gap-3">
-            <span className="text-xl">👑</span>
+            <CrownIcon size={20} color="#a27937" />
             <div>
               <p className="text-sm font-heading font-semibold text-amber-200">
-                Meup Prime Anual
+                Me,up Prime
               </p>
               <p className="text-xs text-dusty-rose/70">
-                Multiplicador 1.5x ativo
+                Seus pontos valem mais: 1,5 por real
               </p>
             </div>
           </div>

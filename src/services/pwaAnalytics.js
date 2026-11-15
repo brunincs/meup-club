@@ -42,6 +42,7 @@ export async function trackPWAEvent(evento, detalhes = {}) {
 export const PWA_EVENTS = {
   // Install events
   INSTALL_PROMPT_SHOWN: 'pwa_install_prompt_shown',
+  INSTALL_ICON_CLICKED: 'pwa_install_icon_clicked',
   INSTALL_ACCEPTED: 'pwa_install_accepted',
   INSTALL_DISMISSED: 'pwa_install_dismissed',
   INSTALLED: 'pwa_installed',

@@ -12,7 +12,7 @@ import { levels } from '@/services/pointsSystem'
  * ÚNICA FONTE DE VERDADE para classe em todo o app
  */
 export function useUserLevel() {
-  const { totalPointsEarned, levelId, points } = usePoints()
+  const { totalPointsEarned, levelId, availablePoints } = usePoints()
 
   return useMemo(() => {
     // Se levelId ainda não carregou, usar level 1 como placeholder
@@ -47,8 +47,8 @@ export function useUserLevel() {
       pointsToNext,
       totalPointsEarned,
 
-      // Saldo atual (para exibição)
-      balance: points,
+      // Saldo DISPONÍVEL (para exibição e comparação com preços)
+      balance: availablePoints,
 
       // Lista de níveis para visualização
       levels,
@@ -58,7 +58,7 @@ export function useUserLevel() {
       bonusMultiplier: currentLevel.bonusMultiplier || 1,
       isLoading // true quando levelId ainda não carregou do backend
     }
-  }, [levelId, totalPointsEarned, points])
+  }, [levelId, totalPointsEarned, availablePoints])
 }
 
 /**

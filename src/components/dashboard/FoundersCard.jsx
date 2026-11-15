@@ -47,6 +47,7 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
   }
 
   // FUNDADOR - Mostra selo e número da sorte
+  // Layout empilhado no mobile: selo no topo, depois título, número, texto e link
   if (fundadorData?.is_fundador) {
     return (
       <motion.div
@@ -54,40 +55,53 @@ export function FoundersCard({ variant = 'default', showAfterPositiveAction = fa
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl border-2 border-amber-400/50 bg-gradient-to-br from-amber-900/30 to-amber-800/20 p-6 relative overflow-hidden"
       >
-        {/* Selo Fundador */}
-        <div className="absolute top-4 right-4">
-          <SeloFundador size="md" />
-        </div>
-
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 flex flex-col items-center gap-1">
-            <span className="text-xs text-amber-400/70 uppercase tracking-wider font-heading">Vaga</span>
-            <span className="text-2xl font-display font-bold text-amber-400">#{fundadorData.vaga_numero}</span>
+        {/* Layout Mobile: empilhado */}
+        <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
+          {/* Selo Fundador compacto no topo */}
+          <div className="mb-4">
+            <img
+              src="/brand/selo-fundador-sm.svg"
+              alt="Fundador"
+              className="h-10 w-auto"
+              onError={(e) => {
+                // Fallback para o SeloFundador se imagem não existir
+                e.target.style.display = 'none'
+                e.target.nextSibling.style.display = 'block'
+              }}
+            />
+            <div style={{ display: 'none' }}>
+              <SeloFundador size="sm" />
+            </div>
           </div>
 
-          <div className="flex-1">
-            <h3 className="text-lg font-display font-bold text-amber-400 mb-1">
-              Seu número da sorte
-            </h3>
-            <p className="text-3xl font-display font-bold text-ice-white tracking-wider mb-2">
-              {fundadorData.numero_sorte}
-            </p>
-            <p className="text-sm text-amber-200/70 mb-3">
-              Concorrendo a 500 mil pontos na Ação Fundadores
-            </p>
-            <a
-              href={regulamentoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-amber-400 hover:text-amber-300 underline"
-            >
-              Ver regulamento
-            </a>
-          </div>
+          {/* Título */}
+          <h3 className="text-lg font-display font-bold text-amber-400 mb-2">
+            Seu número da sorte
+          </h3>
+
+          {/* Número grande */}
+          <p className="text-4xl sm:text-3xl font-display font-bold text-ice-white tracking-wider mb-3">
+            {fundadorData.numero_sorte}
+          </p>
+
+          {/* Texto explicativo */}
+          <p className="text-sm text-amber-200/70 mb-4 max-w-xs">
+            Concorrendo a 500 mil pontos na Ação Fundadores
+          </p>
+
+          {/* Link do regulamento */}
+          <a
+            href={regulamentoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-amber-400 hover:text-amber-300 underline"
+          >
+            Ver regulamento
+          </a>
         </div>
 
         {fundadorData.ganhador && (
-          <div className="mt-4 p-4 rounded-xl bg-green-500/20 border border-green-400/30">
+          <div className="mt-4 p-4 rounded-xl bg-green-500/20 border border-green-400/30 text-center sm:text-left">
             <p className="text-sm font-heading font-bold text-green-400">
               🎉 Parabéns! Você foi o ganhador!
             </p>

@@ -201,10 +201,42 @@ export function PointsProvider({ children }) {
     return pendingIds.includes(rewardId)
   }, [pendingIds])
 
+  // Próxima data de liberação de pontos bloqueados
+  const [nextUnblockDate, setNextUnblockDate] = useState(null)
+
+  // Buscar data de próxima liberação quando há pontos bloqueados
+  useEffect(() => {
+    async function fetchNextUnblock() {
+      if (!user || useMock || blockedPoints === 0) {
+        setNextUnblockDate(null)
+        return
+      }
+
+      // Buscar a viagem mais antiga com pontos bloqueados
+      const { data } = await supabase
+        .from('viagens')
+        .select('data_volta')
+        .eq('cliente_id', user.id)
+        .eq('pontos_status', 'bloqueado')
+        .order('data_volta', { ascending: true })
+        .limit(1)
+        .single()
+
+      if (data?.data_volta) {
+        // Liberação é 7 dias após volta
+        const liberacao = new Date(data.data_volta)
+        liberacao.setDate(liberacao.getDate() + 7)
+        setNextUnblockDate(liberacao)
+      }
+    }
+    fetchNextUnblock()
+  }, [user, useMock, blockedPoints])
+
   const value = {
     points,
     blockedPoints,     // Pontos bloqueados (período de arrependimento)
     availablePoints,   // Pontos disponíveis para resgate
+    nextUnblockDate,   // Próxima data de liberação
     totalPointsEarned, // Total de pontos ganhos (para classe)
     levelId,           // Classe do usuário (1-5)
     redeemedIds,
