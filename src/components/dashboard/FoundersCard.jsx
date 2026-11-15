@@ -10,7 +10,7 @@ import { getMyFundadorData, getFundadoresCount, getRegulamentoUrl } from '@/serv
 import { SubscribeButton } from '@/components/ui/SubscribeButton'
 import { SeloFundador } from '@/components/ui/SeloFundador'
 
-export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false }) {
+export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false, foundersOnly = false }) {
   const { profile } = useAuth()
   const [fundadorData, setFundadorData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -48,6 +48,11 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
 
   // Se vagas esgotadas e não é fundador, não mostra nada
   if (fundadorData?.vagas_disponiveis === 0 && !fundadorData?.is_fundador) {
+    return null
+  }
+
+  // Se foundersOnly=true e não é fundador, não mostra nada (usado no dashboard)
+  if (foundersOnly && !fundadorData?.is_fundador) {
     return null
   }
 

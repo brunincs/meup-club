@@ -10,7 +10,7 @@ import {
   calculateRewardsProgress,
   levels as levelThresholds
 } from '@/services/pointsSystem'
-import { useExperiencias } from '@/hooks/useExperiencias'
+import { useExperiencias, getNextExperience } from '@/hooks/useExperiencias'
 import { ExperienceDetailModal } from '@/components/experiences/ExperienceDetailModal'
 import { registrarVisitaExperiencias } from '@/services/supabaseData'
 import { format, levels as levelCopy } from '@/services/copy'
@@ -1380,6 +1380,56 @@ export function Rewards() {
           ══════════════════════════════════════════════════════════════ */}
       <section className="bg-ice-white py-10">
         <main id="main-content" className="container-premium">
+          {/* Card "Quase lá" - Experiência mais próxima de ser resgatada */}
+          {(() => {
+            const nextExperience = getNextExperience(allExperiences, availablePoints)
+            if (!nextExperience) return null
+            const pointsReq = nextExperience.points || nextExperience.points_required
+            const progressPct = Math.min(Math.round((availablePoints / pointsReq) * 100), 99)
+            const pointsNeeded = pointsReq - availablePoints
+            if (progressPct < 60 || pointsNeeded <= 0) return null
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 p-5 rounded-2xl bg-white border-2 border-antique-gold/30 shadow-sm"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-12 h-12 rounded-xl bg-antique-gold/15 flex items-center justify-center flex-shrink-0">
+                      <GiftIcon size={24} color="#a27937" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs uppercase tracking-wider text-antique-gold font-heading font-semibold">
+                          Quase lá! {progressPct}%
+                        </span>
+                      </div>
+                      <p className="text-sm font-heading font-medium text-deep-purple truncate">
+                        {nextExperience.name || nextExperience.title}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <span className="text-xl font-display font-bold text-antique-gold">
+                      {format.pointsShort(pointsNeeded)}
+                    </span>
+                    <p className="text-xs text-graphite/60">pts restantes</p>
+                  </div>
+                </div>
+                {/* Barra de progresso */}
+                <div className="mt-4 h-2 bg-graphite/10 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPct}%` }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="h-full bg-antique-gold rounded-full"
+                  />
+                </div>
+              </motion.div>
+            )
+          })()}
+
           {/* View Toggle */}
           <motion.div
             initial={{ opacity: 0 }}

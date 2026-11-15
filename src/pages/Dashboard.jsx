@@ -1,61 +1,35 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   DashboardHeader,
-  StatsCards,
-  ReferralCode,
-  LevelProgress,
-  MyReferrals,
-  RewardsSection,
-  TasksWidget,
   HeroSection,
-  MissionsSection,
-  PlanStatusCard,
-  TripSubmitCard,
-  FoundersCard,
-  NextTripCard
+  NextTripCard,
+  FoundersCard
 } from '@/components/dashboard'
-import { EvolutionCard } from '@/components/dashboard/EvolutionCard'
-import { getMyReferrals } from '@/services/referralService'
-import { PointsSimulatorTabs } from '@/components/shared/PointsSimulator'
-import { ExperiencesCarousel } from '@/components/dashboard/ExperiencesCarousel'
-import { ClassExplorer } from '@/components/dashboard/ClassExplorer'
+import { HojeSection } from '@/components/dashboard/HojeSection'
 import { SafeSection } from '@/components/shared/ErrorBoundary'
+
+// ============================================
+// DASHBOARD REESTRUTURADO - 4 BLOCOS
+// Conforme dashboard-inicio.md
+// ============================================
+// 1. Card Principal (ROXO) - "Quanto eu tenho?"
+// 2. Próxima Viagem (BRANCO) - "Quando eu viajo?" (se houver)
+// 3. Hoje (ROXO) - "O que eu faço hoje?"
+// 4. Fundador (BRANCO) - "Estou concorrendo?" (só fundadores)
+// ============================================
 
 export function Dashboard() {
   const { user, profile, loading } = useAuth()
   const navigate = useNavigate()
-
-  // Stats de indicações - dados REAIS do banco
-  const [referralStats, setReferralStats] = useState({
-    approvedReferrals: 0,
-    pendingReferrals: 0
-  })
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login')
     }
   }, [user, loading, navigate])
-
-  // Buscar indicações reais do usuário
-  useEffect(() => {
-    async function loadReferralStats() {
-      if (!user?.id) return
-
-      const result = await getMyReferrals(user.id)
-      if (result.success) {
-        setReferralStats({
-          approvedReferrals: result.stats.approved,
-          pendingReferrals: result.stats.pending
-        })
-      }
-    }
-
-    loadReferralStats()
-  }, [user?.id])
 
   if (loading) {
     return (
@@ -77,7 +51,14 @@ export function Dashboard() {
       <DashboardHeader />
 
       {/* ══════════════════════════════════════════════════════════════
-          SEÇÃO HERO - Única seção escura: pontos e classe
+          LAYOUT MOBILE: Uma coluna, ordem 1 → 2 → 3 → 4
+          LAYOUT DESKTOP: Duas colunas
+          - Esquerda (~60%): Card Principal (roxo) + Hoje (roxo)
+          - Direita (~40%): Próxima Viagem (branco) + Fundador (branco)
+          ══════════════════════════════════════════════════════════════ */}
+
+      {/* ══════════════════════════════════════════════════════════════
+          BLOCO 1: CARD PRINCIPAL (ROXO) - "Quanto eu tenho?"
           ══════════════════════════════════════════════════════════════ */}
       <section className="bg-deep-purple pt-12 pb-8">
         <div className="container-premium">
@@ -88,86 +69,46 @@ export function Dashboard() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          CONTEÚDO PRINCIPAL - Fundo claro (#edf0f1) - cards brancos
+          BLOCOS 2, 3, 4 - Layout responsivo
           ══════════════════════════════════════════════════════════════ */}
       <div className="py-6">
-        <div className="container-premium space-y-6">
-          {/* Plano + Fundadores lado a lado no desktop */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <SafeSection name="Plano" silent>
-              <PlanStatusCard variant="light" />
+        <div className="container-premium">
+          {/* MOBILE: Uma coluna */}
+          <div className="lg:hidden space-y-4">
+            {/* Bloco 2: Próxima Viagem (BRANCO) */}
+            <SafeSection name="Próxima Viagem" silent>
+              <NextTripCard variant="light" />
             </SafeSection>
+
+            {/* Bloco 3: Hoje (ROXO) */}
+            <SafeSection name="Hoje" silent>
+              <HojeSection variant="dark" />
+            </SafeSection>
+
+            {/* Bloco 4: Fundador (BRANCO) - só para fundadores */}
             <SafeSection name="Fundadores" silent>
-              <FoundersCard variant="light" />
+              <FoundersCard variant="light" foundersOnly />
             </SafeSection>
           </div>
 
-          {/* Missões + Próxima Viagem */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <SafeSection name="Missões">
-                <MissionsSection variant="light" />
+          {/* DESKTOP: Duas colunas */}
+          <div className="hidden lg:grid lg:grid-cols-5 lg:gap-6">
+            {/* Coluna Esquerda (~60%): Hoje (ROXO) */}
+            <div className="lg:col-span-3 space-y-6">
+              <SafeSection name="Hoje" silent>
+                <HojeSection variant="dark" />
               </SafeSection>
             </div>
-            <div className="space-y-4">
-              <SafeSection name="Próxima Viagem">
+
+            {/* Coluna Direita (~40%): Próxima Viagem + Fundador (BRANCO) */}
+            <div className="lg:col-span-2 space-y-4">
+              <SafeSection name="Próxima Viagem" silent>
                 <NextTripCard variant="light" />
               </SafeSection>
-              <SafeSection name="Lançar Viagem">
-                <TripSubmitCard variant="light" />
+              <SafeSection name="Fundadores" silent>
+                <FoundersCard variant="light" foundersOnly />
               </SafeSection>
             </div>
-          </div>
-
-          {/* Stats + Experiências */}
-          <div className="space-y-6">
-            <SafeSection name="Estatísticas" silent>
-              <StatsCards stats={referralStats} variant="light" />
-            </SafeSection>
-            <SafeSection name="Experiências">
-              <ExperiencesCarousel variant="light" />
-            </SafeSection>
-          </div>
-
-          {/* Indicações */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ReferralCode variant="light" />
-            <MyReferrals variant="light" />
-          </div>
-
-          {/* Explorador de Classes */}
-          <SafeSection name="Classes">
-            <ClassExplorer variant="light" />
-          </SafeSection>
-
-          {/* Simulador */}
-          <div>
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-display font-semibold text-deep-purple mb-2">
-                Simule seus ganhos
-              </h3>
-              <p className="text-sm text-graphite/70">
-                Veja quanto você pode acumular viajando ou indicando
-              </p>
-            </div>
-            <div className="max-w-xl mx-auto">
-              <SafeSection name="Simulador">
-                <PointsSimulatorTabs variant="light" compact={true} />
-              </SafeSection>
-            </div>
-          </div>
-
-          {/* Progresso e widgets */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <SafeSection name="Progresso">
-              <LevelProgress variant="light" />
-            </SafeSection>
-            <SafeSection name="Evolução">
-              <EvolutionCard variant="light" />
-            </SafeSection>
-            <SafeSection name="Tarefas">
-              <TasksWidget variant="light" />
-            </SafeSection>
           </div>
         </div>
       </div>

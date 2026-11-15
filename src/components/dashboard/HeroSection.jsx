@@ -3,13 +3,12 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
-import { useExperiencias, getNextExperience } from '@/hooks/useExperiencias'
 import { useUserLevel } from '@/hooks/useUserLevel'
 import { AnimatedCounter, CountUp } from '@/components/effects/AnimatedCounter'
 import { ProgressBar } from '@/components/effects/ProgressRing'
-import { GlowBorder } from '@/components/effects/GlowEffect'
 import { getClassIcon } from '@/components/ui/Icons'
-import { fetchUserPendingPointsTotal } from '@/services/adminService'
+import { fetchUserBenefits } from '@/services/subscriptionService'
+import { levels as levelCopy } from '@/services/copy'
 
 // ============================================
 // FOTO A VALIDAR - trocar pela oficial da Me,up depois
@@ -23,23 +22,18 @@ const HERO_IMAGE = 'https://images.unsplash.com/photo-1506929562872-bb421503ef21
 export function HeroSection() {
   const { profile, user, useMock } = useAuth()
   const { points: userPoints, blockedPoints, availablePoints } = usePoints()
-  const { allExperiences } = useExperiencias()
   const { current: currentLevel, next: nextLevel, totalPointsEarned, progress, pointsToNext, isLoading: levelLoading } = useUserLevel()
 
   // Nome do usuário: prioriza profile, fallback para user do Auth
   const fullName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
   const userName = fullName.split(' ')[0]
 
-  // Dados de engajamento (zerados para conta nova, demo mostra valores)
-  const todayPoints = useMock ? 320 : 0
-  const weekPoints = useMock ? 1250 : 0
-
   // Detalhes dos pontos bloqueados
   const [blockedDetails, setBlockedDetails] = useState(null)
   const [showBlockedPopover, setShowBlockedPopover] = useState(false)
 
-  // Próxima experiência (do Supabase)
-  const nextExperience = getNextExperience(allExperiences, userPoints)
+  // Plano do usuário
+  const [isPrime, setIsPrime] = useState(false)
 
   // Animação inicial
   const [showCounter, setShowCounter] = useState(false)
@@ -48,6 +42,22 @@ export function HeroSection() {
     const timer = setTimeout(() => setShowCounter(true), 300)
     return () => clearTimeout(timer)
   }, [])
+
+  // Buscar plano do usuário
+  useEffect(() => {
+    async function loadPlan() {
+      if (!user?.id) return
+      try {
+        const result = await fetchUserBenefits(user.id)
+        if (result.success) {
+          setIsPrime(result.benefits.isPrime || false)
+        }
+      } catch (e) {
+        console.error('Erro ao buscar plano:', e)
+      }
+    }
+    loadPlan()
+  }, [user?.id])
 
   // Buscar detalhes dos pontos bloqueados
   useEffect(() => {
@@ -123,7 +133,7 @@ export function HeroSection() {
                   <div className="flex items-center gap-2">
                     <ClassIcon size={18} color="#a27937" />
                     <span className="text-sm font-heading font-semibold text-ice-white">
-                      {currentLevel.shortName}
+                      {levelCopy.names[currentLevel.id] || currentLevel.name}
                     </span>
                   </div>
                 </motion.div>
@@ -198,27 +208,6 @@ export function HeroSection() {
                 )}
               </div>
 
-              {/* Ganhos do período */}
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="flex flex-wrap items-center gap-3 mb-6"
-              >
-                {(todayPoints > 0 || useMock) && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-game-green/10 border border-game-green/20">
-                    <span className="text-game-green text-sm font-heading font-semibold">+{todayPoints.toLocaleString('pt-BR')}</span>
-                    <span className="text-dusty-rose text-xs">hoje</span>
-                  </div>
-                )}
-                {(weekPoints > 0 || useMock) && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-dusty-rose/10 border border-dusty-rose/20">
-                    <span className="text-ice-white text-sm font-heading font-medium">+{weekPoints.toLocaleString('pt-BR')}</span>
-                    <span className="text-dusty-rose/60 text-xs">semana</span>
-                  </div>
-                )}
-              </motion.div>
-
               {/* Progresso para próximo nível */}
               {nextLevel && (
                 <motion.div
@@ -228,11 +217,10 @@ export function HeroSection() {
                   className="p-4 rounded-xl bg-deep-purple/60 border border-dusty-rose/20 mb-6"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-dusty-rose">Próxima classe</span>
-                    <div className="flex items-center gap-1.5">
-                      {NextClassIcon && <NextClassIcon size={14} color="#a27937" />}
-                      <span className="text-xs text-ice-white">{nextLevel.shortName}</span>
-                    </div>
+                    <span className="text-xs text-dusty-rose">{levelCopy.names[nextLevel.id] || nextLevel.name}</span>
+                    <span className="text-xs font-heading text-antique-gold">
+                      faltam {pointsToNext.toLocaleString('pt-BR')} pts
+                    </span>
                   </div>
                   <ProgressBar
                     progress={progress}
@@ -240,48 +228,35 @@ export function HeroSection() {
                     gradient={['#a27937', '#c9a962']}
                     bgColor="rgba(163, 150, 149, 0.15)"
                   />
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-[10px] text-dusty-rose/60">{progress}%</span>
-                    <span className="text-[10px] font-heading text-antique-gold">
-                      {pointsToNext.toLocaleString('pt-BR')} pontos restantes
-                    </span>
-                  </div>
                 </motion.div>
               )}
 
-              {/* Quase Lá - Próxima Recompensa */}
-              {(() => {
-                if (!nextExperience) return null
-                const pointsReq = nextExperience.points || nextExperience.points_required
-                const progress = Math.round((userPoints / pointsReq) * 100)
-                const pointsNeeded = pointsReq - userPoints
-                if (progress < 60) return null
-                return (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7 }}
-                    className="mb-6"
+              {/* Linha do Plano */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="mb-6"
+              >
+                {isPrime ? (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-antique-gold">✦</span>
+                    <span className="text-ice-white font-heading">Me,up Prime</span>
+                    <span className="text-dusty-rose">·</span>
+                    <span className="text-dusty-rose">1,5 ponto por real</span>
+                  </div>
+                ) : (
+                  <Link
+                    to="/planos"
+                    className="flex items-center gap-2 text-sm group"
                   >
-                    <GlowBorder color="gold" className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-[10px] uppercase tracking-wider text-antique-gold font-heading font-semibold">
-                            Quase lá! {progress}%
-                          </span>
-                          <p className="text-sm text-ice-white truncate max-w-[180px]">{nextExperience.name || nextExperience.title}</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-sm font-heading font-bold text-antique-gold">
-                            {pointsNeeded.toLocaleString('pt-BR')}
-                          </span>
-                          <p className="text-[10px] text-dusty-rose">restantes</p>
-                        </div>
-                      </div>
-                    </GlowBorder>
-                  </motion.div>
-                )
-              })()}
+                    <span className="text-dusty-rose group-hover:text-antique-gold transition-colors">
+                      Seja Prime e ganhe 1,5 ponto por real
+                    </span>
+                    <span className="text-antique-gold">→</span>
+                  </Link>
+                )}
+              </motion.div>
 
               {/* CTA */}
               <Link to="/recompensas">
@@ -290,7 +265,7 @@ export function HeroSection() {
                   whileTap={{ scale: 0.98 }}
                   className="w-full py-3.5 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-antique-gold/20 transition-all hover:bg-accent-light"
                 >
-                  Ver experiências disponíveis
+                  Ver experiências
                   <span>→</span>
                 </motion.button>
               </Link>
