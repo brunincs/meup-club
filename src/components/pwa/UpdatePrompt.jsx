@@ -27,10 +27,10 @@ export function UpdatePrompt() {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-heading font-semibold text-graphite text-sm mb-1">
-                Nova versao disponivel
+                Nova versão disponível
               </h3>
               <p className="text-xs text-dusty-rose leading-relaxed">
-                Atualize para ter as ultimas melhorias
+                Atualize para ter as últimas melhorias
               </p>
             </div>
           </div>

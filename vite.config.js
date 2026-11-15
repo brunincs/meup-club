@@ -7,16 +7,43 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       manifest: false, // usa manifest.webmanifest externo
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        navigateFallback: '/offline.html',
-        navigateFallbackDenylist: [/^\/api/, /supabase/],
+        // SPA: fallback para index.html (NÃO offline.html)
+        navigateFallback: '/index.html',
+        // Não interceptar API, Supabase, ou arquivos estáticos
+        navigateFallbackDenylist: [
+          /^\/api/,
+          /supabase/,
+          /\.[a-z]{2,4}$/i  // arquivos com extensão
+        ],
+        // Ativar imediatamente para corrigir SWs quebrados
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
+            // Supabase: sempre rede, nunca cache
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: 'NetworkOnly' // Supabase sempre fresh
+            handler: 'NetworkOnly'
+          },
+          {
+            // Navegação HTML: NetworkFirst com fallback offline
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              networkTimeoutSeconds: 5,
+              cacheName: 'pages-cache',
+              plugins: [
+                {
+                  // Se falhar de verdade (sem rede), mostrar offline.html
+                  handlerDidError: async () => {
+                    return caches.match('/offline.html')
+                  }
+                }
+              ]
+            }
           }
         ]
       }

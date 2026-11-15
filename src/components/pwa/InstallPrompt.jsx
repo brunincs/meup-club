@@ -92,7 +92,7 @@ function StandardPrompt({ onInstall, onDismiss }) {
           onClick={onDismiss}
           className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-dusty-rose hover:bg-ice-white transition-colors"
         >
-          Agora nao
+          Agora não
         </button>
         <button
           onClick={onInstall}
@@ -113,7 +113,7 @@ function IOSSafariPrompt({ onDismiss }) {
     <div className="p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-heading font-semibold text-graphite text-base">
-          Adicionar a Tela de Inicio
+          Adicionar a Tela de Início
         </h3>
         <button
           onClick={onDismiss}
@@ -134,7 +134,7 @@ function IOSSafariPrompt({ onDismiss }) {
           </div>
           <div className="flex-1 pt-0.5">
             <p className="text-sm text-graphite">
-              Toque no icone{' '}
+              Toque no ícone{' '}
               <span className="inline-flex items-center justify-center w-6 h-6 bg-ice-white rounded border border-dusty-rose/30 mx-1">
                 <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -153,7 +153,7 @@ function IOSSafariPrompt({ onDismiss }) {
           <div className="flex-1 pt-0.5">
             <p className="text-sm text-graphite">
               Role e toque em{' '}
-              <span className="font-medium">"Adicionar a Tela de Inicio"</span>
+              <span className="font-medium">"Adicionar a Tela de Início"</span>
             </p>
           </div>
         </div>
@@ -220,7 +220,7 @@ function IOSNonSafariPrompt({ onCopyLink, onDismiss }) {
       </div>
 
       <p className="text-sm text-dusty-rose mb-4 leading-relaxed">
-        Para instalar o app, abra esta pagina no Safari do seu iPhone.
+        Para instalar o app, abra esta página no Safari do seu iPhone.
       </p>
 
       <div className="space-y-3">
@@ -238,7 +238,7 @@ function IOSNonSafariPrompt({ onCopyLink, onDismiss }) {
         <div className="flex items-start gap-3 p-3 rounded-xl bg-ice-white">
           <span className="text-lg">...</span>
           <p className="text-xs text-dusty-rose leading-relaxed">
-            Toque nos tres pontinhos do navegador e selecione "Abrir no Safari" ou "Abrir no navegador"
+            Toque nos três pontinhos do navegador e selecione "Abrir no Safari" ou "Abrir no navegador"
           </p>
         </div>
       </div>
@@ -248,7 +248,7 @@ function IOSNonSafariPrompt({ onCopyLink, onDismiss }) {
           onClick={onDismiss}
           className="w-full px-4 py-2.5 rounded-xl text-sm font-medium text-dusty-rose hover:bg-ice-white transition-colors"
         >
-          Agora nao
+          Agora não
         </button>
       </div>
     </div>

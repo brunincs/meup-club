@@ -543,7 +543,7 @@ export function Tasks() {
 
     // Se já está pendente, não faz nada
     if (task.pending) {
-      toast('Esta tarefa ja esta aguardando aprovacao', {
+      toast('Esta tarefa já está aguardando aprovação', {
         icon: '⏳',
         style: { background: '#32113f', color: '#edf0f1' }
       })
@@ -552,7 +552,7 @@ export function Tasks() {
 
     // Se já foi aprovada, não faz nada
     if (task.completed) {
-      toast('Esta tarefa ja foi concluida!', {
+      toast('Esta tarefa já foi concluída!', {
         icon: '✓',
         style: { background: '#32113f', color: '#edf0f1' }
       })
@@ -564,7 +564,7 @@ export function Tasks() {
 
     if (!needsApproval) {
       // NÃO precisa de aprovação - apenas navegar para fazer a ação
-      toast('Use o botao "Ir Fazer" para completar esta missao', {
+      toast('Use o botão "Ir Fazer" para completar esta missão', {
         icon: '→',
         style: { background: '#32113f', color: '#edf0f1' }
       })
@@ -591,7 +591,7 @@ export function Tasks() {
       // Verificar se já existe solicitação pendente (evitar duplicatas)
       const checkResult = await verificarSolicitacaoPendente(user.id, task.id)
       if (checkResult.pendente) {
-        toast('Voce ja solicitou esta tarefa. Aguarde aprovacao.', {
+        toast('Você já solicitou esta tarefa. Aguarde aprovação.', {
           icon: '⏳',
           style: { background: '#32113f', color: '#edf0f1' }
         })
@@ -610,8 +610,8 @@ export function Tasks() {
 
         toast.success(
           <div>
-            <strong>Solicitacao enviada!</strong>
-            <div className="text-sm opacity-80">Aguardando aprovacao do admin</div>
+            <strong>Solicitação enviada!</strong>
+            <div className="text-sm opacity-80">Aguardando aprovação do admin</div>
           </div>,
           {
             duration: 4000,
@@ -627,7 +627,7 @@ export function Tasks() {
       }
     } catch (error) {
       console.error('Erro ao solicitar tarefa:', error)
-      toast.error('Erro ao enviar solicitacao. Tente novamente.', {
+      toast.error('Erro ao enviar solicitação. Tente novamente.', {
         style: {
           background: '#32113f',
           color: '#edf0f1',
@@ -673,7 +673,7 @@ export function Tasks() {
       // Compartilhar código - credita pontos automaticamente na primeira vez
       const code = profile?.referral_code || 'MEUP0000'
       const shareUrl = `${window.location.origin}/cadastro?ref=${code}`
-      const shareText = `Use meu codigo ${code} para entrar no Me,up Club e ganhar pontos!`
+      const shareText = `Use meu código ${code} para entrar no Me,up Club e ganhar pontos!`
 
       // Registrar compartilhamento (credita pontos na primeira vez)
       if (user?.id) {
@@ -682,7 +682,7 @@ export function Tasks() {
           if (result.creditou) {
             toast.success(
               <div>
-                <strong>Missao concluida!</strong>
+                <strong>Missão concluída!</strong>
                 <div className="text-sm opacity-80">+{result.pontos} pontos por compartilhar</div>
               </div>,
               {

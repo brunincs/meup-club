@@ -65,14 +65,14 @@ export function PushPrompt({ context = 'general', onClose }) {
                 Receba avisos das suas viagens
               </h4>
               <p className="text-xs text-dusty-rose leading-relaxed mb-3">
-                Instale o app para receber notificacoes de check-in e atualizacoes
+                Instale o app para receber notificações de check-in e atualizações
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={handleClose}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium text-dusty-rose hover:text-ice-white transition-colors"
                 >
-                  Agora nao
+                  Agora não
                 </button>
                 <button
                   onClick={handleInstallFirst}
@@ -107,11 +107,11 @@ export function PushPrompt({ context = 'general', onClose }) {
             <h4 className="font-heading font-semibold text-ice-white text-sm mb-1">
               {context === 'trip'
                 ? 'Quer ser avisado?'
-                : 'Ative as notificacoes'}
+                : 'Ative as notificações'}
             </h4>
             <p className="text-xs text-dusty-rose leading-relaxed mb-3">
               {context === 'trip'
-                ? 'A gente avisa quando o check-in abrir e cuida de tudo pra voce'
+                ? 'A gente avisa quando o check-in abrir e cuida de tudo pra você'
                 : 'Receba avisos de viagens, pontos e novidades'}
             </p>
             <div className="flex gap-2">
@@ -119,7 +119,7 @@ export function PushPrompt({ context = 'general', onClose }) {
                 onClick={handleClose}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium text-dusty-rose hover:text-ice-white transition-colors"
               >
-                Agora nao
+                Agora não
               </button>
               <button
                 onClick={handleEnable}

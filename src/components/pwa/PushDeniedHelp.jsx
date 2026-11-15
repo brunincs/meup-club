@@ -70,13 +70,13 @@ function IOSInstructions() {
     'Abra os Ajustes do iPhone',
     'Role e toque em Safari (ou no navegador usado)',
     'Toque em "Notificacoes"',
-    'Encontre "Me,up Club" e ative as notificacoes'
+    'Encontre "Me,up Club" e ative as notificações'
   ]
 
   return (
     <div className="space-y-2">
       <p className="text-xs text-dusty-rose mb-3">
-        Para reativar as notificacoes no iPhone:
+        Para reativar as notificações no iPhone:
       </p>
       {steps.map((step, index) => (
         <div key={index} className="flex items-start gap-3">
@@ -101,7 +101,7 @@ function AndroidInstructions() {
   return (
     <div className="space-y-2">
       <p className="text-xs text-dusty-rose mb-3">
-        Para reativar as notificacoes no Android:
+        Para reativar as notificações no Android:
       </p>
       {steps.map((step, index) => (
         <div key={index} className="flex items-start gap-3">
@@ -120,13 +120,13 @@ function DesktopInstructions() {
     'Clique no icone de cadeado na barra de endereco',
     'Encontre "Notificacoes" nas permissoes',
     'Mude de "Bloquear" para "Permitir"',
-    'Atualize a pagina'
+    'Atualize a página'
   ]
 
   return (
     <div className="space-y-2">
       <p className="text-xs text-dusty-rose mb-3">
-        Para reativar as notificacoes no navegador:
+        Para reativar as notificações no navegador:
       </p>
       {steps.map((step, index) => (
         <div key={index} className="flex items-start gap-3">
