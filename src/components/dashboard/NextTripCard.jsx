@@ -4,16 +4,32 @@
 
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { getProximaViagem, formatDiasParaViagem } from '@/services/minhasViagensService'
+import { usePWA } from '@/hooks/usePWA'
+import { PushPrompt } from '@/components/pwa'
 
 export function NextTripCard() {
   const [viagem, setViagem] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showPushPrompt, setShowPushPrompt] = useState(false)
+  const { shouldShowPushPrompt, pushEnabled } = usePWA()
 
   useEffect(() => {
     loadViagem()
   }, [])
+
+  // Show push prompt after loading if user has a trip and hasn't enabled push
+  useEffect(() => {
+    if (viagem && !loading && shouldShowPushPrompt() && !pushEnabled) {
+      // Check if we've shown this prompt recently (localStorage)
+      const lastShown = localStorage.getItem('trip_push_prompt_shown')
+      const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000
+      if (!lastShown || parseInt(lastShown, 10) < oneDayAgo) {
+        setShowPushPrompt(true)
+      }
+    }
+  }, [viagem, loading, shouldShowPushPrompt, pushEnabled])
 
   const loadViagem = async () => {
     const result = await getProximaViagem()
@@ -21,6 +37,11 @@ export function NextTripCard() {
       setViagem(result.viagem)
     }
     setLoading(false)
+  }
+
+  const handleClosePushPrompt = () => {
+    setShowPushPrompt(false)
+    localStorage.setItem('trip_push_prompt_shown', String(Date.now()))
   }
 
   // Loading state
@@ -71,88 +92,103 @@ export function NextTripCard() {
   const isAmanha = dias === 1
 
   return (
-    <Link
-      to="/minhas-viagens"
-      className="block p-6 rounded-2xl bg-white shadow-sm hover:shadow-md transition-all group"
-      style={{
-        borderWidth: '1px',
-        borderStyle: 'solid',
-        borderColor: '#ddd1d0'
-      }}
-    >
-      {/* Badge de contagem */}
-      <div className="flex items-start justify-between mb-4">
-        <div
-          className="px-3 py-1 rounded-full text-xs font-heading font-bold"
-          style={{
-            backgroundColor: isHoje ? '#a27937' : '#32113f',
-            color: '#edf0f1'
-          }}
-        >
-          {isHoje ? '🎉 Hoje!' : isAmanha ? '⏰ Amanhã!' : formatDiasParaViagem(dias, viagem.data_ida)}
+    <div className="space-y-4">
+      <Link
+        to="/minhas-viagens"
+        className="block p-6 rounded-2xl bg-white shadow-sm hover:shadow-md transition-all group"
+        style={{
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          borderColor: '#ddd1d0'
+        }}
+      >
+        {/* Badge de contagem */}
+        <div className="flex items-start justify-between mb-4">
+          <div
+            className="px-3 py-1 rounded-full text-xs font-heading font-bold"
+            style={{
+              backgroundColor: isHoje ? '#a27937' : '#32113f',
+              color: '#edf0f1'
+            }}
+          >
+            {isHoje ? '🎉 Hoje!' : isAmanha ? '⏰ Amanhã!' : formatDiasParaViagem(dias, viagem.data_ida)}
+          </div>
+
+          {/* Ícone animado */}
+          <motion.div
+            animate={isHoje || isAmanha ? { y: [0, -3, 0] } : {}}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ color: '#a27937' }}
+          >
+            <span className="text-2xl">✈</span>
+          </motion.div>
         </div>
 
-        {/* Ícone animado */}
-        <motion.div
-          animate={isHoje || isAmanha ? { y: [0, -3, 0] } : {}}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ color: '#a27937' }}
+        {/* Título da viagem */}
+        <h4
+          className="text-lg font-display font-bold mb-1 truncate transition-colors"
+          style={{ color: '#32113f' }}
         >
-          <span className="text-2xl">✈</span>
-        </motion.div>
-      </div>
+          {viagem.titulo}
+        </h4>
 
-      {/* Título da viagem */}
-      <h4
-        className="text-lg font-display font-bold mb-1 truncate transition-colors"
-        style={{ color: '#32113f' }}
-      >
-        {viagem.titulo}
-      </h4>
-
-      {/* Datas */}
-      <p className="text-sm font-heading mb-3" style={{ color: '#1f1f1f' }}>
-        {viagem.data_ida && new Date(viagem.data_ida + 'T12:00:00').toLocaleDateString('pt-BR', {
-          day: 'numeric',
-          month: 'long'
-        })}
-        {viagem.data_volta && viagem.data_volta !== viagem.data_ida && (
-          <> – {new Date(viagem.data_volta + 'T12:00:00').toLocaleDateString('pt-BR', {
+        {/* Datas */}
+        <p className="text-sm font-heading mb-3" style={{ color: '#1f1f1f' }}>
+          {viagem.data_ida && new Date(viagem.data_ida + 'T12:00:00').toLocaleDateString('pt-BR', {
             day: 'numeric',
             month: 'long'
-          })}</>
-        )}
-      </p>
+          })}
+          {viagem.data_volta && viagem.data_volta !== viagem.data_ida && (
+            <> – {new Date(viagem.data_volta + 'T12:00:00').toLocaleDateString('pt-BR', {
+              day: 'numeric',
+              month: 'long'
+            })}</>
+          )}
+        </p>
 
-      {/* Meta info */}
-      <div className="flex items-center gap-3 text-xs font-heading" style={{ color: '#5c5c5c' }}>
-        {/* Companhia */}
-        {viagem.companhia && (
-          <span className="flex items-center gap-1">
-            <span style={{ color: '#a27937' }}>•</span>
-            {viagem.companhia}
+        {/* Meta info */}
+        <div className="flex items-center gap-3 text-xs font-heading" style={{ color: '#5c5c5c' }}>
+          {/* Companhia */}
+          {viagem.companhia && (
+            <span className="flex items-center gap-1">
+              <span style={{ color: '#a27937' }}>•</span>
+              {viagem.companhia}
+            </span>
+          )}
+
+          {/* Passageiros */}
+          {viagem.total_passageiros > 0 && (
+            <span className="flex items-center gap-1">
+              <span style={{ color: '#a27937' }}>•</span>
+              {viagem.total_passageiros} passageiro{viagem.total_passageiros > 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+
+        {/* Call to action */}
+        <div className="mt-4 pt-3 flex items-center justify-between" style={{ borderTop: '1px solid #ddd1d0' }}>
+          <span className="text-xs font-heading" style={{ color: '#a27937' }}>
+            Ver detalhes
           </span>
-        )}
+          <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: '#a27937' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </Link>
 
-        {/* Passageiros */}
-        {viagem.total_passageiros > 0 && (
-          <span className="flex items-center gap-1">
-            <span style={{ color: '#a27937' }}>•</span>
-            {viagem.total_passageiros} passageiro{viagem.total_passageiros > 1 ? 's' : ''}
-          </span>
+      {/* Push notification prompt - outside the Link */}
+      <AnimatePresence>
+        {showPushPrompt && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <PushPrompt context="trip" onClose={handleClosePushPrompt} />
+          </motion.div>
         )}
-      </div>
-
-      {/* Call to action */}
-      <div className="mt-4 pt-3 flex items-center justify-between" style={{ borderTop: '1px solid #ddd1d0' }}>
-        <span className="text-xs font-heading" style={{ color: '#a27937' }}>
-          Ver detalhes
-        </span>
-        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: '#a27937' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </div>
-    </Link>
+      </AnimatePresence>
+    </div>
   )
 }
 

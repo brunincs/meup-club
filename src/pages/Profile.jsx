@@ -3,8 +3,10 @@ import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserLevel } from '@/hooks/useUserLevel'
+import { usePWA } from '@/hooks/usePWA'
 import { DashboardHeader } from '@/components/dashboard'
 import { CustomSelect } from '@/components/ui'
+import { PushDeniedHelp } from '@/components/pwa'
 import {
   updateUserProfile,
   fetchReferralStats,
@@ -18,6 +20,12 @@ import {
   formatMemberSince,
   isValidCPFFormat
 } from '@/services/passportService'
+import {
+  getNotificationPreferences,
+  updateNotificationPreferences,
+  subscribeToPush,
+  unsubscribeFromPush
+} from '@/services/pushService'
 import { levels as levelCopy, format } from '@/services/copy'
 import toast from 'react-hot-toast'
 
@@ -700,6 +708,173 @@ function RecentActivity({ activities, userId }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// COMPONENTE: CONFIGURAÇÕES DE NOTIFICAÇÃO
+// ══════════════════════════════════════════════════════════════════════════════
+
+function NotificationSettings() {
+  const { pushEnabled, pushDenied, enablePush, canReceivePush, needsIOSInstallFirst, openInstallPrompt } = usePWA()
+  const [prefs, setPrefs] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    loadPreferences()
+  }, [])
+
+  const loadPreferences = async () => {
+    const data = await getNotificationPreferences()
+    if (data) {
+      setPrefs(data)
+    }
+    setLoading(false)
+  }
+
+  const handleToggle = async (key) => {
+    if (!prefs) return
+
+    const newPrefs = { ...prefs, [key]: !prefs[key] }
+    setPrefs(newPrefs)
+
+    setSaving(true)
+    const result = await updateNotificationPreferences(newPrefs)
+    setSaving(false)
+
+    if (!result.success) {
+      // Revert on error
+      setPrefs(prefs)
+      toast.error('Erro ao salvar preferencias')
+    }
+  }
+
+  const handleEnablePush = async () => {
+    if (needsIOSInstallFirst) {
+      openInstallPrompt()
+      return
+    }
+
+    const result = await enablePush()
+    if (result.success) {
+      await subscribeToPush()
+      toast.success('Notificacoes ativadas!')
+    }
+  }
+
+  const handleDisableAll = async () => {
+    await unsubscribeFromPush()
+    const newPrefs = {
+      viagens: false,
+      pontos: false,
+      missoes: false,
+      novidades: false
+    }
+    setPrefs(newPrefs)
+    await updateNotificationPreferences(newPrefs)
+    toast.success('Notificacoes desativadas')
+  }
+
+  if (loading) {
+    return (
+      <div className="rounded-2xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 w-24 bg-[#ddd1d0] rounded" />
+          <div className="h-10 bg-[#ddd1d0] rounded" />
+          <div className="h-10 bg-[#ddd1d0] rounded" />
+        </div>
+      </div>
+    )
+  }
+
+  const notifTypes = [
+    { key: 'viagens', label: 'Viagens', desc: 'Check-in, atualizacoes de voo' },
+    { key: 'pontos', label: 'Pontos', desc: 'Pontos liberados, bonus' },
+    { key: 'missoes', label: 'Missoes', desc: 'Aprovacoes, novas missoes' },
+    { key: 'novidades', label: 'Novidades', desc: 'Dicas, promocoes' }
+  ]
+
+  return (
+    <div className="rounded-2xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
+      <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 font-medium flex items-center gap-2">
+        <span>🔔</span> Notificacoes
+      </h3>
+
+      {/* Push permission status */}
+      {!pushEnabled && !pushDenied && canReceivePush && (
+        <button
+          onClick={handleEnablePush}
+          className="w-full mb-4 px-4 py-3 rounded-xl bg-gradient-to-r from-[#5c005a] to-[#32113f] text-white text-sm font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          Ativar notificacoes
+        </button>
+      )}
+
+      {needsIOSInstallFirst && !pushEnabled && (
+        <button
+          onClick={openInstallPrompt}
+          className="w-full mb-4 px-4 py-3 rounded-xl bg-[#edf0f1] text-[#32113f] text-sm font-medium hover:bg-[#ddd1d0] transition-colors flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Instale o app para receber avisos
+        </button>
+      )}
+
+      {/* Push denied help */}
+      {pushDenied && (
+        <div className="mb-4">
+          <PushDeniedHelp />
+        </div>
+      )}
+
+      {/* Notification type toggles */}
+      {prefs && (
+        <div className="space-y-3">
+          {notifTypes.map(({ key, label, desc }) => (
+            <div
+              key={key}
+              className="flex items-center justify-between py-2"
+            >
+              <div>
+                <p className="text-sm font-medium text-[#32113f]">{label}</p>
+                <p className="text-[10px] text-[#a39695]">{desc}</p>
+              </div>
+              <button
+                onClick={() => handleToggle(key)}
+                disabled={saving || !pushEnabled}
+                className={`relative w-11 h-6 rounded-full transition-colors ${
+                  prefs[key] && pushEnabled
+                    ? 'bg-[#5c005a]'
+                    : 'bg-[#ddd1d0]'
+                } ${!pushEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <span
+                  className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                    prefs[key] ? 'left-6' : 'left-1'
+                  }`}
+                />
+              </button>
+            </div>
+          ))}
+
+          {/* Disable all */}
+          {pushEnabled && (
+            <button
+              onClick={handleDisableAll}
+              className="w-full mt-4 pt-4 border-t border-[#ddd1d0]/50 text-xs text-[#a39695] hover:text-red-500 transition-colors"
+            >
+              Desativar todas
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // PÁGINA PRINCIPAL
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -903,6 +1078,9 @@ export function Profile() {
                 </p>
               </div>
             )}
+
+            {/* Configurações de Notificação */}
+            <NotificationSettings />
           </motion.div>
         </div>
       </main>

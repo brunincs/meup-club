@@ -2,8 +2,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PointsProvider } from '@/contexts/PointsContext'
+import { PWAProvider } from '@/contexts/PWAContext'
 import { ProtectedRoute, AdminRoute } from '@/components/auth'
 import { RootLayout } from '@/layouts'
+import { InstallPrompt, UpdatePrompt } from '@/components/pwa'
 import { Home, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans, MeusResgates, MinhasViagens } from '@/pages'
 import {
   AdminDashboard,
@@ -28,6 +30,11 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <PointsProvider>
+        <PWAProvider>
+        {/* PWA Prompts */}
+        <InstallPrompt />
+        <UpdatePrompt />
+
         {/* Toast notifications */}
         <Toaster
           position="top-center"
@@ -166,6 +173,7 @@ function App() {
           <Route path="/admin/fundadores" element={<AdminRoute><AdminFundadores /></AdminRoute>} />
           <Route path="/admin/fotos-destinos" element={<AdminRoute><AdminFotosDestinos /></AdminRoute>} />
         </Routes>
+        </PWAProvider>
         </PointsProvider>
       </AuthProvider>
     </BrowserRouter>

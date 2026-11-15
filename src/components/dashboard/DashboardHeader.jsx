@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
 import { useFundador } from '@/hooks/useFundador'
+import { usePWA } from '@/hooks/usePWA'
 import { levels } from '@/services/pointsSystem'
 import { levels as levelCopy } from '@/services/copy'
 import { NotificationBell } from './NotificationBell'
@@ -61,6 +62,7 @@ export function DashboardHeader() {
   const { profile, user, signOut } = useAuth()
   const { points: userPoints, levelId } = usePoints()
   const { isFundador } = useFundador()
+  const { canInstall, isInstalled, openInstallPrompt } = usePWA()
 
   const userName = profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
   const isAdmin = profile?.role === 'admin'
@@ -190,6 +192,22 @@ export function DashboardHeader() {
                             >
                               <span>Painel Admin</span>
                             </Link>
+                          )}
+
+                          {/* Instalar app - só aparece se não estiver instalado */}
+                          {canInstall && !isInstalled && (
+                            <button
+                              onClick={() => {
+                                setShowUserMenu(false)
+                                openInstallPrompt()
+                              }}
+                              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-dusty-rose hover:text-ice-white hover:bg-white/5 transition-all w-full text-left"
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                              </svg>
+                              Instalar app
+                            </button>
                           )}
 
                           <Link
