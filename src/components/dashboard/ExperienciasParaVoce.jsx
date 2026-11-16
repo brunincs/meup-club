@@ -18,8 +18,13 @@ export function ExperienciasParaVoce() {
   useEffect(() => {
     if (!experiences || experiences.length === 0) return
 
+    // Filtrar apenas experiências fixas (não sob_consulta, em_breve ou privilegio)
+    const fixas = experiences.filter(exp =>
+      exp.tipo === 'fixo' && exp.points != null && !exp.isSobConsulta && !exp.isEmBreve && !exp.isPrivilegio
+    )
+
     // Ordenar experiências por proximidade do saldo disponível
-    const ordenadas = [...experiences].sort((a, b) => {
+    const ordenadas = [...fixas].sort((a, b) => {
       const diffA = Math.abs(a.points - availablePoints)
       const diffB = Math.abs(b.points - availablePoints)
       // Prioriza as que o usuário pode resgatar
@@ -98,9 +103,16 @@ export function ExperienciasParaVoce() {
                 <p className="text-sm font-heading font-medium text-deep-purple truncate group-hover:text-antique-gold transition-colors">
                   {exp.title}
                 </p>
-                <p className="text-xs text-graphite/60">
-                  {formatPoints(exp.points)} pts
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-graphite/60">
+                    {formatPoints(exp.points)} pts
+                  </p>
+                  {exp.destino && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-deep-purple/10 text-deep-purple font-medium">
+                      {exp.destino}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Ação */}
