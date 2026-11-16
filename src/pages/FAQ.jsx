@@ -66,7 +66,7 @@ O Prime sempre tem preço menor em todas as experiências.`
 | O que o amigo fez | Indicador Free | Indicador Prime | Indicado |
 |-------------------|----------------|-----------------|----------|
 | Primeira viagem | +3.000 pts | +5.000 pts | — |
-| Assinou Prime Anual | — | +3.000 pts | +1.000 pts |
+| Assinou Prime Anual | +2.000 pts | +3.000 pts | +1.000 pts |
 
 Os pontos são creditados apenas uma vez por indicado, em cada etapa.`
   },
@@ -98,7 +98,7 @@ Se o Prime for cancelado nesse prazo, os bônus são estornados automaticamente.
 
 • **Experiências com desconto**: pague menos pontos em todas
 • **Mais pontos** nas indicações (+5.000 vs +3.000 na primeira viagem)
-• **Bônus exclusivo** quando indicado assina Prime Anual (+3.000 indicador, +1.000 indicado)
+• **Mais bônus** quando indicado assina Prime Anual (Prime +3.000 · Free +2.000 · indicado +1.000)
 • **1,5x pontos** nas viagens (apenas Prime Anual)
 • **+2.000 pts** de boas-vindas (apenas Prime Anual)
 • **Prioridade** no suporte e novidades`

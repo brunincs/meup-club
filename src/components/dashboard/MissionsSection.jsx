@@ -128,14 +128,29 @@ export function MissionsSection({ variant = 'dark' }) {
       }
     }
 
-    // Verificar se perfil está completo (nome, email, telefone preenchidos)
-    const profileComplete = !!(profile.name && profile.email && profile.phone)
+    // Verificar se perfil está completo (mesmos campos do banco: name, phone, city, state, birth_date)
+    const profileComplete = !!(
+      profile.name?.trim() &&
+      profile.phone?.trim() &&
+      profile.city?.trim() &&
+      profile.state?.trim() &&
+      profile.birth_date
+    )
+
+    // Campos faltantes para a missão "Completar perfil"
+    const camposFaltantes = []
+    if (!profile.name?.trim()) camposFaltantes.push('nome')
+    if (!profile.phone?.trim()) camposFaltantes.push('telefone')
+    if (!profile.city?.trim()) camposFaltantes.push('cidade')
+    if (!profile.state?.trim()) camposFaltantes.push('estado')
+    if (!profile.birth_date) camposFaltantes.push('data de nascimento')
 
     return {
       // Usar approvedReferrals do estado (vem da função RPC)
       approvedReferrals,
       totalSales: profile.total_sales_value > 0 ? 1 : 0, // Simplificado
       profileComplete,
+      camposFaltantes, // Para mostrar na missão "Completar perfil"
       levelId: profile.level_id || 1,
       points: profile.points || 0
     }
@@ -197,9 +212,11 @@ export function MissionsSection({ variant = 'dark' }) {
       }
 
       // Completar perfil
+      let camposFaltantes = []
       if (nomeLower.includes('perfil')) {
         target = 1
         progress = userStats.profileComplete ? 1 : 0
+        camposFaltantes = userStats.camposFaltantes || []
       }
 
       // Se já foi aprovada, progresso = 100%
@@ -226,7 +243,8 @@ export function MissionsSection({ variant = 'dark' }) {
         target,
         progressPercent,
         isAutomatic,     // Credita via trigger, sem ação
-        needsApproval    // SÓ true para Instagram/Google
+        needsApproval,   // SÓ true para Instagram/Google
+        camposFaltantes  // Campos faltantes para missão "Completar perfil"
       }
     })
   }, [tarefas, statusMap, userStats])

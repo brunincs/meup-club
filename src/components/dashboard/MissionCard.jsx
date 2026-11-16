@@ -110,6 +110,12 @@ export function MissionCard({
             <p className={`text-xs mt-1 ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
               {mission.description}
             </p>
+            {/* Mostrar campos faltantes para missão "Completar perfil" */}
+            {!isCompleted && !isPending && mission.camposFaltantes?.length > 0 && (
+              <p className={`text-[10px] mt-1.5 ${isLight ? 'text-antique-gold' : 'text-antique-gold/80'}`}>
+                Falta: {mission.camposFaltantes.join(', ')}
+              </p>
+            )}
           </div>
 
           {/* Progress Ring */}

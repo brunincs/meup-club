@@ -53,10 +53,10 @@ const steps = [
   },
 ]
 
-// Timeline de indicação (apenas Viagem e Prime Anual)
+// Timeline de indicação (Viagem e Prime Anual - ambos Free e Prime ganham)
 const referralTimeline = [
   { label: 'Primeira viagem', points: '+3.000 / +5.000 pts', primeOnly: false, note: 'Free / Prime' },
-  { label: 'Prime Anual', points: '+3.000 pts', primeOnly: true, note: 'Indicador Prime' }
+  { label: 'Prime Anual', points: '+2.000 / +3.000 pts', primeOnly: false, note: 'Free / Prime · ele +1.000' }
 ]
 
 export function HowPointsWork() {
@@ -159,11 +159,6 @@ export function HowPointsWork() {
                   {item.note && (
                     <p className="text-[10px] text-deep-purple/50">{item.note}</p>
                   )}
-                  {item.primeOnly && (
-                    <span className="text-[10px] text-amber-600 font-heading mt-0.5">
-                      Apenas Prime
-                    </span>
-                  )}
                 </div>
 
                 {/* Connector */}
@@ -175,7 +170,7 @@ export function HowPointsWork() {
           </div>
 
           <p className="text-center text-xs text-deep-purple/60 mt-4 font-heading">
-            Free e Prime ganham na viagem. Só Prime ganha quando indicado assina Prime Anual.
+            Todos ganham na indicação. Prime ganha mais em todas as etapas.
           </p>
         </motion.div>
       </div>
