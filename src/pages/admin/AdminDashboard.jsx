@@ -227,36 +227,41 @@ export function AdminDashboard() {
             transition={{ delay: 0.1 }}
           >
             <AdminCard>
-              <h2 className="text-sm font-heading font-semibold text-[#1f1f1f] mb-4">
-                Métricas do Mês
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-heading font-semibold text-[#1f1f1f]">
+                  Clientes
+                </h2>
+                <span className="text-xs text-[#a39695]">
+                  Total: {adminMetrics.totalClientes} · Novos no mês: {adminMetrics.novosNoMes}
+                </span>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                {/* Free vs Prime */}
+                {/* Free vs Prime - TOTAL */}
                 <div className="text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
                   <p className="text-2xl font-display font-bold text-gray-600">{adminMetrics.freeCount}</p>
-                  <p className="text-xs text-[#a39695]">Free</p>
+                  <p className="text-xs text-[#a39695]">Free (total)</p>
                 </div>
                 <div className="text-center p-3 rounded-xl bg-[#32113f]/5 border border-[#32113f]/10">
                   <p className="text-2xl font-display font-bold text-[#32113f]">{adminMetrics.primeCount}</p>
-                  <p className="text-xs text-[#a39695]">Prime</p>
+                  <p className="text-xs text-[#a39695]">Prime (total)</p>
                 </div>
                 {/* Conversão */}
                 <div className="text-center p-3 rounded-xl bg-green-50 border border-green-100">
                   <p className="text-2xl font-display font-bold text-green-700">{adminMetrics.conversoesNoMes}</p>
-                  <p className="text-xs text-[#a39695]">Conversões</p>
+                  <p className="text-xs text-[#a39695]">Conversões no mês</p>
                 </div>
                 <div className="text-center p-3 rounded-xl bg-amber-50 border border-amber-100">
                   <p className="text-2xl font-display font-bold text-amber-700">{adminMetrics.percentualConversao}%</p>
-                  <p className="text-xs text-[#a39695]">Taxa Conv.</p>
+                  <p className="text-xs text-[#a39695]">Taxa conversão</p>
                 </div>
                 {/* Pontos */}
                 <div className="text-center p-3 rounded-xl bg-blue-50 border border-blue-100">
                   <p className="text-2xl font-display font-bold text-blue-700">{format.pointsShort(adminMetrics.pontosEmitidosMes)}</p>
-                  <p className="text-xs text-[#a39695]">Emitidos</p>
+                  <p className="text-xs text-[#a39695]">Emitidos no mês</p>
                 </div>
                 <div className="text-center p-3 rounded-xl bg-purple-50 border border-purple-100">
                   <p className="text-2xl font-display font-bold text-purple-700">{format.pointsShort(adminMetrics.pontosResgatadosMes)}</p>
-                  <p className="text-xs text-[#a39695]">Resgatados</p>
+                  <p className="text-xs text-[#a39695]">Resgatados no mês</p>
                 </div>
               </div>
             </AdminCard>
@@ -279,7 +284,9 @@ export function AdminDashboard() {
                     <span className="text-lg">✦</span>
                     Ação Fundadores
                   </h2>
-                  <p className="text-xs text-[#a39695] mt-1">100 vagas de fundador</p>
+                  <p className="text-xs text-[#a39695] mt-1">
+                    {fundadoresMetrics.totalVendidas} vendidas · {fundadoresMetrics.vagasRestantes} restantes de 100
+                  </p>
                 </div>
                 <Link
                   to="/admin/fundadores"
@@ -288,28 +295,49 @@ export function AdminDashboard() {
                   Ver lista →
                 </Link>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+              {/* Resumo atual */}
+              <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="text-center p-3 rounded-xl bg-amber-50 border border-amber-100">
                   <p className="text-2xl font-display font-bold text-amber-700">Lote {fundadoresMetrics.loteAtual}</p>
                   <p className="text-xs text-[#a39695]">R$ {fundadoresMetrics.precoAtual}</p>
                 </div>
                 <div className="text-center p-3 rounded-xl bg-green-50 border border-green-100">
                   <p className="text-2xl font-display font-bold text-green-700">{fundadoresMetrics.totalVendidas}</p>
-                  <p className="text-xs text-[#a39695]">Vendidas</p>
+                  <p className="text-xs text-[#a39695]">Total vendidas</p>
                 </div>
                 <div className="text-center p-3 rounded-xl bg-[#32113f]/5 border border-[#32113f]/10">
-                  <p className="text-2xl font-display font-bold text-[#32113f]">{fundadoresMetrics.vagasRestantes}</p>
-                  <p className="text-xs text-[#a39695]">Restantes</p>
+                  <p className="text-2xl font-display font-bold text-[#32113f]">{fundadoresMetrics.vagasRestantesNoLote}</p>
+                  <p className="text-xs text-[#a39695]">Restantes no lote</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
-                  <div className="text-xs text-[#a39695]">
-                    {Object.entries(fundadoresMetrics.porLote || {}).map(([lote, qtd]) => (
-                      <span key={lote} className="block">L{lote}: {qtd}</span>
-                    ))}
-                    {Object.keys(fundadoresMetrics.porLote || {}).length === 0 && <span>-</span>}
-                  </div>
-                  <p className="text-xs text-[#a39695] mt-1">Por Lote</p>
-                </div>
+              </div>
+
+              {/* Lotes detalhados */}
+              <div className="flex flex-wrap gap-2">
+                {fundadoresMetrics.lotes?.map(lote => {
+                  const vendidas = fundadoresMetrics.porLote?.[lote.numero] || 0
+                  const isAtual = lote.numero === fundadoresMetrics.loteAtual
+                  const esgotado = vendidas >= lote.vagas
+                  return (
+                    <div
+                      key={lote.numero}
+                      className={`px-3 py-2 rounded-lg text-xs ${
+                        isAtual
+                          ? 'bg-amber-100 border-2 border-amber-400 text-amber-800'
+                          : esgotado
+                            ? 'bg-green-50 border border-green-200 text-green-700'
+                            : 'bg-gray-50 border border-gray-200 text-gray-500'
+                      }`}
+                    >
+                      <span className="font-semibold">L{lote.numero}</span>
+                      <span className="mx-1">·</span>
+                      <span>{vendidas}/{lote.vagas}</span>
+                      <span className="mx-1">·</span>
+                      <span>R$ {lote.preco}</span>
+                      {esgotado && <span className="ml-1">✓</span>}
+                    </div>
+                  )
+                })}
               </div>
             </AdminCard>
           </motion.div>
@@ -367,38 +395,79 @@ export function AdminDashboard() {
               )}
 
               {/* Detalhes dos erros */}
-              {iaErrorDetails && iaErrorDetails.erros > 0 && (
+              {iaErrorDetails && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-heading font-semibold text-red-700">
-                      Erros Recentes ({iaErrorDetails.erros} de {iaErrorDetails.totalRecentes})
-                    </h3>
-                    <span className="text-xs text-red-600">Taxa: {iaErrorDetails.taxaErro}%</span>
-                  </div>
-
-                  {/* Erros por tipo */}
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {Object.entries(iaErrorDetails.errosPorTipo || {}).map(([tipo, qtd]) => (
-                      <span key={tipo} className="px-2 py-1 rounded-full bg-red-50 text-red-700 text-[10px] font-medium">
-                        {tipo}: {qtd}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Lista de erros */}
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {iaErrorDetails.detalhes?.map((erro) => (
-                      <div key={erro.id} className="p-2 rounded-lg bg-red-50/50 border border-red-100 text-xs">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-medium text-red-800">{erro.tipo}</span>
-                          <span className="text-red-600/70">{erro.data}</span>
-                        </div>
-                        <p className="text-red-700/80 text-[10px] break-all">
-                          {erro.erro?.slice(0, 150)}{erro.erro?.length > 150 ? '...' : ''}
-                        </p>
+                  {/* Taxa de sucesso 7d vs 30d */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="p-3 rounded-xl bg-green-50 border border-green-100">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-green-700 font-medium">Últimos 7 dias</span>
+                        <span className="text-lg font-bold text-green-700">{iaErrorDetails.taxaSucesso7d}%</span>
                       </div>
-                    ))}
+                      <p className="text-[10px] text-green-600 mt-1">
+                        {iaErrorDetails.sucessos7d} sucesso · {iaErrorDetails.erros7d} erros
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-blue-700 font-medium">Últimos 30 dias</span>
+                        <span className="text-lg font-bold text-blue-700">{iaErrorDetails.taxaSucesso30d}%</span>
+                      </div>
+                      <p className="text-[10px] text-blue-600 mt-1">
+                        {iaErrorDetails.sucessos30d} sucesso · {iaErrorDetails.erros30d} erros
+                      </p>
+                    </div>
                   </div>
+
+                  {iaErrorDetails.erros30d > 0 && (
+                    <>
+                      {/* Erros por modelo */}
+                      {Object.keys(iaErrorDetails.errosPorModelo || {}).length > 0 && (
+                        <div className="mb-3">
+                          <h4 className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">Erros por modelo</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(iaErrorDetails.errosPorModelo).map(([modelo, qtd]) => (
+                              <span key={modelo} className="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-[10px] font-mono">
+                                {modelo}: {qtd}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Erros por tipo */}
+                      <div className="mb-3">
+                        <h4 className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">Erros por tipo</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(iaErrorDetails.errosPorTipo || {}).map(([tipo, qtd]) => (
+                            <span key={tipo} className="px-2 py-1 rounded-full bg-red-50 text-red-700 text-[10px] font-medium">
+                              {tipo}: {qtd}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Lista de erros com modelo */}
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {iaErrorDetails.detalhes?.map((erro) => (
+                          <div key={erro.id} className="p-2 rounded-lg bg-red-50/50 border border-red-100 text-xs">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-red-800">{erro.tipo}</span>
+                                <span className="px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 text-[9px] font-mono">
+                                  {erro.modelo}
+                                </span>
+                              </div>
+                              <span className="text-red-600/70">{erro.data}</span>
+                            </div>
+                            <p className="text-red-700/80 text-[10px] break-all">
+                              {erro.erro?.slice(0, 150)}{erro.erro?.length > 150 ? '...' : ''}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </AdminCard>

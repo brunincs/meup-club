@@ -100,6 +100,8 @@ function getEtapaAtual(status) {
 // Componente de etapas visuais
 function StatusSteps({ status }) {
   const etapaAtual = getEtapaAtual(status)
+  // Se "entregue" ou "utilizado", todas as etapas estão completas
+  const isFullyCompleted = ['entregue', 'utilizado'].includes(status)
 
   // Não mostrar para rejeitados/cancelados
   if (etapaAtual < 0) return null
@@ -107,9 +109,10 @@ function StatusSteps({ status }) {
   return (
     <div className="flex items-center gap-1 mt-3 mb-2">
       {ETAPAS_RESGATE.map((etapa, index) => {
-        const isCompleted = index < etapaAtual
-        const isCurrent = index === etapaAtual
-        const isPending = index > etapaAtual
+        // Se totalmente concluído, todas as etapas têm ✓
+        const isCompleted = isFullyCompleted || index < etapaAtual
+        const isCurrent = !isFullyCompleted && index === etapaAtual
+        const isPending = !isFullyCompleted && index > etapaAtual
 
         return (
           <div key={etapa.id} className="flex items-center flex-1">

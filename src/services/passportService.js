@@ -28,9 +28,20 @@ export async function fetchUserProfile(userId) {
 }
 
 /**
+ * Verifica se o perfil está completo (dados principais preenchidos)
+ */
+function isProfileComplete(profile) {
+  if (!profile) return false
+  const { name, phone, city, state, birth_date } = profile
+  return !!(name?.trim() && phone?.trim() && city?.trim() && state?.trim() && birth_date)
+}
+
+/**
  * Atualiza os dados do perfil do usuário
  * Campos permitidos: name, phone, city, state, birth_date, cpf, dream_destinations, travel_preferences
  * IMPORTANTE: Strings vazias são convertidas para NULL para campos opcionais
+ *
+ * Se o perfil ficar completo, auto-completa a missão "Completar perfil"
  */
 export async function updateUserProfile(userId, updates) {
   try {
@@ -70,10 +81,77 @@ export async function updateUserProfile(userId, updates) {
 
     if (error) throw error
 
+    // Se o perfil ficou completo, auto-completar a missão "Completar perfil"
+    if (isProfileComplete(data)) {
+      await autoCompleteProfileMission(userId)
+    }
+
     return { success: true, profile: data }
   } catch (error) {
     console.error('Erro ao atualizar perfil:', error)
     return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Auto-completa a missão "Completar perfil" se ainda não foi concluída
+ * Evita pagar em dobro verificando se já foi creditado
+ */
+async function autoCompleteProfileMission(userId) {
+  try {
+    // Verificar se a missão já foi completada (evita pagar em dobro)
+    const { data: existing } = await supabase
+      .from('solicitacoes_tarefa')
+      .select('id, status')
+      .eq('cliente_id', userId)
+      .eq('tarefa_id', 'onetime_complete_profile')
+      .maybeSingle()
+
+    // Se já existe e está aprovada, não fazer nada
+    if (existing && existing.status === 'aprovada') {
+      return
+    }
+
+    // Se já existe e está pendente, aprovar
+    if (existing && existing.status === 'pendente') {
+      await supabase.rpc('aprovar_solicitacao_tarefa', {
+        p_solicitacao_id: existing.id,
+        p_admin_comentario: 'Auto-aprovado: perfil completo'
+      })
+      return
+    }
+
+    // Se não existe, criar e aprovar
+    // Primeiro criar a solicitação
+    const { data: novaSolicitacao, error: createError } = await supabase
+      .from('solicitacoes_tarefa')
+      .insert({
+        cliente_id: userId,
+        tarefa_id: 'onetime_complete_profile',
+        status: 'aprovada',
+        admin_comentario: 'Auto-aprovado: perfil completo'
+      })
+      .select()
+      .single()
+
+    if (createError) {
+      // Se erro de duplicidade, ignorar (já existe)
+      if (createError.code === '23505') return
+      throw createError
+    }
+
+    // Creditar os pontos (50 pontos)
+    if (novaSolicitacao) {
+      await supabase.rpc('credit_user_points', {
+        p_user_id: userId,
+        p_amount: 50,
+        p_type: 'task',
+        p_reason: 'Missão: Completar perfil'
+      })
+    }
+  } catch (error) {
+    // Não falhar a atualização do perfil por causa da missão
+    console.error('Erro ao auto-completar missão perfil:', error)
   }
 }
 

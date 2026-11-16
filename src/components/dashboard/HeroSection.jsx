@@ -113,7 +113,25 @@ export function HeroSection() {
 
             <div className="relative">
               {/* Header - Saudação e Classe */}
-              <div className="flex items-start justify-between mb-6">
+              {/* MOBILE: Badge acima do título (< sm) */}
+              {/* DESKTOP: Badge ao lado do título (>= sm) */}
+              <div className="mb-6">
+                {/* Badge de Classe - mobile: linha própria, desktop: flutuando à direita */}
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                  className="inline-flex sm:float-right sm:ml-4 mb-3 sm:mb-0 px-3 py-2 rounded-xl bg-antique-gold/10 border border-antique-gold/30"
+                >
+                  <Link to="/jornada" className="flex items-center gap-2">
+                    <ClassIcon size={18} color="#a27937" />
+                    <span className="text-sm font-heading font-semibold text-ice-white whitespace-nowrap">
+                      {levelCopy.names[currentLevel.id] || currentLevel.name}
+                    </span>
+                  </Link>
+                </motion.div>
+
+                {/* Texto de saudação - largura total no mobile */}
                 <div>
                   <p className="text-dusty-rose text-sm mb-1">
                     Bem-vindo, {userName}
@@ -122,21 +140,6 @@ export function HeroSection() {
                     Sua jornada no clube
                   </h2>
                 </div>
-
-                {/* Badge de Classe */}
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                  className="px-3 py-2 rounded-xl bg-antique-gold/10 border border-antique-gold/30"
-                >
-                  <div className="flex items-center gap-2">
-                    <ClassIcon size={18} color="#a27937" />
-                    <span className="text-sm font-heading font-semibold text-ice-white">
-                      {levelCopy.names[currentLevel.id] || currentLevel.name}
-                    </span>
-                  </div>
-                </motion.div>
               </div>
 
               {/* Contador de Pontos DISPONÍVEIS */}
@@ -208,44 +211,48 @@ export function HeroSection() {
                 )}
               </div>
 
-              {/* Progresso para próximo nível */}
+              {/* Progresso para próximo nível - clicável para /jornada */}
               {nextLevel ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="p-4 rounded-xl bg-deep-purple/60 border border-dusty-rose/20 mb-6"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-dusty-rose">Próxima classe: {levelCopy.names[nextLevel.id] || nextLevel.name}</span>
-                    <span className="text-xs font-heading text-antique-gold">
-                      faltam {pointsToNext.toLocaleString('pt-BR')} pts
-                    </span>
-                  </div>
-                  <ProgressBar
-                    progress={progress}
-                    height={6}
-                    gradient={['#a27937', '#c9a962']}
-                    bgColor="rgba(163, 150, 149, 0.15)"
-                  />
-                  {/* Bônus ao atingir */}
-                  <p className="text-[13px] mt-2 text-center">
-                    <span className="text-dusty-rose/70">bônus de </span>
-                    <span className="font-semibold" style={{ color: '#a27937' }}>+{(nextLevel.id === 2 ? 1000 : nextLevel.id === 3 ? 3000 : nextLevel.id === 4 ? 5000 : 10000).toLocaleString('pt-BR')}</span>
-                    <span className="text-dusty-rose/70"> ao chegar</span>
-                  </p>
-                </motion.div>
+                <Link to="/jornada">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="p-4 rounded-xl bg-deep-purple/60 border border-dusty-rose/20 mb-6 hover:border-antique-gold/40 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-dusty-rose">Próxima classe: {levelCopy.names[nextLevel.id] || nextLevel.name}</span>
+                      <span className="text-xs font-heading text-antique-gold">
+                        faltam {pointsToNext.toLocaleString('pt-BR')} pts
+                      </span>
+                    </div>
+                    <ProgressBar
+                      progress={progress}
+                      height={6}
+                      gradient={['#a27937', '#c9a962']}
+                      bgColor="rgba(163, 150, 149, 0.15)"
+                    />
+                    {/* Bônus ao atingir */}
+                    <p className="text-[13px] mt-2 text-center">
+                      <span className="text-dusty-rose/70">bônus de </span>
+                      <span className="font-semibold" style={{ color: '#a27937' }}>+{(nextLevel.id === 2 ? 1000 : nextLevel.id === 3 ? 3000 : nextLevel.id === 4 ? 5000 : 10000).toLocaleString('pt-BR')}</span>
+                      <span className="text-dusty-rose/70"> ao chegar</span>
+                    </p>
+                  </motion.div>
+                </Link>
               ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="p-4 rounded-xl bg-deep-purple/60 border border-antique-gold/30 mb-6 text-center"
-                >
-                  <span className="text-sm text-antique-gold font-heading font-semibold">
-                    Você está no topo do clube
-                  </span>
-                </motion.div>
+                <Link to="/jornada">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="p-4 rounded-xl bg-deep-purple/60 border border-antique-gold/30 mb-6 text-center hover:border-antique-gold/50 transition-colors cursor-pointer"
+                  >
+                    <span className="text-sm text-antique-gold font-heading font-semibold">
+                      Você está no topo do clube
+                    </span>
+                  </motion.div>
+                </Link>
               )}
 
               {/* Linha do Plano */}

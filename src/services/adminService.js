@@ -439,7 +439,7 @@ export async function fetchAdminStats() {
 
 /**
  * Busca métricas detalhadas do admin
- * - Free vs Prime
+ * - Free vs Prime (TOTAL e novos no mês)
  * - Conversão Free→Prime no mês
  * - Pontos emitidos vs resgatados no mês
  */
@@ -449,25 +449,44 @@ export async function fetchAdminMetrics() {
     const hoje = new Date()
     const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString()
 
-    // 1. Contar Free vs Prime
-    const { data: planos } = await supabase
+    // 1. Total de clientes
+    const { count: totalClientes } = await supabase
       .from('profiles')
-      .select('plano_efetivo')
+      .select('*', { count: 'exact', head: true })
+      .neq('role', 'admin')
 
-    const freeCount = planos?.filter(p => !p.plano_efetivo || p.plano_efetivo === 'free').length || 0
-    const primeCount = planos?.filter(p => p.plano_efetivo === 'prime').length || 0
+    // 2. Clientes Prime (assinaturas ativas)
+    const { data: assinaturasPrime } = await supabase
+      .from('subscriptions')
+      .select('user_id')
+      .eq('status', 'active')
 
-    // 2. Conversões Free→Prime no mês (assinaturas criadas no mês)
+    const primeUserIds = new Set(assinaturasPrime?.map(s => s.user_id) || [])
+    const primeCount = primeUserIds.size
+    const freeCount = (totalClientes || 0) - primeCount
+
+    // 3. Novos clientes no mês
+    const { count: novosNoMes } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .neq('role', 'admin')
+      .gte('created_at', inicioMes)
+
+    // 4. Conversões Free→Prime no mês (assinaturas criadas no mês)
     const { count: conversoesNoMes } = await supabase
       .from('subscriptions')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', inicioMes)
       .eq('status', 'active')
 
-    // % conversão = conversões / (free + conversões) * 100
-    const percentualConversao = freeCount > 0 ? ((conversoesNoMes || 0) / (freeCount + (conversoesNoMes || 0)) * 100).toFixed(1) : 0
+    // % conversão = conversões no mês / (Free no início do mês + conversões) * 100
+    // Free no início = Free atual + conversões (eles eram Free antes)
+    const freeNoInicioMes = freeCount + (conversoesNoMes || 0)
+    const percentualConversao = freeNoInicioMes > 0
+      ? ((conversoesNoMes || 0) / freeNoInicioMes * 100).toFixed(1)
+      : 0
 
-    // 3. Pontos emitidos no mês (soma de amount > 0)
+    // 5. Pontos emitidos no mês (soma de amount > 0)
     const { data: pontosEmitidos } = await supabase
       .from('point_transactions')
       .select('amount')
@@ -476,7 +495,7 @@ export async function fetchAdminMetrics() {
 
     const totalEmitido = pontosEmitidos?.reduce((sum, t) => sum + t.amount, 0) || 0
 
-    // 4. Pontos resgatados no mês (soma de amount < 0, em valor absoluto)
+    // 6. Pontos resgatados no mês (soma de amount < 0, em valor absoluto)
     const { data: pontosResgatados } = await supabase
       .from('point_transactions')
       .select('amount')
@@ -488,8 +507,10 @@ export async function fetchAdminMetrics() {
     return {
       success: true,
       metrics: {
+        totalClientes: totalClientes || 0,
         freeCount,
         primeCount,
+        novosNoMes: novosNoMes || 0,
         conversoesNoMes: conversoesNoMes || 0,
         percentualConversao,
         pontosEmitidosMes: totalEmitido,
@@ -504,35 +525,78 @@ export async function fetchAdminMetrics() {
 
 /**
  * Busca métricas de fundadores
+ * - Total vendidas
+ * - Por lote
+ * - Vagas restantes (100 - vendidas)
  */
 export async function fetchFundadoresMetrics() {
   try {
-    // Buscar dados dos lotes
-    const { data: loteAtual } = await supabase.rpc('get_preco_fundador_atual')
-
-    // Contar fundadores por lote
+    // Buscar fundadores diretamente: quem tem numero_fundador no metadata
     const { data: fundadores } = await supabase
       .from('subscriptions')
-      .select('metadata')
-      .eq('ciclo', 'anual')
+      .select('metadata, created_at')
       .eq('status', 'active')
-      .not('metadata->numero_fundador', 'is', null)
+
+    // Filtrar quem realmente é fundador (tem numero_fundador)
+    const fundadoresReais = fundadores?.filter(f => f.metadata?.numero_fundador) || []
+    const totalVendidas = fundadoresReais.length
 
     // Agrupar por lote
     const porLote = {}
-    fundadores?.forEach(f => {
+    fundadoresReais.forEach(f => {
       const lote = f.metadata?.lote || 1
       porLote[lote] = (porLote[lote] || 0) + 1
     })
 
+    // Definir lotes e preços
+    // Lote 1: 20 vagas a R$ 497
+    // Lote 2: 20 vagas a R$ 597
+    // Lote 3: 20 vagas a R$ 697
+    // Lote 4: 20 vagas a R$ 797
+    // Lote 5: 20 vagas a R$ 897
+    const lotes = [
+      { numero: 1, vagas: 20, preco: 497 },
+      { numero: 2, vagas: 20, preco: 597 },
+      { numero: 3, vagas: 20, preco: 697 },
+      { numero: 4, vagas: 20, preco: 797 },
+      { numero: 5, vagas: 20, preco: 897 }
+    ]
+
+    // Determinar lote atual baseado em quantas vagas foram vendidas
+    let vagasVendidas = 0
+    let loteAtual = 1
+    let precoAtual = 497
+    let vagasNoLoteAtual = 0
+
+    for (const lote of lotes) {
+      const vendidasNoLote = porLote[lote.numero] || 0
+      vagasVendidas += vendidasNoLote
+      vagasNoLoteAtual = vendidasNoLote
+
+      if (vendidasNoLote < lote.vagas) {
+        loteAtual = lote.numero
+        precoAtual = lote.preco
+        break
+      }
+    }
+
+    // Vagas restantes no total (100 - vendidas)
+    const vagasRestantes = Math.max(0, 100 - totalVendidas)
+
+    // Vagas restantes no lote atual
+    const loteConfig = lotes.find(l => l.numero === loteAtual) || lotes[0]
+    const vagasRestantesNoLote = loteConfig.vagas - (porLote[loteAtual] || 0)
+
     return {
       success: true,
       fundadores: {
-        loteAtual: loteAtual?.[0]?.lote_numero || 1,
-        precoAtual: parseFloat(loteAtual?.[0]?.preco) || 497,
-        vagasRestantes: loteAtual?.[0]?.vagas_restantes || 0,
-        totalVendidas: loteAtual?.[0]?.total_vendidas || 0,
-        porLote
+        loteAtual,
+        precoAtual,
+        vagasRestantes,
+        vagasRestantesNoLote,
+        totalVendidas,
+        porLote,
+        lotes // Informações de todos os lotes
       }
     }
   } catch (error) {
@@ -543,24 +607,48 @@ export async function fetchFundadoresMetrics() {
 
 /**
  * Busca erros detalhados da leitura de cards IA
+ * - Mostra taxa de sucesso dos últimos 7 dias e 30 dias
+ * - Mostra modelo usado em cada erro
+ * - Mostra mensagem real de erro (não "Outro")
  */
 export async function fetchIAErrorDetails() {
   try {
+    const hoje = new Date()
+    const seteDiasAtras = new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    const trintaDiasAtras = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
+
+    // Buscar dados dos últimos 30 dias
     const { data, error } = await supabase
       .from('ia_uso')
       .select('id, created_at, sucesso, erro, modelo, emissao_id, tokens_entrada, tokens_saida')
+      .gte('created_at', trintaDiasAtras)
       .order('created_at', { ascending: false })
-      .limit(50)
 
     if (error) throw error
 
-    // Separar por status
-    const erros = data?.filter(d => !d.sucesso) || []
-    const sucessos = data?.filter(d => d.sucesso) || []
+    // Separar por status - 30 dias
+    const erros30d = data?.filter(d => !d.sucesso) || []
+    const sucessos30d = data?.filter(d => d.sucesso) || []
+    const total30d = data?.length || 0
+    const taxaSucesso30d = total30d > 0 ? ((sucessos30d.length / total30d) * 100).toFixed(1) : 0
 
-    // Agrupar erros por tipo
+    // Separar por status - 7 dias
+    const dados7d = data?.filter(d => d.created_at >= seteDiasAtras) || []
+    const erros7d = dados7d.filter(d => !d.sucesso)
+    const sucessos7d = dados7d.filter(d => d.sucesso)
+    const total7d = dados7d.length
+    const taxaSucesso7d = total7d > 0 ? ((sucessos7d.length / total7d) * 100).toFixed(1) : 0
+
+    // Agrupar erros por modelo
+    const errosPorModelo = {}
+    erros30d.forEach(e => {
+      const modelo = e.modelo || 'desconhecido'
+      errosPorModelo[modelo] = (errosPorModelo[modelo] || 0) + 1
+    })
+
+    // Agrupar erros por tipo (com mensagem real)
     const errosPorTipo = {}
-    erros.forEach(e => {
+    erros30d.forEach(e => {
       const tipoErro = categorizarErroIA(e.erro)
       errosPorTipo[tipoErro] = (errosPorTipo[tipoErro] || 0) + 1
     })
@@ -568,16 +656,28 @@ export async function fetchIAErrorDetails() {
     return {
       success: true,
       iaErrors: {
-        totalRecentes: data?.length || 0,
-        erros: erros.length,
-        sucessos: sucessos.length,
-        taxaErro: data?.length > 0 ? ((erros.length / data.length) * 100).toFixed(1) : 0,
+        // 30 dias
+        total30d,
+        erros30d: erros30d.length,
+        sucessos30d: sucessos30d.length,
+        taxaSucesso30d,
+        taxaErro30d: total30d > 0 ? ((erros30d.length / total30d) * 100).toFixed(1) : 0,
+        // 7 dias
+        total7d,
+        erros7d: erros7d.length,
+        sucessos7d: sucessos7d.length,
+        taxaSucesso7d,
+        taxaErro7d: total7d > 0 ? ((erros7d.length / total7d) * 100).toFixed(1) : 0,
+        // Agrupamentos
         errosPorTipo,
-        detalhes: erros.slice(0, 10).map(e => ({
+        errosPorModelo,
+        // Detalhes (com modelo)
+        detalhes: erros30d.slice(0, 10).map(e => ({
           id: e.id,
           data: new Date(e.created_at).toLocaleString('pt-BR'),
           erro: e.erro,
           tipo: categorizarErroIA(e.erro),
+          modelo: e.modelo || 'desconhecido',
           emissaoId: e.emissao_id
         }))
       }
@@ -590,9 +690,10 @@ export async function fetchIAErrorDetails() {
 
 /**
  * Categoriza o erro da IA em tipos conhecidos
+ * Se não reconhecer, retorna a mensagem resumida (não "Outro")
  */
 function categorizarErroIA(erro) {
-  if (!erro) return 'Desconhecido'
+  if (!erro) return 'Sem mensagem'
   const erroLower = erro.toLowerCase()
 
   if (erroLower.includes('credit') || erroLower.includes('balance') || erroLower.includes('billing')) {
@@ -604,16 +705,23 @@ function categorizarErroIA(erro) {
   if (erroLower.includes('timeout') || erroLower.includes('timed out')) {
     return 'Timeout'
   }
-  if (erroLower.includes('invalid') || erroLower.includes('parse') || erroLower.includes('json')) {
-    return 'Resposta inválida'
+  if (erroLower.includes('invalid') && (erroLower.includes('model') || erroLower.includes('id'))) {
+    return 'Modelo inválido'
+  }
+  if (erroLower.includes('parse') || erroLower.includes('json')) {
+    return 'Erro de parse'
   }
   if (erroLower.includes('image') || erroLower.includes('file') || erroLower.includes('upload')) {
     return 'Erro de imagem'
   }
-  if (erroLower.includes('network') || erroLower.includes('connection')) {
+  if (erroLower.includes('network') || erroLower.includes('connection') || erroLower.includes('fetch')) {
     return 'Erro de rede'
   }
-  return 'Outro'
+  if (erroLower.includes('not found') || erroLower.includes('404')) {
+    return 'Não encontrado'
+  }
+  // Retornar resumo da mensagem real (primeiros 40 chars)
+  return erro.length > 40 ? erro.slice(0, 40) + '...' : erro
 }
 
 // ============================================
