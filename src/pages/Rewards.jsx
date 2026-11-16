@@ -992,6 +992,15 @@ export function Rewards() {
 
   // Handler para iniciar resgate (do modal de detalhe para o modal de confirmação)
   const handleStartRedeem = useCallback((experience) => {
+    // Verificar saldo negativo
+    if (availablePoints < 0) {
+      toast.error('Saldo negativo por cancelamento de viagem. Regularize antes de resgatar.', {
+        style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' },
+        duration: 5000
+      })
+      return
+    }
+
     // Verificações de segurança
     if (!experience.isUnlockedByLevel) {
       toast.error(`Disponível a partir da ${levelCopy.names[experience.requiredLevelId]}`, {
@@ -999,8 +1008,8 @@ export function Rewards() {
       })
       return
     }
-    if (userPoints < experience.points) {
-      toast.error(`Faltam ${format.pointsShort(experience.points - userPoints)} pontos`, {
+    if (availablePoints < experience.points) {
+      toast.error(`Faltam ${format.pointsShort(experience.points - availablePoints)} pontos`, {
         style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(163, 150, 149, 0.3)' }
       })
       return
@@ -1018,7 +1027,7 @@ export function Rewards() {
       tipoEntrega: experience.tipoEntrega || 'voucher',
       subtipoEntrega: experience.subtipoEntrega || null
     })
-  }, [userPoints])
+  }, [availablePoints])
 
   // Handler para fechar modal
   function closeModal() {
@@ -1070,8 +1079,17 @@ export function Rewards() {
 
     const totalCost = selectedReward.points_required * quantity
 
+    // Verificar saldo negativo
+    if (availablePoints < 0) {
+      toast.error('Saldo negativo por cancelamento de viagem. Regularize antes de resgatar.', {
+        style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' },
+        duration: 5000
+      })
+      return
+    }
+
     // Verificar saldo ANTES de processar (validação extra de segurança)
-    if (userPoints < totalCost) {
+    if (availablePoints < totalCost) {
       toast.error('Saldo insuficiente para este resgate.', {
         style: { background: '#32113f', color: '#edf0f1', border: '1px solid rgba(239, 68, 68, 0.3)' }
       })

@@ -162,8 +162,18 @@ export function HeroSection() {
                   pontos disponíveis
                 </p>
 
-                {/* Selo de pontos bloqueados */}
-                {blockedPoints > 0 && (
+                {/* Alerta de saldo negativo */}
+                {availablePoints < 0 && (
+                  <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-heading">
+                    <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5">
+                      <path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                    <span>Saldo negativo por cancelamento de viagem</span>
+                  </div>
+                )}
+
+                {/* Selo de pontos bloqueados (só aparece se carência > 0) */}
+                {blockedPoints > 0 && availablePoints >= 0 && (
                   <div className="relative mt-2">
                     <button
                       onClick={() => setShowBlockedPopover(!showBlockedPopover)}
