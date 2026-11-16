@@ -673,7 +673,17 @@ function ClassSectionLight({ classId, rewards, userPoints, userLevelId, onActiva
 
 // Card de experiência para fundo claro - COM FOTO
 function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onViewDetails, isRedeemed, isPending, triggerRef }) {
-  const canRedeem = reward.canRedeem && !isRedeemed && !isPending
+  // Flags de tipo
+  const isSobConsulta = reward.isSobConsulta || reward.tipo === 'sob_consulta'
+  const isEmBreve = reward.isEmBreve || reward.tipo === 'em_breve'
+  const isPrivilegio = reward.isPrivilegio || reward.tipo === 'privilegio'
+  const isExclusive = userLevelId === 5 // Me,up Exclusive
+
+  // Ajustar canRedeem baseado no tipo
+  const canRedeem = !isSobConsulta && !isEmBreve && !isPrivilegio && reward.canRedeem && !isRedeemed && !isPending
+  const canSolicitarCotacao = isSobConsulta && reward.isUnlockedByLevel && !isPending
+  const canSolicitarUpgrade = isPrivilegio && isExclusive
+
   const isUnlockedByLevel = reward.isUnlockedByLevel
   const progress = reward.progress
 
@@ -686,7 +696,20 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
 
   const pointsToUnlock = getPointsToUnlockClass()
 
+  // Calcular pontos para Me,up Exclusive (classe 5)
+  const getPointsToExclusive = () => {
+    const exclusiveConfig = levelThresholds.find(l => l.id === 5)
+    if (!exclusiveConfig) return 0
+    return Math.max(0, exclusiveConfig.minPoints - userPoints)
+  }
+
+  const pointsToExclusive = getPointsToExclusive()
+
   const getButtonText = () => {
+    if (isEmBreve) return 'Em breve'
+    if (isPrivilegio && !isExclusive) return `Faltam ${format.pointsShort(pointsToExclusive)} pts`
+    if (isPrivilegio && isExclusive) return 'Solicitar upgrade'
+    if (isSobConsulta) return 'Solicitar cotação'
     if (isRedeemed) return 'Resgatada'
     if (isPending) return 'Aguardando...'
     if (canRedeem) return 'Resgatar'
@@ -739,9 +762,9 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
 
         {/* Badges sobre a imagem */}
         <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {/* Badge de bloqueio com cadeado */}
-            {!isUnlockedByLevel && (
+            {!isUnlockedByLevel && !isPrivilegio && (
               <span className="text-[10px] px-2 py-1 rounded-lg bg-graphite/80 text-ice-white font-medium flex items-center gap-1">
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
@@ -749,7 +772,35 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
                 Desbloqueia na {levelCopy.names[reward.requiredLevelId]}
               </span>
             )}
-            {isUnlockedByLevel && reward.badge && !isRedeemed && (
+            {/* Badge Em Breve */}
+            {isEmBreve && (
+              <span className="text-[10px] px-2 py-1 rounded-lg bg-graphite/80 text-ice-white font-medium">
+                Em breve
+              </span>
+            )}
+            {/* Badge Sob Consulta */}
+            {isSobConsulta && (
+              <span className="text-[10px] px-2 py-1 rounded-lg bg-bright-purple/80 text-ice-white font-medium">
+                Sob consulta
+              </span>
+            )}
+            {/* Badge Privilégio Me,up Exclusive */}
+            {isPrivilegio && (
+              <span className="text-[10px] px-2 py-1 rounded-lg bg-gradient-to-r from-antique-gold to-amber-500 text-deep-purple font-semibold flex items-center gap-1">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                Exclusivo Me,up Exclusive
+              </span>
+            )}
+            {/* Badge de destino */}
+            {reward.destino && !isSobConsulta && !isEmBreve && (
+              <span className="text-[10px] px-2 py-1 rounded-lg bg-deep-purple/80 text-ice-white font-medium">
+                {reward.destino}
+              </span>
+            )}
+            {/* Badges regulares */}
+            {isUnlockedByLevel && reward.badge && !isRedeemed && !isSobConsulta && !isEmBreve && !isPrivilegio && (
               <span className={`text-[10px] px-2 py-1 rounded-lg border backdrop-blur-sm ${badgeConfig[reward.badge].color}`}>
                 {badgeConfig[reward.badge].label}
               </span>
@@ -760,7 +811,7 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
               </span>
             )}
           </div>
-          {isUnlockedByLevel && (
+          {isUnlockedByLevel && !isPrivilegio && (
             <span className="text-[10px] uppercase tracking-wider text-ice-white/80 bg-deep-purple/60 backdrop-blur-sm px-2 py-1 rounded-lg">
               {levelCopy.names[reward.requiredLevelId]}
             </span>
@@ -805,8 +856,8 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
           </div>
         )}
 
-        {/* Progress Bar - apenas para desbloqueados sem pontos suficientes */}
-        {isUnlockedByLevel && !canRedeem && !isRedeemed && !isPending && (
+        {/* Progress Bar - apenas para desbloqueados sem pontos suficientes (tipo fixo) */}
+        {isUnlockedByLevel && !canRedeem && !isRedeemed && !isPending && !isSobConsulta && !isEmBreve && !isPrivilegio && (
           <div className="mb-4">
             <div
               className="h-1.5 bg-graphite/10 rounded-full overflow-hidden"
@@ -832,19 +883,87 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
           </div>
         )}
 
+        {/* Info para privilégio não desbloqueado */}
+        {isPrivilegio && !isExclusive && (
+          <div className="mb-4 p-2 rounded-lg bg-antique-gold/10 border border-antique-gold/20">
+            <p className="text-xs text-antique-gold text-center">
+              Disponível ao chegar na <span className="font-semibold">Me,up Exclusive</span>
+            </p>
+            <p className="text-[10px] text-graphite/60 text-center mt-1">
+              Faltam {format.pointsShort(pointsToExclusive)} pts
+            </p>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="flex items-center justify-between">
           <div>
-            <span className={`text-xl font-display font-light ${
-              isRedeemed ? 'text-game-green' : !isUnlockedByLevel ? 'text-graphite/60' : canRedeem ? 'text-antique-gold' : 'text-graphite/70'
-            }`}>
-              {format.pointsShort(reward.points_required)}
-            </span>
-            <span className={`text-xs ml-1 ${!isUnlockedByLevel ? 'text-graphite/40' : 'text-graphite/60'}`}>pontos</span>
+            {/* Preço: sob_consulta e privilegio mostram texto diferente */}
+            {isSobConsulta ? (
+              <span className="text-sm text-bright-purple font-medium">A partir de {format.pointsShort(reward.pontosPrime || 0)}</span>
+            ) : isPrivilegio ? (
+              <span className="text-sm text-antique-gold font-medium">A partir de R$ 10.000</span>
+            ) : isEmBreve ? (
+              <span className="text-sm text-graphite/50">Preço a definir</span>
+            ) : (
+              <>
+                <span className={`text-xl font-display font-light ${
+                  isRedeemed ? 'text-game-green' : !isUnlockedByLevel ? 'text-graphite/60' : canRedeem ? 'text-antique-gold' : 'text-graphite/70'
+                }`}>
+                  {format.pointsShort(reward.points_required)}
+                </span>
+                <span className={`text-xs ml-1 ${!isUnlockedByLevel ? 'text-graphite/40' : 'text-graphite/60'}`}>pontos</span>
+              </>
+            )}
           </div>
 
-          {/* Botão para cards desbloqueados */}
-          {isUnlockedByLevel && (
+          {/* Botão Em Breve (desabilitado) */}
+          {isEmBreve && (
+            <button
+              disabled
+              className="px-5 py-2.5 rounded-xl text-sm font-heading font-medium bg-graphite/10 text-graphite/50 cursor-not-allowed"
+            >
+              Em breve
+            </button>
+          )}
+
+          {/* Botão Sob Consulta */}
+          {isSobConsulta && isUnlockedByLevel && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onActivate(reward)}
+              className="px-5 py-2.5 rounded-xl text-sm font-heading font-medium bg-bright-purple text-ice-white hover:bg-deep-purple transition-all"
+            >
+              Solicitar cotação
+            </motion.button>
+          )}
+
+          {/* Botão Privilégio */}
+          {isPrivilegio && (
+            <motion.button
+              whileHover={isExclusive ? { scale: 1.02 } : {}}
+              whileTap={isExclusive ? { scale: 0.98 } : {}}
+              onClick={() => {
+                if (isExclusive) {
+                  // Abrir WhatsApp com mensagem pronta
+                  const msg = encodeURIComponent('Sou Me,up Exclusive e quero cotar um upgrade para Executiva na minha viagem')
+                  window.open(`https://wa.me/5516988126568?text=${msg}`, '_blank')
+                }
+              }}
+              disabled={!isExclusive}
+              className={`px-5 py-2.5 rounded-xl text-sm font-heading font-medium transition-all ${
+                isExclusive
+                  ? 'bg-gradient-to-r from-antique-gold to-amber-500 text-deep-purple hover:opacity-90'
+                  : 'bg-graphite/10 text-graphite/50 cursor-not-allowed'
+              }`}
+            >
+              {isExclusive ? 'Solicitar upgrade' : 'Me,up Exclusive'}
+            </motion.button>
+          )}
+
+          {/* Botão para cards desbloqueados (tipo fixo) */}
+          {!isSobConsulta && !isEmBreve && !isPrivilegio && isUnlockedByLevel && (
             <motion.button
               ref={canRedeem ? triggerRef : undefined}
               whileHover={canRedeem ? { scale: 1.02 } : {}}
@@ -872,8 +991,8 @@ function ExperienceCardLight({ reward, userPoints, userLevelId, onActivate, onVi
             </motion.button>
           )}
 
-          {/* Botão para cards bloqueados por nível */}
-          {!isUnlockedByLevel && (
+          {/* Botão para cards bloqueados por nível (tipo fixo) */}
+          {!isSobConsulta && !isEmBreve && !isPrivilegio && !isUnlockedByLevel && (
             <button
               disabled
               aria-label={getLockedAriaLabel()}
@@ -911,7 +1030,7 @@ export function Rewards() {
   const rewardsTable = allExperiences.map(exp => ({
     id: exp.id,
     name: exp.name || exp.title,
-    subtitle: '',
+    subtitle: exp.destino ? `${exp.destino}` : '',
     description: exp.description,
     points_required: exp.points,
     requiredLevelId: exp.classeMinima || 1,
@@ -924,14 +1043,28 @@ export function Rewards() {
     categoria: exp.categoria,
     // Campos do sistema de entrega
     tipoEntrega: exp.tipoEntrega || 'voucher',
-    subtipoEntrega: exp.subtipoEntrega || null
+    subtipoEntrega: exp.subtipoEntrega || null,
+    // Novos campos catálogo v2
+    tipo: exp.tipo || 'fixo',
+    destino: exp.destino || null,
+    isSobConsulta: exp.isSobConsulta || false,
+    isEmBreve: exp.isEmBreve || false,
+    isPrivilegio: exp.isPrivilegio || false,
+    vinculadoViagem: exp.vinculadoViagem || false,
+    porPassageiro: exp.porPassageiro || false,
+    porTrecho: exp.porTrecho || false,
+    pontosPrime: exp.pontosPrime,
+    pontosFree: exp.pontosFree
   }))
 
   // Usar availablePoints para verificar se pode resgatar (exclui pontos bloqueados)
   const rewardsWithProgress = calculateRewardsProgress(availablePoints, userLevelId, rewardsTable)
 
   // Experiências são repetíveis - não filtrar por redeemedIds
-  const availableCount = rewardsWithProgress.filter(r => r.canRedeem).length
+  // Contar apenas itens fixos (não sob_consulta, em_breve ou privilegio)
+  const availableCount = rewardsWithProgress.filter(r =>
+    r.canRedeem && r.tipo === 'fixo' && !r.isSobConsulta && !r.isEmBreve && !r.isPrivilegio
+  ).length
   const ClassIcon = getClassIcon(userLevelId)
 
   useEffect(() => {
@@ -981,7 +1114,15 @@ export function Rewards() {
       canRedeem: reward.canRedeem,
       // Campos do sistema de entrega
       tipoEntrega: reward.tipoEntrega || 'voucher',
-      subtipoEntrega: reward.subtipoEntrega || null
+      subtipoEntrega: reward.subtipoEntrega || null,
+      // Novos campos catálogo v2
+      tipo: reward.tipo || 'fixo',
+      destino: reward.destino || null,
+      isSobConsulta: reward.isSobConsulta || false,
+      isEmBreve: reward.isEmBreve || false,
+      isPrivilegio: reward.isPrivilegio || false,
+      pontosPrime: reward.pontosPrime,
+      pontosFree: reward.pontosFree
     })
   }, [])
 
