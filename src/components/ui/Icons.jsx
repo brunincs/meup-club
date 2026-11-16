@@ -178,6 +178,36 @@ export function UsersIcon({ size = 24, color = 'currentColor', className = '' })
   )
 }
 
+export function UserIcon({ size = 24, color = 'currentColor', className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M20 21V19C20 17.9 19.1 17 18 17H6C4.9 17 4 17.9 4 19V21" />
+      <circle cx="12" cy="9" r="4" />
+    </svg>
+  )
+}
+
+export function MessageIcon({ size = 24, color = 'currentColor', className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M21 11.5C21 16.19 16.97 20 12 20C10.82 20 9.7 19.79 8.67 19.4L3 21L4.6 15.33C4.21 14.3 4 13.18 4 12C4 7.03 8.03 3 13 3C17.97 3 21 6.81 21 11.5Z" />
+      <path d="M8 12H8.01" />
+      <path d="M12 12H12.01" />
+      <path d="M16 12H16.01" />
+    </svg>
+  )
+}
+
+export function InstagramIcon({ size = 24, color = 'currentColor', className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M17.5 6.5H17.51" />
+    </svg>
+  )
+}
+
 export function TargetIcon({ size = 24, color = 'currentColor', className = '' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>

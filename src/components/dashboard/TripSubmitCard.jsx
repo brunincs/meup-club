@@ -18,6 +18,7 @@ import { fetchUserBenefits, fetchPlanosConfig } from '@/services/subscriptionSer
 import { getCtaText, calcularComparacaoPrime } from '@/services/primeUpsellService'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { PlaneIcon, CrownIcon } from '@/components/ui/Icons'
 
 // ============================================
 // COMPONENTE PRINCIPAL
@@ -91,7 +92,7 @@ export function TripSubmitCard({ variant = 'dark' }) {
       }`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">✈️</span>
+            <PlaneIcon size={24} color="#a27937" />
             <div>
               <h3 className={`text-base font-display font-semibold ${
                 isDark ? 'text-ice-white' : 'text-graphite'
@@ -139,7 +140,7 @@ export function TripSubmitCard({ variant = 'dark' }) {
               <div className={`w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center ${
                 isDark ? 'bg-antique-gold/10' : 'bg-deep-purple/5'
               }`}>
-                <span className="text-3xl">👑</span>
+                <CrownIcon size={32} color="#a27937" />
               </div>
               <p className={`text-sm font-heading mb-2 ${
                 isDark ? 'text-ice-white' : 'text-graphite'

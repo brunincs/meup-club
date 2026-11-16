@@ -9,12 +9,13 @@ import { useAuth } from '@/contexts/AuthContext'
 import { getReferralSteps, getMissedEarnings, getTotalMissedEarnings } from '@/services/referralService'
 import { getMyReferralCode } from '@/services/referralService'
 import { format } from '@/services/copy'
+import { UserIcon, PlaneIcon, CrownIcon, CheckIcon, LockIcon } from '@/components/ui/Icons'
 
 // Etapas do funil de indicação
 const STEPS = [
-  { key: 'cadastrou', label: 'Cadastrou', icon: '👤' },
-  { key: 'primeira_emissao', label: 'Comprou', icon: '✈️' },
-  { key: 'prime_anual', label: 'Assinou Prime', icon: '👑', primeOnly: true }
+  { key: 'cadastrou', label: 'Cadastrou', IconComponent: UserIcon },
+  { key: 'primeira_emissao', label: 'Comprou', IconComponent: PlaneIcon },
+  { key: 'prime_anual', label: 'Assinou Prime', IconComponent: CrownIcon, primeOnly: true }
 ]
 
 export function MyReferrals({ variant = 'dark' }) {
@@ -274,7 +275,18 @@ export function MyReferrals({ variant = 'dark' }) {
                             }`}
                             title={`${step.label}${isPrimeStep && !isPrime ? ' (Prime)' : ''}`}
                           >
-                            {completed ? (isPending ? '⏳' : '✓') : step.icon}
+                            {completed ? (
+                              isPending ? (
+                                <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle cx="12" cy="12" r="10" />
+                                  <polyline points="12 6 12 12 16 14" />
+                                </svg>
+                              ) : (
+                                <CheckIcon size={14} color="currentColor" />
+                              )
+                            ) : (
+                              <step.IconComponent size={14} color="currentColor" />
+                            )}
                           </div>
                           <span className={`text-[10px] mt-1 ${
                             completed
@@ -285,7 +297,7 @@ export function MyReferrals({ variant = 'dark' }) {
                           }`}>
                             {step.label}
                             {isPrimeStep && !isPrime && (
-                              <span className="text-amber-500 ml-0.5">🔒</span>
+                              <LockIcon size={10} color="#f59e0b" className="inline ml-0.5" />
                             )}
                           </span>
                           {points > 0 && (

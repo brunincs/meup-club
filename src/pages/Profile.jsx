@@ -37,7 +37,10 @@ import {
   LockIcon,
   GlobeIcon,
   ClipboardIcon,
-  TargetIcon
+  TargetIcon,
+  CheckIcon,
+  StarIcon,
+  getClassIcon
 } from '@/components/ui/Icons'
 import toast from 'react-hot-toast'
 
@@ -133,7 +136,10 @@ function PassportHeader({ profile, levelData, userPoints }) {
                   Classe / Class
                 </p>
                 <div className="flex items-center gap-2">
-                  <span className="text-base">{levelCopy.icons[currentLevelId]}</span>
+                  {(() => {
+                    const ClassIcon = getClassIcon(currentLevelId)
+                    return <ClassIcon size={18} color="#a27937" />
+                  })()}
                   <span className="text-sm text-[#ddd1d0]">{levelCopy.names[currentLevelId]}</span>
                 </div>
               </div>
@@ -174,31 +180,36 @@ function PassportHeader({ profile, levelData, userPoints }) {
 
 function RealStats({ stats, levelData }) {
   const currentLevelId = levelData?.current?.id ?? 1
+  const ClassIcon = getClassIcon(currentLevelId)
 
   const statItems = [
     {
       label: 'Indicações',
       value: stats.referrals?.total ?? 0,
       subvalue: stats.referrals?.total > 0 ? `${stats.referrals.approved} aprovadas` : 'Nenhuma ainda',
-      icon: '◇'
+      IconComponent: () => (
+        <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#5c005a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2L20 12L12 22L4 12L12 2Z" />
+        </svg>
+      )
     },
     {
       label: 'Classe Atual',
       value: levelCopy.shortNames[currentLevelId],
       subvalue: levelData?.next ? `${levelData.progress}% para próxima` : 'Nível máximo',
-      icon: levelCopy.icons[currentLevelId]
+      IconComponent: () => <ClassIcon size={16} color="#5c005a" />
     },
     {
       label: 'Tarefas',
       value: stats.tasks?.total ?? 0,
       subvalue: stats.tasks?.total > 0 ? `+${format.pointsShort(stats.tasks.points)} pts` : 'Nenhuma concluída',
-      icon: '✓'
+      IconComponent: () => <CheckIcon size={16} color="#5c005a" />
     },
     {
       label: 'Experiências',
       value: stats.experiences?.total ?? 0,
       subvalue: stats.experiences?.total > 0 ? 'resgatadas' : 'Nenhuma ainda',
-      icon: '★'
+      IconComponent: () => <StarIcon size={16} color="#5c005a" />
     }
   ]
 
@@ -214,7 +225,7 @@ function RealStats({ stats, levelData }) {
             className="p-4 rounded-xl bg-white border border-[#ddd1d0]/50 shadow-sm"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[#5c005a]">{stat.icon}</span>
+              <stat.IconComponent />
               <span className="text-[10px] uppercase tracking-wider text-[#a39695]">
                 {stat.label}
               </span>
@@ -1074,7 +1085,10 @@ export function Profile() {
                   <TargetIcon size={14} color="#5c005a" /> Próxima Classe
                 </h3>
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl">{levelCopy.icons[levelData.next.id]}</span>
+                  {(() => {
+                    const NextClassIcon = getClassIcon(levelData.next.id)
+                    return <NextClassIcon size={28} color="#a27937" />
+                  })()}
                   <span className="text-[#32113f] font-medium">{levelCopy.names[levelData.next.id]}</span>
                 </div>
                 <div className="h-2.5 bg-[#edf0f1] rounded-full overflow-hidden mb-2">

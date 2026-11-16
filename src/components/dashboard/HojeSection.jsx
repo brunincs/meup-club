@@ -9,7 +9,25 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePoints } from '@/contexts/PointsContext'
 import { useConfetti } from '@/components/effects/ConfettiEffect'
-import { CalendarIcon, TargetIcon } from '@/components/ui/Icons'
+import { CalendarIcon, TargetIcon, UserIcon, MessageIcon, InstagramIcon, StarIcon, GiftIcon, CheckIcon, DiamondIcon } from '@/components/ui/Icons'
+
+// Mapeia emojis de missões para ícones SVG
+function getMissionIcon(emoji) {
+  const iconMap = {
+    '👤': UserIcon,
+    '💬': MessageIcon,
+    '📷': InstagramIcon,
+    '📸': InstagramIcon,
+    '🌟': StarIcon,
+    '⭐': StarIcon,
+    '🎁': GiftIcon,
+    '✓': CheckIcon,
+    '✅': CheckIcon,
+    '💎': DiamondIcon,
+    '◇': DiamondIcon
+  }
+  return iconMap[emoji] || null
+}
 import {
   fetchTarefas,
   fetchStatusSolicitacoes,
@@ -267,7 +285,13 @@ export function HojeSection({ variant = 'dark' }) {
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
                   isDark ? 'bg-antique-gold/10 text-antique-gold' : 'bg-antique-gold/10 text-antique-gold'
                 }`}>
-                  {mission.icone || '◇'}
+                  {(() => {
+                    const IconComponent = getMissionIcon(mission.icone)
+                    if (IconComponent) {
+                      return <IconComponent size={16} color="#a27937" />
+                    }
+                    return <DiamondIcon size={16} color="#a27937" />
+                  })()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <span className={`text-sm font-heading truncate block ${isDark ? 'text-ice-white' : 'text-deep-purple'}`}>

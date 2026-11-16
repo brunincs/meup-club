@@ -14,7 +14,7 @@ import { useExperiencias, getNextExperience } from '@/hooks/useExperiencias'
 import { ExperienceDetailModal } from '@/components/experiences/ExperienceDetailModal'
 import { registrarVisitaExperiencias } from '@/services/supabaseData'
 import { format, levels as levelCopy } from '@/services/copy'
-import { getClassIcon, GiftIcon } from '@/components/ui/Icons'
+import { getClassIcon, GiftIcon, PlaneIcon } from '@/components/ui/Icons'
 import { RedemptionFormByType } from '@/components/redemption/RedemptionFormByType'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
@@ -1249,7 +1249,7 @@ export function Rewards() {
               className="w-full max-w-sm rounded-2xl bg-deep-purple border border-antique-gold/30 shadow-2xl p-6 text-center"
             >
               <div className="w-14 h-14 rounded-xl bg-antique-gold/20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">✈️</span>
+                <PlaneIcon size={28} color="#a27937" />
               </div>
 
               <h3 className="text-lg font-heading font-semibold text-ice-white mb-2">

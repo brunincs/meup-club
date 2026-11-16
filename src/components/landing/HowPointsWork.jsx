@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
+import { CrownIcon, CheckIcon } from '@/components/ui/Icons'
 
 /**
  * ╔════════════════════════════════════════════════════════════════════════════╗
@@ -145,7 +146,7 @@ export function HowPointsWork() {
                       ? 'bg-antique-gold/20 text-antique-gold border-2 border-antique-gold/30'
                       : 'bg-green-100 text-green-700 border-2 border-green-200'
                   }`}>
-                    {item.primeOnly ? '👑' : '✓'}
+                    {item.primeOnly ? <CrownIcon size={20} color="#a27937" /> : <CheckIcon size={18} color="#15803d" />}
                   </div>
                   <p className="text-xs text-deep-purple/70 mt-2 font-heading">
                     {item.label}
