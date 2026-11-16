@@ -1094,31 +1094,33 @@ export function Profile() {
           >
             <RecentActivity activities={activities} userId={user?.id} />
 
-            {/* Próxima classe */}
+            {/* Próxima classe - clicável para /jornada */}
             {levelData?.next && (
-              <div className="rounded-2xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm">
-                <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 font-medium flex items-center gap-2">
-                  <TargetIcon size={14} color="#5c005a" /> Próxima Classe
-                </h3>
-                <div className="flex items-center gap-3 mb-3">
-                  {(() => {
-                    const NextClassIcon = getClassIcon(levelData.next.id)
-                    return <NextClassIcon size={28} color="#a27937" />
-                  })()}
-                  <span className="text-[#32113f] font-medium">{levelCopy.names[levelData.next.id]}</span>
+              <Link to="/jornada" className="block">
+                <div className="rounded-2xl bg-white border border-[#ddd1d0]/50 p-6 shadow-sm hover:border-[#a27937]/50 transition-colors cursor-pointer">
+                  <h3 className="text-[10px] uppercase tracking-wider text-[#5c005a] mb-4 font-medium flex items-center gap-2">
+                    <TargetIcon size={14} color="#5c005a" /> Próxima Classe
+                  </h3>
+                  <div className="flex items-center gap-3 mb-3">
+                    {(() => {
+                      const NextClassIcon = getClassIcon(levelData.next.id)
+                      return <NextClassIcon size={28} color="#a27937" />
+                    })()}
+                    <span className="text-[#32113f] font-medium">{levelCopy.names[levelData.next.id]}</span>
+                  </div>
+                  <div className="h-2.5 bg-[#edf0f1] rounded-full overflow-hidden mb-2">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${levelData.progress}%` }}
+                      transition={{ duration: 0.8 }}
+                      className="h-full bg-gradient-to-r from-[#5c005a] to-[#a27937] rounded-full"
+                    />
+                  </div>
+                  <p className="text-xs text-[#a39695]">
+                    {format.pointsShort(levelData.pointsToNext)} pontos restantes
+                  </p>
                 </div>
-                <div className="h-2.5 bg-[#edf0f1] rounded-full overflow-hidden mb-2">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${levelData.progress}%` }}
-                    transition={{ duration: 0.8 }}
-                    className="h-full bg-gradient-to-r from-[#5c005a] to-[#a27937] rounded-full"
-                  />
-                </div>
-                <p className="text-xs text-[#a39695]">
-                  {format.pointsShort(levelData.pointsToNext)} pontos restantes
-                </p>
-              </div>
+              </Link>
             )}
 
             {/* Configurações de Notificação */}

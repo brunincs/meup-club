@@ -1,22 +1,24 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserLevel } from '@/hooks/useUserLevel'
 import { DashboardHeader } from '@/components/dashboard'
-import { getClassIcon } from '@/components/ui/Icons'
+import { getClassIcon, PlaneIcon, UsersIcon, CheckIcon, TargetIcon } from '@/components/ui/Icons'
 import { levels as levelCopy, format } from '@/services/copy'
+import { levels as levelData } from '@/services/pointsSystem'
+import { fetchUserBenefits } from '@/services/subscriptionService'
+import { supabase } from '@/lib/supabase'
 
 // ============================================
-// DADOS DAS CLASSES
+// DADOS DAS CLASSES (alinhado com pointsSystem)
 // ============================================
-const CLASSES = [
-  { id: 1, name: 'Economica', minPoints: 0, bonus: 0 },
-  { id: 2, name: 'Economica Premium', minPoints: 5000, bonus: 1000 },
-  { id: 3, name: 'Executiva', minPoints: 20000, bonus: 3000 },
-  { id: 4, name: 'Primeira Classe', minPoints: 50000, bonus: 5000 },
-  { id: 5, name: 'Me,up Exclusive', minPoints: 100000, bonus: 10000 }
-]
+const CLASSES = levelData.map(level => ({
+  id: level.id,
+  name: level.name,
+  minPoints: level.minPoints,
+  bonus: level.id === 1 ? 0 : level.id === 2 ? 1000 : level.id === 3 ? 3000 : level.id === 4 ? 5000 : 10000
+}))
 
 // ============================================
 // COMPONENTE: ITEM DA TIMELINE
@@ -46,16 +48,16 @@ function TimelineItem({ classe, index, currentLevelId, totalPointsEarned, isLast
       {/* Linha vertical */}
       {!isLast && (
         <div className="absolute left-5 top-12 w-0.5 h-full -translate-x-1/2">
-          <div className={`h-full ${isAchieved && !isCurrent ? 'bg-game-green' : 'bg-graphite/20'}`} />
+          <div className={`h-full ${isAchieved && !isCurrent ? 'bg-antique-gold/50' : 'bg-graphite/20'}`} />
         </div>
       )}
 
       {/* Ícone circular */}
       <div className={`relative z-10 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
         isAchieved && !isCurrent
-          ? 'bg-game-green text-white'
+          ? 'bg-antique-gold text-deep-purple'
           : isCurrent
-            ? 'bg-antique-gold text-white ring-4 ring-antique-gold/30'
+            ? 'bg-deep-purple text-white ring-4 ring-deep-purple/30'
             : 'bg-graphite/10 text-graphite/40'
       } ${isExclusive && isFuture ? 'ring-2 ring-antique-gold/50' : ''}`}>
         {isAchieved && !isCurrent ? (
@@ -63,7 +65,7 @@ function TimelineItem({ classe, index, currentLevelId, totalPointsEarned, isLast
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         ) : (
-          <ClassIcon size={20} color={isCurrent ? '#fff' : isAchieved ? '#fff' : '#a39695'} />
+          <ClassIcon size={20} color={isCurrent ? '#fff' : isAchieved ? '#32113f' : '#a39695'} />
         )}
       </div>
 
@@ -76,14 +78,14 @@ function TimelineItem({ classe, index, currentLevelId, totalPointsEarned, isLast
             : isCurrent
               ? 'bg-deep-purple text-ice-white'
               : isAchieved
-                ? 'bg-game-green/10 border border-game-green/30'
+                ? 'bg-antique-gold/10 border border-antique-gold/30'
                 : 'bg-graphite/5 border border-graphite/10'
         }`}>
           {/* Nome e pontos */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <h3 className={`font-heading font-semibold ${
-                isCurrent || isExclusive ? 'text-ice-white' : isAchieved ? 'text-game-green' : 'text-graphite/60'
+                isCurrent || isExclusive ? 'text-ice-white' : isAchieved ? 'text-antique-gold' : 'text-graphite/60'
               }`}>
                 {levelCopy.names[classe.id] || classe.name}
               </h3>
@@ -94,19 +96,19 @@ function TimelineItem({ classe, index, currentLevelId, totalPointsEarned, isLast
               )}
             </div>
             <span className={`text-sm ${
-              isCurrent ? 'text-dusty-rose' : isAchieved ? 'text-game-green/70' : 'text-graphite/40'
+              isCurrent ? 'text-dusty-rose' : isAchieved ? 'text-antique-gold/70' : 'text-graphite/40'
             }`}>
-              {classe.minPoints > 0 ? `${format.pointsShort(classe.minPoints)} pts` : 'Inicial'}
+              {classe.minPoints > 0 ? `a partir de ${format.pointsShort(classe.minPoints)} pts` : 'Inicial'}
             </span>
           </div>
 
           {/* Status da classe */}
-          {isAchieved && !isCurrent && classe.bonus > 0 && (
-            <p className="text-sm text-game-green flex items-center gap-1">
+          {isAchieved && !isCurrent && (
+            <p className="text-sm text-antique-gold flex items-center gap-1">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              Bonus de +{format.pointsShort(classe.bonus)} pts recebido
+              {classe.bonus > 0 ? `Bônus de +${format.pointsShort(classe.bonus)} pts recebido` : 'Início'}
             </p>
           )}
 
@@ -129,7 +131,7 @@ function TimelineItem({ classe, index, currentLevelId, totalPointsEarned, isLast
                 </>
               ) : (
                 <p className="text-sm text-antique-gold font-semibold">
-                  Voce alcancou o nivel maximo!
+                  Você alcançou o nível máximo!
                 </p>
               )}
             </div>
@@ -137,7 +139,7 @@ function TimelineItem({ classe, index, currentLevelId, totalPointsEarned, isLast
 
           {isFuture && classe.bonus > 0 && (
             <p className={`text-sm ${isExclusive ? 'text-antique-gold' : 'text-graphite/50'}`}>
-              Bonus de +{format.pointsShort(classe.bonus)} pts ao chegar
+              Bônus de +{format.pointsShort(classe.bonus)} pts ao chegar
             </p>
           )}
         </div>
@@ -147,12 +149,63 @@ function TimelineItem({ classe, index, currentLevelId, totalPointsEarned, isLast
 }
 
 // ============================================
-// PAGINA PRINCIPAL
+// PÁGINA PRINCIPAL
 // ============================================
 export function Jornada() {
   const { user, loading } = useAuth()
   const navigate = useNavigate()
   const { current: currentLevel, totalPointsEarned, isLoading: levelLoading } = useUserLevel()
+
+  // Dados do plano (para valores dinâmicos)
+  const [benefits, setBenefits] = useState(null)
+  const [missoesPendentes, setMissoesPendentes] = useState({ total: 0, pontosTotal: 0 })
+
+  // Buscar benefícios do plano
+  useEffect(() => {
+    async function loadBenefits() {
+      if (!user?.id) return
+      const result = await fetchUserBenefits(user.id)
+      if (result.success) {
+        setBenefits(result.benefits)
+      }
+    }
+    loadBenefits()
+  }, [user?.id])
+
+  // Buscar missões pendentes para mostrar "Até X pts em missões"
+  useEffect(() => {
+    async function loadMissoes() {
+      if (!user?.id) return
+      try {
+        // Buscar tarefas ativas que o usuário ainda não completou
+        const { data: tarefas } = await supabase
+          .from('tarefas')
+          .select('id, pontos')
+          .eq('ativa', true)
+
+        if (!tarefas || tarefas.length === 0) {
+          setMissoesPendentes({ total: 0, pontosTotal: 0 })
+          return
+        }
+
+        // Buscar quais o usuário já completou
+        const { data: completadas } = await supabase
+          .from('solicitacoes_tarefa')
+          .select('tarefa_id')
+          .eq('cliente_id', user.id)
+          .eq('status', 'aprovada')
+
+        const completadasIds = new Set(completadas?.map(c => c.tarefa_id) || [])
+        const pendentes = tarefas.filter(t => !completadasIds.has(t.id))
+        const pontosTotal = pendentes.reduce((sum, t) => sum + (t.pontos || 0), 0)
+
+        setMissoesPendentes({ total: pendentes.length, pontosTotal })
+      } catch (e) {
+        console.error('Erro ao buscar missões:', e)
+      }
+    }
+    loadMissoes()
+  }, [user?.id])
 
   useEffect(() => {
     if (!loading && !user) {
@@ -177,6 +230,30 @@ export function Jornada() {
   // Inverter a ordem para mostrar Me,up Exclusive no topo
   const classesInvertidas = [...CLASSES].reverse()
 
+  // Valores do plano (com fallback)
+  const isPrime = benefits?.isPrime || false
+  const multiplicadorViagem = benefits?.multiplicadorViagem || 1.0
+  const pontosIndicacao = benefits?.pontosIndicacao || 3000
+  const pontosCheckin = benefits?.pontosCheckin || 10
+
+  // Texto para indicação com bonus Prime
+  const textoIndicacao = isPrime
+    ? `+${format.pointsShort(pontosIndicacao)} pts quando comprar`
+    : `+${format.pointsShort(pontosIndicacao)} pts (${format.pointsShort(5000)} se Prime)`
+
+  // Texto para viagem
+  const textoViagem = isPrime
+    ? `${multiplicadorViagem} ponto por real`
+    : `1 ponto por real · ${1.5} no Prime`
+
+  // Texto para check-in
+  const textoCheckin = `+${pontosCheckin} pts por dia`
+
+  // Texto para missões
+  const textoMissoes = missoesPendentes.pontosTotal > 0
+    ? `Até ${format.pointsShort(missoesPendentes.pontosTotal)} pts disponíveis`
+    : 'Várias missões disponíveis'
+
   return (
     <div className="min-h-screen bg-ice-white pb-20 md:pb-0">
       <DashboardHeader />
@@ -196,7 +273,7 @@ export function Jornada() {
           </Link>
         </motion.div>
 
-        {/* Titulo */}
+        {/* Título */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -206,7 +283,7 @@ export function Jornada() {
             Sua jornada no clube
           </h1>
           <p className="text-graphite/70">
-            Sua classe sobe sozinha com os pontos que voce ganha. Cada nova classe da um bonus.
+            Sua classe sobe sozinha com os pontos que você ganha. Cada nova classe dá um bônus.
           </p>
           <p className="text-sm text-graphite/50 mt-2">
             Pontos acumulados: <span className="font-semibold text-antique-gold">{format.pointsShort(totalPointsEarned)}</span>
@@ -227,7 +304,7 @@ export function Jornada() {
           ))}
         </div>
 
-        {/* Como subir mais rapido */}
+        {/* Como subir mais rápido */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -236,40 +313,48 @@ export function Jornada() {
         >
           <div className="rounded-2xl bg-deep-purple p-6">
             <h2 className="text-lg font-heading font-semibold text-ice-white mb-4">
-              Como subir mais rapido
+              Como subir mais rápido
             </h2>
             <div className="grid grid-cols-2 gap-3">
               <Link
-                to="/viagens"
+                to="/minhas-viagens"
                 className="p-4 rounded-xl bg-ice-white/5 border border-dusty-rose/20 hover:border-antique-gold/40 transition-colors"
               >
-                <span className="text-2xl mb-2 block">✈️</span>
+                <div className="mb-2">
+                  <PlaneIcon size={24} color="#a27937" />
+                </div>
                 <span className="text-sm text-ice-white font-medium">Viajar com a Me,up</span>
-                <p className="text-xs text-dusty-rose mt-1">1 pt por real (1,5 se Prime)</p>
+                <p className="text-xs text-dusty-rose mt-1">{textoViagem}</p>
               </Link>
               <Link
-                to="/indicar"
+                to="/perfil"
                 className="p-4 rounded-xl bg-ice-white/5 border border-dusty-rose/20 hover:border-antique-gold/40 transition-colors"
               >
-                <span className="text-2xl mb-2 block">👥</span>
+                <div className="mb-2">
+                  <UsersIcon size={24} color="#a27937" />
+                </div>
                 <span className="text-sm text-ice-white font-medium">Indicar amigos</span>
-                <p className="text-xs text-dusty-rose mt-1">+500 pts por indicacao</p>
+                <p className="text-xs text-dusty-rose mt-1">{textoIndicacao}</p>
               </Link>
               <Link
                 to="/dashboard"
                 className="p-4 rounded-xl bg-ice-white/5 border border-dusty-rose/20 hover:border-antique-gold/40 transition-colors"
               >
-                <span className="text-2xl mb-2 block">📱</span>
-                <span className="text-sm text-ice-white font-medium">Check-in diario</span>
-                <p className="text-xs text-dusty-rose mt-1">+10 pts por dia</p>
+                <div className="mb-2">
+                  <CheckIcon size={24} color="#a27937" />
+                </div>
+                <span className="text-sm text-ice-white font-medium">Check-in diário</span>
+                <p className="text-xs text-dusty-rose mt-1">{textoCheckin}</p>
               </Link>
               <Link
                 to="/missoes"
                 className="p-4 rounded-xl bg-ice-white/5 border border-dusty-rose/20 hover:border-antique-gold/40 transition-colors"
               >
-                <span className="text-2xl mb-2 block">🎯</span>
-                <span className="text-sm text-ice-white font-medium">Missoes</span>
-                <p className="text-xs text-dusty-rose mt-1">Varias missoes disponiveis</p>
+                <div className="mb-2">
+                  <TargetIcon size={24} color="#a27937" />
+                </div>
+                <span className="text-sm text-ice-white font-medium">Missões</span>
+                <p className="text-xs text-dusty-rose mt-1">{textoMissoes}</p>
               </Link>
             </div>
           </div>
