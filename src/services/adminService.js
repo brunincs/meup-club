@@ -516,7 +516,7 @@ export async function fetchAdminMetrics() {
       // Verificar se é fundador (pelo metadata)
       if (a.metadata?.numero_fundador) {
         const lote = a.metadata?.lote || 1
-        const precos = { 1: 497, 2: 597, 3: 697, 4: 797, 5: 897 }
+        const precos = { 1: 497, 2: 597, 3: 697 }
         receitaAssinaturasMes += precos[lote] || 497
       } else {
         // Assinatura regular
@@ -566,35 +566,51 @@ export async function fetchAdminMetrics() {
  */
 export async function fetchFundadoresMetrics() {
   try {
-    // Buscar fundadores diretamente: quem tem numero_fundador no metadata
-    const { data: fundadores } = await supabase
-      .from('subscriptions')
-      .select('metadata, created_at')
-      .eq('status', 'active')
+    // Buscar fundadores da tabela fundadores (fonte real)
+    const { data: fundadoresData } = await supabase
+      .from('fundadores')
+      .select('id, vaga_numero, selo_ativado, created_at')
+      .eq('selo_ativado', true)
 
-    // Filtrar quem realmente é fundador (tem numero_fundador)
-    const fundadoresReais = fundadores?.filter(f => f.metadata?.numero_fundador) || []
-    const totalVendidas = fundadoresReais.length
+    const totalVendidas = fundadoresData?.length || 0
 
-    // Agrupar por lote
+    // Buscar lotes do banco de dados
+    const { data: lotesDb } = await supabase
+      .from('fundadores_lotes')
+      .select('lote_numero, vagas_total, preco')
+      .order('lote_numero')
+
+    // Agrupar vendas por lote baseado no vaga_numero
     const porLote = {}
-    fundadoresReais.forEach(f => {
-      const lote = f.metadata?.lote || 1
-      porLote[lote] = (porLote[lote] || 0) + 1
+    let acumulado = 0
+    const lotesConfig = lotesDb || [
+      { lote_numero: 1, vagas_total: 20, preco: 497 },
+      { lote_numero: 2, vagas_total: 40, preco: 597 },
+      { lote_numero: 3, vagas_total: 40, preco: 697 }
+    ]
+
+    // Mapear cada vaga_numero para seu lote
+    fundadoresData?.forEach(f => {
+      const vagaNum = f.vaga_numero
+      let vagaAcumulada = 0
+      for (const lote of lotesConfig) {
+        vagaAcumulada += lote.vagas_total
+        if (vagaNum <= vagaAcumulada) {
+          porLote[lote.lote_numero] = (porLote[lote.lote_numero] || 0) + 1
+          break
+        }
+      }
     })
 
     // Definir lotes e preços
     // Lote 1: 20 vagas a R$ 497
-    // Lote 2: 20 vagas a R$ 597
-    // Lote 3: 20 vagas a R$ 697
-    // Lote 4: 20 vagas a R$ 797
-    // Lote 5: 20 vagas a R$ 897
+    // Lote 2: 40 vagas a R$ 597
+    // Lote 3: 40 vagas a R$ 697
+    // Total: 100 vagas
     const lotes = [
       { numero: 1, vagas: 20, preco: 497 },
-      { numero: 2, vagas: 20, preco: 597 },
-      { numero: 3, vagas: 20, preco: 697 },
-      { numero: 4, vagas: 20, preco: 797 },
-      { numero: 5, vagas: 20, preco: 897 }
+      { numero: 2, vagas: 40, preco: 597 },
+      { numero: 3, vagas: 40, preco: 697 }
     ]
 
     // Determinar lote atual baseado em quantas vagas foram vendidas
@@ -1030,7 +1046,7 @@ export async function fetchDashboardMetricsMes() {
         if (a.metadata?.numero_fundador) {
           // É fundador - verificar lote
           const lote = a.metadata?.lote || 1
-          const precos = { 1: 497, 2: 597, 3: 697, 4: 797, 5: 897 }
+          const precos = { 1: 497, 2: 597, 3: 697 }
           receitaEstimada += precos[lote] || 497
         } else {
           // Assinatura regular (mensal ou anual)

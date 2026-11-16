@@ -211,7 +211,7 @@ export function AdminMetricas() {
             </Section>
 
             {/* AÇÃO FUNDADORES */}
-            <Section title="Ação Fundadores" icon="🏆">
+            <Section title="Ação Fundadores" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5 text-antique-gold"><path d="M12 2l3 7h7l-5.5 4.5 2 7L12 16l-6.5 4.5 2-7L2 9h7l3-7z" strokeLinecap="round" strokeLinejoin="round"/></svg>}>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <MetricCard
                   label="Total vendidas"
@@ -241,7 +241,7 @@ export function AdminMetricas() {
                 <h4 className="text-sm font-heading font-semibold text-graphite mb-4">
                   Vendas por lote
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {metrics.fundadores?.lotes?.map(lote => (
                     <div
                       key={lote.numero}
@@ -497,7 +497,7 @@ function Section({ title, icon, children }) {
       className="rounded-2xl border border-dusty-rose/20 bg-white/50 p-6"
     >
       <h3 className="text-lg font-display font-bold text-graphite flex items-center gap-2 mb-4">
-        <span>{icon}</span>
+        {typeof icon === 'string' ? <span>{icon}</span> : icon}
         {title}
       </h3>
       {children}
@@ -621,30 +621,42 @@ async function fetchClientesMetrics(datas) {
 
 async function fetchFundadoresMetrics(datas) {
   try {
-    // Buscar fundadores
-    const { data: fundadores } = await supabase
-      .from('subscriptions')
-      .select('metadata, created_at')
-      .eq('status', 'active')
+    // Buscar fundadores da tabela fundadores (fonte real)
+    const { data: fundadoresData } = await supabase
+      .from('fundadores')
+      .select('id, vaga_numero, selo_ativado, created_at')
+      .eq('selo_ativado', true)
 
-    const fundadoresReais = fundadores?.filter(f => f.metadata?.numero_fundador) || []
-    const totalVendidas = fundadoresReais.length
+    const totalVendidas = fundadoresData?.length || 0
 
-    // Agrupar por lote
+    // Buscar lotes do banco de dados
+    const { data: lotesDb } = await supabase
+      .from('fundadores_lotes')
+      .select('lote_numero, vagas_total, preco')
+      .order('lote_numero')
+
+    // Definir lotes (3 lotes: 20/40/40 = 100 total)
+    const lotesConfig = lotesDb?.length > 0
+      ? lotesDb.map(l => ({ numero: l.lote_numero, vagas: l.vagas_total, preco: parseFloat(l.preco) }))
+      : [
+          { numero: 1, vagas: 20, preco: 497 },
+          { numero: 2, vagas: 40, preco: 597 },
+          { numero: 3, vagas: 40, preco: 697 }
+        ]
+
+    // Agrupar vendas por lote baseado no vaga_numero
     const porLote = {}
-    fundadoresReais.forEach(f => {
-      const lote = f.metadata?.lote || 1
-      porLote[lote] = (porLote[lote] || 0) + 1
+    fundadoresData?.forEach(f => {
+      const vagaNum = f.vaga_numero
+      let vagaAcumulada = 0
+      for (const lote of lotesConfig) {
+        vagaAcumulada += lote.vagas
+        if (vagaNum <= vagaAcumulada) {
+          porLote[lote.numero] = (porLote[lote.numero] || 0) + 1
+          break
+        }
+      }
     })
-
-    // Definir lotes
-    const lotesConfig = [
-      { numero: 1, vagas: 20, preco: 497 },
-      { numero: 2, vagas: 20, preco: 597 },
-      { numero: 3, vagas: 20, preco: 697 },
-      { numero: 4, vagas: 20, preco: 797 },
-      { numero: 5, vagas: 20, preco: 897 }
-    ]
 
     // Calcular lote atual e receita
     let loteAtual = 1
@@ -662,7 +674,7 @@ async function fetchFundadoresMetrics(datas) {
 
     return {
       totalVendidas,
-      loteAtual: Math.min(loteAtual, 5),
+      loteAtual: Math.min(loteAtual, 3),
       vagasRestantes: 100 - totalVendidas,
       receitaTotal,
       lotes
