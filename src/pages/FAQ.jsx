@@ -73,17 +73,21 @@ Os pontos são creditados apenas uma vez por indicado, em cada etapa.`
   {
     category: 'indicacao',
     question: 'Quando ganho os pontos de indicação?',
-    answer: `Cada etapa precisa ser validada pela equipe:
+    answer: `Os pontos são creditados assim que a equipe valida:
 
-1. **Primeira viagem**: Quando a primeira emissão de passagem do seu amigo é aprovada.
-2. **Prime Anual**: Quando seu amigo assina o Prime Anual e passa o período de arrependimento (7 dias).
+1. **Primeira viagem**: Pontos liberados na hora da aprovação da emissão.
+2. **Prime Anual**: Pontos bloqueados por 7 dias (período de arrependimento).
 
 Você é notificado a cada etapa concluída.`
   },
   {
     category: 'indicacao',
     question: 'O que é o período de arrependimento de 7 dias?',
-    answer: 'Pontos relacionados a assinaturas Prime Anual ficam visíveis no seu saldo, mas bloqueados para resgate por 7 dias. Isso protege contra arrependimento. Se a assinatura for cancelada nesse prazo, os pontos são estornados automaticamente. Após 7 dias, os pontos são liberados.'
+    answer: `Pontos de **viagem** e **indicação de compra** são liberados na hora da aprovação.
+
+Já os **bônus do Prime** (boas-vindas e indicação de quem virou Prime) ficam bloqueados por 7 dias. Isso protege contra arrependimento na assinatura.
+
+Se o Prime for cancelado nesse prazo, os bônus são estornados automaticamente. Após 7 dias, são liberados para uso.`
   },
 
   // PRIME
@@ -148,7 +152,7 @@ Fundadores renovam pelo mesmo valor enquanto mantiverem a assinatura ativa.`
   {
     category: 'fundadores',
     question: 'E se eu cancelar no período de arrependimento?',
-    answer: 'Se você cancelar a assinatura nos primeiros 7 dias, você perde a vaga de Fundador e o número da sorte. Os pontos de boas-vindas também são estornados. A vaga pode ser ocupada pelo próximo assinante.'
+    answer: 'Se você cancelar a assinatura nos primeiros 7 dias, você perde a vaga de Fundador e o número da sorte. Os bônus ainda bloqueados (boas-vindas, indicação) são cancelados automaticamente. A vaga pode ser ocupada pelo próximo assinante.'
   },
   {
     category: 'fundadores',
