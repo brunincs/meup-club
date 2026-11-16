@@ -504,6 +504,39 @@ export async function fetchAdminMetrics() {
 
     const totalResgatado = Math.abs(pontosResgatados?.reduce((sum, t) => sum + t.amount, 0) || 0)
 
+    // 7. Receita de assinaturas no mês
+    const { data: assinaturasMes } = await supabase
+      .from('subscriptions')
+      .select('metadata')
+      .gte('created_at', inicioMes)
+      .eq('status', 'active')
+
+    let receitaAssinaturasMes = 0
+    assinaturasMes?.forEach(a => {
+      // Verificar se é fundador (pelo metadata)
+      if (a.metadata?.numero_fundador) {
+        const lote = a.metadata?.lote || 1
+        const precos = { 1: 497, 2: 597, 3: 697, 4: 797, 5: 897 }
+        receitaAssinaturasMes += precos[lote] || 497
+      } else {
+        // Assinatura regular
+        const valor = a.metadata?.valor || a.metadata?.price
+        if (valor) {
+          receitaAssinaturasMes += valor
+        } else {
+          // Estimar pelo ciclo
+          const ciclo = a.metadata?.ciclo || 'mensal'
+          receitaAssinaturasMes += ciclo === 'anual' ? 299 : 29.90
+        }
+      }
+    })
+
+    // 8. Resgates no mês
+    const { count: resgatesNoMes } = await supabase
+      .from('redemptions')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', inicioMes)
+
     return {
       success: true,
       metrics: {
@@ -514,7 +547,9 @@ export async function fetchAdminMetrics() {
         conversoesNoMes: conversoesNoMes || 0,
         percentualConversao,
         pontosEmitidosMes: totalEmitido,
-        pontosResgatadosMes: totalResgatado
+        pontosResgatadosMes: totalResgatado,
+        receitaAssinaturasMes,
+        resgatesNoMes: resgatesNoMes || 0
       }
     }
   } catch (error) {
@@ -853,4 +888,179 @@ export async function marcarCheckinFeito(vooId, adminId) {
   }
 
   return data
+}
+
+// ============================================
+// PENDÊNCIAS DO DASHBOARD
+// ============================================
+
+/**
+ * Busca contagem de pendências em cada área
+ * Para exibir links com badges no dashboard
+ */
+export async function fetchPendencias() {
+  try {
+    // Emissões pendentes (não entregues)
+    const { count: emissoesPendentes } = await supabase
+      .from('emissoes')
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['pendente', 'em_processamento'])
+
+    // Indicações pendentes
+    const { count: indicacoesPendentes } = await supabase
+      .from('referrals')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
+
+    // Resgates pendentes (não entregues)
+    const { count: resgatesPendentes } = await supabase
+      .from('redemptions')
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['pendente', 'aprovado', 'em_preparo'])
+
+    // Missões/tarefas pendentes de aprovação
+    const { count: missoesPendentes } = await supabase
+      .from('solicitacoes_tarefa')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pendente')
+
+    // Assinaturas com problema (canceladas recentemente ou em atraso)
+    const { count: assinaturasPendentes } = await supabase
+      .from('subscriptions')
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['past_due', 'unpaid'])
+
+    return {
+      success: true,
+      pendencias: {
+        emissoes: emissoesPendentes || 0,
+        indicacoes: indicacoesPendentes || 0,
+        resgates: resgatesPendentes || 0,
+        missoes: missoesPendentes || 0,
+        assinaturas: assinaturasPendentes || 0
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao buscar pendências:', error)
+    return {
+      success: false,
+      pendencias: { emissoes: 0, indicacoes: 0, resgates: 0, missoes: 0, assinaturas: 0 }
+    }
+  }
+}
+
+/**
+ * Busca falhas de IA nas últimas 24h
+ * Para o alerta discreto no dashboard (só aparece se >= 3)
+ */
+export async function fetchIAFalhas24h() {
+  try {
+    const vintequatroHorasAtras = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+
+    const { data, error } = await supabase
+      .from('ia_uso')
+      .select('id, erro, created_at')
+      .eq('sucesso', false)
+      .gte('created_at', vintequatroHorasAtras)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    const count = data?.length || 0
+    const ultimoErro = data?.[0]?.erro || null
+
+    return {
+      success: true,
+      count,
+      ultimoErro
+    }
+  } catch (error) {
+    console.error('Erro ao buscar falhas IA 24h:', error)
+    return { success: false, count: 0, ultimoErro: null }
+  }
+}
+
+/**
+ * Busca métricas resumidas do mês para o dashboard enxuto
+ * - novos clientes
+ * - novos Prime
+ * - receita de assinaturas
+ * - resgates
+ */
+export async function fetchDashboardMetricsMes() {
+  try {
+    const hoje = new Date()
+    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString()
+
+    // Novos clientes no mês
+    const { count: novosClientes } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .neq('role', 'admin')
+      .gte('created_at', inicioMes)
+
+    // Novos Prime no mês (assinaturas criadas no mês)
+    const { count: novosPrime } = await supabase
+      .from('subscriptions')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', inicioMes)
+      .eq('status', 'active')
+
+    // Receita de assinaturas no mês
+    // Buscar assinaturas criadas no mês e somar valores
+    const { data: assinaturasMes } = await supabase
+      .from('subscriptions')
+      .select('metadata')
+      .gte('created_at', inicioMes)
+      .eq('status', 'active')
+
+    let receitaAssinaturas = 0
+    assinaturasMes?.forEach(a => {
+      // Valor pode estar no metadata
+      const valor = a.metadata?.valor || a.metadata?.price || 0
+      receitaAssinaturas += valor
+    })
+
+    // Se não tiver valor no metadata, estimar pelos lotes de fundadores
+    // ou assumir R$ 29,90 por assinatura regular
+    if (receitaAssinaturas === 0 && assinaturasMes?.length > 0) {
+      // Fundadores: verificar lote
+      let receitaEstimada = 0
+      assinaturasMes.forEach(a => {
+        if (a.metadata?.numero_fundador) {
+          // É fundador - verificar lote
+          const lote = a.metadata?.lote || 1
+          const precos = { 1: 497, 2: 597, 3: 697, 4: 797, 5: 897 }
+          receitaEstimada += precos[lote] || 497
+        } else {
+          // Assinatura regular (mensal ou anual)
+          const ciclo = a.metadata?.ciclo || 'mensal'
+          receitaEstimada += ciclo === 'anual' ? 299 : 29.90
+        }
+      })
+      receitaAssinaturas = receitaEstimada
+    }
+
+    // Resgates no mês
+    const { count: resgatesNoMes } = await supabase
+      .from('redemptions')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', inicioMes)
+
+    return {
+      success: true,
+      metrics: {
+        novosClientes: novosClientes || 0,
+        novosPrime: novosPrime || 0,
+        receitaAssinaturas: receitaAssinaturas,
+        resgatesNoMes: resgatesNoMes || 0
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao buscar métricas do mês:', error)
+    return {
+      success: false,
+      metrics: { novosClientes: 0, novosPrime: 0, receitaAssinaturas: 0, resgatesNoMes: 0 }
+    }
+  }
 }

@@ -2,98 +2,116 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { AdminLayout, AdminPageHeader, AdminCard, AdminButton } from '@/components/admin/AdminLayout'
-import { fetchAdminStats, fetchAllUsers, fetchAllTransactions, fetchBalanceDiscrepancies, fetchCheckinsProximos, marcarCheckinFeito, fetchAdminMetrics, fetchFundadoresMetrics, fetchIAErrorDetails } from '@/services/adminService'
+import { fetchAdminStats, fetchAllUsers, fetchAllTransactions, fetchBalanceDiscrepancies, fetchCheckinsProximos, marcarCheckinFeito, fetchAdminMetrics, fetchPendencias, fetchIAFalhas24h } from '@/services/adminService'
 import { useAuth } from '@/contexts/AuthContext'
-import { fetchIAStats, fetchErrosRecentesIA } from '@/services/viagemService'
 import { format } from '@/services/copy'
 
-function StatCard({ label, value, icon, index }) {
+// ============================================
+// CARD DE NÚMERO DO MÊS
+// ============================================
+function MonthStatCard({ label, value, icon, color = 'purple' }) {
+  const colorClasses = {
+    purple: 'bg-[#32113f]/5 border-[#32113f]/10 text-[#32113f]',
+    green: 'bg-green-50 border-green-100 text-green-700',
+    blue: 'bg-blue-50 border-blue-100 text-blue-700',
+    amber: 'bg-amber-50 border-amber-100 text-amber-700'
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-    >
-      <AdminCard>
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#32113f]/10 flex items-center justify-center">
-            <span className="text-xl text-[#32113f]">{icon}</span>
-          </div>
-          <div>
-            <p className="text-2xl font-display font-bold text-[#1f1f1f]">{value}</p>
-            <p className="text-sm text-[#a39695] font-heading">{label}</p>
-          </div>
-        </div>
-      </AdminCard>
-    </motion.div>
+    <div className={`text-center p-4 rounded-xl border ${colorClasses[color]}`}>
+      <span className="text-2xl mb-2 block">{icon}</span>
+      <p className="text-2xl font-display font-bold">{value}</p>
+      <p className="text-xs text-[#a39695] mt-1">{label}</p>
+    </div>
   )
 }
 
+// ============================================
+// CARD DE PENDÊNCIA
+// ============================================
+function PendenciaCard({ label, count, link, icon }) {
+  return (
+    <Link to={link} className="block">
+      <div className={`p-4 rounded-xl border transition-all hover:shadow-md ${
+        count > 0
+          ? 'bg-amber-50 border-amber-200 hover:border-amber-400'
+          : 'bg-gray-50 border-gray-200 hover:border-gray-400'
+      }`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">{icon}</span>
+            <span className="text-sm font-heading font-medium text-graphite">{label}</span>
+          </div>
+          <span className={`text-2xl font-display font-bold ${count > 0 ? 'text-amber-700' : 'text-gray-400'}`}>
+            {count}
+          </span>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+// ============================================
+// DASHBOARD PRINCIPAL
+// ============================================
 export function AdminDashboard() {
   const { profile } = useAuth()
-  const [stats, setStats] = useState({ totalUsers: 0, totalPointsDistributed: 0, totalTransactions: 0 })
   const [topUsers, setTopUsers] = useState([])
   const [recentTransactions, setRecentTransactions] = useState([])
   const [discrepancies, setDiscrepancies] = useState([])
-  const [iaStats, setIAStats] = useState(null)
-  const [iaErros, setIAErros] = useState({ erros: [], temErroCreditoRecente: false })
-  const [iaErrorDetails, setIAErrorDetails] = useState(null)
   const [checkins, setCheckins] = useState([])
   const [checkinsLoading, setCheckinsLoading] = useState(false)
   const [adminMetrics, setAdminMetrics] = useState(null)
-  const [fundadoresMetrics, setFundadoresMetrics] = useState(null)
+  const [pendencias, setPendencias] = useState(null)
+  const [iaFalhas, setIaFalhas] = useState({ count: 0, ultimoErro: null })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function loadData() {
       setLoading(true)
-      const statsResult = await fetchAdminStats()
-      if (statsResult.success) {
-        setStats(statsResult.stats)
-      }
-      const usersResult = await fetchAllUsers()
+
+      // Carregar dados em paralelo
+      const [
+        usersResult,
+        transResult,
+        discResult,
+        checkinsResult,
+        metricsResult,
+        pendenciasResult,
+        iaFalhasResult
+      ] = await Promise.all([
+        fetchAllUsers(),
+        fetchAllTransactions(),
+        fetchBalanceDiscrepancies(),
+        fetchCheckinsProximos(),
+        fetchAdminMetrics(),
+        fetchPendencias(),
+        fetchIAFalhas24h()
+      ])
+
       if (usersResult.success) {
         const sorted = [...usersResult.users].sort((a, b) => b.points - a.points)
         setTopUsers(sorted.slice(0, 5))
       }
-      const transResult = await fetchAllTransactions()
       if (transResult.success) {
         setRecentTransactions(transResult.transactions.slice(0, 5))
       }
-      // Verificar discrepâncias de saldo
-      const discResult = await fetchBalanceDiscrepancies()
       if (discResult.success) {
         setDiscrepancies(discResult.discrepancies)
       }
-      // Buscar estatísticas da IA
-      const iaResult = await fetchIAStats(30)
-      if (iaResult.success) {
-        setIAStats(iaResult.stats)
-      }
-      const errosResult = await fetchErrosRecentesIA()
-      if (errosResult.success) {
-        setIAErros(errosResult)
-      }
-      // Buscar check-ins das próximas 48h
-      const checkinsResult = await fetchCheckinsProximos()
       if (checkinsResult.success) {
         setCheckins(checkinsResult.checkins)
       }
-      // Buscar métricas detalhadas
-      const metricsResult = await fetchAdminMetrics()
       if (metricsResult.success) {
         setAdminMetrics(metricsResult.metrics)
       }
-      // Buscar métricas de fundadores
-      const fundadoresResult = await fetchFundadoresMetrics()
-      if (fundadoresResult.success) {
-        setFundadoresMetrics(fundadoresResult.fundadores)
+      if (pendenciasResult.success) {
+        setPendencias(pendenciasResult.pendencias)
       }
-      // Buscar detalhes de erros IA
-      const iaErrorsResult = await fetchIAErrorDetails()
-      if (iaErrorsResult.success) {
-        setIAErrorDetails(iaErrorsResult.iaErrors)
+      if (iaFalhasResult.success) {
+        setIaFalhas(iaFalhasResult)
       }
+
       setLoading(false)
     }
     loadData()
@@ -105,7 +123,6 @@ export function AdminDashboard() {
     setCheckinsLoading(true)
     const result = await marcarCheckinFeito(vooId, profile.id)
     if (result.success) {
-      // Atualizar lista local
       setCheckins(prev => prev.map(c =>
         c.vooId === vooId
           ? { ...c, checkinFeitoEm: new Date().toISOString(), checkinFeitoPorNome: profile.name }
@@ -140,85 +157,106 @@ export function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Header */}
         <AdminPageHeader
           title="Dashboard"
-          subtitle="Visão geral do Me,up Club"
+          subtitle="O que exige ação hoje"
         />
 
         {/* ════════════════════════════════════════════════════════════
-            ALERTA DE DISCREPÂNCIAS
+            ALERTAS (discrepâncias e IA)
             ════════════════════════════════════════════════════════════ */}
-        {discrepancies.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-2xl bg-red-50 border border-red-200"
-          >
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">⚠️</span>
-              <div className="flex-1">
-                <h3 className="text-sm font-heading font-semibold text-red-800">
-                  Discrepância de saldo detectada
-                </h3>
-                <p className="text-xs text-red-700 mt-1">
-                  {discrepancies.length} usuário(s) com saldo inconsistente entre profile e transações.
-                </p>
-                <div className="mt-3 space-y-2">
-                  {discrepancies.slice(0, 3).map(d => (
-                    <div key={d.userId} className="flex items-center justify-between text-xs bg-white/50 rounded-lg p-2">
-                      <div>
-                        <span className="font-medium text-graphite">{d.userName}</span>
-                        <span className="text-graphite/60 ml-2">{d.userEmail}</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-graphite/60">Saldo: {d.profilePoints.toLocaleString('pt-BR')}</span>
-                        <span className="mx-1">→</span>
-                        <span className="text-graphite/60">Tx: {d.transactionsSum.toLocaleString('pt-BR')}</span>
-                        <span className={`ml-2 font-semibold ${d.discrepancy > 0 ? 'text-red-600' : 'text-amber-600'}`}>
-                          ({d.discrepancy > 0 ? '+' : ''}{d.discrepancy.toLocaleString('pt-BR')})
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {discrepancies.length > 3 && (
-                    <p className="text-xs text-red-600/80 text-center">
-                      +{discrepancies.length - 3} outros usuários com discrepância
+        {(discrepancies.length > 0 || iaFalhas.count >= 3) && (
+          <div className="space-y-3">
+            {/* Alerta de discrepâncias */}
+            {discrepancies.length > 0 && (
+              <div className="p-4 rounded-2xl bg-red-50 border border-red-200">
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">⚠️</span>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-heading font-semibold text-red-800">
+                      Discrepância de saldo
+                    </h3>
+                    <p className="text-xs text-red-700 mt-1">
+                      {discrepancies.length} usuário(s) com saldo inconsistente.
                     </p>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Alerta de IA (só se 3+ falhas nas últimas 24h) */}
+            {iaFalhas.count >= 3 && (
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">🤖</span>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-heading font-semibold text-amber-800">
+                      Leitura de cards com falhas ({iaFalhas.count} nas últimas 24h)
+                    </h3>
+                    {iaFalhas.ultimoErro && (
+                      <p className="text-xs text-amber-700 mt-1 truncate">
+                        Último erro: {iaFalhas.ultimoErro}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ════════════════════════════════════════════════════════════
+            PENDÊNCIAS (links para cada área)
+            ════════════════════════════════════════════════════════════ */}
+        {pendencias && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <AdminCard>
+              <h2 className="text-sm font-heading font-semibold text-[#1f1f1f] mb-4">
+                Pendências
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <PendenciaCard
+                  label="Emissões"
+                  count={pendencias.emissoes || 0}
+                  link="/admin/emissoes"
+                  icon="✈️"
+                />
+                <PendenciaCard
+                  label="Indicações"
+                  count={pendencias.indicacoes || 0}
+                  link="/admin/indicacoes"
+                  icon="👥"
+                />
+                <PendenciaCard
+                  label="Resgates"
+                  count={pendencias.resgates || 0}
+                  link="/admin/resgates"
+                  icon="🎁"
+                />
+                <PendenciaCard
+                  label="Missões"
+                  count={pendencias.missoes || 0}
+                  link="/admin/missoes"
+                  icon="🎯"
+                />
+                <PendenciaCard
+                  label="Assinaturas"
+                  count={pendencias.assinaturas || 0}
+                  link="/admin/assinaturas"
+                  icon="💳"
+                />
+              </div>
+            </AdminCard>
           </motion.div>
         )}
 
         {/* ════════════════════════════════════════════════════════════
-            STATS - Cards brancos com boa legibilidade
-            ════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard
-            label="Clientes"
-            value={stats.totalUsers}
-            icon="◇"
-            index={0}
-          />
-          <StatCard
-            label="Pontos Distribuídos"
-            value={format.pointsShort(stats.totalPointsDistributed)}
-            icon="★"
-            index={1}
-          />
-          <StatCard
-            label="Transações"
-            value={stats.totalTransactions}
-            icon="↔"
-            index={2}
-          />
-        </div>
-
-        {/* ════════════════════════════════════════════════════════════
-            MÉTRICAS DETALHADAS - Free x Prime, Conversão, Fundadores
+            4 NÚMEROS DO MÊS
             ════════════════════════════════════════════════════════════ */}
         {adminMetrics && (
           <motion.div
@@ -229,247 +267,41 @@ export function AdminDashboard() {
             <AdminCard>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-heading font-semibold text-[#1f1f1f]">
-                  Clientes
+                  Este mês
                 </h2>
-                <span className="text-xs text-[#a39695]">
-                  Total: {adminMetrics.totalClientes} · Novos no mês: {adminMetrics.novosNoMes}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                {/* Free vs Prime - TOTAL */}
-                <div className="text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
-                  <p className="text-2xl font-display font-bold text-gray-600">{adminMetrics.freeCount}</p>
-                  <p className="text-xs text-[#a39695]">Free (total)</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-[#32113f]/5 border border-[#32113f]/10">
-                  <p className="text-2xl font-display font-bold text-[#32113f]">{adminMetrics.primeCount}</p>
-                  <p className="text-xs text-[#a39695]">Prime (total)</p>
-                </div>
-                {/* Conversão */}
-                <div className="text-center p-3 rounded-xl bg-green-50 border border-green-100">
-                  <p className="text-2xl font-display font-bold text-green-700">{adminMetrics.conversoesNoMes}</p>
-                  <p className="text-xs text-[#a39695]">Conversões no mês</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-amber-50 border border-amber-100">
-                  <p className="text-2xl font-display font-bold text-amber-700">{adminMetrics.percentualConversao}%</p>
-                  <p className="text-xs text-[#a39695]">Taxa conversão</p>
-                </div>
-                {/* Pontos */}
-                <div className="text-center p-3 rounded-xl bg-blue-50 border border-blue-100">
-                  <p className="text-2xl font-display font-bold text-blue-700">{format.pointsShort(adminMetrics.pontosEmitidosMes)}</p>
-                  <p className="text-xs text-[#a39695]">Emitidos no mês</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-purple-50 border border-purple-100">
-                  <p className="text-2xl font-display font-bold text-purple-700">{format.pointsShort(adminMetrics.pontosResgatadosMes)}</p>
-                  <p className="text-xs text-[#a39695]">Resgatados no mês</p>
-                </div>
-              </div>
-            </AdminCard>
-          </motion.div>
-        )}
-
-        {/* ════════════════════════════════════════════════════════════
-            FUNDADORES - Lotes e vagas
-            ════════════════════════════════════════════════════════════ */}
-        {fundadoresMetrics && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12 }}
-          >
-            <AdminCard>
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h2 className="text-sm font-heading font-semibold text-[#1f1f1f] flex items-center gap-2">
-                    <span className="text-lg">✦</span>
-                    Ação Fundadores
-                  </h2>
-                  <p className="text-xs text-[#a39695] mt-1">
-                    {fundadoresMetrics.totalVendidas} vendidas · {fundadoresMetrics.vagasRestantes} restantes de 100
-                  </p>
-                </div>
                 <Link
-                  to="/admin/fundadores"
+                  to="/admin/metricas"
                   className="text-xs text-[#32113f] hover:text-[#5c005a] transition-colors font-heading"
                 >
-                  Ver lista →
+                  Ver métricas completas →
                 </Link>
               </div>
-
-              {/* Resumo atual */}
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="text-center p-3 rounded-xl bg-amber-50 border border-amber-100">
-                  <p className="text-2xl font-display font-bold text-amber-700">Lote {fundadoresMetrics.loteAtual}</p>
-                  <p className="text-xs text-[#a39695]">R$ {fundadoresMetrics.precoAtual}</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-green-50 border border-green-100">
-                  <p className="text-2xl font-display font-bold text-green-700">{fundadoresMetrics.totalVendidas}</p>
-                  <p className="text-xs text-[#a39695]">Total vendidas</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-[#32113f]/5 border border-[#32113f]/10">
-                  <p className="text-2xl font-display font-bold text-[#32113f]">{fundadoresMetrics.vagasRestantesNoLote}</p>
-                  <p className="text-xs text-[#a39695]">Restantes no lote</p>
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <MonthStatCard
+                  label="Novos clientes"
+                  value={adminMetrics.novosNoMes || 0}
+                  icon="👤"
+                  color="purple"
+                />
+                <MonthStatCard
+                  label="Novos Prime"
+                  value={adminMetrics.conversoesNoMes || 0}
+                  icon="⭐"
+                  color="amber"
+                />
+                <MonthStatCard
+                  label="Receita assinaturas"
+                  value={`R$ ${(adminMetrics.receitaAssinaturasMes || 0).toLocaleString('pt-BR')}`}
+                  icon="💰"
+                  color="green"
+                />
+                <MonthStatCard
+                  label="Resgates"
+                  value={adminMetrics.resgatesNoMes || 0}
+                  icon="🎁"
+                  color="blue"
+                />
               </div>
-
-              {/* Lotes detalhados */}
-              <div className="flex flex-wrap gap-2">
-                {fundadoresMetrics.lotes?.map(lote => {
-                  const vendidas = fundadoresMetrics.porLote?.[lote.numero] || 0
-                  const isAtual = lote.numero === fundadoresMetrics.loteAtual
-                  const esgotado = vendidas >= lote.vagas
-                  return (
-                    <div
-                      key={lote.numero}
-                      className={`px-3 py-2 rounded-lg text-xs ${
-                        isAtual
-                          ? 'bg-amber-100 border-2 border-amber-400 text-amber-800'
-                          : esgotado
-                            ? 'bg-green-50 border border-green-200 text-green-700'
-                            : 'bg-gray-50 border border-gray-200 text-gray-500'
-                      }`}
-                    >
-                      <span className="font-semibold">L{lote.numero}</span>
-                      <span className="mx-1">·</span>
-                      <span>{vendidas}/{lote.vagas}</span>
-                      <span className="mx-1">·</span>
-                      <span>R$ {lote.preco}</span>
-                      {esgotado && <span className="ml-1">✓</span>}
-                    </div>
-                  )
-                })}
-              </div>
-            </AdminCard>
-          </motion.div>
-        )}
-
-        {/* ════════════════════════════════════════════════════════════
-            CARD IA - Leitura de Cards Me,up
-            ════════════════════════════════════════════════════════════ */}
-        {iaStats && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-          >
-            <AdminCard>
-              <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="text-sm font-heading font-semibold text-[#1f1f1f] flex items-center gap-2">
-                    <span className="text-lg">🤖</span>
-                    Leitura Automática de Cards
-                  </h2>
-                  <p className="text-xs text-[#a39695] mt-1">Extração via IA (últimos 30 dias)</p>
-                </div>
-                {iaErros.temErroCreditoRecente && (
-                  <span className="px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
-                    ⚠️ Créditos baixos
-                  </span>
-                )}
-              </div>
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="text-center p-3 rounded-xl bg-[#32113f]/5">
-                  <p className="text-2xl font-display font-bold text-[#32113f]">{iaStats.total_leituras || 0}</p>
-                  <p className="text-xs text-[#a39695]">Leituras</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-green-50">
-                  <p className="text-2xl font-display font-bold text-green-700">{iaStats.leituras_sucesso || 0}</p>
-                  <p className="text-xs text-[#a39695]">Sucesso</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-red-50">
-                  <p className="text-2xl font-display font-bold text-red-700">{iaStats.leituras_erro || 0}</p>
-                  <p className="text-xs text-[#a39695]">Erros</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-amber-50">
-                  <p className="text-2xl font-display font-bold text-amber-700">
-                    ${(iaStats.custo_total_usd || 0).toFixed(2)}
-                  </p>
-                  <p className="text-xs text-[#a39695]">Custo USD</p>
-                </div>
-              </div>
-              {iaStats.leituras_hoje !== undefined && (
-                <div className="mt-4 flex items-center justify-between text-xs text-[#a39695]">
-                  <span>Hoje: {iaStats.leituras_hoje || 0} leituras</span>
-                  <span>Tokens: {((iaStats.tokens_entrada || 0) + (iaStats.tokens_saida || 0)).toLocaleString('pt-BR')}</span>
-                </div>
-              )}
-
-              {/* Detalhes dos erros */}
-              {iaErrorDetails && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  {/* Taxa de sucesso 7d vs 30d */}
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="p-3 rounded-xl bg-green-50 border border-green-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-green-700 font-medium">Últimos 7 dias</span>
-                        <span className="text-lg font-bold text-green-700">{iaErrorDetails.taxaSucesso7d}%</span>
-                      </div>
-                      <p className="text-[10px] text-green-600 mt-1">
-                        {iaErrorDetails.sucessos7d} sucesso · {iaErrorDetails.erros7d} erros
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-blue-700 font-medium">Últimos 30 dias</span>
-                        <span className="text-lg font-bold text-blue-700">{iaErrorDetails.taxaSucesso30d}%</span>
-                      </div>
-                      <p className="text-[10px] text-blue-600 mt-1">
-                        {iaErrorDetails.sucessos30d} sucesso · {iaErrorDetails.erros30d} erros
-                      </p>
-                    </div>
-                  </div>
-
-                  {iaErrorDetails.erros30d > 0 && (
-                    <>
-                      {/* Erros por modelo */}
-                      {Object.keys(iaErrorDetails.errosPorModelo || {}).length > 0 && (
-                        <div className="mb-3">
-                          <h4 className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">Erros por modelo</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {Object.entries(iaErrorDetails.errosPorModelo).map(([modelo, qtd]) => (
-                              <span key={modelo} className="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-[10px] font-mono">
-                                {modelo}: {qtd}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Erros por tipo */}
-                      <div className="mb-3">
-                        <h4 className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">Erros por tipo</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {Object.entries(iaErrorDetails.errosPorTipo || {}).map(([tipo, qtd]) => (
-                            <span key={tipo} className="px-2 py-1 rounded-full bg-red-50 text-red-700 text-[10px] font-medium">
-                              {tipo}: {qtd}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Lista de erros com modelo */}
-                      <div className="space-y-2 max-h-48 overflow-y-auto">
-                        {iaErrorDetails.detalhes?.map((erro) => (
-                          <div key={erro.id} className="p-2 rounded-lg bg-red-50/50 border border-red-100 text-xs">
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-red-800">{erro.tipo}</span>
-                                <span className="px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 text-[9px] font-mono">
-                                  {erro.modelo}
-                                </span>
-                              </div>
-                              <span className="text-red-600/70">{erro.data}</span>
-                            </div>
-                            <p className="text-red-700/80 text-[10px] break-all">
-                              {erro.erro?.slice(0, 150)}{erro.erro?.length > 150 ? '...' : ''}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
             </AdminCard>
           </motion.div>
         )}
@@ -481,7 +313,7 @@ export function AdminDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18 }}
+            transition={{ delay: 0.15 }}
           >
             <AdminCard>
               <div className="flex items-start justify-between mb-4">
@@ -560,110 +392,58 @@ export function AdminDashboard() {
         )}
 
         {/* ════════════════════════════════════════════════════════════
-            SEÇÃO ESCURA - Destaque visual (Top Clientes + Transações)
+            ÚLTIMAS TRANSAÇÕES
             ════════════════════════════════════════════════════════════ */}
-        <div className="rounded-2xl bg-deep-purple p-6 sm:p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Top Clientes */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 overflow-hidden"
-            >
-              <div className="p-4 border-b border-white/10 flex items-center justify-between">
-                <div>
-                  <h2 className="text-sm font-heading font-semibold text-ice-white">Top Clientes</h2>
-                  <p className="text-xs text-dusty-rose">Por pontos acumulados</p>
-                </div>
-                <Link
-                  to="/admin/usuarios"
-                  className="text-xs text-antique-gold hover:text-accent-light transition-colors font-heading"
-                >
-                  Ver todos →
-                </Link>
-              </div>
-              <div className="divide-y divide-white/10">
-                {topUsers.length === 0 ? (
-                  <div className="p-6 text-center text-dusty-rose text-sm">
-                    Nenhum cliente cadastrado ainda
-                  </div>
-                ) : (
-                  topUsers.map((user, index) => (
-                    <div key={user.id} className="p-4 flex items-center gap-4">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-heading font-semibold ${
-                        index === 0 ? 'bg-antique-gold/30 text-antique-gold' :
-                        index === 1 ? 'bg-white/20 text-white' :
-                        index === 2 ? 'bg-amber-500/20 text-amber-400' :
-                        'bg-white/10 text-dusty-rose'
-                      }`}>
-                        {index + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-heading font-medium text-ice-white truncate">{user.name}</p>
-                        <p className="text-xs text-dusty-rose">{user.levelName}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-mono font-semibold text-antique-gold">{format.pointsShort(user.points)}</p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <AdminCard>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-heading font-semibold text-[#1f1f1f]">
+                Últimas transações
+              </h2>
+              <Link
+                to="/admin/historico"
+                className="text-xs text-[#32113f] hover:text-[#5c005a] transition-colors font-heading"
+              >
+                Ver histórico →
+              </Link>
+            </div>
 
-            {/* Últimas Transações */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 overflow-hidden"
-            >
-              <div className="p-4 border-b border-white/10">
-                <h2 className="text-sm font-heading font-semibold text-ice-white">Últimas Transações</h2>
-                <p className="text-xs text-dusty-rose">Movimentações recentes</p>
-              </div>
-              <div className="divide-y divide-white/10">
-                {recentTransactions.length === 0 ? (
-                  <div className="p-6 text-center text-dusty-rose text-sm">
-                    Nenhuma transação ainda
+            {recentTransactions.length === 0 ? (
+              <p className="text-sm text-[#a39695] text-center py-6">
+                Nenhuma transação ainda
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {recentTransactions.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-heading font-medium text-graphite truncate">{t.userName}</p>
+                      <p className="text-xs text-[#a39695] truncate">{t.reason}</p>
+                    </div>
+                    <div className="text-right ml-4">
+                      <p className={`text-sm font-mono font-semibold ${
+                        t.amount > 0 ? 'text-green-600' : 'text-red-500'
+                      }`}>
+                        {t.amount > 0 ? '+' : ''}{t.amount.toLocaleString('pt-BR')}
+                      </p>
+                      <p className="text-xs text-[#a39695]">{t.createdAt.split(',')[0]}</p>
+                    </div>
                   </div>
-                ) : (
-                  recentTransactions.map((t, index) => (
-                    <motion.div
-                      key={t.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.3 + index * 0.05 }}
-                      className="p-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-ice-white font-heading truncate">{t.userName}</p>
-                          <p className="text-xs text-dusty-rose truncate">{t.reason}</p>
-                        </div>
-                        <div className="text-right ml-4">
-                          <p className={`text-sm font-mono font-semibold ${
-                            t.amount > 0 ? 'text-green-400' : 'text-red-400'
-                          }`}>
-                            {t.amount > 0 ? '+' : ''}{t.amount.toLocaleString('pt-BR')}
-                          </p>
-                          <p className="text-xs text-dusty-rose/70">{t.createdAt.split(',')[0]}</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
+                ))}
               </div>
-            </motion.div>
-          </div>
-        </div>
+            )}
+          </AdminCard>
+        </motion.div>
 
         {/* Ações Rápidas */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.25 }}
         >
           <AdminCard>
             <h2 className="text-sm font-heading font-semibold text-[#1f1f1f] mb-4">Ações Rápidas</h2>
@@ -671,8 +451,11 @@ export function AdminDashboard() {
               <Link to="/admin/usuarios">
                 <AdminButton variant="primary">Creditar Pontos</AdminButton>
               </Link>
-              <Link to="/admin/historico">
-                <AdminButton variant="secondary">Ver Histórico</AdminButton>
+              <Link to="/admin/emissoes">
+                <AdminButton variant="secondary">Lançar Emissão</AdminButton>
+              </Link>
+              <Link to="/admin/metricas">
+                <AdminButton variant="secondary">Ver Métricas</AdminButton>
               </Link>
             </div>
           </AdminCard>

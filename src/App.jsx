@@ -22,7 +22,8 @@ import {
   AdminEmissoes,
   AdminFilaEntregas,
   AdminFundadores,
-  AdminFotosDestinos
+  AdminFotosDestinos,
+  AdminMetricas
 } from '@/pages/admin'
 
 function App() {
@@ -174,6 +175,7 @@ function App() {
           <Route path="/admin/fila-entregas" element={<AdminRoute><AdminFilaEntregas /></AdminRoute>} />
           <Route path="/admin/fundadores" element={<AdminRoute><AdminFundadores /></AdminRoute>} />
           <Route path="/admin/fotos-destinos" element={<AdminRoute><AdminFotosDestinos /></AdminRoute>} />
+          <Route path="/admin/metricas" element={<AdminRoute><AdminMetricas /></AdminRoute>} />
 
           {/* 404 - Catch all */}
           <Route path="*" element={<NotFound />} />
