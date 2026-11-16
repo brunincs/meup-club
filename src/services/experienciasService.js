@@ -526,20 +526,21 @@ async function fetchStatusSolicitacoesFallback(userId) {
   try {
     const { data, error } = await supabase
       .from('tarefa_solicitacoes')
-      .select('tarefa_id, status, admin_comentario, created_at')
+      .select('tarefa_id, status, admin_comentario, dados_extras, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     if (error) throw error
 
-    // Criar mapa de tarefa_id -> { status, motivo }
+    // Criar mapa de tarefa_id -> { status, motivo, instagramHandle }
     const statusMap = {}
     for (const s of (data || [])) {
       // Só guarda a primeira (mais recente) de cada tarefa
       if (!statusMap[s.tarefa_id]) {
         statusMap[s.tarefa_id] = {
           status: s.status,
-          motivo: s.admin_comentario || null
+          motivo: s.admin_comentario || null,
+          instagramHandle: s.dados_extras?.instagram_handle || null
         }
       }
     }

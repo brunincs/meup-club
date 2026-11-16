@@ -9,6 +9,7 @@ import {
   FoundersCard
 } from '@/components/dashboard'
 import { HojeSection } from '@/components/dashboard/HojeSection'
+import { ExperienciasParaVoce } from '@/components/dashboard/ExperienciasParaVoce'
 import { SafeSection } from '@/components/shared/ErrorBoundary'
 
 // ============================================
@@ -85,6 +86,11 @@ export function Dashboard() {
               <HojeSection variant="dark" />
             </SafeSection>
 
+            {/* Bloco 3.5: Experiências para você (BRANCO) */}
+            <SafeSection name="Experiências" silent>
+              <ExperienciasParaVoce />
+            </SafeSection>
+
             {/* Bloco 4: Fundador (BRANCO) - só para fundadores */}
             <SafeSection name="Fundadores" silent>
               <FoundersCard variant="light" foundersOnly />
@@ -93,10 +99,13 @@ export function Dashboard() {
 
           {/* DESKTOP: Duas colunas */}
           <div className="hidden lg:grid lg:grid-cols-5 lg:gap-6">
-            {/* Coluna Esquerda (~60%): Hoje (ROXO) */}
+            {/* Coluna Esquerda (~60%): Hoje (ROXO) + Experiências (BRANCO) */}
             <div className="lg:col-span-3 space-y-6">
               <SafeSection name="Hoje" silent>
                 <HojeSection variant="dark" />
+              </SafeSection>
+              <SafeSection name="Experiências" silent>
+                <ExperienciasParaVoce />
               </SafeSection>
             </div>
 

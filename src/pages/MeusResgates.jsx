@@ -82,6 +82,67 @@ const STATUS_CONFIG = {
 const WHATSAPP_NUMBER = '5516988126568'
 const WHATSAPP_MESSAGE = 'Olá! Preciso de ajuda com meu resgate no Me,up Club.'
 
+// Etapas do resgate para visualização
+const ETAPAS_RESGATE = [
+  { id: 'solicitado', label: 'Solicitado' },
+  { id: 'em_analise', label: 'Em análise' },
+  { id: 'entregue', label: 'Entregue' }
+]
+
+// Mapeia status do banco para etapa visual
+function getEtapaAtual(status) {
+  if (['pendente', 'solicitado'].includes(status)) return 0
+  if (['aprovado', 'em_preparacao'].includes(status)) return 1
+  if (['entregue', 'utilizado'].includes(status)) return 2
+  return -1 // rejeitado/cancelado
+}
+
+// Componente de etapas visuais
+function StatusSteps({ status }) {
+  const etapaAtual = getEtapaAtual(status)
+
+  // Não mostrar para rejeitados/cancelados
+  if (etapaAtual < 0) return null
+
+  return (
+    <div className="flex items-center gap-1 mt-3 mb-2">
+      {ETAPAS_RESGATE.map((etapa, index) => {
+        const isCompleted = index < etapaAtual
+        const isCurrent = index === etapaAtual
+        const isPending = index > etapaAtual
+
+        return (
+          <div key={etapa.id} className="flex items-center flex-1">
+            {/* Etapa */}
+            <div className="flex flex-col items-center flex-1">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                isCompleted
+                  ? 'bg-game-green text-white'
+                  : isCurrent
+                    ? 'bg-antique-gold text-white'
+                    : 'bg-graphite/10 text-graphite/40'
+              }`}>
+                {isCompleted ? '✓' : index + 1}
+              </div>
+              <span className={`text-[10px] mt-1 text-center leading-tight ${
+                isCompleted || isCurrent ? 'text-graphite font-medium' : 'text-graphite/50'
+              }`}>
+                {etapa.label}
+              </span>
+            </div>
+            {/* Linha conectora */}
+            {index < ETAPAS_RESGATE.length - 1 && (
+              <div className={`h-0.5 flex-1 mx-1 rounded-full transition-colors ${
+                isCompleted ? 'bg-game-green' : 'bg-graphite/10'
+              }`} />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export function MeusResgates() {
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
@@ -225,22 +286,24 @@ export function MeusResgates() {
           </div>
         ) : filteredResgates.length === 0 ? (
           <div className="p-12 text-center rounded-2xl bg-white border border-dusty-rose/20">
-            <div className="w-16 h-16 rounded-2xl bg-dusty-rose/10 flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">★</span>
+            <div className="w-16 h-16 rounded-2xl bg-antique-gold/10 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-antique-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+              </svg>
             </div>
             <h3 className="text-lg font-heading font-medium text-graphite mb-2">
-              Nenhum resgate encontrado
+              {filter === 'all' ? 'Você ainda não resgatou nada' : 'Nenhum resgate nesta categoria'}
             </h3>
             <p className="text-sm text-graphite/70 mb-6">
               {filter === 'all'
-                ? 'Você ainda não fez nenhum resgate.'
-                : 'Nenhum resgate nesta categoria.'}
+                ? 'Use seus pontos para resgatar experiências exclusivas.'
+                : 'Tente outro filtro para ver seus resgates.'}
             </p>
             <Link
               to="/rewards"
               className="inline-block px-6 py-3 rounded-xl bg-deep-purple text-ice-white text-sm font-heading font-medium hover:bg-bright-purple transition-colors"
             >
-              Ver Experiências
+              Ver experiências
             </Link>
           </div>
         ) : (
@@ -286,6 +349,11 @@ export function MeusResgates() {
                         )}
                       </div>
                     </div>
+
+                    {/* Etapas visuais - só para resgates ativos */}
+                    {['pendente', 'solicitado', 'aprovado', 'em_preparacao', 'entregue', 'utilizado'].includes(resgate.status) && (
+                      <StatusSteps status={resgate.status} />
+                    )}
 
                     {/* Conteúdo específico por tipo/status */}
 

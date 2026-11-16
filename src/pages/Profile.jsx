@@ -67,10 +67,18 @@ const TRAVEL_TYPES = [
 // COMPONENTE: CABEÇALHO DO PASSAPORTE
 // ══════════════════════════════════════════════════════════════════════════════
 
+// Verifica se perfil está completo (dados principais preenchidos)
+function isProfileComplete(profile) {
+  if (!profile) return false
+  const { name, phone, city, state, birth_date } = profile
+  return !!(name?.trim() && phone?.trim() && city?.trim() && state?.trim() && birth_date)
+}
+
 function PassportHeader({ profile, levelData, userPoints }) {
   const userName = profile?.name || 'Viajante'
   const currentLevelId = levelData?.current?.id ?? 1
   const memberSince = formatMemberSince(profile?.created_at)
+  const profileComplete = isProfileComplete(profile)
 
   return (
     <div className="relative">
@@ -150,6 +158,14 @@ function PassportHeader({ profile, levelData, userPoints }) {
                 <p className="text-sm text-[#ddd1d0] first-letter:uppercase">{memberSince}</p>
               </div>
             </div>
+
+            {/* Indicador de perfil completo */}
+            {profileComplete && (
+              <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#22c55e]/20 border border-[#22c55e]/30">
+                <CheckIcon size={14} color="#22c55e" />
+                <span className="text-xs text-[#22c55e] font-medium">Perfil completo</span>
+              </div>
+            )}
           </div>
 
           {/* Pontos acumulados */}

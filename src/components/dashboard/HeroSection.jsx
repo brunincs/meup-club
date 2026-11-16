@@ -229,8 +229,10 @@ export function HeroSection() {
                     bgColor="rgba(163, 150, 149, 0.15)"
                   />
                   {/* Bônus ao atingir */}
-                  <p className="text-[10px] text-dusty-rose/70 mt-2 text-center">
-                    bônus de +{(nextLevel.id === 2 ? 1000 : nextLevel.id === 3 ? 3000 : nextLevel.id === 4 ? 5000 : 10000).toLocaleString('pt-BR')} ao chegar
+                  <p className="text-[13px] mt-2 text-center">
+                    <span className="text-dusty-rose/70">bônus de </span>
+                    <span className="font-semibold" style={{ color: '#a27937' }}>+{(nextLevel.id === 2 ? 1000 : nextLevel.id === 3 ? 3000 : nextLevel.id === 4 ? 5000 : 10000).toLocaleString('pt-BR')}</span>
+                    <span className="text-dusty-rose/70"> ao chegar</span>
                   </p>
                 </motion.div>
               ) : (

@@ -262,9 +262,16 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
 
             {/* Pending message */}
             {isPending && (
-              <p className="text-xs text-antique-gold/80 mb-4">
-                Sua solicitação está sendo analisada pelo admin.
-              </p>
+              <div className="mb-4">
+                <p className="text-xs text-antique-gold/80">
+                  Sua solicitação está sendo analisada pelo admin.
+                </p>
+                {task.instagramHandle && (
+                  <p className="text-xs text-graphite/60 mt-1">
+                    Instagram informado: <span className="font-medium text-deep-purple">{task.instagramHandle}</span>
+                  </p>
+                )}
+              </div>
             )}
 
             {/* Footer */}
@@ -434,10 +441,11 @@ export function Tasks() {
         return !shouldHideFromList(t.nome)
       })
       .map(task => {
-        // statusMap pode ser string (legado) ou objeto { status, motivo }
+        // statusMap pode ser string (legado) ou objeto { status, motivo, instagramHandle }
         const statusData = solicitacoesStatus[task.id]
         const status = typeof statusData === 'object' ? statusData?.status : statusData
         const motivoRejeicao = typeof statusData === 'object' ? statusData?.motivo : null
+        const instagramHandle = typeof statusData === 'object' ? statusData?.instagramHandle : null
         const needsApproval = requiresApproval(task.nome)
         const isAutomatic = isAutomaticMission(task.nome)
 
@@ -451,6 +459,7 @@ export function Tasks() {
           pending: status === 'pendente',
           rejected: status === 'rejeitada',
           motivoRejeicao,  // Motivo da rejeição (se houver)
+          instagramHandle, // @ do Instagram informado (se houver)
           target: 1,
           progress: status === 'aprovada' ? 1 : 0,
           needsApproval,  // SÓ true para Instagram/Google

@@ -9,23 +9,17 @@ export function Footer() {
 
       <div className="container-premium">
         <div className="flex flex-col items-center gap-5">
-          {/* Logo */}
+          {/* Logo oficial */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="flex items-center gap-3"
           >
-            <motion.div
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-antique-gold via-antique-gold to-accent-dark flex items-center justify-center shadow-lg shadow-antique-gold/15"
-            >
-              <span className="font-display font-bold text-deep-purple">M</span>
-            </motion.div>
-            <div>
-              <span className="font-display font-semibold text-lg text-ice-white">Me,up</span>
-              <span className="font-display font-light text-lg text-dusty-rose ml-1">Club</span>
-            </div>
+            <img
+              src="/brand/meup-club-logo-dark.svg"
+              alt="Me,up Club"
+              className="h-10 w-auto"
+            />
           </motion.div>
 
           {/* Contato Me,up Viagens */}

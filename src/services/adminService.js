@@ -437,6 +437,185 @@ export async function fetchAdminStats() {
   }
 }
 
+/**
+ * Busca métricas detalhadas do admin
+ * - Free vs Prime
+ * - Conversão Free→Prime no mês
+ * - Pontos emitidos vs resgatados no mês
+ */
+export async function fetchAdminMetrics() {
+  try {
+    // Início do mês atual
+    const hoje = new Date()
+    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString()
+
+    // 1. Contar Free vs Prime
+    const { data: planos } = await supabase
+      .from('profiles')
+      .select('plano_efetivo')
+
+    const freeCount = planos?.filter(p => !p.plano_efetivo || p.plano_efetivo === 'free').length || 0
+    const primeCount = planos?.filter(p => p.plano_efetivo === 'prime').length || 0
+
+    // 2. Conversões Free→Prime no mês (assinaturas criadas no mês)
+    const { count: conversoesNoMes } = await supabase
+      .from('subscriptions')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', inicioMes)
+      .eq('status', 'active')
+
+    // % conversão = conversões / (free + conversões) * 100
+    const percentualConversao = freeCount > 0 ? ((conversoesNoMes || 0) / (freeCount + (conversoesNoMes || 0)) * 100).toFixed(1) : 0
+
+    // 3. Pontos emitidos no mês (soma de amount > 0)
+    const { data: pontosEmitidos } = await supabase
+      .from('point_transactions')
+      .select('amount')
+      .gt('amount', 0)
+      .gte('created_at', inicioMes)
+
+    const totalEmitido = pontosEmitidos?.reduce((sum, t) => sum + t.amount, 0) || 0
+
+    // 4. Pontos resgatados no mês (soma de amount < 0, em valor absoluto)
+    const { data: pontosResgatados } = await supabase
+      .from('point_transactions')
+      .select('amount')
+      .lt('amount', 0)
+      .gte('created_at', inicioMes)
+
+    const totalResgatado = Math.abs(pontosResgatados?.reduce((sum, t) => sum + t.amount, 0) || 0)
+
+    return {
+      success: true,
+      metrics: {
+        freeCount,
+        primeCount,
+        conversoesNoMes: conversoesNoMes || 0,
+        percentualConversao,
+        pontosEmitidosMes: totalEmitido,
+        pontosResgatadosMes: totalResgatado
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao buscar métricas:', error)
+    return { success: false, metrics: null, error: error.message }
+  }
+}
+
+/**
+ * Busca métricas de fundadores
+ */
+export async function fetchFundadoresMetrics() {
+  try {
+    // Buscar dados dos lotes
+    const { data: loteAtual } = await supabase.rpc('get_preco_fundador_atual')
+
+    // Contar fundadores por lote
+    const { data: fundadores } = await supabase
+      .from('subscriptions')
+      .select('metadata')
+      .eq('ciclo', 'anual')
+      .eq('status', 'active')
+      .not('metadata->numero_fundador', 'is', null)
+
+    // Agrupar por lote
+    const porLote = {}
+    fundadores?.forEach(f => {
+      const lote = f.metadata?.lote || 1
+      porLote[lote] = (porLote[lote] || 0) + 1
+    })
+
+    return {
+      success: true,
+      fundadores: {
+        loteAtual: loteAtual?.[0]?.lote_numero || 1,
+        precoAtual: parseFloat(loteAtual?.[0]?.preco) || 497,
+        vagasRestantes: loteAtual?.[0]?.vagas_restantes || 0,
+        totalVendidas: loteAtual?.[0]?.total_vendidas || 0,
+        porLote
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao buscar fundadores:', error)
+    return { success: false, fundadores: null, error: error.message }
+  }
+}
+
+/**
+ * Busca erros detalhados da leitura de cards IA
+ */
+export async function fetchIAErrorDetails() {
+  try {
+    const { data, error } = await supabase
+      .from('ia_uso')
+      .select('id, created_at, sucesso, erro, modelo, emissao_id, tokens_entrada, tokens_saida')
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    if (error) throw error
+
+    // Separar por status
+    const erros = data?.filter(d => !d.sucesso) || []
+    const sucessos = data?.filter(d => d.sucesso) || []
+
+    // Agrupar erros por tipo
+    const errosPorTipo = {}
+    erros.forEach(e => {
+      const tipoErro = categorizarErroIA(e.erro)
+      errosPorTipo[tipoErro] = (errosPorTipo[tipoErro] || 0) + 1
+    })
+
+    return {
+      success: true,
+      iaErrors: {
+        totalRecentes: data?.length || 0,
+        erros: erros.length,
+        sucessos: sucessos.length,
+        taxaErro: data?.length > 0 ? ((erros.length / data.length) * 100).toFixed(1) : 0,
+        errosPorTipo,
+        detalhes: erros.slice(0, 10).map(e => ({
+          id: e.id,
+          data: new Date(e.created_at).toLocaleString('pt-BR'),
+          erro: e.erro,
+          tipo: categorizarErroIA(e.erro),
+          emissaoId: e.emissao_id
+        }))
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao buscar erros IA:', error)
+    return { success: false, iaErrors: null, error: error.message }
+  }
+}
+
+/**
+ * Categoriza o erro da IA em tipos conhecidos
+ */
+function categorizarErroIA(erro) {
+  if (!erro) return 'Desconhecido'
+  const erroLower = erro.toLowerCase()
+
+  if (erroLower.includes('credit') || erroLower.includes('balance') || erroLower.includes('billing')) {
+    return 'Créditos insuficientes'
+  }
+  if (erroLower.includes('rate limit') || erroLower.includes('too many')) {
+    return 'Rate limit'
+  }
+  if (erroLower.includes('timeout') || erroLower.includes('timed out')) {
+    return 'Timeout'
+  }
+  if (erroLower.includes('invalid') || erroLower.includes('parse') || erroLower.includes('json')) {
+    return 'Resposta inválida'
+  }
+  if (erroLower.includes('image') || erroLower.includes('file') || erroLower.includes('upload')) {
+    return 'Erro de imagem'
+  }
+  if (erroLower.includes('network') || erroLower.includes('connection')) {
+    return 'Erro de rede'
+  }
+  return 'Outro'
+}
+
 // ============================================
 // VERIFICAÇÃO DE DISCREPÂNCIAS
 // ============================================

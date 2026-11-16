@@ -191,7 +191,13 @@ export function ExperienceDetailModal({
                 {format.pointsShort(userPoints)} pontos
               </span>
             </div>
-            {!hasEnoughPoints && (
+            {hasEnoughPoints ? (
+              <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-deep-purple/10">
+                <p className="text-xs sm:text-sm text-center text-graphite/60">
+                  Você fica com <span className="text-game-green font-medium">{format.pointsShort(userPoints - experience.points)}</span> pontos
+                </p>
+              </div>
+            ) : (
               <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-deep-purple/10">
                 <p className="text-xs sm:text-sm text-center text-graphite/60">
                   Faltam <span className="text-antique-gold font-medium">{format.pointsShort(pointsNeeded)}</span> pontos

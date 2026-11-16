@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { AdminLayout, AdminPageHeader, AdminCard, AdminButton } from '@/components/admin/AdminLayout'
-import { fetchAdminStats, fetchAllUsers, fetchAllTransactions, fetchBalanceDiscrepancies, fetchCheckinsProximos, marcarCheckinFeito } from '@/services/adminService'
+import { fetchAdminStats, fetchAllUsers, fetchAllTransactions, fetchBalanceDiscrepancies, fetchCheckinsProximos, marcarCheckinFeito, fetchAdminMetrics, fetchFundadoresMetrics, fetchIAErrorDetails } from '@/services/adminService'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchIAStats, fetchErrosRecentesIA } from '@/services/viagemService'
 import { format } from '@/services/copy'
@@ -37,8 +37,11 @@ export function AdminDashboard() {
   const [discrepancies, setDiscrepancies] = useState([])
   const [iaStats, setIAStats] = useState(null)
   const [iaErros, setIAErros] = useState({ erros: [], temErroCreditoRecente: false })
+  const [iaErrorDetails, setIAErrorDetails] = useState(null)
   const [checkins, setCheckins] = useState([])
   const [checkinsLoading, setCheckinsLoading] = useState(false)
+  const [adminMetrics, setAdminMetrics] = useState(null)
+  const [fundadoresMetrics, setFundadoresMetrics] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -75,6 +78,21 @@ export function AdminDashboard() {
       const checkinsResult = await fetchCheckinsProximos()
       if (checkinsResult.success) {
         setCheckins(checkinsResult.checkins)
+      }
+      // Buscar métricas detalhadas
+      const metricsResult = await fetchAdminMetrics()
+      if (metricsResult.success) {
+        setAdminMetrics(metricsResult.metrics)
+      }
+      // Buscar métricas de fundadores
+      const fundadoresResult = await fetchFundadoresMetrics()
+      if (fundadoresResult.success) {
+        setFundadoresMetrics(fundadoresResult.fundadores)
+      }
+      // Buscar detalhes de erros IA
+      const iaErrorsResult = await fetchIAErrorDetails()
+      if (iaErrorsResult.success) {
+        setIAErrorDetails(iaErrorsResult.iaErrors)
       }
       setLoading(false)
     }
@@ -200,6 +218,104 @@ export function AdminDashboard() {
         </div>
 
         {/* ════════════════════════════════════════════════════════════
+            MÉTRICAS DETALHADAS - Free x Prime, Conversão, Fundadores
+            ════════════════════════════════════════════════════════════ */}
+        {adminMetrics && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <AdminCard>
+              <h2 className="text-sm font-heading font-semibold text-[#1f1f1f] mb-4">
+                Métricas do Mês
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                {/* Free vs Prime */}
+                <div className="text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <p className="text-2xl font-display font-bold text-gray-600">{adminMetrics.freeCount}</p>
+                  <p className="text-xs text-[#a39695]">Free</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-[#32113f]/5 border border-[#32113f]/10">
+                  <p className="text-2xl font-display font-bold text-[#32113f]">{adminMetrics.primeCount}</p>
+                  <p className="text-xs text-[#a39695]">Prime</p>
+                </div>
+                {/* Conversão */}
+                <div className="text-center p-3 rounded-xl bg-green-50 border border-green-100">
+                  <p className="text-2xl font-display font-bold text-green-700">{adminMetrics.conversoesNoMes}</p>
+                  <p className="text-xs text-[#a39695]">Conversões</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-amber-50 border border-amber-100">
+                  <p className="text-2xl font-display font-bold text-amber-700">{adminMetrics.percentualConversao}%</p>
+                  <p className="text-xs text-[#a39695]">Taxa Conv.</p>
+                </div>
+                {/* Pontos */}
+                <div className="text-center p-3 rounded-xl bg-blue-50 border border-blue-100">
+                  <p className="text-2xl font-display font-bold text-blue-700">{format.pointsShort(adminMetrics.pontosEmitidosMes)}</p>
+                  <p className="text-xs text-[#a39695]">Emitidos</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-purple-50 border border-purple-100">
+                  <p className="text-2xl font-display font-bold text-purple-700">{format.pointsShort(adminMetrics.pontosResgatadosMes)}</p>
+                  <p className="text-xs text-[#a39695]">Resgatados</p>
+                </div>
+              </div>
+            </AdminCard>
+          </motion.div>
+        )}
+
+        {/* ════════════════════════════════════════════════════════════
+            FUNDADORES - Lotes e vagas
+            ════════════════════════════════════════════════════════════ */}
+        {fundadoresMetrics && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+          >
+            <AdminCard>
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h2 className="text-sm font-heading font-semibold text-[#1f1f1f] flex items-center gap-2">
+                    <span className="text-lg">✦</span>
+                    Ação Fundadores
+                  </h2>
+                  <p className="text-xs text-[#a39695] mt-1">100 vagas de fundador</p>
+                </div>
+                <Link
+                  to="/admin/fundadores"
+                  className="text-xs text-[#32113f] hover:text-[#5c005a] transition-colors font-heading"
+                >
+                  Ver lista →
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="text-center p-3 rounded-xl bg-amber-50 border border-amber-100">
+                  <p className="text-2xl font-display font-bold text-amber-700">Lote {fundadoresMetrics.loteAtual}</p>
+                  <p className="text-xs text-[#a39695]">R$ {fundadoresMetrics.precoAtual}</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-green-50 border border-green-100">
+                  <p className="text-2xl font-display font-bold text-green-700">{fundadoresMetrics.totalVendidas}</p>
+                  <p className="text-xs text-[#a39695]">Vendidas</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-[#32113f]/5 border border-[#32113f]/10">
+                  <p className="text-2xl font-display font-bold text-[#32113f]">{fundadoresMetrics.vagasRestantes}</p>
+                  <p className="text-xs text-[#a39695]">Restantes</p>
+                </div>
+                <div className="text-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <div className="text-xs text-[#a39695]">
+                    {Object.entries(fundadoresMetrics.porLote || {}).map(([lote, qtd]) => (
+                      <span key={lote} className="block">L{lote}: {qtd}</span>
+                    ))}
+                    {Object.keys(fundadoresMetrics.porLote || {}).length === 0 && <span>-</span>}
+                  </div>
+                  <p className="text-xs text-[#a39695] mt-1">Por Lote</p>
+                </div>
+              </div>
+            </AdminCard>
+          </motion.div>
+        )}
+
+        {/* ════════════════════════════════════════════════════════════
             CARD IA - Leitura de Cards Me,up
             ════════════════════════════════════════════════════════════ */}
         {iaStats && (
@@ -247,6 +363,42 @@ export function AdminDashboard() {
                 <div className="mt-4 flex items-center justify-between text-xs text-[#a39695]">
                   <span>Hoje: {iaStats.leituras_hoje || 0} leituras</span>
                   <span>Tokens: {((iaStats.tokens_entrada || 0) + (iaStats.tokens_saida || 0)).toLocaleString('pt-BR')}</span>
+                </div>
+              )}
+
+              {/* Detalhes dos erros */}
+              {iaErrorDetails && iaErrorDetails.erros > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-heading font-semibold text-red-700">
+                      Erros Recentes ({iaErrorDetails.erros} de {iaErrorDetails.totalRecentes})
+                    </h3>
+                    <span className="text-xs text-red-600">Taxa: {iaErrorDetails.taxaErro}%</span>
+                  </div>
+
+                  {/* Erros por tipo */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {Object.entries(iaErrorDetails.errosPorTipo || {}).map(([tipo, qtd]) => (
+                      <span key={tipo} className="px-2 py-1 rounded-full bg-red-50 text-red-700 text-[10px] font-medium">
+                        {tipo}: {qtd}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Lista de erros */}
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {iaErrorDetails.detalhes?.map((erro) => (
+                      <div key={erro.id} className="p-2 rounded-lg bg-red-50/50 border border-red-100 text-xs">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-red-800">{erro.tipo}</span>
+                          <span className="text-red-600/70">{erro.data}</span>
+                        </div>
+                        <p className="text-red-700/80 text-[10px] break-all">
+                          {erro.erro?.slice(0, 150)}{erro.erro?.length > 150 ? '...' : ''}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </AdminCard>

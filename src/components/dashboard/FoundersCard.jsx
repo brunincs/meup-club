@@ -63,11 +63,8 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`rounded-2xl border-2 p-6 relative overflow-hidden ${
-          isLight
-            ? 'border-antique-gold/40 bg-gradient-to-br from-antique-gold/10 to-antique-gold/5'
-            : 'border-amber-400/50 bg-gradient-to-br from-amber-900/30 to-amber-800/20'
-        }`}
+        className="rounded-2xl p-6 relative overflow-hidden bg-white shadow-sm"
+        style={{ border: '1px solid #ddd1d0' }}
       >
         {/* Layout Mobile: empilhado */}
         <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
@@ -89,17 +86,17 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
           </div>
 
           {/* Título */}
-          <h3 className={`text-lg font-display font-bold mb-2 ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>
+          <h3 className="text-lg font-display font-bold mb-2 text-antique-gold">
             Seu número da sorte
           </h3>
 
           {/* Número grande */}
-          <p className={`text-4xl sm:text-3xl font-display font-bold tracking-wider mb-3 ${isLight ? 'text-deep-purple' : 'text-ice-white'}`}>
+          <p className="text-4xl sm:text-3xl font-display font-bold tracking-wider mb-3 text-deep-purple">
             {fundadorData.numero_sorte}
           </p>
 
           {/* Texto explicativo */}
-          <p className={`text-sm mb-4 max-w-xs ${isLight ? 'text-graphite/70' : 'text-amber-200/70'}`}>
+          <p className="text-sm mb-4 max-w-xs text-graphite/70">
             Concorrendo a 500 mil pontos na Ação Fundadores
           </p>
 
@@ -108,7 +105,7 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
             href={regulamentoUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={`text-xs underline ${isLight ? 'text-antique-gold hover:text-deep-purple' : 'text-amber-400 hover:text-amber-300'}`}
+            className="text-xs underline text-antique-gold hover:text-deep-purple"
           >
             Ver regulamento
           </a>
