@@ -22,16 +22,15 @@ ON CONFLICT (chave) DO UPDATE SET valor = 0, descricao = EXCLUDED.descricao;
 
 
 -- ============================================
--- 2. FUNÇÃO: creditar_pontos_central COM SUPORTE A SALDO NEGATIVO
--- Atualizada para permitir saldo negativo (estorno)
+-- 2. ATUALIZAR creditar_pontos_interno PARA PERMITIR SALDO NEGATIVO
+-- Necessário para estornos de viagem cancelada
 -- ============================================
 
-CREATE OR REPLACE FUNCTION public.creditar_pontos_central(
+CREATE OR REPLACE FUNCTION public.creditar_pontos_interno(
   p_user_id UUID,
-  p_pontos INTEGER,
-  p_tipo TEXT,
-  p_motivo TEXT,
-  p_operacao TEXT DEFAULT 'credit'
+  p_amount INTEGER,
+  p_type TEXT,
+  p_reason TEXT
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -43,49 +42,49 @@ DECLARE
   v_balance_after INTEGER;
   v_transaction_id UUID;
 BEGIN
-  -- Setar flag de chamada interna para bypass de triggers
-  PERFORM set_config('app.internal_credit', 'true', true);
-
-  -- Validações
+  -- Validações básicas
   IF p_user_id IS NULL THEN
-    PERFORM set_config('app.internal_credit', 'false', true);
     RETURN jsonb_build_object('success', false, 'error', 'user_id é obrigatório');
   END IF;
 
-  IF p_pontos IS NULL OR p_pontos = 0 THEN
-    PERFORM set_config('app.internal_credit', 'false', true);
-    RETURN jsonb_build_object('success', false, 'error', 'pontos deve ser diferente de zero');
+  IF p_amount IS NULL OR p_amount = 0 THEN
+    RETURN jsonb_build_object('success', false, 'error', 'amount deve ser diferente de zero');
   END IF;
 
-  -- Buscar saldo COM LOCK
+  -- SETAR FLAG DE CHAMADA INTERNA (permite bypass do trigger)
+  PERFORM set_config('app.internal_credit', 'true', true);
+
+  -- Buscar saldo atual COM LOCK
   SELECT COALESCE(points, 0) INTO v_balance_before
-  FROM profiles WHERE id = p_user_id FOR UPDATE;
+  FROM public.profiles
+  WHERE id = p_user_id
+  FOR UPDATE;
 
   IF v_balance_before IS NULL THEN
     PERFORM set_config('app.internal_credit', 'false', true);
     RETURN jsonb_build_object('success', false, 'error', 'Usuário não encontrado');
   END IF;
 
-  -- Calcular novo saldo (pode ser negativo para estornos)
-  v_balance_after := v_balance_before + p_pontos;
+  -- Calcular novo saldo (PERMITE NEGATIVO para estornos)
+  v_balance_after := v_balance_before + p_amount;
 
-  -- NOTA: Permitimos saldo negativo para estornos
+  -- NOTA: Saldo negativo é permitido para estornos
   -- O bloqueio de resgates é feito na função de resgate
 
-  -- Atualizar saldo
-  UPDATE profiles SET
-    points = v_balance_after,
-    updated_at = NOW()
+  -- UPDATE ATÔMICO (a flag app.internal_credit permite bypass do trigger)
+  UPDATE public.profiles
+  SET points = v_balance_after, updated_at = NOW()
   WHERE id = p_user_id;
 
   -- Registrar transação
-  INSERT INTO point_transactions (
-    user_id, amount, balance_before, balance_after, type, reason
+  INSERT INTO public.point_transactions (
+    user_id, amount, type, reason, balance_before, balance_after
   ) VALUES (
-    p_user_id, p_pontos, v_balance_before, v_balance_after, p_operacao, p_motivo
+    p_user_id, p_amount, p_type, p_reason, v_balance_before, v_balance_after
   )
   RETURNING id INTO v_transaction_id;
 
+  -- Limpar flag
   PERFORM set_config('app.internal_credit', 'false', true);
 
   RETURN jsonb_build_object(
@@ -93,7 +92,7 @@ BEGIN
     'transaction_id', v_transaction_id,
     'balance_before', v_balance_before,
     'balance_after', v_balance_after,
-    'amount', p_pontos
+    'amount', p_amount
   );
 
 EXCEPTION WHEN OTHERS THEN
@@ -130,12 +129,11 @@ BEGIN
 
   -- Se carência = 0, creditar direto (sem pending_points)
   IF v_carencia_horas = 0 THEN
-    v_result := creditar_pontos_central(
+    v_result := creditar_pontos_interno(
       p_user_id,
       p_pontos,
       'emissao',
-      p_motivo,
-      'credit'
+      p_motivo
     );
 
     RETURN v_result;
@@ -189,12 +187,11 @@ BEGIN
 
   -- Se carência = 0, creditar direto (sem pending_points)
   IF v_carencia_horas = 0 THEN
-    v_result := creditar_pontos_central(
+    v_result := creditar_pontos_interno(
       p_user_id,
       p_pontos,
       'referral',
-      p_motivo,
-      'credit'
+      p_motivo
     );
 
     RETURN v_result;
@@ -257,12 +254,11 @@ BEGIN
 
   -- 1. ESTORNAR PONTOS DA VIAGEM (mesmo que fique negativo)
   IF v_pontos_emissao > 0 THEN
-    v_result := creditar_pontos_central(
+    v_result := creditar_pontos_interno(
       v_user_id,
       -v_pontos_emissao,
       'estorno',
-      p_motivo || ': R$ ' || v_emissao.valor::TEXT,
-      'estorno'
+      p_motivo || ': R$ ' || v_emissao.valor::TEXT
     );
 
     IF NOT (v_result->>'success')::BOOLEAN THEN
@@ -287,12 +283,11 @@ BEGIN
       WHERE user_id = v_user_id AND missao_tipo = 'primeira_viagem';
 
       -- Estornar pontos da missão (valor padrão 500)
-      PERFORM creditar_pontos_central(
+      PERFORM creditar_pontos_interno(
         v_user_id,
         -500,
         'estorno',
-        'Estorno missão 1ª viagem',
-        'estorno'
+        'Estorno missão 1ª viagem'
       );
 
       v_missoes_estornadas := v_missoes_estornadas + 1;
@@ -313,12 +308,11 @@ BEGIN
 
     IF v_pontos_indicador > 0 THEN
       -- Estornar do indicador
-      PERFORM creditar_pontos_central(
+      PERFORM creditar_pontos_interno(
         v_referral.referrer_id,
         -v_pontos_indicador,
         'estorno',
-        'Estorno indicação: viagem cancelada',
-        'estorno'
+        'Estorno indicação: viagem cancelada'
       );
 
       -- Resetar flags da indicação
@@ -343,12 +337,11 @@ BEGIN
           DELETE FROM missoes_automaticas_concluidas
           WHERE user_id = v_referral.referrer_id AND missao_tipo = 'primeira_indicacao';
 
-          PERFORM creditar_pontos_central(
+          PERFORM creditar_pontos_interno(
             v_referral.referrer_id,
             -1000,  -- Valor padrão da missão
             'estorno',
-            'Estorno missão 1ª indicação',
-            'estorno'
+            'Estorno missão 1ª indicação'
           );
 
           v_missoes_estornadas := v_missoes_estornadas + 1;
@@ -869,13 +862,12 @@ BEGIN
         'unlock'
       );
     ELSE
-      -- Modelo antigo: creditar pontos
-      PERFORM creditar_pontos_central(
+      -- Modelo antigo: creditar pontos (usando função interna que tem menos params)
+      PERFORM creditar_pontos_interno(
         v_pending.user_id,
         v_pending.pontos,
         'referral',
-        v_pending.motivo,
-        'credit'
+        v_pending.motivo
       );
 
       -- Notificar
