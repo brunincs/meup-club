@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getProximaViagem, formatDiasParaViagem } from '@/services/minhasViagensService'
 import { usePWA } from '@/hooks/usePWA'
-import { PushPrompt } from '@/components/pwa'
 
 export function NextTripCard({ variant = 'dark' }) {
   const [viagem, setViagem] = useState(null)
@@ -183,20 +182,56 @@ export function NextTripCard({ variant = 'dark' }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
-      </Link>
 
-      {/* Push notification prompt - outside the Link */}
-      <AnimatePresence>
-        {showPushPrompt && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-          >
-            <PushPrompt context="trip" onClose={handleClosePushPrompt} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* Linha discreta de notificação - dentro do card */}
+        <AnimatePresence>
+          {showPushPrompt && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-3 pt-3"
+              style={{ borderTop: '1px dashed #ddd1d0' }}
+              onClick={(e) => e.preventDefault()}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-xs" style={{ color: '#5c005a' }}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  <span>Quer ser avisado do check-in?</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      // Trigger push subscription
+                      import('@/services/pushService').then(({ subscribeToPush }) => subscribeToPush())
+                      handleClosePushPrompt()
+                    }}
+                    className="px-3 py-1 rounded-lg text-xs font-heading font-semibold transition-colors"
+                    style={{ backgroundColor: '#a27937', color: '#edf0f1' }}
+                  >
+                    Ativar
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleClosePushPrompt()
+                    }}
+                    className="text-xs"
+                    style={{ color: '#a39695' }}
+                  >
+                    Agora não
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Link>
     </div>
   )
 }
