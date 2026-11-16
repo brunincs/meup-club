@@ -97,8 +97,26 @@ export function RewardsAlternada() {
                 </div>
               )}
 
+              {/* Sob consulta badge */}
+              {reward.isSobConsulta && (
+                <div className={`absolute ${reward.featured ? 'top-10' : 'top-3'} left-3 z-20 max-w-[calc(100%-1.5rem)]`}>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] uppercase tracking-wider bg-bright-purple text-ice-white font-heading font-semibold shadow-lg whitespace-nowrap">
+                    Sob consulta
+                  </span>
+                </div>
+              )}
+
+              {/* Destino badge */}
+              {reward.destino && (
+                <div className={`absolute ${reward.featured || reward.isSobConsulta ? 'top-10' : 'top-3'} right-3 z-20`}>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] uppercase tracking-wider bg-deep-purple/80 text-ice-white font-heading font-medium shadow-lg whitespace-nowrap">
+                    {reward.destino}
+                  </span>
+                </div>
+              )}
+
               {/* Tempo limitado badge */}
-              {reward.tempoLimitado && (
+              {reward.tempoLimitado && !reward.isSobConsulta && (
                 <div className={`absolute ${reward.featured ? 'top-10' : 'top-3'} left-3 z-20 max-w-[calc(100%-1.5rem)]`}>
                   <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] uppercase tracking-wider bg-dusty-rose text-deep-purple font-heading font-semibold shadow-lg whitespace-nowrap">
                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 flex-shrink-0">
@@ -136,11 +154,11 @@ export function RewardsAlternada() {
                 {/* Points footer */}
                 <div className="flex items-center justify-between pt-3 border-t border-white/10">
                   <span className="text-[10px] uppercase tracking-wider text-ice-white/50">
-                    A partir de
+                    {reward.isSobConsulta ? 'A partir de' : 'Prime'}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <span className="font-heading text-sm font-semibold text-antique-gold">
-                      {formatPoints(reward.points)}
+                      {formatPoints(reward.isSobConsulta ? reward.pontosPrime : reward.points)}
                     </span>
                     <span className="text-ice-white/50 text-xs">pts</span>
                   </div>
