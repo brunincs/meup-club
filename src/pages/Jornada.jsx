@@ -236,15 +236,15 @@ export function Jornada() {
   const pontosIndicacao = benefits?.pontosIndicacao || 3000
   const pontosCheckin = benefits?.pontosCheckin || 10
 
-  // Texto para indicação com bonus Prime
+  // Texto para indicação com bonus Prime (mostrar viagem + Prime Anual)
   const textoIndicacao = isPrime
-    ? `+${format.pointsShort(pontosIndicacao)} pts quando comprar`
-    : `+${format.pointsShort(pontosIndicacao)} pts (${format.pointsShort(5000)} se Prime)`
+    ? `+${format.pointsShort(pontosIndicacao)} quando comprar · +3.000 se virar Prime`
+    : `+${format.pointsShort(pontosIndicacao)} quando comprar · +2.000 se virar Prime`
 
-  // Texto para viagem
+  // Texto para viagem (formato brasileiro: 1,5)
   const textoViagem = isPrime
-    ? `${multiplicadorViagem} ponto por real`
-    : `1 ponto por real · ${1.5} no Prime`
+    ? `${multiplicadorViagem.toLocaleString('pt-BR')} ponto por real`
+    : `1 ponto por real · 1,5 no Prime`
 
   // Texto para check-in
   const textoCheckin = `+${pontosCheckin} pts por dia`

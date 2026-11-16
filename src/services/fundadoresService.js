@@ -57,7 +57,7 @@ export async function getMyPendingPoints() {
 
 /**
  * Busca preço atual do lote de fundador
- * Retorna lote_numero, preco, vagas_restantes
+ * Retorna lote_numero, preco, vagas_restantes, vagas_lote, vendidas_lote, preco_proximo
  */
 export async function getPrecoFundadorAtual() {
   try {
@@ -66,16 +66,42 @@ export async function getPrecoFundadorAtual() {
     if (error) throw error
 
     const loteData = data?.[0] || {}
+    const loteNumero = loteData.lote_numero || 1
+    const totalVendidas = loteData.total_vendidas || 0
+
+    // Configuração dos lotes (3 lotes: 20@497, 40@597, 40@697)
+    const lotesConfig = [
+      { numero: 1, vagas: 20, preco: 497 },
+      { numero: 2, vagas: 40, preco: 597 },
+      { numero: 3, vagas: 40, preco: 697 }
+    ]
+
+    const loteAtual = lotesConfig.find(l => l.numero === loteNumero) || lotesConfig[0]
+    const proximoLote = lotesConfig.find(l => l.numero === loteNumero + 1)
+
+    // Calcular vendidas no lote atual
+    let vagasAnteriores = 0
+    for (const lote of lotesConfig) {
+      if (lote.numero < loteNumero) {
+        vagasAnteriores += lote.vagas
+      }
+    }
+    const vendidasNoLote = Math.max(0, totalVendidas - vagasAnteriores)
+
     return {
       success: true,
-      lote_numero: loteData.lote_numero || 1,
-      preco: parseFloat(loteData.preco) || 497,
+      lote_numero: loteNumero,
+      preco: parseFloat(loteData.preco) || loteAtual.preco,
       vagas_restantes: loteData.vagas_restantes || 0,
-      total_vendidas: loteData.total_vendidas || 0
+      total_vendidas: totalVendidas,
+      vagas_lote: loteAtual.vagas,
+      vendidas_lote: vendidasNoLote,
+      preco_proximo: proximoLote?.preco || null,
+      is_ultimo_lote: !proximoLote
     }
   } catch (error) {
     console.error('Erro ao buscar preço do lote:', error)
-    return { success: false, lote_numero: 1, preco: 497, vagas_restantes: 100 }
+    return { success: false, lote_numero: 1, preco: 497, vagas_restantes: 100, vagas_lote: 20, vendidas_lote: 0, preco_proximo: 597, is_ultimo_lote: false }
   }
 }
 

@@ -148,7 +148,7 @@ export function AdminMetricas() {
         ) : (
           <div className="space-y-8">
             {/* CLIENTES */}
-            <Section title="Clientes" icon="👥">
+            <Section title="Clientes" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round"/></svg>}>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <MetricCard
                   label="Total Free"
@@ -167,7 +167,7 @@ export function AdminMetricas() {
                 />
                 <MetricCard
                   label="Conversão Free→Prime"
-                  value={`${metrics.clientes?.taxaConversao || 0}%`}
+                  value={metrics.clientes?.taxaConversao === '—' ? '—' : `${metrics.clientes?.taxaConversao || 0}%`}
                   color="amber"
                 />
                 <MetricCard
@@ -263,7 +263,7 @@ export function AdminMetricas() {
             </Section>
 
             {/* PONTOS */}
-            <Section title="Pontos" icon="💎">
+            <Section title="Pontos" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" strokeLinecap="round" strokeLinejoin="round"/></svg>}>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 <MetricCard
                   label="Emitidos no período"
@@ -306,7 +306,10 @@ export function AdminMetricas() {
                     {formatNumber(metrics.pontos?.bloqueados || 0)} pts
                   </p>
                   <p className="text-sm text-graphite/60 mt-1">
-                    Aguardando janela de 7 dias
+                    Bônus Prime (boas-vindas e indicação)
+                  </p>
+                  <p className="text-xs text-graphite/40 mt-1">
+                    Viagem e indicação de compra liberam na hora
                   </p>
                 </div>
               </div>
@@ -351,7 +354,7 @@ export function AdminMetricas() {
             </Section>
 
             {/* AQUISIÇÃO */}
-            <Section title="Aquisição" icon="🎯">
+            <Section title="Aquisição" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5"><circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="6" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <MetricCard
                   label="Indicações convertidas"
@@ -378,7 +381,7 @@ export function AdminMetricas() {
             </Section>
 
             {/* ENGAJAMENTO */}
-            <Section title="Engajamento" icon="📊">
+            <Section title="Engajamento" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5"><line x1="18" y1="20" x2="18" y2="10" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="20" x2="12" y2="4" strokeLinecap="round" strokeLinejoin="round"/><line x1="6" y1="20" x2="6" y2="14" strokeLinecap="round" strokeLinejoin="round"/></svg>}>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <MetricCard
                   label="Check-ins/dia (média)"
@@ -549,20 +552,28 @@ function formatCurrency(value) {
 async function fetchClientesMetrics(datas) {
   try {
     // Total de clientes (não-admin)
-    const { count: totalClientes } = await supabase
+    const { data: profiles } = await supabase
       .from('profiles')
-      .select('*', { count: 'exact', head: true })
+      .select('id, role')
       .neq('role', 'admin')
 
-    // Clientes Prime (assinaturas ativas)
+    const totalClientes = profiles?.length || 0
+    const clienteIds = new Set(profiles?.map(p => p.id) || [])
+
+    // Clientes Prime (assinaturas ativas de não-admins)
     const { data: assinaturas } = await supabase
       .from('subscriptions')
       .select('user_id')
       .eq('status', 'active')
 
-    const primeUserIds = new Set(assinaturas?.map(s => s.user_id) || [])
+    // Filtrar apenas assinaturas de não-admins
+    const primeUserIds = new Set(
+      (assinaturas || [])
+        .filter(s => clienteIds.has(s.user_id))
+        .map(s => s.user_id)
+    )
     const primeCount = primeUserIds.size
-    const freeCount = (totalClientes || 0) - primeCount
+    const freeCount = totalClientes - primeCount
 
     // Novos no período
     const { count: novosNoPeriodo } = await supabase
@@ -572,18 +583,19 @@ async function fetchClientesMetrics(datas) {
       .gte('created_at', datas.inicio)
       .lte('created_at', datas.fim)
 
-    // Conversões no período
+    // Conversões no período (assinaturas criadas no período)
     const { count: conversoes } = await supabase
       .from('subscriptions')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', datas.inicio)
       .lte('created_at', datas.fim)
 
-    // Taxa de conversão
+    // Taxa de conversão = conversões / Free no início do período
+    // Free no início = Free atual + conversões no período
     const freeNoInicio = freeCount + (conversoes || 0)
     const taxaConversao = freeNoInicio > 0
       ? ((conversoes || 0) / freeNoInicio * 100).toFixed(1)
-      : 0
+      : '—'
 
     // Cancelamentos no período
     const { count: cancelamentos } = await supabase
@@ -687,6 +699,17 @@ async function fetchFundadoresMetrics(datas) {
 
 async function fetchPontosMetrics(datas) {
   try {
+    // Buscar fatores de conversão do banco
+    const { data: configData } = await supabase
+      .from('plano_config')
+      .select('chave, valor')
+      .in('chave', ['fator_pontos_free', 'fator_pontos_prime'])
+
+    const config = {}
+    configData?.forEach(c => { config[c.chave] = c.valor })
+    const fatorFree = config.fator_pontos_free || 150
+    const fatorPrime = config.fator_pontos_prime || 125
+
     // Pontos emitidos no período
     const { data: emitidosData } = await supabase
       .from('point_transactions')
@@ -710,21 +733,38 @@ async function fetchPontosMetrics(datas) {
     // Pontos expirados (se houver tabela)
     const expirados = 0 // TODO: implementar se houver controle de expiração
 
-    // Saldo total em aberto (soma de todos os saldos)
-    const { data: saldosData } = await supabase
+    // Saldo por usuário com plano
+    const { data: profilesData } = await supabase
       .from('profiles')
-      .select('points')
+      .select('id, points')
       .neq('role', 'admin')
 
-    const saldoTotal = saldosData?.reduce((sum, p) => sum + (p.points || 0), 0) || 0
+    // Buscar assinaturas ativas para saber quem é Prime
+    const { data: assinaturas } = await supabase
+      .from('subscriptions')
+      .select('user_id')
+      .eq('status', 'active')
 
-    // Custo estimado: saldo ÷ fator médio (assume 10 pts/R$) × 80%
-    const custoEstimado = (saldoTotal / 10) * 0.8
+    const primeUserIds = new Set(assinaturas?.map(s => s.user_id) || [])
+
+    // Calcular saldo total e custo por plano
+    let saldoTotal = 0
+    let custoEstimado = 0
+
+    profilesData?.forEach(p => {
+      const pontos = p.points || 0
+      saldoTotal += pontos
+
+      // Custo = pontos / fator × 0.80
+      const fator = primeUserIds.has(p.id) ? fatorPrime : fatorFree
+      custoEstimado += (pontos / fator) * 0.80
+    })
 
     // Pontos bloqueados (pendentes de liberação)
     const { data: bloqueadosData } = await supabase
       .from('pending_points')
       .select('pontos')
+      .eq('status', 'pendente')
       .gt('liberar_em', new Date().toISOString())
 
     const bloqueados = bloqueadosData?.reduce((sum, p) => sum + (p.pontos || 0), 0) || 0
@@ -750,13 +790,30 @@ async function fetchPontosMetrics(datas) {
 
 async function fetchAquisicaoMetrics(datas) {
   try {
-    // Indicações convertidas (aprovadas no período)
-    const { count: indicacoesConvertidas } = await supabase
+    // Buscar fator médio (usar Prime como padrão pois indicações geralmente são de Prime)
+    const { data: configData } = await supabase
+      .from('plano_config')
+      .select('chave, valor')
+      .in('chave', ['fator_pontos_free', 'fator_pontos_prime'])
+
+    const config = {}
+    configData?.forEach(c => { config[c.chave] = c.valor })
+    const fatorPrime = config.fator_pontos_prime || 125
+
+    // Indicações convertidas (com viagem ou Prime ativado no período)
+    const { data: indicacoesData } = await supabase
       .from('referrals')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'approved')
-      .gte('updated_at', datas.inicio)
-      .lte('updated_at', datas.fim)
+      .select('id, primeira_viagem_em, prime_anual_ativado_em')
+      .or(`primeira_viagem_em.gte.${datas.inicio},prime_anual_ativado_em.gte.${datas.inicio}`)
+
+    // Filtrar indicações que tiveram conversão no período
+    const indicacoesConvertidas = indicacoesData?.filter(r => {
+      const viagemNoPeriodo = r.primeira_viagem_em &&
+        r.primeira_viagem_em >= datas.inicio && r.primeira_viagem_em <= datas.fim
+      const primeNoPeriodo = r.prime_anual_ativado_em &&
+        r.prime_anual_ativado_em >= datas.inicio && r.prime_anual_ativado_em <= datas.fim
+      return viagemNoPeriodo || primeNoPeriodo
+    })?.length || 0
 
     // Pontos pagos em indicação
     const { data: pontosIndicacao } = await supabase
@@ -774,11 +831,11 @@ async function fetchAquisicaoMetrics(datas) {
       ? Math.round(pontosPagos / indicacoesConvertidas)
       : 0
 
-    // CAC em R$ (assume 10 pts = R$ 1)
-    const cacReais = cacPontos / 10
+    // CAC em R$ = pontos / fator × 0.80
+    const cacReais = (cacPontos / fatorPrime) * 0.80
 
     return {
-      indicacoesConvertidas: indicacoesConvertidas || 0,
+      indicacoesConvertidas,
       pontosPagos,
       cacPontos,
       cacReais
@@ -791,13 +848,12 @@ async function fetchAquisicaoMetrics(datas) {
 
 async function fetchEngajamentoMetrics(datas) {
   try {
-    // Check-ins no período
+    // Check-ins no período (tabela checkins, não voos)
     const { data: checkinsData } = await supabase
-      .from('voos')
-      .select('checkin_feito_em')
-      .not('checkin_feito_em', 'is', null)
-      .gte('checkin_feito_em', datas.inicio)
-      .lte('checkin_feito_em', datas.fim)
+      .from('checkins')
+      .select('created_at')
+      .gte('created_at', datas.inicio)
+      .lte('created_at', datas.fim)
 
     const totalCheckins = checkinsData?.length || 0
     const diasNoPeriodo = Math.max(1, Math.ceil(
@@ -805,31 +861,46 @@ async function fetchEngajamentoMetrics(datas) {
     ))
     const checkinsMediaDia = totalCheckins / diasNoPeriodo
 
-    // Missões concluídas
-    const { data: missoesData, count: missoesConcluidas } = await supabase
-      .from('solicitacoes_tarefa')
-      .select('tarefa_id', { count: 'exact' })
+    // Missões manuais concluídas (tarefa_solicitacoes)
+    const { data: tarefasData } = await supabase
+      .from('tarefa_solicitacoes')
+      .select('tarefa_id')
       .eq('status', 'aprovada')
       .gte('updated_at', datas.inicio)
       .lte('updated_at', datas.fim)
 
+    // Missões automáticas concluídas
+    const { data: missoesAutoData } = await supabase
+      .from('missoes_automaticas_concluidas')
+      .select('missao_tipo')
+      .gte('created_at', datas.inicio)
+      .lte('created_at', datas.fim)
+
+    const missoesManuais = tarefasData?.length || 0
+    const missoesAuto = missoesAutoData?.length || 0
+    const missoesConcluidas = missoesManuais + missoesAuto
+
     // Agrupar missões por tipo
     const missoesPorTipo = {}
-    missoesData?.forEach(m => {
-      const tipo = m.tarefa_id?.split('_')[0] || 'outro'
+    tarefasData?.forEach(m => {
+      missoesPorTipo['manual'] = (missoesPorTipo['manual'] || 0) + 1
+    })
+    missoesAutoData?.forEach(m => {
+      const tipo = m.missao_tipo || 'outro'
       missoesPorTipo[tipo] = (missoesPorTipo[tipo] || 0) + 1
     })
 
-    // Top 5 experiências resgatadas
+    // Top 5 experiências resgatadas (tabela resgate_solicitacoes)
     const { data: resgatesData } = await supabase
-      .from('redemptions')
-      .select('experience_id, experiences(name)')
+      .from('resgate_solicitacoes')
+      .select('experiencia_id, experiencias:experiencia_id(nome)')
+      .eq('status', 'aprovado')
       .gte('created_at', datas.inicio)
       .lte('created_at', datas.fim)
 
     const expCounts = {}
     resgatesData?.forEach(r => {
-      const nome = r.experiences?.name || 'Desconhecida'
+      const nome = r.experiencias?.nome || 'Desconhecida'
       expCounts[nome] = (expCounts[nome] || 0) + 1
     })
 
@@ -854,7 +925,7 @@ async function fetchEngajamentoMetrics(datas) {
 
     return {
       checkinsMediaDia,
-      missoesConcluidas: missoesConcluidas || 0,
+      missoesConcluidas,
       missoesPorTipo,
       topExperiencias,
       instalacoes: instalacoes || 0,

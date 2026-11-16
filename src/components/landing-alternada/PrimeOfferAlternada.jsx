@@ -16,7 +16,7 @@ export function PrimeOfferAlternada() {
   const [config, setConfig] = useState(null)
   const [loading, setLoading] = useState(true)
   const [vagasData, setVagasData] = useState({ vagas_usadas: 0, vagas_total: 100 })
-  const [loteData, setLoteData] = useState({ lote_numero: 1, preco: 497, vagas_restantes: 100 })
+  const [loteData, setLoteData] = useState({ lote_numero: 1, preco: 497, vagas_restantes: 100, vagas_lote: 20, vendidas_lote: 0, preco_proximo: 597, is_ultimo_lote: false })
   const [regulamentoUrl, setRegulamentoUrl] = useState('')
 
   useEffect(() => {
@@ -63,7 +63,12 @@ export function PrimeOfferAlternada() {
   const vagasRestantes = loteData.vagas_restantes || 0
   const totalVagas = 100 // Total de todos os lotes
   const vagasVendidas = loteData.total_vendidas || 0
-  const porcentagemUsada = (vagasVendidas / totalVagas) * 100
+  const vendidasNoLote = loteData.vendidas_lote || 0
+  const vagasNoLote = loteData.vagas_lote || 20
+  const precoProximo = loteData.preco_proximo
+  const isUltimoLote = loteData.is_ultimo_lote || false
+  const mostrarBarra = vendidasNoLote >= 5 // Só mostrar barra se 5+ vendidas no lote
+  const porcentagemLote = (vendidasNoLote / vagasNoLote) * 100
 
   return (
     <section id="prime-offer" className="relative py-16 md:py-24 bg-deep-purple overflow-hidden">
@@ -346,28 +351,34 @@ export function PrimeOfferAlternada() {
                 </div>
               </div>
 
-              {/* Contador de vagas */}
+              {/* Contador de vagas - regra de escassez */}
               {vagasRestantes > 0 && (
                 <div className="mb-5">
-                  <p className="text-sm text-ice-white/80 mb-2">
-                    <span className="text-antique-gold font-semibold">{vagasRestantes}</span> vagas restantes no Lote {loteAtual} · R${formatPrice(precoAnual, false)}
-                  </p>
-                  <div className="h-2 bg-ice-white/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-antique-gold transition-all duration-500"
-                      style={{ width: `${porcentagemUsada}%` }}
-                    />
-                  </div>
-                  {/* Só mostrar "X vendidas" quando >= 10, senão mostrar só "100 vagas no Lote 1" */}
-                  {vagasVendidas >= 10 ? (
-                    <p className="text-xs text-ice-white/50 mt-1">
-                      {vagasVendidas} de {totalVagas} vagas de fundador vendidas
+                  {/* Texto do lote baseado na regra de escassez */}
+                  {isUltimoLote ? (
+                    // Último lote
+                    <p className="text-sm text-ice-white/80 mb-2">
+                      Últimas <span className="text-antique-gold font-semibold">{vagasRestantes}</span> vagas de fundador a R${formatPrice(precoAnual, false)}
                     </p>
-                  ) : vagasVendidas > 0 ? (
-                    <p className="text-xs text-ice-white/50 mt-1">
-                      {totalVagas} vagas no Lote 1
+                  ) : mostrarBarra ? (
+                    // 5+ vendidas no lote: mostrar restantes e barra
+                    <>
+                      <p className="text-sm text-ice-white/80 mb-2">
+                        Restam <span className="text-antique-gold font-semibold">{vagasNoLote - vendidasNoLote}</span> de {vagasNoLote} vagas no Lote {loteAtual} · depois R${formatPrice(precoProximo, false)}
+                      </p>
+                      <div className="h-2 bg-ice-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-antique-gold transition-all duration-500"
+                          style={{ width: `${porcentagemLote}%` }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    // Menos de 5 vendidas: só texto, sem barra, sem número de restantes
+                    <p className="text-sm text-ice-white/80">
+                      Lote {loteAtual}: só {vagasNoLote} vagas a R${formatPrice(precoAnual, false)} · depois sobe para R${formatPrice(precoProximo, false)}
                     </p>
-                  ) : null}
+                  )}
                 </div>
               )}
 
