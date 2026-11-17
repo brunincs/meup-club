@@ -13,9 +13,9 @@ import { formatPrice } from '@/config/contact'
  * PrimeOfferAlternada - Seção de oferta do Prime (Modelo Exclusivo 2026)
  *
  * SIMPLIFICADO:
- * - 30 vagas Prime fundador a R$597 único
+ * - 30 vagas Prime fundador a R$597/ano
  * - Sem lotes (preço único)
- * - 200.000 pontos divididos entre fundadores
+ * - 200.000 pontos em sorteio entre fundadores
  * - Acesso exclusivo: clientes ou convidados
  */
 export function PrimeOfferAlternada() {
@@ -60,11 +60,6 @@ export function PrimeOfferAlternada() {
   // Economia
   const economiaFundador = precoAnualCheio - precoFundador
   const descontoPercent = Math.round((1 - precoFundador / precoAnualCheio) * 100)
-
-  // Pontos por fundador (dividido)
-  const pontosPorFundador = vagasVendidas > 0
-    ? Math.floor(premioTotal / vagasVendidas)
-    : Math.floor(premioTotal / vagasTotal)
 
   // Urgência visual
   const percentualRestante = (vagasRestantes / vagasTotal) * 100
@@ -114,7 +109,9 @@ export function PrimeOfferAlternada() {
             transition={{ delay: 0.2 }}
             className="text-ice-white/70 max-w-xl mx-auto"
           >
-            Apenas {vagasTotal} vagas para membros fundadores. Compare os planos.
+            {vagasVendidas >= 5 && !esgotado
+              ? `Restam ${vagasRestantes} de ${vagasTotal} vagas de fundador. Compare os planos.`
+              : `Apenas ${vagasTotal} vagas para membros fundadores. Compare os planos.`}
           </motion.p>
         </div>
 
@@ -145,10 +142,6 @@ export function PrimeOfferAlternada() {
                 <li className="flex items-start gap-2 text-deep-purple/80">
                   <span className="text-green-600 mt-0.5">✓</span>
                   <span>Check-in diário: <strong>{free.pontosCheckin || 10} pts</strong></span>
-                </li>
-                <li className="flex items-start gap-2 text-deep-purple/80">
-                  <span className="text-green-600 mt-0.5">✓</span>
-                  <span>Indicação: <strong>{(free.pontosIndicacao || 3000).toLocaleString('pt-BR')} pts</strong></span>
                 </li>
                 <li className="flex items-start gap-2 text-deep-purple/80">
                   <span className="text-green-600 mt-0.5">✓</span>
@@ -201,10 +194,10 @@ export function PrimeOfferAlternada() {
                   R${formatPrice(precoAnualCheio, false)}/ano
                 </p>
                 <p className="text-3xl font-display font-bold text-white">
-                  R${formatPrice(precoFundador, false)}<span className="text-lg text-ice-white/60">/único</span>
+                  R${formatPrice(precoFundador, false)}<span className="text-lg text-ice-white/60">/ano</span>
                 </p>
                 <p className="text-sm text-antique-gold mt-1">
-                  Economia de R${economiaFundador} · pagamento único
+                  Economia de R${economiaFundador} · ou 6x de R$ 99,50 sem juros
                 </p>
                 <p className="text-xs text-antique-gold mt-2 flex items-center gap-1">
                   <GiftIcon size={14} color="#a27937" /> +2.000 pts de boas-vindas
@@ -225,7 +218,7 @@ export function PrimeOfferAlternada() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Indicação: <strong className="text-antique-gold">{(prime.pontosIndicacao || 5000).toLocaleString('pt-BR')} pts</strong></span>
+                    <span className="text-white">Convidado comprou: <strong className="text-antique-gold">+5.000 pts</strong></span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
@@ -269,7 +262,7 @@ export function PrimeOfferAlternada() {
                   {!esgotado && (
                     <li className="flex items-start gap-2">
                       <span className="text-antique-gold mt-0.5">★</span>
-                      <span className="text-white">Participa da divisão dos {(premioTotal).toLocaleString('pt-BR')} pts</span>
+                      <span className="text-white">Número da sorte: concorra a 200 mil pts</span>
                     </li>
                   )}
                 </ul>
@@ -314,30 +307,38 @@ export function PrimeOfferAlternada() {
 
                 {/* Título */}
                 <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-2">
-                  Divida {(premioTotal).toLocaleString('pt-BR')} pontos
+                  Concorra a {(premioTotal).toLocaleString('pt-BR')} pontos
                 </h3>
                 <GoldLine width="60px" className="mb-5" />
 
                 <p className="text-sm text-ice-white/80 mb-5">
-                  Os {(premioTotal).toLocaleString('pt-BR')} pontos do prêmio serão divididos entre todos os fundadores.
-                  Quanto menos fundadores, mais pontos para cada um!
+                  Cada fundador recebe um número da sorte e concorre a {(premioTotal).toLocaleString('pt-BR')} pontos.
+                  O resultado sai conforme o regulamento.
                 </p>
 
-                {/* Contador de vagas */}
+                {/* Contador de vagas - só mostra a partir de 5 vendidas */}
                 <div className="mb-5">
-                  <p className="text-sm text-ice-white/80 mb-2">
-                    <span className={urgenciaAlta ? 'text-red-400 font-semibold' : 'text-antique-gold font-semibold'}>
-                      {vagasRestantes}
-                    </span> de {vagasTotal} vagas restantes
-                  </p>
-                  <div className="h-2 bg-ice-white/10 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        urgenciaAlta ? 'bg-red-400' : 'bg-antique-gold'
-                      }`}
-                      style={{ width: `${((vagasTotal - vagasRestantes) / vagasTotal) * 100}%` }}
-                    />
-                  </div>
+                  {vagasVendidas >= 5 ? (
+                    <>
+                      <p className="text-sm text-ice-white/80 mb-2">
+                        <span className={urgenciaAlta ? 'text-red-400 font-semibold' : 'text-antique-gold font-semibold'}>
+                          {vagasRestantes}
+                        </span> de {vagasTotal} vagas restantes
+                      </p>
+                      <div className="h-2 bg-ice-white/10 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            urgenciaAlta ? 'bg-red-400' : 'bg-antique-gold'
+                          }`}
+                          style={{ width: `${((vagasTotal - vagasRestantes) / vagasTotal) * 100}%` }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-antique-gold font-semibold">
+                      Apenas {vagasTotal} vagas de fundador
+                    </p>
+                  )}
                 </div>
 
                 {/* CTA */}
@@ -378,14 +379,12 @@ export function PrimeOfferAlternada() {
                   {(premioTotal).toLocaleString('pt-BR')}
                 </p>
                 <p className="text-lg text-ice-white/80 font-heading mb-4">
-                  pontos para dividir
+                  pontos em sorteio
                 </p>
 
-                {vagasVendidas > 0 && (
-                  <p className="text-sm text-ice-white/70">
-                    Hoje: ~{pontosPorFundador.toLocaleString('pt-BR')} pts/fundador
-                  </p>
-                )}
+                <p className="text-sm text-ice-white/70">
+                  Entre os fundadores
+                </p>
               </div>
             </div>
           </motion.div>

@@ -15,13 +15,13 @@ const FAQ_ITEMS = [
   },
   {
     id: 2,
-    question: 'Como funciona a divisão dos 200 mil pontos?',
-    answer: 'Os 200 mil pontos do prêmio são divididos igualmente entre todos os fundadores. Quanto menos fundadores, mais pontos cada um recebe. Com 30 fundadores, cada um ganha aproximadamente 6.667 pontos. Se houver apenas 20, cada um ganha 10.000 pontos.'
+    question: 'Como funciona o sorteio dos 200 mil pontos?',
+    answer: 'Cada fundador recebe um número da sorte e concorre a 200.000 pontos. O sorteio será realizado conforme o regulamento, e um único fundador leva o prêmio completo.'
   },
   {
     id: 3,
     question: 'Qual o preço do plano Prime?',
-    answer: 'O Prime para fundadores é R$ 597 — pagamento único, sem mensalidade. É um valor fixo, sem lotes ou aumentos. Esse preço é exclusivo dos primeiros 30 fundadores.'
+    answer: 'O Prime para fundadores é R$ 597/ano (ou 6x de R$ 99,50 sem juros). É um valor fixo, sem lotes ou aumentos. O preço normal após a fase de fundadores será R$ 997/ano.'
   },
   {
     id: 4,
@@ -41,7 +41,7 @@ const FAQ_ITEMS = [
   {
     id: 7,
     question: 'Preciso viajar para acumular pontos?',
-    answer: 'Não! Você ganha pontos de várias formas: check-in diário (direto no clube), indicar amigos, fazer aniversário (Prime), e claro, viajando. Dá para acumular sem sair de casa.'
+    answer: 'Não! Você ganha pontos de várias formas: check-in diário (direto no clube), missões, fazer aniversário (Prime), e claro, viajando. Fundadores também ganham pontos com seus convites.'
   },
   {
     id: 8,

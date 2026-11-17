@@ -67,7 +67,7 @@ export function Termos() {
                 5. Preço de Fundador
               </h2>
               <p className="text-ice-white/80 leading-relaxed">
-                Fundadores renovam pelo mesmo valor de R$ 497/ano enquanto mantiverem a assinatura ativa, sem interrupção. Se cancelar, perde o preço de fundador e a renovação será pelo valor vigente na época (atualmente R$ 997/ano).
+                Fundadores renovam pelo mesmo valor de R$ 597/ano enquanto mantiverem a assinatura ativa, sem interrupção. Se cancelar, perde o preço de fundador e a renovação será pelo valor vigente na época (atualmente R$ 997/ano).
               </p>
             </div>
 

@@ -34,7 +34,7 @@ const PAYMENT_CONFIG = {
 // Fallback APENAS se o banco falhar (não deve acontecer em produção)
 const FALLBACK_PRICES = {
   precoMensal: 49.90,
-  precoAnual: 497,
+  precoAnual: 597,
   precoMensalCheio: 99.90,
   precoAnualCheio: 997,
   ofertaFundadorAtiva: true

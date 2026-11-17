@@ -11,20 +11,18 @@ import {
   Rewards,
   FAQ,
   FinalCTA,
-  Footer,
-  PreLaunchLanding
+  Footer
 } from '@/components/landing-alternada'
-import { usePreLaunch } from '@/hooks/usePreLaunch'
 
 /**
  * Landing OFICIAL do Meup Club
  * ARQUITETURA: Transferir confiança da Me,up Viagens ANTES da oferta
  *
  * MODELO EXCLUSIVO (Nov 2026):
- * - Se isPreLaunch = true → mostra PreLaunchLanding (countdown + lista de espera)
- * - Se isOpen = true → mostra landing normal
+ * - Landing completa SEMPRE exibida na / (não usa PreLaunchLanding)
+ * - /eu-quero é a página de lista de espera para WhatsApp
  *
- * Fluxo das seções (pós-abertura):
+ * Fluxo das seções:
  * 1. Hero (escuro) - Gancho limpo + CTA que rola até oferta (sem preço no topo)
  * 2. CredibilitySection (claro) - Quem é a Me,up: Cadastur, Instagram
  * 3. RealProofSection (claro) - Prova real: links para verificar
@@ -39,25 +37,6 @@ import { usePreLaunch } from '@/hooks/usePreLaunch'
  * 12. Footer
  */
 export function Home() {
-  const { isPreLaunch, loading } = usePreLaunch()
-
-  // Durante carregamento, mostra loading sutil
-  if (loading) {
-    return (
-      <div className="bg-deep-purple min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">
-          <img src="/brand/logo-horizontal.svg" alt="Me,up Club" className="h-8 opacity-50" />
-        </div>
-      </div>
-    )
-  }
-
-  // Pré-lançamento: exibe landing de countdown + lista de espera
-  if (isPreLaunch) {
-    return <PreLaunchLanding />
-  }
-
-  // Pós-abertura: landing normal
   return (
     <div className="bg-deep-purple min-h-screen">
       <Header />

@@ -6,7 +6,7 @@ import { PWAProvider } from '@/contexts/PWAContext'
 import { ProtectedRoute, AdminRoute } from '@/components/auth'
 import { RootLayout } from '@/layouts'
 import { InstallPrompt, UpdatePrompt } from '@/components/pwa'
-import { Home, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans, MeusResgates, MinhasViagens, Jornada, NotFound } from '@/pages'
+import { Home, EuQuero, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans, MeusResgates, MinhasViagens, Jornada, NotFound } from '@/pages'
 import {
   AdminDashboard,
   AdminReferrals,
@@ -139,6 +139,14 @@ function App() {
               </RootLayout>
             }
           />
+          <Route
+            path="/eu-quero"
+            element={
+              <RootLayout>
+                <EuQuero />
+              </RootLayout>
+            }
+          />
                     {/* Protected routes - só acessíveis para quem está logado */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/recompensas" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
@@ -151,14 +159,10 @@ function App() {
           <Route path="/minhas-viagens" element={<ProtectedRoute><MinhasViagens /></ProtectedRoute>} />
           <Route path="/jornada" element={<ProtectedRoute><Jornada /></ProtectedRoute>} />
 
-          {/* Referral redirect */}
+          {/* Referral redirect - redireciona para /eu-quero sem gerar vínculo */}
           <Route
             path="/ref/:code"
-            element={
-              <RootLayout>
-                <Home />
-              </RootLayout>
-            }
+            element={<Navigate to="/eu-quero" replace />}
           />
 
           {/* Invite signup - Modelo Exclusivo 2026 */}

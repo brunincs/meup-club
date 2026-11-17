@@ -6,8 +6,9 @@ import { useCPFValidation } from '@/hooks/useEligibility'
 /**
  * Formulário de lista de espera para pré-lançamento
  * Coleta: nome, whatsapp, email (opcional), cpf (opcional), perfil de viagem
+ * @param {string} origin - Origem do cadastro (site, pagina_eu_quero, whatsapp)
  */
-export function WaitlistForm({ onSuccess, compact = false }) {
+export function WaitlistForm({ onSuccess, compact = false, origin = 'site' }) {
   const [formData, setFormData] = useState({
     nome: '',
     whatsapp: '',
@@ -72,7 +73,7 @@ export function WaitlistForm({ onSuccess, compact = false }) {
     try {
       const result = await submitToWaitlist({
         ...formData,
-        origem: 'site'
+        origem: origin
       })
 
       if (result.success) {

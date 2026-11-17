@@ -97,7 +97,7 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
 
           {/* Texto explicativo */}
           <p className="text-sm mb-4 max-w-xs text-graphite/70">
-            Concorrendo a 500 mil pontos na Ação Fundadores
+            Concorrendo a 200 mil pontos na Ação Fundadores
           </p>
 
           {/* Link do regulamento */}
@@ -118,7 +118,7 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
             </p>
             {fundadorData.premio_creditado && (
               <p className="text-xs text-green-300 mt-1">
-                500.000 pontos creditados na sua conta
+                200.000 pontos creditados na sua conta
               </p>
             )}
           </div>
@@ -157,12 +157,14 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
           </h3>
           <p className={`text-sm mb-2 ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
             Prime por <span className={`line-through ${isLight ? 'text-graphite/40' : 'text-dusty-rose/60'}`}>R$ 997</span>{' '}
-            <span className={`font-semibold ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>R$ 497/ano</span> e concorra a 500 mil pontos
+            <span className={`font-semibold ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>R$ 597/ano</span> e concorra a 200 mil pontos
           </p>
 
           {(() => {
             const vagasRestantes = fundadorData?.vagas_disponiveis || 0
-            const isUltimas = vagasRestantes <= 20 && vagasRestantes > 0
+            const vagasVendidas = 30 - vagasRestantes
+            const isUltimas = vagasRestantes <= 10 && vagasRestantes > 0
+            const mostrarContagem = vagasVendidas >= 5
             return (
               <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <span className={`text-xs px-2 py-1 rounded-lg ${
@@ -174,10 +176,13 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
                       ? 'bg-graphite/5 text-graphite/60'
                       : 'bg-ice-white/10 text-ice-white/60'
                 }`}>
-                  {isUltimas ? `Últimas ${vagasRestantes} vagas` : `Restam ${vagasRestantes} vagas`}
+                  {mostrarContagem
+                    ? (isUltimas ? `Últimas ${vagasRestantes} vagas` : `Restam ${vagasRestantes} de 30 vagas`)
+                    : 'Apenas 30 vagas de fundador'
+                  }
                 </span>
                 <span className={`text-xs ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>
-                  Pix ou 6x R$ 82,83
+                  Pix ou 6x R$ 99,50
                 </span>
               </div>
             )

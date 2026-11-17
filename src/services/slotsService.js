@@ -202,7 +202,8 @@ export async function getFullSlotsData() {
 }
 
 /**
- * Calcula pontos por fundador (prêmio dividido)
+ * @deprecated Não usado no modelo de sorteio. Mantido para compatibilidade.
+ * Anteriormente calculava pontos por fundador quando era divisão.
  * @returns {Promise<number>}
  */
 export async function getPointsPerFounder() {

@@ -31,11 +31,11 @@ export function HowItWorksAlternada() {
             Como funciona
           </span>
           <h2 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-ice-white mb-2">
-            Duas formas de ganhar pontos
+            Como ganhar pontos
           </h2>
           <GoldLine width="60px" centered className="mb-3" />
           <p className="text-ice-white/70 max-w-md mx-auto text-sm">
-            Viaje com a Me,up ou indique amigos. Nos dois casos, você acumula.
+            Viaje com a Me,up e acumule pontos. Fundadores também têm convites exclusivos.
           </p>
         </motion.div>
 
@@ -97,7 +97,7 @@ export function HowItWorksAlternada() {
             </div>
           </motion.div>
 
-          {/* CARD INDICANDO */}
+          {/* CARD CONVITES FUNDADOR */}
           <motion.div
             variants={staggerItem}
             className="group relative p-5 md:p-6 rounded-2xl border border-antique-gold/30 bg-white/5 hover:border-antique-gold/50 hover:bg-white/10 transition-all duration-300 flex flex-col"
@@ -106,7 +106,7 @@ export function HowItWorksAlternada() {
             <div className="flex items-center gap-3 mb-4">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-heading font-semibold bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
                 <span className="w-1.5 h-1.5 rounded-full bg-antique-gold" />
-                Indicando
+                Convites
               </span>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
@@ -118,30 +118,23 @@ export function HowItWorksAlternada() {
             </div>
 
             {/* Título */}
-            <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-4 whitespace-nowrap">
-              Até 8.000 pts por amigo
+            <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-4">
+              Fundadores têm 2 convites
             </h3>
 
             {/* Linhas de comparação */}
             <div className="flex-1 space-y-0">
-              {/* Linha 1: Amigo viajou */}
+              {/* Linha 1: Convidado comprou */}
               <div className="flex items-start justify-between py-3 border-b border-white/10">
-                <span className="text-sm font-heading font-medium text-ice-white/70">Amigo viajou</span>
+                <span className="text-sm font-heading font-medium text-ice-white/70">Convidado comprou 1ª viagem</span>
                 <div className="text-right">
-                  <span className="text-sm font-heading font-semibold text-ice-white">
-                    Free <span className="text-ice-white/70">3.000</span> · Prime <span className="text-antique-gold">5.000</span>
-                  </span>
+                  <span className="text-sm font-heading font-semibold text-antique-gold">+5.000 pts</span>
                 </div>
               </div>
 
-              {/* Linha 2: Amigo virou Prime */}
+              {/* Linha 2: Convidado virou Prime */}
               <div className="flex items-start justify-between py-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-heading font-medium text-ice-white/70">Amigo virou Prime</span>
-                  <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-heading font-semibold bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
-                    só Prime
-                  </span>
-                </div>
+                <span className="text-sm font-heading font-medium text-ice-white/70">Convidado virou Prime</span>
                 <div className="text-right">
                   <span className="text-sm font-heading font-semibold text-ice-white">
                     você <span className="text-antique-gold">+3.000</span> · ele <span className="text-antique-gold">+1.000</span>
@@ -149,6 +142,11 @@ export function HowItWorksAlternada() {
                 </div>
               </div>
             </div>
+
+            {/* Nota */}
+            <p className="text-xs text-ice-white/50 mt-3 pt-3 border-t border-white/10">
+              Convites exclusivos para Prime Fundador
+            </p>
           </motion.div>
         </motion.div>
       </div>

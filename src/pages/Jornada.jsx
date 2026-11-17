@@ -152,7 +152,7 @@ function TimelineItem({ classe, index, currentLevelId, totalPointsEarned, isLast
 // PÁGINA PRINCIPAL
 // ============================================
 export function Jornada() {
-  const { user, loading } = useAuth()
+  const { user, profile, loading } = useAuth()
   const navigate = useNavigate()
   const { current: currentLevel, totalPointsEarned, isLoading: levelLoading } = useUserLevel()
 
@@ -232,14 +232,12 @@ export function Jornada() {
 
   // Valores do plano (com fallback)
   const isPrime = benefits?.isPrime || false
+  const isFundador = profile?.is_fundador || false
   const multiplicadorViagem = benefits?.multiplicadorViagem || 1.0
-  const pontosIndicacao = benefits?.pontosIndicacao || 3000
   const pontosCheckin = benefits?.pontosCheckin || 10
 
-  // Texto para indicação com bonus Prime (mostrar viagem + Prime Anual)
-  const textoIndicacao = isPrime
-    ? `+${format.pointsShort(pontosIndicacao)} quando comprar · +3.000 se virar Prime`
-    : `+${format.pointsShort(pontosIndicacao)} quando comprar · +2.000 se virar Prime`
+  // Texto para convites (só fundadores têm convites)
+  const textoConvites = '+5.000 quando comprar · +3.000 se virar Prime'
 
   // Texto para viagem (formato brasileiro: 1,5)
   const textoViagem = isPrime
@@ -326,16 +324,19 @@ export function Jornada() {
                 <span className="text-sm text-ice-white font-medium">Viajar com a Me,up</span>
                 <p className="text-xs text-dusty-rose mt-1">{textoViagem}</p>
               </Link>
-              <Link
-                to="/perfil"
-                className="p-4 rounded-xl bg-ice-white/5 border border-dusty-rose/20 hover:border-antique-gold/40 transition-colors"
-              >
-                <div className="mb-2">
-                  <UsersIcon size={24} color="#a27937" />
-                </div>
-                <span className="text-sm text-ice-white font-medium">Indicar amigos</span>
-                <p className="text-xs text-dusty-rose mt-1">{textoIndicacao}</p>
-              </Link>
+              {/* Convites - só para fundadores */}
+              {isFundador && (
+                <Link
+                  to="/perfil"
+                  className="p-4 rounded-xl bg-ice-white/5 border border-dusty-rose/20 hover:border-antique-gold/40 transition-colors"
+                >
+                  <div className="mb-2">
+                    <UsersIcon size={24} color="#a27937" />
+                  </div>
+                  <span className="text-sm text-ice-white font-medium">Seus convites</span>
+                  <p className="text-xs text-dusty-rose mt-1">{textoConvites}</p>
+                </Link>
+              )}
               <Link
                 to="/dashboard"
                 className="p-4 rounded-xl bg-ice-white/5 border border-dusty-rose/20 hover:border-antique-gold/40 transition-colors"

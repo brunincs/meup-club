@@ -93,8 +93,8 @@ export function AdminFundadores() {
             <p className="text-2xl font-display font-bold text-amber-700">{fundadores.length}</p>
           </div>
           <div className="p-4 rounded-xl bg-green-50 border border-green-200">
-            <p className="text-xs text-green-700 font-heading uppercase">Prêmio</p>
-            <p className="text-2xl font-display font-bold text-green-700">500.000 pts</p>
+            <p className="text-xs text-green-700 font-heading uppercase">Prêmio (sorteio)</p>
+            <p className="text-2xl font-display font-bold text-green-700">200.000 pts</p>
           </div>
           <div className="p-4 rounded-xl bg-purple-50 border border-purple-200">
             <p className="text-xs text-purple-700 font-heading uppercase">Ganhadores</p>
@@ -220,7 +220,7 @@ export function AdminFundadores() {
           <p className="text-sm text-blue-800 font-heading">
             <strong>Como funciona:</strong> Ao ativar um Prime Anual no admin, o cliente automaticamente
             recebe uma vaga de Fundador (se disponível) e um número da sorte. Para registrar o ganhador
-            após a apuração, clique em "Registrar Ganhador" - isso credita 500.000 pontos na conta do cliente.
+            após a apuração, clique em "Registrar Ganhador" - isso credita 200.000 pontos na conta do cliente.
           </p>
         </div>
       </div>
@@ -249,7 +249,7 @@ export function AdminFundadores() {
                   <strong>Número da sorte:</strong> {confirmGanhador.numero_sorte}
                 </p>
                 <p className="text-sm text-amber-800 mt-1">
-                  <strong>Prêmio:</strong> 500.000 pontos serão creditados automaticamente
+                  <strong>Prêmio:</strong> 200.000 pontos serão creditados automaticamente
                 </p>
               </div>
 

@@ -106,7 +106,7 @@ Se o Prime for cancelado nesse prazo, os bônus são estornados automaticamente.
   {
     category: 'prime',
     question: 'Como funciona o Prime?',
-    answer: `O Prime custa **R$ 497/ano** (de R$ 997) e inclui:
+    answer: `O Prime custa **R$ 597/ano** (de R$ 997) ou 6x de R$ 99,50 sem juros. Inclui:
 • +2.000 pontos de boas-vindas
 • 1,5x pontos em todas as viagens
 • Check-in diário com 3x mais pontos
@@ -121,7 +121,7 @@ Se o Prime for cancelado nesse prazo, os bônus são estornados automaticamente.
     answer: `Aceitamos:
 
 • **Pix**: à vista, com desconto
-• **Cartão de crédito**: em até 6x sem juros (R$ 82,83/mês no anual)
+• **Cartão de crédito**: em até 6x sem juros (R$ 99,50/mês)
 
 O pagamento é processado de forma segura pelo Asaas.`
   },
@@ -130,24 +130,25 @@ O pagamento é processado de forma segura pelo Asaas.`
   {
     category: 'fundadores',
     question: 'O que é a Ação Fundadores?',
-    answer: `A Ação Fundadores é uma oportunidade exclusiva para os **100 primeiros** assinantes do Prime:
+    answer: `A Ação Fundadores é uma oportunidade exclusiva para os **30 primeiros** assinantes do Prime:
 
-• Preço especial: **R$ 497** (de R$ 997 - 50% de desconto)
+• Preço especial: **R$ 597/ano** (de R$ 997 - 40% de desconto)
 • Selo de Fundador permanente
-• 1 número da sorte para concorrer a **500.000 pontos**
+• 1 número da sorte para concorrer a **200.000 pontos**
+• 2 convites exclusivos para amigos
 • Experiências e prioridades exclusivas
 
 Fundadores renovam pelo mesmo valor enquanto mantiverem a assinatura ativa.`
   },
   {
     category: 'fundadores',
-    question: 'Quanto valem 500 mil pontos?',
-    answer: 'Com 500.000 pontos você pode resgatar experiências equivalentes a mais de R$ 3.000, como uma viagem nacional para 2 pessoas ou diversas experiências premium no clube.'
+    question: 'Quanto valem 200 mil pontos?',
+    answer: 'Com 200.000 pontos você pode resgatar experiências equivalentes a mais de R$ 1.200, como upgrades de classe, acesso a lounges ou diversas experiências premium no clube.'
   },
   {
     category: 'fundadores',
     question: 'Como funciona o número da sorte?',
-    answer: 'Ao ativar seu Prime como Fundador, você recebe automaticamente um número da sorte único. Esse número participa de uma Ação Promocional conforme o regulamento autorizado. O ganhador é definido com base no resultado da Loteria Federal e recebe 500.000 pontos creditados na conta.'
+    answer: 'Ao ativar seu Prime como Fundador, você recebe automaticamente um número da sorte único. Esse número participa de uma Ação Promocional conforme o regulamento autorizado. O ganhador é definido com base no resultado da Loteria Federal e recebe 200.000 pontos creditados na conta.'
   },
   {
     category: 'fundadores',

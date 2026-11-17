@@ -1,7 +1,7 @@
 // ============================================
 // SERVIÇO DE FUNDADORES - Meup Club
 // Gerencia fundadores do Modelo Exclusivo 2026
-// 30 vagas Prime a R$597 único, 200k pontos divididos
+// 30 vagas Prime a R$597/ano, 200k pontos em sorteio
 // ============================================
 
 import { supabase } from '@/lib/supabase'
@@ -195,7 +195,7 @@ export async function adminGetFundadores() {
 }
 
 /**
- * Registra ganhador da divisão de pontos (admin)
+ * Registra ganhador do sorteio de pontos (admin)
  */
 export async function adminRegistrarGanhador(fundadorId) {
   try {

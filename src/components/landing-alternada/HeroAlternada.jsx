@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { GoldLine } from '@/components/ui/GoldLine'
+import { usePreLaunch, formatCountdown } from '@/hooks/usePreLaunch'
 
 const lineVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -16,15 +17,27 @@ const lineVariants = {
 }
 
 /**
- * Hero ESCURO - Simplificado
+ * Hero ESCURO - Modelo Exclusivo
  * Gancho de transformação + CTA que rola até a oferta
- * (Sem preço/escassez no topo — a oferta tem sua seção própria)
+ * Antes da abertura: CTA "Quero entrar" → /eu-quero
+ * Depois da abertura: CTA "Sou cliente, quero entrar" → scroll para oferta
  */
 export function HeroAlternada() {
+  const navigate = useNavigate()
+  const { isPreLaunch, countdown } = usePreLaunch()
+
   const scrollToOffer = () => {
     const offerSection = document.getElementById('prime-offer')
     if (offerSection) {
       offerSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const handleMainCTA = () => {
+    if (isPreLaunch) {
+      navigate('/eu-quero')
+    } else {
+      scrollToOffer()
     }
   }
 
@@ -56,6 +69,21 @@ export function HeroAlternada() {
       {/* Content */}
       <div className="relative z-10 container-premium px-5 md:px-8 py-8 md:py-12">
         <div className="max-w-3xl mx-auto text-center">
+          {/* Countdown Badge (pré-lançamento) */}
+          {isPreLaunch && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05, duration: 0.5 }}
+              className="mb-4"
+            >
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-antique-gold/10 border border-antique-gold/30 text-antique-gold text-xs font-heading font-medium tracking-wide">
+                <span className="w-2 h-2 rounded-full bg-antique-gold animate-pulse" />
+                Abertura em 27/11 · faltam {formatCountdown(countdown)}
+              </span>
+            </motion.div>
+          )}
+
           {/* Eyebrow */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -64,7 +92,7 @@ export function HeroAlternada() {
             className="mb-3"
           >
             <span className="text-xs font-heading font-medium tracking-widest uppercase text-ice-white">
-              Me,up Club · Clube da Me,up Viagens
+              Me,up Club · O clube exclusivo de quem viaja com a Me,up
             </span>
           </motion.div>
 
@@ -77,7 +105,7 @@ export function HeroAlternada() {
             className="font-display font-bold text-ice-white leading-[1.1] mb-4"
             style={{ fontSize: 'clamp(1.75rem, 6vw, 3.25rem)' }}
           >
-            Viaje, indique e junte pontos.
+            Viaje e junte pontos.
             <br />
             <span className="text-antique-gold">O Me,up Club transforma em upgrades e experiências.</span>
           </motion.h1>
@@ -100,7 +128,7 @@ export function HeroAlternada() {
             className="text-base md:text-lg text-ice-white/85 max-w-xl mx-auto mb-8 leading-relaxed"
           >
             A <span className="text-antique-gold font-medium">Me,up Viagens</span> está lançando
-            seu clube de fidelidade. Indique amigos, viaje com a gente e troque pontos por
+            seu clube exclusivo. Viaje com a gente e troque pontos por
             <span className="text-antique-gold font-medium"> upgrades, lounges e experiências</span>.
           </motion.p>
 
@@ -111,9 +139,9 @@ export function HeroAlternada() {
             transition={{ delay: 0.5, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8"
           >
-            {/* CTA Principal - rola até a oferta */}
+            {/* CTA Principal */}
             <motion.button
-              onClick={scrollToOffer}
+              onClick={handleMainCTA}
               whileHover={{ scale: 1.02, boxShadow: '0 0 50px rgba(162, 121, 55, 0.4)' }}
               whileTap={{ scale: 0.98 }}
               className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-xl text-base font-heading font-semibold bg-antique-gold text-deep-purple overflow-hidden transition-all duration-300 shadow-xl shadow-antique-gold/20 w-full sm:w-auto justify-center"
@@ -124,7 +152,9 @@ export function HeroAlternada() {
                 whileHover={{ x: '100%' }}
                 transition={{ duration: 0.5 }}
               />
-              <span className="relative z-10">Quero ser fundador</span>
+              <span className="relative z-10">
+                {isPreLaunch ? 'Quero entrar' : 'Sou cliente, quero entrar'}
+              </span>
               <motion.span
                 className="relative z-10"
                 animate={{ x: [0, 4, 0] }}
