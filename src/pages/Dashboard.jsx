@@ -6,7 +6,8 @@ import {
   DashboardHeader,
   HeroSection,
   NextTripCard,
-  FoundersCard
+  FoundersCard,
+  InviteCard
 } from '@/components/dashboard'
 import { HojeSection } from '@/components/dashboard/HojeSection'
 import { ExperienciasParaVoce } from '@/components/dashboard/ExperienciasParaVoce'
@@ -86,7 +87,12 @@ export function Dashboard() {
               <HojeSection variant="dark" />
             </SafeSection>
 
-            {/* Bloco 3.5: Experiências para você (BRANCO) */}
+            {/* Bloco 3.5: Convites (BRANCO) */}
+            <SafeSection name="Convites" silent>
+              <InviteCard showForFree />
+            </SafeSection>
+
+            {/* Bloco 3.6: Experiências para você (BRANCO) */}
             <SafeSection name="Experiências" silent>
               <ExperienciasParaVoce />
             </SafeSection>
@@ -109,10 +115,13 @@ export function Dashboard() {
               </SafeSection>
             </div>
 
-            {/* Coluna Direita (~40%): Próxima Viagem + Fundador (BRANCO) */}
+            {/* Coluna Direita (~40%): Próxima Viagem + Convites + Fundador (BRANCO) */}
             <div className="lg:col-span-2 space-y-4">
               <SafeSection name="Próxima Viagem" silent>
                 <NextTripCard variant="light" />
+              </SafeSection>
+              <SafeSection name="Convites" silent>
+                <InviteCard showForFree />
               </SafeSection>
               <SafeSection name="Fundadores" silent>
                 <FoundersCard variant="light" foundersOnly />

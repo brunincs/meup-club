@@ -5,6 +5,7 @@ import {
   RealProofSection,
   TestimonialsReal,
   HowItWorks,
+  AccessSection,
   PointsSimulator,
   PrimeOffer,
   Ranking,
@@ -51,6 +52,7 @@ export function Home() {
 
       {/* VALOR - Como funciona + Simulador */}
       <HowItWorks />
+      <AccessSection />
       <PointsSimulator />
 
       {/* A OFERTA - Agora que já confia */}

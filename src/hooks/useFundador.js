@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 
 /**
  * Hook para verificar se o usuário atual é fundador
- * Retorna { isFundador, vagaNumero, numeroSorte, loading }
+ * Retorna { isFundador, vagaNumero, numeroSorte, vagasDisponiveis, loading }
  */
 export function useFundador() {
   const { user } = useAuth()
@@ -12,13 +12,14 @@ export function useFundador() {
     isFundador: false,
     vagaNumero: null,
     numeroSorte: null,
+    vagasDisponiveis: 0,
     loading: true
   })
 
   useEffect(() => {
     async function load() {
       if (!user) {
-        setData({ isFundador: false, vagaNumero: null, numeroSorte: null, loading: false })
+        setData({ isFundador: false, vagaNumero: null, numeroSorte: null, vagasDisponiveis: 0, loading: false })
         return
       }
 
@@ -27,6 +28,7 @@ export function useFundador() {
         isFundador: result.is_fundador || false,
         vagaNumero: result.vaga_numero || null,
         numeroSorte: result.numero_sorte || null,
+        vagasDisponiveis: result.vagas_disponiveis || 0,
         loading: false
       })
     }

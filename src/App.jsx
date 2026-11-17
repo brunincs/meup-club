@@ -6,7 +6,7 @@ import { PWAProvider } from '@/contexts/PWAContext'
 import { ProtectedRoute, AdminRoute } from '@/components/auth'
 import { RootLayout } from '@/layouts'
 import { InstallPrompt, UpdatePrompt } from '@/components/pwa'
-import { Home, EuQuero, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans, MeusResgates, MinhasViagens, Jornada, NotFound } from '@/pages'
+import { Home, EuQuero, Convites, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans, MeusResgates, MinhasViagens, Jornada, NotFound } from '@/pages'
 import {
   AdminDashboard,
   AdminReferrals,
@@ -158,6 +158,7 @@ function App() {
           <Route path="/meus-resgates" element={<ProtectedRoute><MeusResgates /></ProtectedRoute>} />
           <Route path="/minhas-viagens" element={<ProtectedRoute><MinhasViagens /></ProtectedRoute>} />
           <Route path="/jornada" element={<ProtectedRoute><Jornada /></ProtectedRoute>} />
+          <Route path="/convites" element={<ProtectedRoute><Convites /></ProtectedRoute>} />
 
           {/* Referral redirect - redireciona para /eu-quero sem gerar vínculo */}
           <Route

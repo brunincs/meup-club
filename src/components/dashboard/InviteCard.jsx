@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInvites } from '@/hooks/useInvites'
 import { useFundador } from '@/hooks/useFundador'
@@ -6,12 +7,13 @@ import { generateWhatsAppLink, formatInviteStatus } from '@/services/inviteServi
 import { useAuth } from '@/contexts/AuthContext'
 
 /**
- * Card de convites no dashboard do fundador
- * Mostra convites disponíveis e permite criar/enviar novos
+ * Card de convites no dashboard
+ * - Fundadores: mostra convites disponíveis e permite criar/enviar novos
+ * - Free: mostra card bloqueado informando que convites são exclusivos
  */
-export function InviteCard() {
+export function InviteCard({ showForFree = false }) {
   const { profile } = useAuth()
-  const { isFundador } = useFundador()
+  const { isFundador, loading: fundadorLoading, vagasDisponiveis } = useFundador()
   const {
     invites,
     stats,
@@ -27,8 +29,45 @@ export function InviteCard() {
   const [formData, setFormData] = useState({ nome_convidado: '', whatsapp_convidado: '' })
   const [error, setError] = useState(null)
 
-  // Não exibe se não é fundador
-  if (!isFundador) return null
+  // Para Free: mostra card bloqueado se showForFree=true
+  if (!isFundador) {
+    if (!showForFree) return null
+
+    // Card bloqueado para Free
+    return (
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-transparent">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-heading font-semibold text-gray-400">Convites</h3>
+              <p className="text-xs text-gray-400">Exclusivo para Fundadores</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-5 text-center">
+          <p className="text-sm text-gray-500 mb-3">
+            Convites são exclusivos dos Fundadores. Com eles, você pode trazer quem quiser para o clube.
+          </p>
+          {vagasDisponiveis > 0 && (
+            <a
+              href="#prime-offer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-antique-gold/10 text-antique-gold text-sm font-medium hover:bg-antique-gold/20 transition-colors"
+            >
+              Seja Fundador
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -233,10 +272,13 @@ export function InviteCard() {
       </div>
 
       {/* Info footer */}
-      <div className="px-5 py-3 bg-amber-50/50 border-t border-amber-100">
+      <div className="px-5 py-3 bg-amber-50/50 border-t border-amber-100 flex items-center justify-between">
         <p className="text-xs text-amber-700">
-          <strong>Bônus:</strong> Ganhe 3.000 pontos quando seu convidado ativar o Prime!
+          <strong>Bônus:</strong> +5.000 pts (viagem) · +3.000 pts (Prime)
         </p>
+        <Link to="/convites" className="text-xs text-antique-gold hover:text-deep-purple font-medium">
+          Ver todos →
+        </Link>
       </div>
     </div>
   )

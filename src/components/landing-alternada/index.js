@@ -21,6 +21,7 @@ export { TestimonialsAlternada as Testimonials } from './TestimonialsAlternada'
 export { FAQAlternada as FAQ } from './FAQAlternada'
 export { FinalCTAAlternada as FinalCTA } from './FinalCTAAlternada'
 export { FooterAlternada as Footer } from './FooterAlternada'
+export { AccessSection } from './AccessSection'
 
 // Pré-lançamento (Modelo Exclusivo 2026)
 export { PreLaunchLanding } from './PreLaunchLanding'

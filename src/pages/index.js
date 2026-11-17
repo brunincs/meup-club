@@ -1,5 +1,6 @@
 export { Home } from './Home'
 export { EuQuero } from './EuQuero'
+export { Convites } from './Convites'
 export { Login } from './Login'
 export { Cadastro } from './Cadastro'
 export { EsqueciSenha } from './EsqueciSenha'
