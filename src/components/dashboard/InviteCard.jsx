@@ -157,13 +157,13 @@ export function InviteCard({ showForFree = false }) {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden border-b border-gray-100"
           >
-            <form onSubmit={handleCreate} className="p-4 bg-blue-50/50 space-y-3">
+            <form onSubmit={handleCreate} className="p-4 bg-white space-y-3">
               <input
                 type="text"
                 placeholder="Nome do convidado"
                 value={formData.nome_convidado}
                 onChange={(e) => setFormData(prev => ({ ...prev, nome_convidado: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-antique-gold/30 focus:border-antique-gold"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#ddd1d0] text-[#1f1f1f] text-sm placeholder:text-[#8a8a8a] focus:outline-none focus:ring-2 focus:ring-antique-gold/30 focus:border-[#a27937]"
                 disabled={creating}
               />
               <input
@@ -171,7 +171,7 @@ export function InviteCard({ showForFree = false }) {
                 placeholder="WhatsApp (opcional)"
                 value={formData.whatsapp_convidado}
                 onChange={(e) => setFormData(prev => ({ ...prev, whatsapp_convidado: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-antique-gold/30 focus:border-antique-gold"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#ddd1d0] text-[#1f1f1f] text-sm placeholder:text-[#8a8a8a] focus:outline-none focus:ring-2 focus:ring-antique-gold/30 focus:border-[#a27937]"
                 disabled={creating}
               />
 
@@ -183,14 +183,14 @@ export function InviteCard({ showForFree = false }) {
                 <button
                   type="button"
                   onClick={() => setShowCreateForm(false)}
-                  className="flex-1 py-2 rounded-lg border border-gray-200 text-gray-600 text-sm hover:bg-gray-50"
+                  className="flex-1 py-2.5 rounded-xl border border-[#ddd1d0] text-[#1f1f1f]/70 text-sm hover:bg-gray-50 transition-colors"
                   disabled={creating}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-lg bg-antique-gold text-deep-purple text-sm font-medium hover:bg-antique-gold/90 disabled:opacity-50"
+                  className="flex-1 py-2.5 rounded-xl bg-antique-gold text-deep-purple text-sm font-medium hover:bg-antique-gold/90 disabled:opacity-50 transition-colors"
                   disabled={creating}
                 >
                   {creating ? 'Criando...' : 'Criar Convite'}
