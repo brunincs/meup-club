@@ -43,19 +43,35 @@ export async function getMyInvites() {
 
     if (invitesError) throw invitesError
 
-    // Busca estatísticas
-    const { data: statsData, error: statsError } = await supabase.rpc('contar_convites_fundador', {
-      p_fundador_id: user.id
-    })
-
-    if (statsError) throw statsError
-
-    const stats = statsData?.[0] || {
+    // Busca estatísticas - se falhar, calcula pela lista de convites
+    let stats = {
       total_emitidos: 0,
       enviados: 0,
       aceitos: 0,
       disponiveis: 2,
       expirados: 0
+    }
+
+    const { data: statsData, error: statsError } = await supabase.rpc('contar_convites_fundador', {
+      p_fundador_id: user.id
+    })
+
+    if (statsError) {
+      // Log do erro mas não interrompe - calcula stats pela lista
+      console.warn('Erro ao buscar estatísticas de convites (calculando localmente):', statsError.message)
+
+      // Calcula estatísticas pela própria lista de convites
+      const inviteList = invites || []
+      const maxConvites = 2 // valor padrão
+      stats = {
+        total_emitidos: inviteList.length,
+        enviados: inviteList.filter(i => i.status === 'enviado').length,
+        aceitos: inviteList.filter(i => i.status === 'aceito').length,
+        disponiveis: Math.max(0, maxConvites - inviteList.length),
+        expirados: inviteList.filter(i => i.status === 'expirado').length
+      }
+    } else {
+      stats = statsData?.[0] || stats
     }
 
     return {
