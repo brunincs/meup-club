@@ -23,8 +23,10 @@ import {
   AdminFilaEntregas,
   AdminFundadores,
   AdminFotosDestinos,
-  AdminMetricas
+  AdminMetricas,
+  AdminAcesso
 } from '@/pages/admin'
+import InviteSignup from '@/pages/InviteSignup'
 
 function App() {
   return (
@@ -159,6 +161,16 @@ function App() {
             }
           />
 
+          {/* Invite signup - Modelo Exclusivo 2026 */}
+          <Route
+            path="/convite/:code"
+            element={
+              <RootLayout>
+                <InviteSignup />
+              </RootLayout>
+            }
+          />
+
           {/* Admin routes - protegidas por AdminRoute (só role='admin') */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/indicacoes" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
@@ -176,6 +188,7 @@ function App() {
           <Route path="/admin/fundadores" element={<AdminRoute><AdminFundadores /></AdminRoute>} />
           <Route path="/admin/fotos-destinos" element={<AdminRoute><AdminFotosDestinos /></AdminRoute>} />
           <Route path="/admin/metricas" element={<AdminRoute><AdminMetricas /></AdminRoute>} />
+          <Route path="/admin/acesso" element={<AdminRoute><AdminAcesso /></AdminRoute>} />
 
           {/* 404 - Catch all */}
           <Route path="*" element={<NotFound />} />

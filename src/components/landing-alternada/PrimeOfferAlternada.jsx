@@ -4,38 +4,37 @@ import { Link } from 'react-router-dom'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { CrownIcon, GiftIcon } from '@/components/ui/Icons'
 import { fetchPlanosConfig } from '@/services/subscriptionService'
-import { getFundadoresCount, getRegulamentoUrl, getPrecoFundadorAtual } from '@/services/fundadoresService'
+import { getRegulamentoUrl } from '@/services/fundadoresService'
+import { getFullSlotsData } from '@/services/slotsService'
 import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 import { formatPrice } from '@/config/contact'
 
 /**
- * PrimeOfferAlternada - Seção de oferta do Prime com preço de fundador
- * Layout limpo: Free discreto (claro) + Prime destacado (escuro premium)
+ * PrimeOfferAlternada - Seção de oferta do Prime (Modelo Exclusivo 2026)
+ *
+ * SIMPLIFICADO:
+ * - 30 vagas Prime fundador a R$597 único
+ * - Sem lotes (preço único)
+ * - 200.000 pontos divididos entre fundadores
+ * - Acesso exclusivo: clientes ou convidados
  */
 export function PrimeOfferAlternada() {
   const [config, setConfig] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [vagasData, setVagasData] = useState({ vagas_usadas: 0, vagas_total: 100 })
-  const [loteData, setLoteData] = useState({ lote_numero: 1, preco: 497, vagas_restantes: 100, vagas_lote: 20, vendidas_lote: 0, preco_proximo: 597, is_ultimo_lote: false })
+  const [slotsData, setSlotsData] = useState(null)
   const [regulamentoUrl, setRegulamentoUrl] = useState('')
 
   useEffect(() => {
     async function load() {
-      const [planosResult, vagasResult, loteResult, regUrl] = await Promise.all([
+      const [planosResult, slots, regUrl] = await Promise.all([
         fetchPlanosConfig(),
-        getFundadoresCount(),
-        getPrecoFundadorAtual(),
+        getFullSlotsData(),
         getRegulamentoUrl()
       ])
       if (planosResult.success) {
         setConfig(planosResult.planos)
       }
-      if (vagasResult.success) {
-        setVagasData(vagasResult)
-      }
-      if (loteResult.success) {
-        setLoteData(loteResult)
-      }
+      setSlotsData(slots)
       setRegulamentoUrl(regUrl)
       setLoading(false)
     }
@@ -49,26 +48,27 @@ export function PrimeOfferAlternada() {
   const prime = config?.prime || {}
   const free = config?.free || {}
 
-  // Preços por lote (sistema de 3 lotes: 20@497, 40@597, 40@697)
-  const precoAnual = loteData.preco || 497
+  // Dados do modelo exclusivo
+  const precoFundador = slotsData?.prime?.preco || 597
   const precoAnualCheio = 997
-  const loteAtual = loteData.lote_numero || 1
-  const ofertaFundador = loteAtual > 0 && loteData.vagas_restantes > 0
+  const vagasTotal = slotsData?.prime?.vagas || 30
+  const vagasRestantes = slotsData?.prime?.restantes || 30
+  const vagasVendidas = slotsData?.prime?.vendidas || 0
+  const premioTotal = slotsData?.premio || 200000
+  const esgotado = slotsData?.prime?.esgotado || false
 
-  // Economia de FUNDADOR (âncora - oferta)
-  const economiaFundadorAnual = (precoAnualCheio - precoAnual).toFixed(0)
-  const descontoPercent = Math.round((1 - precoAnual / precoAnualCheio) * 100)
+  // Economia
+  const economiaFundador = precoAnualCheio - precoFundador
+  const descontoPercent = Math.round((1 - precoFundador / precoAnualCheio) * 100)
 
-  // Vagas restantes (do lote atual)
-  const vagasRestantes = loteData.vagas_restantes || 0
-  const totalVagas = 100 // Total de todos os lotes
-  const vagasVendidas = loteData.total_vendidas || 0
-  const vendidasNoLote = loteData.vendidas_lote || 0
-  const vagasNoLote = loteData.vagas_lote || 20
-  const precoProximo = loteData.preco_proximo
-  const isUltimoLote = loteData.is_ultimo_lote || false
-  const mostrarBarra = vendidasNoLote >= 5 // Só mostrar barra se 5+ vendidas no lote
-  const porcentagemLote = (vendidasNoLote / vagasNoLote) * 100
+  // Pontos por fundador (dividido)
+  const pontosPorFundador = vagasVendidas > 0
+    ? Math.floor(premioTotal / vagasVendidas)
+    : Math.floor(premioTotal / vagasTotal)
+
+  // Urgência visual
+  const percentualRestante = (vagasRestantes / vagasTotal) * 100
+  const urgenciaAlta = percentualRestante <= 20
 
   return (
     <section id="prime-offer" className="relative py-16 md:py-24 bg-deep-purple overflow-hidden">
@@ -91,7 +91,7 @@ export function PrimeOfferAlternada() {
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-heading font-medium tracking-wider uppercase bg-antique-gold/10 border border-antique-gold/30 text-antique-gold">
               <span className="w-1.5 h-1.5 rounded-full bg-antique-gold animate-pulse" />
-              Oferta de lançamento
+              Acesso exclusivo
             </span>
           </motion.div>
 
@@ -114,7 +114,7 @@ export function PrimeOfferAlternada() {
             transition={{ delay: 0.2 }}
             className="text-ice-white/70 max-w-xl mx-auto"
           >
-            Compare os planos e escolha o seu.
+            Apenas {vagasTotal} vagas para membros fundadores. Compare os planos.
           </motion.p>
         </div>
 
@@ -122,7 +122,7 @@ export function PrimeOfferAlternada() {
         {/* Cards Grid */}
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
 
-          {/* Free Card - Fundo CLARO/neutro (recuado) */}
+          {/* Free Card */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -131,13 +131,12 @@ export function PrimeOfferAlternada() {
           >
             <div className="flex-1">
               <h3 className="text-xl font-display font-bold text-deep-purple mb-1">Free</h3>
-              <p className="text-sm text-deep-purple/60 mb-4">Entre de graça</p>
+              <p className="text-sm text-deep-purple/60 mb-4">Para clientes Me,up</p>
 
               <p className="text-3xl font-display font-bold text-deep-purple mb-6">
                 R$0<span className="text-lg text-deep-purple/40">/sempre</span>
               </p>
 
-              {/* Lista do Free - só benefícios reais */}
               <ul className="space-y-2.5 text-sm mb-6">
                 <li className="flex items-start gap-2 text-deep-purple/80">
                   <span className="text-green-600 mt-0.5">✓</span>
@@ -157,10 +156,6 @@ export function PrimeOfferAlternada() {
                 </li>
                 <li className="flex items-start gap-2 text-deep-purple/80">
                   <span className="text-green-600 mt-0.5">✓</span>
-                  <span>Lançamento manual (com aprovação)</span>
-                </li>
-                <li className="flex items-start gap-2 text-deep-purple/80">
-                  <span className="text-green-600 mt-0.5">✓</span>
                   <span>Pontos válidos por 12 meses</span>
                 </li>
               </ul>
@@ -174,17 +169,23 @@ export function PrimeOfferAlternada() {
             </Link>
           </motion.div>
 
-          {/* Prime Card - Fundo ESCURO premium (destacado) */}
+          {/* Prime Card */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             className="relative p-6 rounded-2xl bg-gradient-to-br from-[#4a2259] via-[#3d1a4a] to-[#2d1237] border-2 border-antique-gold/70 shadow-2xl shadow-antique-gold/25 flex flex-col ring-1 ring-antique-gold/20"
           >
-            {/* Badge Fundador com desconto dinâmico */}
-            {ofertaFundador && (
+            {/* Badge */}
+            {!esgotado && (
               <div className="absolute -top-3 right-4 px-3 py-1 bg-antique-gold rounded-full text-xs text-deep-purple font-heading font-bold shadow-lg">
-                {descontoPercent}% OFF · Lote {loteAtual}
+                {descontoPercent}% OFF · Fundador
+              </div>
+            )}
+
+            {esgotado && (
+              <div className="absolute -top-3 right-4 px-3 py-1 bg-gray-500 rounded-full text-xs text-white font-heading font-bold shadow-lg">
+                Esgotado
               </div>
             )}
 
@@ -196,21 +197,14 @@ export function PrimeOfferAlternada() {
 
               {/* Preço */}
               <div className="mb-6">
-                {ofertaFundador && (
-                  <p className="text-ice-white/60 line-through text-lg">
-                    R${formatPrice(precoAnualCheio, false)}/ano
-                  </p>
-                )}
-                <p className="text-3xl font-display font-bold text-white">
-                  R${formatPrice(precoAnual, false)}<span className="text-lg text-ice-white/60">/ano</span>
+                <p className="text-ice-white/60 line-through text-lg">
+                  R${formatPrice(precoAnualCheio, false)}/ano
                 </p>
-                {ofertaFundador && (
-                  <p className="text-sm text-antique-gold mt-1">
-                    Economia de R${economiaFundadorAnual} · preço de fundador
-                  </p>
-                )}
-                <p className="text-xs text-ice-white/60 mt-1">
-                  à vista no Pix ou 6x de R$ 82,83 sem juros
+                <p className="text-3xl font-display font-bold text-white">
+                  R${formatPrice(precoFundador, false)}<span className="text-lg text-ice-white/60">/único</span>
+                </p>
+                <p className="text-sm text-antique-gold mt-1">
+                  Economia de R${economiaFundador} · pagamento único
                 </p>
                 <p className="text-xs text-antique-gold mt-2 flex items-center gap-1">
                   <GiftIcon size={14} color="#a27937" /> +2.000 pts de boas-vindas
@@ -223,7 +217,7 @@ export function PrimeOfferAlternada() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Pontos em viagens: <strong className="text-antique-gold">1,5x</strong></span>
+                    <span className="text-white">Pontos em viagens: <strong className="text-antique-gold">2x</strong></span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
@@ -246,7 +240,7 @@ export function PrimeOfferAlternada() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Prioridade na cotação <span className="text-ice-white/60 text-xs">(até 4h)</span></span>
+                    <span className="text-white">Prioridade na cotação</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
@@ -254,19 +248,15 @@ export function PrimeOfferAlternada() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Roteiros em PDF</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-antique-gold mt-0.5">★</span>
                     <span className="text-white">Acesso antecipado a experiências</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Experiências com desconto: pague menos pontos</span>
+                    <span className="text-white">Experiências com desconto</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Selo de fundador</span>
+                    <span className="text-white">Selo e número de fundador</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
@@ -274,13 +264,12 @@ export function PrimeOfferAlternada() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Preço de fundador garantido na renovação</span>
+                    <span className="text-white">2 convites exclusivos para amigos</span>
                   </li>
-                  {/* Número da sorte - só enquanto houver vagas */}
-                  {vagasRestantes > 0 && (
+                  {!esgotado && (
                     <li className="flex items-start gap-2">
                       <span className="text-antique-gold mt-0.5">★</span>
-                      <span className="text-white">Número da sorte na Ação Fundadores · concorra a 500 mil pts</span>
+                      <span className="text-white">Participa da divisão dos {(premioTotal).toLocaleString('pt-BR')} pts</span>
                     </li>
                   )}
                 </ul>
@@ -288,148 +277,119 @@ export function PrimeOfferAlternada() {
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleGarantirVaga}
-              className="w-full py-4 rounded-xl bg-antique-gold hover:bg-[#8b6830] text-deep-purple font-heading font-semibold transition-colors shadow-lg"
+              whileHover={{ scale: esgotado ? 1 : 1.02 }}
+              whileTap={{ scale: esgotado ? 1 : 0.98 }}
+              onClick={esgotado ? undefined : handleGarantirVaga}
+              disabled={esgotado}
+              className={`w-full py-4 rounded-xl font-heading font-semibold transition-colors shadow-lg ${
+                esgotado
+                  ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  : 'bg-antique-gold hover:bg-[#8b6830] text-deep-purple'
+              }`}
             >
-              Garantir minha vaga de fundador
+              {esgotado ? 'Vagas esgotadas' : 'Garantir minha vaga de fundador'}
             </motion.button>
           </motion.div>
         </div>
 
-        {/* ══════════════════════════════════════════════════════════════════════════════ */}
-        {/* BANNER AÇÃO FUNDADORES - Layout 2 colunas */}
-        {/* ══════════════════════════════════════════════════════════════════════════════ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-12 rounded-[20px] border border-antique-gold bg-[#32113f] overflow-hidden max-w-4xl mx-auto"
-        >
-          <div className="grid md:grid-cols-2 gap-0">
-            {/* Coluna Esquerda - Informações */}
-            <div className="p-6 md:p-8 flex flex-col justify-center order-2 md:order-1">
-              {/* Selo Fundador */}
-              <div className="mb-4">
-                <img
-                  src="/brand/selo-fundador.svg"
-                  alt="Fundador 2026"
-                  className="h-12 w-auto"
-                />
-              </div>
-
-              {/* Título */}
-              <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-2">
-                Concorra a 500 mil pontos
-              </h3>
-              <GoldLine width="60px" className="mb-5" />
-
-              {/* 3 Passos */}
-              <div className="space-y-3 mb-6">
-                <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-antique-gold/20 border border-antique-gold/50 flex items-center justify-center text-xs font-heading font-bold text-antique-gold">
-                    1
-                  </span>
-                  <span className="text-sm text-ice-white/90">Assine o Prime</span>
+        {/* Banner Ação Fundadores - 200k pts */}
+        {!esgotado && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-12 rounded-[20px] border border-antique-gold bg-[#32113f] overflow-hidden max-w-4xl mx-auto"
+          >
+            <div className="grid md:grid-cols-2 gap-0">
+              {/* Coluna Esquerda - Informações */}
+              <div className="p-6 md:p-8 flex flex-col justify-center order-2 md:order-1">
+                {/* Selo Fundador */}
+                <div className="mb-4">
+                  <img
+                    src="/brand/selo-fundador.svg"
+                    alt="Fundador 2026"
+                    className="h-12 w-auto"
+                  />
                 </div>
-                <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-antique-gold/20 border border-antique-gold/50 flex items-center justify-center text-xs font-heading font-bold text-antique-gold">
-                    2
-                  </span>
-                  <span className="text-sm text-ice-white/90">Receba seu número da sorte</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-antique-gold/20 border border-antique-gold/50 flex items-center justify-center text-xs font-heading font-bold text-antique-gold">
-                    3
-                  </span>
-                  <span className="text-sm text-ice-white/90">
-                    {config?.fundador_data_resultado
-                      ? `Resultado em ${config.fundador_data_resultado}`
-                      : 'Resultado divulgado conforme o regulamento'}
-                  </span>
-                </div>
-              </div>
 
-              {/* Contador de vagas - regra de escassez */}
-              {vagasRestantes > 0 && (
+                {/* Título */}
+                <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-2">
+                  Divida {(premioTotal).toLocaleString('pt-BR')} pontos
+                </h3>
+                <GoldLine width="60px" className="mb-5" />
+
+                <p className="text-sm text-ice-white/80 mb-5">
+                  Os {(premioTotal).toLocaleString('pt-BR')} pontos do prêmio serão divididos entre todos os fundadores.
+                  Quanto menos fundadores, mais pontos para cada um!
+                </p>
+
+                {/* Contador de vagas */}
                 <div className="mb-5">
-                  {/* Texto do lote baseado na regra de escassez */}
-                  {isUltimoLote ? (
-                    // Último lote
-                    <p className="text-sm text-ice-white/80 mb-2">
-                      Últimas <span className="text-antique-gold font-semibold">{vagasRestantes}</span> vagas de fundador a R${formatPrice(precoAnual, false)}
-                    </p>
-                  ) : mostrarBarra ? (
-                    // 5+ vendidas no lote: mostrar restantes e barra
-                    <>
-                      <p className="text-sm text-ice-white/80 mb-2">
-                        Restam <span className="text-antique-gold font-semibold">{vagasNoLote - vendidasNoLote}</span> de {vagasNoLote} vagas no Lote {loteAtual} · depois R${formatPrice(precoProximo, false)}
-                      </p>
-                      <div className="h-2 bg-ice-white/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-antique-gold transition-all duration-500"
-                          style={{ width: `${porcentagemLote}%` }}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    // Menos de 5 vendidas: só texto, sem barra, sem número de restantes
-                    <p className="text-sm text-ice-white/80">
-                      Lote {loteAtual}: só {vagasNoLote} vagas a R${formatPrice(precoAnual, false)} · depois sobe para R${formatPrice(precoProximo, false)}
-                    </p>
+                  <p className="text-sm text-ice-white/80 mb-2">
+                    <span className={urgenciaAlta ? 'text-red-400 font-semibold' : 'text-antique-gold font-semibold'}>
+                      {vagasRestantes}
+                    </span> de {vagasTotal} vagas restantes
+                  </p>
+                  <div className="h-2 bg-ice-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        urgenciaAlta ? 'bg-red-400' : 'bg-antique-gold'
+                      }`}
+                      style={{ width: `${((vagasTotal - vagasRestantes) / vagasTotal) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleGarantirVaga}
+                    className="px-5 py-2.5 rounded-xl bg-antique-gold hover:bg-[#8b6830] text-deep-purple font-heading font-semibold text-sm transition-colors"
+                  >
+                    Quero ser Fundador
+                  </motion.button>
+                  {regulamentoUrl && (
+                    <a
+                      href={regulamentoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-ice-white/70 hover:text-ice-white underline"
+                    >
+                      Regulamento
+                    </a>
                   )}
                 </div>
-              )}
+              </div>
 
-              {/* CTA */}
-              <div className="flex flex-wrap items-center gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleGarantirVaga}
-                  className="px-5 py-2.5 rounded-xl bg-antique-gold hover:bg-[#8b6830] text-deep-purple font-heading font-semibold text-sm transition-colors"
-                >
-                  Quero ser Fundador
-                </motion.button>
-                {regulamentoUrl && (
-                  <a
-                    href={regulamentoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-ice-white/70 hover:text-ice-white underline"
-                  >
-                    Regulamento
-                  </a>
+              {/* Coluna Direita - Prêmio */}
+              <div className="p-6 md:p-8 bg-gradient-to-br from-antique-gold/10 to-antique-gold/5 flex flex-col items-center justify-center text-center order-1 md:order-2">
+                {/* Aviãozinho */}
+                <div className="w-16 h-16 mb-4">
+                  <svg viewBox="0 0 64 64" fill="none" className="w-full h-full">
+                    <polygon points="6,40 58,16 38,60" fill="#a27937" />
+                    <polygon points="58,16 26,46 38,60" fill="#7d5a26" />
+                  </svg>
+                </div>
+
+                {/* Valor do prêmio */}
+                <p className="text-4xl md:text-5xl font-display font-bold text-antique-gold mb-1">
+                  {(premioTotal).toLocaleString('pt-BR')}
+                </p>
+                <p className="text-lg text-ice-white/80 font-heading mb-4">
+                  pontos para dividir
+                </p>
+
+                {vagasVendidas > 0 && (
+                  <p className="text-sm text-ice-white/70">
+                    Hoje: ~{pontosPorFundador.toLocaleString('pt-BR')} pts/fundador
+                  </p>
                 )}
               </div>
             </div>
-
-            {/* Coluna Direita - Card Destaque Prêmio */}
-            <div className="p-6 md:p-8 bg-gradient-to-br from-antique-gold/10 to-antique-gold/5 flex flex-col items-center justify-center text-center order-1 md:order-2">
-              {/* Aviãozinho */}
-              <div className="w-16 h-16 mb-4">
-                <svg viewBox="0 0 64 64" fill="none" className="w-full h-full">
-                  <polygon points="6,40 58,16 38,60" fill="#a27937" />
-                  <polygon points="58,16 26,46 38,60" fill="#7d5a26" />
-                </svg>
-              </div>
-
-              {/* Valor do prêmio */}
-              <p className="text-4xl md:text-5xl font-display font-bold text-antique-gold mb-1">
-                500.000
-              </p>
-              <p className="text-lg text-ice-white/80 font-heading mb-4">
-                pontos
-              </p>
-
-              {/* Descrição */}
-              <p className="text-sm text-ice-white/70 max-w-xs">
-                O suficiente para uma viagem nacional para 2 ou muitas experiências no clube.
-              </p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
       </div>
     </section>

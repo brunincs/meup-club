@@ -10,33 +10,33 @@ import { GoldLine } from '@/components/ui/GoldLine'
 const FAQ_ITEMS = [
   {
     id: 1,
-    question: 'Como funciona o pagamento?',
-    answer: 'O pagamento é feito via Pix ou cartão de crédito. Após o contato pelo WhatsApp, você recebe os dados para pagamento e sua assinatura é ativada em até 24h úteis. Sem burocracia.'
+    question: 'O Me,up Club é aberto para qualquer pessoa?',
+    answer: 'Não. O clube é exclusivo para clientes da Me,up Viagens (quem já comprou passagens conosco nos últimos 15 meses) e convidados especiais de membros fundadores. Essa exclusividade garante uma comunidade de viajantes comprometidos.'
   },
   {
     id: 2,
-    question: 'Posso cancelar quando quiser?',
-    answer: 'Sim! Você pode cancelar a qualquer momento pelo WhatsApp. Você continua com acesso até o fim do período pago. Sem multas ou taxas de cancelamento.'
+    question: 'Como funciona a divisão dos 200 mil pontos?',
+    answer: 'Os 200 mil pontos do prêmio são divididos igualmente entre todos os fundadores. Quanto menos fundadores, mais pontos cada um recebe. Com 30 fundadores, cada um ganha aproximadamente 6.667 pontos. Se houver apenas 20, cada um ganha 10.000 pontos.'
   },
   {
     id: 3,
+    question: 'Qual o preço do plano Prime?',
+    answer: 'O Prime para fundadores é R$ 597 — pagamento único, sem mensalidade. É um valor fixo, sem lotes ou aumentos. Esse preço é exclusivo dos primeiros 30 fundadores.'
+  },
+  {
+    id: 4,
     question: 'Os pontos expiram?',
     answer: 'Depende do plano: no Free, os pontos valem 12 meses. No Prime, não expiram. Você acumula no seu ritmo e troca quando quiser.'
   },
   {
-    id: 4,
-    question: 'Qual a diferença entre plano e classe?',
-    answer: 'Plano é sua assinatura (Free ou Prime) — define os benefícios que você tem. Classe é seu nível no ranking (5 níveis, da Econômica à Me,up Exclusive) — definida pelos pontos acumulados. Você pode ser Free na Primeira Classe ou Prime na Econômica.'
-  },
-  {
     id: 5,
-    question: 'O que acontece se eu não renovar?',
-    answer: 'Você volta automaticamente para o plano Free. Seus pontos continuam intactos, mas você perde os benefícios Prime (check-in triplo, bônus de aniversário, multiplicador 1.5x no anual). Pode voltar para o Prime quando quiser.'
+    question: 'O que é um convite de fundador?',
+    answer: 'Cada fundador pode convidar 2 pessoas especiais para entrar no clube (mesmo que não sejam clientes). O convidado entra como Free e, se comprar uma passagem dentro de 7 dias, pode ativar o Prime pelo preço de fundador. O fundador ganha 3.000 pontos quando o convidado ativa o Prime.'
   },
   {
     id: 6,
-    question: 'Como funciona o multiplicador 1.5x?',
-    answer: 'No Prime, toda viagem que você faz com a Me,up rende 50% mais pontos. Uma viagem que daria 10.000 pontos passa a dar 15.000.'
+    question: 'Como funciona o multiplicador 2x?',
+    answer: 'No Prime, toda viagem que você faz com a Me,up rende o dobro de pontos. Uma viagem que daria 10.000 pontos passa a dar 20.000. Isso acelera muito seu acúmulo.'
   },
   {
     id: 7,
@@ -45,8 +45,8 @@ const FAQ_ITEMS = [
   },
   {
     id: 8,
-    question: 'O preço de fundador é por tempo limitado?',
-    answer: 'Sim. Estamos com 100 vagas de fundador no preço de lançamento (50% de desconto). Quando encerrarem, o preço volta ao valor cheio. Fundadores renovam pelo mesmo valor de R$ 497/ano enquanto mantiverem a assinatura ativa, sem interrupção. Se cancelar, perde o preço de fundador.'
+    question: 'O que acontece se as vagas de fundador acabarem?',
+    answer: 'Depois das 30 vagas Prime e 70 vagas Free, novas pessoas entram em lista de espera. Convidados de fundadores entram fora dessas cotas — por isso os convites são valiosos.'
   }
 ]
 

@@ -159,13 +159,41 @@ function PassportHeader({ profile, levelData, userPoints }) {
               </div>
             </div>
 
-            {/* Indicador de perfil completo */}
-            {profileComplete && (
-              <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#22c55e]/20 border border-[#22c55e]/30">
-                <CheckIcon size={14} color="#22c55e" />
-                <span className="text-xs text-[#22c55e] font-medium">Perfil completo</span>
-              </div>
-            )}
+            {/* Badges de status */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {/* Badge Fundador */}
+              {profile?.is_fundador && profile?.fundador_numero && (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#a27937]/20 border border-[#a27937]/40">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-xs text-[#a27937] font-medium">
+                    Fundador #{profile.fundador_numero}
+                  </span>
+                </div>
+              )}
+
+              {/* Badge Prime via Convite (sem número) */}
+              {profile?.prime_via_convite && (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#5c005a]/20 border border-[#5c005a]/40">
+                  <span className="text-[#ddd1d0]">◆</span>
+                  <span className="text-xs text-[#ddd1d0] font-medium">Membro Prime</span>
+                </div>
+              )}
+
+              {/* Badge Membro desde 2026 (primeiro ano) */}
+              {profile?.created_at && new Date(profile.created_at).getFullYear() === 2026 && (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#edf0f1]/10 border border-[#edf0f1]/20">
+                  <span className="text-xs text-[#edf0f1]/80 font-medium">Membro 2026</span>
+                </div>
+              )}
+
+              {/* Indicador de perfil completo */}
+              {profileComplete && (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#22c55e]/20 border border-[#22c55e]/30">
+                  <CheckIcon size={14} color="#22c55e" />
+                  <span className="text-xs text-[#22c55e] font-medium">Perfil completo</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Pontos acumulados */}

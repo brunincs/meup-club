@@ -1,9 +1,15 @@
 // ============================================
 // SERVIÇO DE FUNDADORES - Meup Club
-// Gerencia a Ação Fundadores (100 primeiros anuais)
+// Gerencia fundadores do Modelo Exclusivo 2026
+// 30 vagas Prime a R$597 único, 200k pontos divididos
 // ============================================
 
 import { supabase } from '@/lib/supabase'
+
+// Constantes do modelo exclusivo
+const VAGAS_FUNDADOR = 30
+const PRECO_FUNDADOR = 597
+const PREMIO_TOTAL = 200000
 
 /**
  * Busca dados do fundador do usuário atual
@@ -21,22 +27,34 @@ export async function getMyFundadorData() {
 }
 
 /**
- * Busca contagem de vagas de fundador
+ * Busca contagem de vagas de fundador (simplificado - sem lotes)
  */
 export async function getFundadoresCount() {
   try {
-    const { data, error } = await supabase.rpc('get_fundadores_count')
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id', { count: 'exact' })
+      .eq('is_fundador', true)
+      .not('fundador_numero', 'is', null)
 
     if (error) throw error
+
+    const vagasUsadas = data?.length || 0
+
     return {
       success: true,
-      vagas_usadas: data?.[0]?.vagas_usadas || 0,
-      vagas_total: data?.[0]?.vagas_total || 100,
-      vagas_disponiveis: data?.[0]?.vagas_disponiveis || 100
+      vagas_usadas: vagasUsadas,
+      vagas_total: VAGAS_FUNDADOR,
+      vagas_disponiveis: Math.max(0, VAGAS_FUNDADOR - vagasUsadas)
     }
   } catch (error) {
     console.error('Erro ao buscar vagas:', error)
-    return { success: false, vagas_usadas: 0, vagas_total: 100, vagas_disponiveis: 100 }
+    return {
+      success: false,
+      vagas_usadas: 0,
+      vagas_total: VAGAS_FUNDADOR,
+      vagas_disponiveis: VAGAS_FUNDADOR
+    }
   }
 }
 
@@ -56,52 +74,49 @@ export async function getMyPendingPoints() {
 }
 
 /**
- * Busca preço atual do lote de fundador
- * Retorna lote_numero, preco, vagas_restantes, vagas_lote, vendidas_lote, preco_proximo
+ * Busca preço Prime (simplificado - preço único)
+ * Mantém compatibilidade com componentes que usavam getPrecoFundadorAtual
  */
 export async function getPrecoFundadorAtual() {
   try {
-    const { data, error } = await supabase.rpc('get_preco_fundador_atual')
-
-    if (error) throw error
-
-    const loteData = data?.[0] || {}
-    const loteNumero = loteData.lote_numero || 1
-    const totalVendidas = loteData.total_vendidas || 0
-
-    // Configuração dos lotes (3 lotes: 20@497, 40@597, 40@697)
-    const lotesConfig = [
-      { numero: 1, vagas: 20, preco: 497 },
-      { numero: 2, vagas: 40, preco: 597 },
-      { numero: 3, vagas: 40, preco: 697 }
-    ]
-
-    const loteAtual = lotesConfig.find(l => l.numero === loteNumero) || lotesConfig[0]
-    const proximoLote = lotesConfig.find(l => l.numero === loteNumero + 1)
-
-    // Calcular vendidas no lote atual
-    let vagasAnteriores = 0
-    for (const lote of lotesConfig) {
-      if (lote.numero < loteNumero) {
-        vagasAnteriores += lote.vagas
-      }
-    }
-    const vendidasNoLote = Math.max(0, totalVendidas - vagasAnteriores)
+    const countResult = await getFundadoresCount()
+    const vagasUsadas = countResult.vagas_usadas || 0
+    const vagasRestantes = Math.max(0, VAGAS_FUNDADOR - vagasUsadas)
 
     return {
       success: true,
-      lote_numero: loteNumero,
-      preco: parseFloat(loteData.preco) || loteAtual.preco,
-      vagas_restantes: loteData.vagas_restantes || 0,
-      total_vendidas: totalVendidas,
-      vagas_lote: loteAtual.vagas,
-      vendidas_lote: vendidasNoLote,
-      preco_proximo: proximoLote?.preco || null,
-      is_ultimo_lote: !proximoLote
+      // Compatibilidade com código legado (sem lotes)
+      lote_numero: 1,
+      preco: PRECO_FUNDADOR,
+      vagas_restantes: vagasRestantes,
+      total_vendidas: vagasUsadas,
+      vagas_lote: VAGAS_FUNDADOR,
+      vendidas_lote: vagasUsadas,
+      preco_proximo: null,
+      is_ultimo_lote: true,
+      // Novos campos
+      premio_total: PREMIO_TOTAL,
+      pontos_por_fundador: vagasUsadas > 0
+        ? Math.floor(PREMIO_TOTAL / vagasUsadas)
+        : Math.floor(PREMIO_TOTAL / VAGAS_FUNDADOR),
+      esgotado: vagasRestantes <= 0
     }
   } catch (error) {
-    console.error('Erro ao buscar preço do lote:', error)
-    return { success: false, lote_numero: 1, preco: 497, vagas_restantes: 100, vagas_lote: 20, vendidas_lote: 0, preco_proximo: 597, is_ultimo_lote: false }
+    console.error('Erro ao buscar preço:', error)
+    return {
+      success: false,
+      lote_numero: 1,
+      preco: PRECO_FUNDADOR,
+      vagas_restantes: VAGAS_FUNDADOR,
+      total_vendidas: 0,
+      vagas_lote: VAGAS_FUNDADOR,
+      vendidas_lote: 0,
+      preco_proximo: null,
+      is_ultimo_lote: true,
+      premio_total: PREMIO_TOTAL,
+      pontos_por_fundador: Math.floor(PREMIO_TOTAL / VAGAS_FUNDADOR),
+      esgotado: false
+    }
   }
 }
 
@@ -112,15 +127,37 @@ export async function getRegulamentoUrl() {
   try {
     const { data, error } = await supabase
       .from('plano_config')
-      .select('valor_texto')
-      .eq('chave', 'fundador_regulamento_url')
+      .select('value')
+      .eq('key', 'fundador_regulamento_url')
       .single()
 
-    if (error) throw error
-    return data?.valor_texto || 'https://meup.club/regulamento-fundadores'
+    if (error) {
+      // Tenta formato antigo
+      const { data: oldData } = await supabase
+        .from('plano_config')
+        .select('valor_texto')
+        .eq('chave', 'fundador_regulamento_url')
+        .single()
+
+      return oldData?.valor_texto || 'https://meup.club/regulamento-fundadores'
+    }
+
+    return data?.value || 'https://meup.club/regulamento-fundadores'
   } catch (error) {
     return 'https://meup.club/regulamento-fundadores'
   }
+}
+
+/**
+ * Calcula pontos estimados por fundador
+ * @param {number} numFundadores - Número atual de fundadores
+ * @returns {number} Pontos por fundador
+ */
+export function calcularPontosPorFundador(numFundadores) {
+  if (numFundadores <= 0) {
+    return Math.floor(PREMIO_TOTAL / VAGAS_FUNDADOR)
+  }
+  return Math.floor(PREMIO_TOTAL / numFundadores)
 }
 
 // ============================================
@@ -132,7 +169,22 @@ export async function getRegulamentoUrl() {
  */
 export async function adminGetFundadores() {
   try {
-    const { data, error } = await supabase.rpc('admin_get_fundadores')
+    const { data, error } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        name,
+        email,
+        fundador_numero,
+        fundador_numero_sorte,
+        is_fundador,
+        plano,
+        created_at,
+        prime_ativado_em
+      `)
+      .eq('is_fundador', true)
+      .not('fundador_numero', 'is', null)
+      .order('fundador_numero', { ascending: true })
 
     if (error) throw error
     return { success: true, fundadores: data || [] }
@@ -143,7 +195,7 @@ export async function adminGetFundadores() {
 }
 
 /**
- * Registra ganhador da Ação Fundadores (admin)
+ * Registra ganhador da divisão de pontos (admin)
  */
 export async function adminRegistrarGanhador(fundadorId) {
   try {
@@ -173,6 +225,38 @@ export async function adminCancelarArrependimento(userId, motivo) {
     return data
   } catch (error) {
     console.error('Erro ao cancelar:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Busca estatísticas de fundadores (admin)
+ */
+export async function adminGetFundadoresStats() {
+  try {
+    const { data: fundadores, error } = await supabase
+      .from('profiles')
+      .select('id, fundador_numero, prime_via_convite, created_at')
+      .eq('is_fundador', true)
+      .not('fundador_numero', 'is', null)
+
+    if (error) throw error
+
+    const total = fundadores?.length || 0
+    const pontosPorFundador = calcularPontosPorFundador(total)
+
+    return {
+      success: true,
+      total_fundadores: total,
+      vagas_restantes: Math.max(0, VAGAS_FUNDADOR - total),
+      vagas_total: VAGAS_FUNDADOR,
+      premio_total: PREMIO_TOTAL,
+      pontos_por_fundador: pontosPorFundador,
+      preco: PRECO_FUNDADOR,
+      esgotado: total >= VAGAS_FUNDADOR
+    }
+  } catch (error) {
+    console.error('Erro ao buscar stats:', error)
     return { success: false, error: error.message }
   }
 }
