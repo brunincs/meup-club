@@ -14,7 +14,7 @@ export function AccessSection() {
         </svg>
       ),
       title: 'Clientes Me,up Viagens',
-      description: 'Quem comprou passagens conosco nos últimos 15 meses entra automaticamente.'
+      description: 'Quem comprou com a Me,up nos últimos 15 meses pode entrar. São 70 vagas para clientes (Free) e 30 vagas Prime Fundador.'
     },
     {
       icon: (

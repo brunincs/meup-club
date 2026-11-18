@@ -14,6 +14,7 @@ import {
   FinalCTA,
   Footer
 } from '@/components/landing-alternada'
+import { SectionDivider } from '@/components/ui/SectionDivider'
 
 /**
  * Landing OFICIAL do Meup Club
@@ -53,6 +54,7 @@ export function Home() {
       {/* VALOR - Como funciona + Simulador */}
       <HowItWorks />
       <AccessSection />
+      <SectionDivider />
       <PointsSimulator />
 
       {/* A OFERTA - Agora que já confia */}

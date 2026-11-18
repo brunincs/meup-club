@@ -12,8 +12,9 @@ import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 /**
  * Simulador de Pontos - Landing Page
  *
- * Layout: "Viajando | Indicando" → slider → dois cards resultado (Free/Prime) → experiências
- * Valores lidos do plano_config (multiplicador, pontosIndicacao, etc.)
+ * Layout: "Viajando | Convidando" → slider → resultado → experiências
+ * MODELO EXCLUSIVO: Só Prime Fundador pode convidar (2 convites)
+ * Pontos: 5.000 por convidado que viaja + 3.000 se virar Prime = até 16.000 pts
  */
 
 export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
@@ -39,6 +40,8 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
   const primeConfig = config?.prime || { multiplicadorViagem: 1.5, pontosIndicacao: 5000 }
 
   // Configurações por modo
+  // MODELO EXCLUSIVO: Convidando é só para Prime Fundador (2 convites máx)
+  // 5.000 pts por convidado que viaja + 3.000 se virar Prime = 8.000 por convite = 16.000 máx
   const modeConfigs = {
     travel: {
       sliderMin: 2000,
@@ -54,17 +57,20 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
       calculateFree: (value) => Math.floor(value * (freeConfig.multiplicadorViagem || 1)),
       calculatePrime: (value) => Math.floor(value * (primeConfig.multiplicadorViagem || 1.5)),
       subtitle: null,
+      exclusiveBadge: null,
     },
-    referral: {
+    invite: {
       sliderMin: 1,
-      sliderMax: 10,
+      sliderMax: 2,
       sliderStep: 1,
-      sliderInitial: 3,
-      formatInput: (value) => `${value} ${value === 1 ? 'amigo' : 'amigos'}`,
-      formatMinMax: { min: '1 amigo', max: '10 amigos' },
-      calculateFree: (value) => value * (freeConfig.pontosIndicacao || 3000),
-      calculatePrime: (value) => value * (primeConfig.pontosIndicacao || 5000),
-      subtitle: 'Se o amigo virar Prime, você ganha +3.000 (só Prime)',
+      sliderInitial: 2,
+      formatInput: (value) => `${value} ${value === 1 ? 'convite' : 'convites'}`,
+      formatMinMax: { min: '1 convite', max: '2 convites' },
+      // 5.000 por convidado que viaja + 3.000 se virar Prime = 8.000 por convite
+      calculateFree: () => 0, // Free não pode convidar no modelo exclusivo
+      calculatePrime: (value) => value * 8000, // 5.000 + 3.000 por convite
+      subtitle: '5.000 pts por convidado que viajar + 3.000 se virar Prime',
+      exclusiveBadge: 'Exclusivo dos Fundadores',
     },
   }
 
@@ -102,7 +108,7 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
 
   return (
     <div>
-      {/* Tabs Viajando | Indicando */}
+      {/* Tabs Viajando | Convidando */}
       <div className={`flex items-center justify-center gap-1 p-1 rounded-xl mb-6 w-fit mx-auto ${tabBgClass}`}>
         <button
           onClick={() => setActiveMode('travel')}
@@ -113,12 +119,12 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
           Viajando
         </button>
         <button
-          onClick={() => setActiveMode('referral')}
+          onClick={() => setActiveMode('invite')}
           className={`px-5 py-2.5 rounded-lg text-sm font-heading font-medium transition-all ${
-            activeMode === 'referral' ? tabActiveClass : tabInactiveClass
+            activeMode === 'invite' ? tabActiveClass : tabInactiveClass
           }`}
         >
-          Indicando
+          Convidando
         </button>
       </div>
 
@@ -129,75 +135,110 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
         animate={{ opacity: 1, y: 0 }}
         className={`p-6 rounded-2xl border ${isLight ? 'border-deep-purple/20 bg-white shadow-lg' : 'border-dusty-rose/20 bg-deep-purple/30'}`}
       >
+        {/* Badge exclusivo para modo convite */}
+        {modeConfig.exclusiveBadge && (
+          <div className="flex justify-center mb-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-heading font-semibold bg-antique-gold/15 border border-antique-gold/30 text-antique-gold">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
+              </svg>
+              {modeConfig.exclusiveBadge}
+            </span>
+          </div>
+        )}
+
         {/* Input label */}
         <div className="text-center mb-5">
           <p className={`text-sm ${textMutedClass} mb-1`}>
-            {activeMode === 'travel' ? 'Se você gastar em viagens:' : 'Se você indicar amigos que viajam:'}
+            {activeMode === 'travel' ? 'Se você gastar em viagens:' : 'Seus 2 convites podem render até:'}
           </p>
           <div className="text-2xl md:text-3xl font-display font-bold text-antique-gold">
-            {modeConfig.formatInput(inputValue)}
+            {activeMode === 'invite' ? '16.000 pts' : modeConfig.formatInput(inputValue)}
           </div>
         </div>
 
-        {/* Slider */}
-        <div className="mb-6">
-          <input
-            type="range"
-            min={modeConfig.sliderMin}
-            max={modeConfig.sliderMax}
-            step={modeConfig.sliderStep}
-            value={inputValue}
-            onChange={(e) => setInputValue(Number(e.target.value))}
-            className={`${sliderClass} w-full`}
-          />
-          <div className={`flex justify-between mt-2 text-xs ${textMutedClass}`}>
-            <span>{modeConfig.formatMinMax.min}</span>
-            <span>{modeConfig.formatMinMax.max}</span>
+        {/* Slider - apenas no modo viajando */}
+        {activeMode === 'travel' && (
+          <div className="mb-6">
+            <input
+              type="range"
+              min={modeConfig.sliderMin}
+              max={modeConfig.sliderMax}
+              step={modeConfig.sliderStep}
+              value={inputValue}
+              onChange={(e) => setInputValue(Number(e.target.value))}
+              className={`${sliderClass} w-full`}
+            />
+            <div className={`flex justify-between mt-2 text-xs ${textMutedClass}`}>
+              <span>{modeConfig.formatMinMax.min}</span>
+              <span>{modeConfig.formatMinMax.max}</span>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Subtítulo modo indicando */}
+        {/* Subtítulo modo convidando */}
         {modeConfig.subtitle && (
           <p className={`text-xs text-center mb-4 ${textMutedClass}`}>
             {modeConfig.subtitle}
           </p>
         )}
 
-        {/* Resultado: Dois cards lado a lado */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-          {/* Card Prime (primeiro no mobile) */}
-          <div className={`order-1 sm:order-2 p-4 rounded-xl border-2 ${
+        {/* Resultado modo convidando - card único */}
+        {activeMode === 'invite' ? (
+          <div className={`p-5 rounded-xl border-2 mb-5 ${
             isLight
               ? 'border-antique-gold/50 bg-gradient-to-br from-deep-purple to-deep-purple/90'
               : 'border-antique-gold/50 bg-gradient-to-br from-antique-gold/20 to-antique-gold/10'
           }`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className={`text-xs font-heading font-semibold uppercase tracking-wider ${isLight ? 'text-antique-gold' : 'text-antique-gold'}`}>
-                Prime
+            <div className="text-center">
+              <span className={`text-xs font-heading font-semibold uppercase tracking-wider text-antique-gold`}>
+                Prime Fundador
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-heading font-bold bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
-                +{formatPoints(diferenca)} no Prime
-              </span>
-            </div>
-            <div className="text-2xl md:text-3xl font-display font-bold text-antique-gold">
-              {formatPoints(pontosPrime)} <span className={`text-sm font-normal ${isLight ? 'text-ice-white/70' : 'text-dusty-rose'}`}>pts</span>
+              <div className="text-3xl md:text-4xl font-display font-bold text-antique-gold mt-2">
+                16.000 <span className={`text-base font-normal ${isLight ? 'text-ice-white/70' : 'text-dusty-rose'}`}>pts</span>
+              </div>
+              <p className={`text-xs mt-2 ${isLight ? 'text-ice-white/60' : 'text-dusty-rose/60'}`}>
+                2 convites × (5.000 + 3.000 bônus Prime)
+              </p>
             </div>
           </div>
+        ) : (
+          /* Resultado modo viajando: Dois cards lado a lado */
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+            {/* Card Prime (primeiro no mobile) */}
+            <div className={`order-1 sm:order-2 p-4 rounded-xl border-2 ${
+              isLight
+                ? 'border-antique-gold/50 bg-gradient-to-br from-deep-purple to-deep-purple/90'
+                : 'border-antique-gold/50 bg-gradient-to-br from-antique-gold/20 to-antique-gold/10'
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className={`text-xs font-heading font-semibold uppercase tracking-wider ${isLight ? 'text-antique-gold' : 'text-antique-gold'}`}>
+                  Prime
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-heading font-bold bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
+                  +{formatPoints(diferenca)} no Prime
+                </span>
+              </div>
+              <div className="text-2xl md:text-3xl font-display font-bold text-antique-gold">
+                {formatPoints(pontosPrime)} <span className={`text-sm font-normal ${isLight ? 'text-ice-white/70' : 'text-dusty-rose'}`}>pts</span>
+              </div>
+            </div>
 
-          {/* Card Free */}
-          <div className={`order-2 sm:order-1 p-4 rounded-xl border ${
-            isLight
-              ? 'border-deep-purple/20 bg-deep-purple/5'
-              : 'border-white/10 bg-white/5'
-          }`}>
-            <span className={`text-xs font-heading font-medium uppercase tracking-wider ${textMutedClass}`}>
-              Free
-            </span>
-            <div className={`text-2xl md:text-3xl font-display font-bold ${textPrimaryClass} mt-2`}>
-              {formatPoints(pontosFree)} <span className={`text-sm font-normal ${textMutedClass}`}>pts</span>
+            {/* Card Free */}
+            <div className={`order-2 sm:order-1 p-4 rounded-xl border ${
+              isLight
+                ? 'border-deep-purple/20 bg-deep-purple/5'
+                : 'border-white/10 bg-white/5'
+            }`}>
+              <span className={`text-xs font-heading font-medium uppercase tracking-wider ${textMutedClass}`}>
+                Free
+              </span>
+              <div className={`text-2xl md:text-3xl font-display font-bold ${textPrimaryClass} mt-2`}>
+                {formatPoints(pontosFree)} <span className={`text-sm font-normal ${textMutedClass}`}>pts</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Experiências desbloqueadas */}
         {experienciasDesbloqueadas.length > 0 && (

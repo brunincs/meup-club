@@ -35,7 +35,7 @@ export function PointsSimulatorSection() {
           </h2>
           <GoldLine width="60px" centered className="mb-3" />
           <p className="text-deep-purple/70 max-w-md mx-auto text-sm">
-            Simule seus ganhos viajando ou indicando amigos.
+            Simule seus ganhos viajando ou convidando.
           </p>
         </motion.div>
 
