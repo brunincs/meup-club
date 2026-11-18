@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -6,27 +7,54 @@ import { PWAProvider } from '@/contexts/PWAContext'
 import { ProtectedRoute, AdminRoute } from '@/components/auth'
 import { RootLayout } from '@/layouts'
 import { InstallPrompt, UpdatePrompt } from '@/components/pwa'
-import { Home, EuQuero, Convites, Login, Cadastro, EsqueciSenha, RedefinirSenha, Dashboard, Rewards, Tasks, Profile, FAQ, Termos, Privacidade, Plans, MeusResgates, MinhasViagens, Jornada, NotFound } from '@/pages'
-import {
-  AdminDashboard,
-  AdminReferrals,
-  AdminSales,
-  AdminUsers,
-  AdminTasks,
-  AdminRewards,
-  AdminHistory,
-  AdminExperiencias,
-  AdminTarefasNew,
-  AdminResgates,
-  AdminSubscriptions,
-  AdminEmissoes,
-  AdminFilaEntregas,
-  AdminFundadores,
-  AdminFotosDestinos,
-  AdminMetricas,
-  AdminAcesso
-} from '@/pages/admin'
-import InviteSignup from '@/pages/InviteSignup'
+
+// Páginas carregadas imediatamente (críticas para o primeiro acesso)
+import { Home, Login, Cadastro, Dashboard, NotFound } from '@/pages'
+
+// Lazy load - Páginas públicas secundárias
+const EuQuero = lazy(() => import('@/pages/EuQuero').then(m => ({ default: m.EuQuero })))
+const FAQ = lazy(() => import('@/pages/FAQ').then(m => ({ default: m.FAQ })))
+const Termos = lazy(() => import('@/pages/Termos').then(m => ({ default: m.Termos })))
+const Privacidade = lazy(() => import('@/pages/Privacidade').then(m => ({ default: m.Privacidade })))
+const Plans = lazy(() => import('@/pages/Plans').then(m => ({ default: m.Plans })))
+const EsqueciSenha = lazy(() => import('@/pages/EsqueciSenha').then(m => ({ default: m.EsqueciSenha })))
+const RedefinirSenha = lazy(() => import('@/pages/RedefinirSenha').then(m => ({ default: m.RedefinirSenha })))
+const InviteSignup = lazy(() => import('@/pages/InviteSignup'))
+
+// Lazy load - Páginas protegidas (usuário logado)
+const Rewards = lazy(() => import('@/pages/Rewards').then(m => ({ default: m.Rewards })))
+const Tasks = lazy(() => import('@/pages/Tasks').then(m => ({ default: m.Tasks })))
+const Profile = lazy(() => import('@/pages/Profile').then(m => ({ default: m.Profile })))
+const MeusResgates = lazy(() => import('@/pages/MeusResgates'))
+const MinhasViagens = lazy(() => import('@/pages/MinhasViagens'))
+const Jornada = lazy(() => import('@/pages/Jornada').then(m => ({ default: m.Jornada })))
+const Convites = lazy(() => import('@/pages/Convites').then(m => ({ default: m.Convites })))
+
+// Lazy load - Todas as páginas admin
+const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
+const AdminReferrals = lazy(() => import('@/pages/admin/AdminReferrals').then(m => ({ default: m.AdminReferrals })))
+const AdminSales = lazy(() => import('@/pages/admin/AdminSales').then(m => ({ default: m.AdminSales })))
+const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers').then(m => ({ default: m.AdminUsers })))
+const AdminTasks = lazy(() => import('@/pages/admin/AdminTasks').then(m => ({ default: m.AdminTasks })))
+const AdminRewards = lazy(() => import('@/pages/admin/AdminRewards').then(m => ({ default: m.AdminRewards })))
+const AdminHistory = lazy(() => import('@/pages/admin/AdminHistory').then(m => ({ default: m.AdminHistory })))
+const AdminExperiencias = lazy(() => import('@/pages/admin/AdminExperiencias').then(m => ({ default: m.AdminExperiencias })))
+const AdminTarefasNew = lazy(() => import('@/pages/admin/AdminTarefasNew').then(m => ({ default: m.AdminTarefasNew })))
+const AdminResgates = lazy(() => import('@/pages/admin/AdminResgates').then(m => ({ default: m.AdminResgates })))
+const AdminSubscriptions = lazy(() => import('@/pages/admin/AdminSubscriptions').then(m => ({ default: m.AdminSubscriptions })))
+const AdminEmissoes = lazy(() => import('@/pages/admin/AdminEmissoes').then(m => ({ default: m.AdminEmissoes })))
+const AdminFilaEntregas = lazy(() => import('@/pages/admin/AdminFilaEntregas'))
+const AdminFundadores = lazy(() => import('@/pages/admin/AdminFundadores').then(m => ({ default: m.AdminFundadores })))
+const AdminFotosDestinos = lazy(() => import('@/pages/admin/AdminFotosDestinos'))
+const AdminMetricas = lazy(() => import('@/pages/admin/AdminMetricas').then(m => ({ default: m.AdminMetricas })))
+const AdminAcesso = lazy(() => import('@/pages/admin/AdminAcesso'))
+
+// Loading fallback simples
+const PageLoader = () => (
+  <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-[#a27937] border-t-transparent rounded-full animate-spin" />
+  </div>
+)
 
 function App() {
   return (
@@ -65,6 +93,7 @@ function App() {
           }}
         />
 
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public routes */}
           <Route
@@ -198,6 +227,7 @@ function App() {
           {/* 404 - Catch all */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
         </PWAProvider>
         </PointsProvider>
       </AuthProvider>

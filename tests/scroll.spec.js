@@ -204,7 +204,8 @@ test.describe('Verificar elementos com altura fixa', () => {
 
       elements.forEach(el => {
         const style = getComputedStyle(el)
-        const classList = el.className || ''
+        // SVG elements have SVGAnimatedString, not string - convert safely
+        const classList = typeof el.className === 'string' ? el.className : (el.className?.baseVal || '')
 
         // Verificar h-screen ou 100vh
         const hasFixedHeight = style.height === '100vh' ||

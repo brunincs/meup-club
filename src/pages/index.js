@@ -1,19 +1,9 @@
+// Páginas críticas carregadas estaticamente no App.jsx
 export { Home } from './Home'
-export { EuQuero } from './EuQuero'
-export { Convites } from './Convites'
 export { Login } from './Login'
 export { Cadastro } from './Cadastro'
-export { EsqueciSenha } from './EsqueciSenha'
-export { RedefinirSenha } from './RedefinirSenha'
 export { Dashboard } from './Dashboard'
-export { Rewards } from './Rewards'
-export { Tasks } from './Tasks'
-export { Profile } from './Profile'
-export { FAQ } from './FAQ'
-export { Termos } from './Termos'
-export { Privacidade } from './Privacidade'
-export { Plans } from './Plans'
-export { MeusResgates } from './MeusResgates'
-export { MinhasViagens } from './MinhasViagens'
-export { Jornada } from './Jornada'
 export { NotFound } from './NotFound'
+
+// As demais páginas são carregadas via lazy loading diretamente no App.jsx
+// para otimizar o tamanho do bundle inicial
