@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchMySubscription, fetchPlanosConfig } from '@/services/subscriptionService'
 import { getPrecoFundadorAtual } from '@/services/fundadoresService'
-import { isPaymentEnabled, iniciarAssinaturaWhatsApp } from '@/services/paymentAdapter'
+import { getFullSlotsData } from '@/services/slotsService'
+import { isPaymentEnabled, garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 import { formatPrice } from '@/config/contact'
 import toast from 'react-hot-toast'
 
 // ══════════════════════════════════════════════════════════════════════════════
-// PÁGINA DE PLANOS - Pública e Protegida
+// PÁGINA DE PLANOS - Alinhada com PrimeOfferAlternada (landing)
 // ══════════════════════════════════════════════════════════════════════════════
 
 export function Plans() {
@@ -17,25 +18,21 @@ export function Plans() {
   const navigate = useNavigate()
   const [subscription, setSubscription] = useState(null)
   const [planosConfig, setPlanosConfig] = useState(null)
-  const [loteData, setLoteData] = useState({ lote_numero: 1, preco: 497, vagas_restantes: 100 })
+  const [slotsData, setSlotsData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
-  // Apenas plano anual disponível
-  const cicloSelecionado = 'anual'
 
   useEffect(() => {
     async function load() {
-      const [configResult, loteResult] = await Promise.all([
+      const [configResult, slots] = await Promise.all([
         fetchPlanosConfig(),
-        getPrecoFundadorAtual()
+        getFullSlotsData()
       ])
 
       if (configResult.success) {
         setPlanosConfig(configResult.planos)
       }
-      if (loteResult.success) {
-        setLoteData(loteResult)
-      }
+      setSlotsData(slots)
 
       // Só busca subscription se estiver logado
       if (user) {
@@ -50,9 +47,8 @@ export function Plans() {
   }, [user])
 
   const isPrime = subscription?.plano === 'prime'
-  const paymentEnabled = isPaymentEnabled()
 
-  const handleAssinar = async (ciclo) => {
+  const handleAssinar = async () => {
     // Se não estiver logado, redireciona para login
     if (!user) {
       toast('Faça login para continuar')
@@ -61,18 +57,8 @@ export function Plans() {
     }
 
     setProcessing(true)
-
-    if (paymentEnabled) {
-      // SEAM: Quando gateway integrar, usar criarAssinatura()
-      toast('Redirecionando para pagamento...')
-      // const result = await criarAssinatura(user.id, ciclo)
-      // if (result.success) window.location.href = result.checkoutUrl
-    } else {
-      // Abre WhatsApp com mensagem pré-preenchida
-      await iniciarAssinaturaWhatsApp(ciclo)
-      toast.success('WhatsApp aberto! Finalize sua assinatura por lá.')
-    }
-
+    garantirVagaFundadorWhatsApp('anual')
+    toast.success('WhatsApp aberto! Finalize sua assinatura por lá.')
     setProcessing(false)
   }
 
@@ -82,32 +68,50 @@ export function Plans() {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-2 border-white/30 border-t-antique-gold rounded-full"
+          className="w-8 h-8 border-2 border-white/30 border-t-[#a27937] rounded-full"
         />
       </div>
     )
   }
 
-  // Valores do plano (apenas anual) - preço vem do lote atual
+  // Valores do plano - alinhados com landing
   const primeConfig = planosConfig?.prime || {}
   const freeConfig = planosConfig?.free || {}
-  const precoAnual = loteData.preco || 497
+
+  // Dados do modelo exclusivo (fonte: slotsService, igual landing)
+  const precoFundador = slotsData?.prime?.preco || 597
   const precoAnualCheio = 997
-  const loteAtual = loteData.lote_numero || 1
-  const ofertaFundador = loteAtual > 0 && loteData.vagas_restantes > 0
-  const economiaFundadorAnual = (precoAnualCheio - precoAnual).toFixed(0)
-  const descontoPercent = Math.round((1 - precoAnual / precoAnualCheio) * 100)
+  const vagasTotal = slotsData?.prime?.vagas || 30
+  const vagasRestantes = slotsData?.prime?.restantes || 30
+  const esgotado = slotsData?.prime?.esgotado || false
+
+  // Economia
+  const economiaFundador = precoAnualCheio - precoFundador
+  const descontoPercent = Math.round((1 - precoFundador / precoAnualCheio) * 100)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-deep-purple to-graphite py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-heading font-medium tracking-wider uppercase bg-[#a27937]/10 border border-[#a27937]/30 text-[#a27937]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#a27937] animate-pulse" />
+              Acesso exclusivo
+            </span>
+          </motion.div>
+
           <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">
-            Me,up Prime
+            Seja um <span className="text-[#a27937]">Fundador</span> do Me,up Club
           </h1>
           <p className="text-dusty-rose/80 font-heading max-w-lg mx-auto">
-            Multiplique seus pontos, desbloqueie benefícios exclusivos e acelere sua jornada.
+            {vagasRestantes < vagasTotal && !esgotado
+              ? `Restam ${vagasRestantes} de ${vagasTotal} vagas de fundador. Compare os planos.`
+              : `Apenas ${vagasTotal} vagas para membros fundadores. Compare os planos.`}
           </p>
         </div>
 
@@ -117,10 +121,10 @@ export function Plans() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/30 text-center"
+            className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-[#a27937]/20 to-[#a27937]/10 border border-[#a27937]/30 text-center"
           >
-            <p className="text-amber-200 font-heading">
-              Você é <span className="font-bold">Me,up Prime Anual</span>
+            <p className="text-[#a27937] font-heading">
+              Você é <span className="font-bold">Me,up Prime Fundador</span> ✨
             </p>
           </motion.div>
         )}
@@ -149,6 +153,7 @@ export function Plans() {
             )}
 
             <h2 className="text-2xl font-display font-bold text-white mb-2">Free</h2>
+            <p className="text-sm text-dusty-rose/60 mb-4">Para clientes Me,up</p>
             <p className="text-4xl font-display font-bold text-white mb-6">
               R$0<span className="text-lg text-dusty-rose/60">/sempre</span>
             </p>
@@ -156,161 +161,178 @@ export function Plans() {
             <ul className="space-y-3 text-sm text-dusty-rose/80 mb-8">
               <li className="flex items-center gap-2">
                 <span className="text-green-400">✓</span>
-                Check-in: {freeConfig.pontosCheckin || 10} pts/dia
+                Pontos por viagem: <strong className="text-white">1 pt/R$</strong>
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-green-400">✓</span>
-                Indicação: {(freeConfig.pontosIndicacao || 3000).toLocaleString('pt-BR')} pts
+                Check-in diário: <strong className="text-white">{freeConfig.pontosCheckin || 10} pts</strong>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                Cotação ilimitada
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                Pontos válidos por 12 meses
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-dusty-rose/40">-</span>
-                <span className="text-dusty-rose/40">Bônus aniversário: 0 pts</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-dusty-rose/40">-</span>
-                <span className="text-dusty-rose/40">Multiplicador: 1x</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-dusty-rose/40">-</span>
-                <span className="text-dusty-rose/40">Lançamento manual</span>
+                <span className="text-dusty-rose/40">Lançamento manual da viagem</span>
               </li>
             </ul>
 
-            <div className="py-3 text-center text-dusty-rose/60 font-heading text-sm">
-              {!user ? 'Crie sua conta gratuitamente' : (isPrime ? '' : 'Plano atual')}
-            </div>
+            {!user ? (
+              <Link
+                to="/cadastro"
+                className="block w-full py-3 text-center text-white font-heading font-medium text-sm border border-white/20 rounded-xl hover:bg-white/5 transition-colors"
+              >
+                Criar conta grátis
+              </Link>
+            ) : (
+              <div className="py-3 text-center text-dusty-rose/60 font-heading text-sm">
+                {isPrime ? '' : 'Plano atual'}
+              </div>
+            )}
           </motion.div>
 
-          {/* Prime */}
+          {/* Prime Fundador */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className={`relative p-6 rounded-2xl border-2 ${
               isPrime
-                ? 'bg-gradient-to-br from-amber-500/20 to-amber-600/10 border-amber-500/50'
-                : 'bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/30'
-            }`}
+                ? 'bg-gradient-to-br from-[#4a2259] via-[#3d1a4a] to-[#2d1237] border-[#a27937]/50'
+                : 'bg-gradient-to-br from-[#4a2259] via-[#3d1a4a] to-[#2d1237] border-[#a27937]/70'
+            } shadow-2xl shadow-[#a27937]/20`}
           >
-            {/* Badge Fundador ou Recomendado */}
-            {!isPrime && ofertaFundador && (
-              <div className="absolute -top-3 right-6 px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 rounded-full text-xs text-white font-heading font-bold shadow-lg">
-                {descontoPercent}% OFF · Lote {loteAtual}
+            {/* Badge Fundador */}
+            {!isPrime && !esgotado && (
+              <div className="absolute -top-3 right-6 px-3 py-1 bg-[#a27937] rounded-full text-xs text-deep-purple font-heading font-bold shadow-lg">
+                Fundador · {vagasTotal} vagas
               </div>
             )}
-            {!isPrime && !ofertaFundador && cicloSelecionado === 'anual' && (
-              <div className="absolute -top-3 right-6 px-3 py-1 bg-amber-500 rounded-full text-xs text-white font-heading font-bold">
-                Recomendado
+            {!isPrime && esgotado && (
+              <div className="absolute -top-3 right-6 px-3 py-1 bg-gray-500 rounded-full text-xs text-white font-heading font-bold shadow-lg">
+                Esgotado
               </div>
             )}
             {isPrime && (
-              <div className="absolute -top-3 left-6 px-3 py-1 bg-amber-500 rounded-full text-xs text-white font-heading font-bold">
-                Seu plano atual
+              <div className="absolute -top-3 left-6 px-3 py-1 bg-[#a27937] rounded-full text-xs text-deep-purple font-heading font-bold">
+                Você é Fundador ✨
               </div>
             )}
 
             <div className="flex items-center gap-2 mb-2">
+              <span className="text-[#a27937]">👑</span>
               <h2 className="text-2xl font-display font-bold text-white">Me,up Prime</h2>
             </div>
 
-            {/* Preço anual */}
+            {/* Preço */}
             <div className="mb-6">
-              {ofertaFundador && !isPrime && (
+              {!isPrime && (
                 <p className="text-dusty-rose/50 line-through text-lg">
                   R${formatPrice(precoAnualCheio, false)}/ano
                 </p>
               )}
               <p className="text-4xl font-display font-bold text-white">
-                R${formatPrice(precoAnual, false)}<span className="text-lg text-dusty-rose/60">/ano</span>
+                R${formatPrice(precoFundador, false)}<span className="text-lg text-dusty-rose/60">/ano</span>
               </p>
-              <p className="text-sm text-amber-300 mt-1">
-                {ofertaFundador && !isPrime
-                  ? `Economize R$${economiaFundadorAnual} + multiplicador 1.5x`
-                  : 'Multiplicador 1.5x em viagens'
-                }
-              </p>
+              {!isPrime && (
+                <>
+                  <p className="text-sm text-[#a27937] mt-1">
+                    ou 6x de R$ 99,50 sem juros
+                  </p>
+                  <p className="text-sm text-[#a27937] mt-1 flex items-center gap-1">
+                    Economize R${economiaFundador}
+                  </p>
+                </>
+              )}
             </div>
 
-            <ul className="space-y-3 text-sm text-dusty-rose/80 mb-8">
-              <li className="flex items-center gap-2">
-                <span className="text-amber-400">★</span>
-                Check-in: <span className="text-white font-semibold">{primeConfig.pontosCheckin || 30} pts/dia</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-amber-400">★</span>
-                Indicação: <span className="text-white font-semibold">{(primeConfig.pontosIndicacao || 5000).toLocaleString('pt-BR')} pts</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-amber-400">★</span>
-                Bônus aniversário: <span className="text-white font-semibold">{(primeConfig.pontosAniversario || 5000).toLocaleString('pt-BR')} pts</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-amber-400">★</span>
-                Multiplicador viagem:{' '}
-                <span className="text-white font-semibold">1.5x</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-amber-400">★</span>
-                <span className="text-white font-semibold">Viagem lançada pela equipe</span>
-              </li>
-            </ul>
+            {/* Bloco: Mais pontos */}
+            <div className="mb-4">
+              <p className="text-[10px] uppercase tracking-wider text-[#a27937]/60 mb-2 font-heading">Mais pontos</p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Pontos por viagem: <strong className="text-[#a27937]">1,5 pt/R$</strong></span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Resgate mais vantajoso</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Check-in diário: <strong className="text-[#a27937]">{primeConfig.pontosCheckin || 30} pts</strong></span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Bônus de boas-vindas: <strong className="text-[#a27937]">2.000 pts</strong></span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Bônus aniversário: <strong className="text-[#a27937]">{(primeConfig.pontosAniversario || 5000).toLocaleString('pt-BR')} pts</strong></span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Bloco: Benefícios exclusivos */}
+            <div className="mb-6">
+              <p className="text-[10px] uppercase tracking-wider text-[#a27937]/60 mb-2 font-heading">Benefícios exclusivos</p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">2 convites exclusivos para amigos</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Participação no sorteio de 200 mil pts</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Viagem lançada pela equipe Me,up</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Pontos não expiram</span>
+                </li>
+              </ul>
+            </div>
 
             {/* CTAs */}
             {isPrime ? (
-              <div className="py-3 text-center text-amber-300 font-heading font-semibold">
-                ✓ Você é Prime Anual
+              <div className="py-3 text-center text-[#a27937] font-heading font-semibold">
+                ✓ Você é Prime Fundador
               </div>
             ) : (
               <button
-                onClick={() => handleAssinar(cicloSelecionado)}
-                disabled={processing}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
+                onClick={handleAssinar}
+                disabled={processing || esgotado}
+                className={`w-full py-3.5 rounded-xl font-heading font-semibold transition-colors shadow-lg ${
+                  esgotado
+                    ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                    : 'bg-[#a27937] hover:bg-[#8b6830] text-deep-purple'
+                }`}
               >
                 {processing
                   ? 'Abrindo WhatsApp...'
-                  : ofertaFundador
-                    ? 'Garantir vaga de fundador'
-                    : 'Assinar Anual'
+                  : esgotado
+                    ? 'Vagas esgotadas'
+                    : 'Garantir minha vaga de fundador'
                 }
               </button>
             )}
           </motion.div>
         </div>
 
-        {/* Benefícios do anual em destaque */}
-        {!isPrime && cicloSelecionado === 'anual' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-8 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20"
-          >
-            <h3 className="text-amber-300 font-heading font-semibold mb-3 text-center">
-              Exclusivo no plano Anual
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-              <div className="p-3">
-                <div className="text-2xl mb-1">1.5x</div>
-                <div className="text-xs text-dusty-rose/80">Multiplicador em viagens</div>
-              </div>
-              <div className="p-3">
-                <div className="text-2xl mb-1">2 meses</div>
-                <div className="text-xs text-dusty-rose/80">Grátis (12 pelo preço de 10)</div>
-              </div>
-              <div className="p-3">
-                <div className="text-2xl mb-1">R${ofertaFundador ? economiaFundadorAnual : '100'}</div>
-                <div className="text-xs text-dusty-rose/80">{ofertaFundador ? 'Economia de fundador' : 'Economia garantida'}</div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
         {/* Nota sobre fundador */}
-        {ofertaFundador && !isPrime && (
+        {!isPrime && !esgotado && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center text-sm text-amber-300/80 mt-8 font-heading"
+            className="text-center text-sm text-[#a27937]/80 mt-8 font-heading"
           >
-            {loteData.vagas_restantes} vagas no Lote {loteAtual} · Preço de lançamento limitado
+            {vagasRestantes} vagas de Fundador · Preço de lançamento
           </motion.p>
         )}
 

@@ -25,24 +25,14 @@ export async function submitToWaitlist(data) {
       return { success: false, error: 'WhatsApp inválido' }
     }
 
-    // Verifica duplicado
-    const { isDuplicate, field } = await checkDuplicate(whatsappClean, data.cpf)
+    // Verifica duplicado de WhatsApp
+    const { isDuplicate } = await checkDuplicate(whatsappClean)
     if (isDuplicate) {
       return {
         success: false,
-        error: `Este ${field === 'whatsapp' ? 'WhatsApp' : 'CPF'} já está na lista de espera`,
+        error: 'Esse WhatsApp já está na lista',
         isDuplicate: true
       }
-    }
-
-    // Verifica se é cliente (se CPF foi fornecido)
-    let eCliente = false
-    if (data.cpf) {
-      const cpfHash = await hashCPF(data.cpf)
-      const { data: eligibility } = await supabase.rpc('verificar_elegibilidade_cpf', {
-        p_cpf_hash: cpfHash
-      })
-      eCliente = eligibility?.[0]?.elegivel || false
     }
 
     // Insere na lista de espera
@@ -52,10 +42,10 @@ export async function submitToWaitlist(data) {
         nome: data.nome?.trim(),
         whatsapp: whatsappClean,
         email: data.email?.trim()?.toLowerCase() || null,
-        cpf: data.cpf?.replace(/\D/g, '') || null,
+        cpf: null, // CPF removido do formulário
         perfil_viagem: data.perfil_viagem || null,
         origem: data.origem || 'site',
-        e_cliente: eCliente,
+        e_cliente: false,
         status: 'aguardando'
       })
       .select('id')
@@ -66,7 +56,13 @@ export async function submitToWaitlist(data) {
 
       // Trata erro de unique constraint
       if (error.code === '23505') {
-        return { success: false, error: 'Este contato já está na lista de espera', isDuplicate: true }
+        return { success: false, error: 'Esse WhatsApp já está na lista', isDuplicate: true }
+      }
+
+      // Trata erro de check constraint (origem inválida)
+      if (error.code === '23514') {
+        console.error('Erro de constraint - origem:', data.origem)
+        return { success: false, error: 'Erro interno. Tente novamente.' }
       }
 
       throw error
@@ -75,10 +71,7 @@ export async function submitToWaitlist(data) {
     return {
       success: true,
       id: inserted.id,
-      e_cliente: eCliente,
-      message: eCliente
-        ? 'Você é um cliente Me,up! Será notificado com prioridade na abertura.'
-        : 'Interesse registrado! Você será notificado quando o clube abrir.'
+      message: 'Prontinho! Você está na lista. Vamos te chamar no WhatsApp.'
     }
   } catch (error) {
     console.error('Erro ao submeter para lista de espera:', error)
@@ -89,10 +82,9 @@ export async function submitToWaitlist(data) {
 /**
  * Verifica se já existe duplicado na lista de espera
  * @param {string} whatsapp - WhatsApp limpo
- * @param {string} cpf - CPF limpo (opcional)
- * @returns {Promise<{isDuplicate: boolean, field?: string}>}
+ * @returns {Promise<{isDuplicate: boolean}>}
  */
-export async function checkDuplicate(whatsapp, cpf = null) {
+export async function checkDuplicate(whatsapp) {
   try {
     // Verifica WhatsApp
     const { data: byWhatsapp } = await supabase
@@ -103,22 +95,7 @@ export async function checkDuplicate(whatsapp, cpf = null) {
       .limit(1)
 
     if (byWhatsapp?.length > 0) {
-      return { isDuplicate: true, field: 'whatsapp' }
-    }
-
-    // Verifica CPF se fornecido
-    if (cpf) {
-      const cpfClean = cpf.replace(/\D/g, '')
-      const { data: byCpf } = await supabase
-        .from('lista_espera')
-        .select('id')
-        .eq('cpf', cpfClean)
-        .neq('status', 'descartado')
-        .limit(1)
-
-      if (byCpf?.length > 0) {
-        return { isDuplicate: true, field: 'cpf' }
-      }
+      return { isDuplicate: true }
     }
 
     return { isDuplicate: false }

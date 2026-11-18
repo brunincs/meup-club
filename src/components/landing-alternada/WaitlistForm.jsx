@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { submitToWaitlist } from '@/services/waitlistService'
-import { useCPFValidation } from '@/hooks/useEligibility'
 
 /**
  * Formulário de lista de espera para pré-lançamento
- * Coleta: nome, whatsapp, email (opcional), cpf (opcional), perfil de viagem
+ * Coleta: nome, whatsapp, email (opcional), perfil de viagem
  * @param {string} origin - Origem do cadastro (site, pagina_eu_quero, whatsapp)
  */
 export function WaitlistForm({ onSuccess, compact = false, origin = 'site' }) {
@@ -13,15 +12,12 @@ export function WaitlistForm({ onSuccess, compact = false, origin = 'site' }) {
     nome: '',
     whatsapp: '',
     email: '',
-    cpf: '',
     perfil_viagem: ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
   const [successData, setSuccessData] = useState(null)
-
-  const { format: formatCPF, validate: validateCPF, isValid: cpfValid } = useCPFValidation()
 
   // Formata WhatsApp
   const formatWhatsApp = (value) => {
@@ -36,11 +32,6 @@ export function WaitlistForm({ onSuccess, compact = false, origin = 'site' }) {
 
     if (field === 'whatsapp') {
       setFormData(prev => ({ ...prev, whatsapp: formatWhatsApp(value) }))
-    } else if (field === 'cpf') {
-      setFormData(prev => ({ ...prev, cpf: formatCPF(value) }))
-      if (value.replace(/\D/g, '').length === 11) {
-        validateCPF(value)
-      }
     } else {
       setFormData(prev => ({ ...prev, [field]: value }))
     }
@@ -62,12 +53,6 @@ export function WaitlistForm({ onSuccess, compact = false, origin = 'site' }) {
       return
     }
 
-    // CPF opcional, mas se preenchido, valida
-    if (formData.cpf && formData.cpf.replace(/\D/g, '').length === 11 && cpfValid === false) {
-      setError('CPF inválido')
-      return
-    }
-
     setLoading(true)
 
     try {
@@ -81,10 +66,15 @@ export function WaitlistForm({ onSuccess, compact = false, origin = 'site' }) {
         setSuccessData(result)
         onSuccess?.(result)
       } else {
-        setError(result.error || 'Erro ao registrar. Tente novamente.')
+        // Mensagens amigáveis para erros específicos
+        if (result.isDuplicate) {
+          setError('Esse WhatsApp já está na lista 💜')
+        } else {
+          setError('Não foi possível enviar agora. Tente de novo ou chame a gente no WhatsApp.')
+        }
       }
     } catch (err) {
-      setError('Erro ao conectar. Tente novamente.')
+      setError('Não foi possível enviar agora. Tente de novo ou chame a gente no WhatsApp.')
     } finally {
       setLoading(false)
     }
@@ -105,22 +95,12 @@ export function WaitlistForm({ onSuccess, compact = false, origin = 'site' }) {
         </div>
 
         <h3 className="text-xl font-display font-semibold text-ice-white mb-2">
-          {successData?.e_cliente ? 'Você é cliente Me,up! 🌟' : 'Interesse registrado!'}
+          Prontinho! 💜
         </h3>
 
         <p className="text-ice-white/70 text-sm max-w-sm mx-auto">
-          {successData?.e_cliente
-            ? 'Será notificado com prioridade na abertura do clube.'
-            : 'Você será notificado quando o clube abrir para novos membros.'}
+          Você está na lista. Vamos te chamar no WhatsApp.
         </p>
-
-        {successData?.e_cliente && (
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-antique-gold/20 border border-antique-gold/30">
-            <span className="text-antique-gold text-sm font-medium">
-              ✨ Acesso prioritário garantido
-            </span>
-          </div>
-        )}
       </motion.div>
     )
   }
@@ -163,27 +143,6 @@ export function WaitlistForm({ onSuccess, compact = false, origin = 'site' }) {
               className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-ice-white placeholder:text-ice-white/50 focus:outline-none focus:border-antique-gold/50 focus:ring-1 focus:ring-antique-gold/30 transition-colors"
               disabled={loading}
             />
-          </div>
-
-          {/* CPF */}
-          <div>
-            <input
-              type="text"
-              placeholder="CPF (opcional - para verificar se é cliente)"
-              value={formData.cpf}
-              onChange={(e) => handleChange('cpf', e.target.value)}
-              className={`w-full px-4 py-3 rounded-lg bg-white/10 border text-ice-white placeholder:text-ice-white/50 focus:outline-none transition-colors ${
-                formData.cpf && cpfValid === false
-                  ? 'border-red-400/50 focus:border-red-400'
-                  : formData.cpf && cpfValid === true
-                    ? 'border-green-400/50 focus:border-green-400'
-                    : 'border-white/20 focus:border-antique-gold/50'
-              }`}
-              disabled={loading}
-            />
-            {formData.cpf && cpfValid === true && (
-              <p className="text-green-400 text-xs mt-1">CPF válido</p>
-            )}
           </div>
 
           {/* Perfil de viagem */}
