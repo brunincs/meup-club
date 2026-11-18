@@ -238,6 +238,16 @@ export function AuthProvider({ children }) {
       // Login real bem-sucedido - garantir que NÃO estamos em modo demo
       setUseMock(false)
 
+      // Verificar bônus de aniversário no login (fallback do job diário)
+      if (data?.user?.id) {
+        try {
+          await supabase.rpc('verificar_aniversario_login', { p_user_id: data.user.id })
+        } catch (err) {
+          // Não bloquear login se falhar
+          logWarn('Verificação de aniversário falhou:', err)
+        }
+      }
+
       return { data, error: null }
     } catch (error) {
       return { data: null, error: { message: translateError(error) } }
