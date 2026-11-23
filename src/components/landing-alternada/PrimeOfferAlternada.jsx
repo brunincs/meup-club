@@ -172,7 +172,7 @@ export function PrimeOfferAlternada() {
             {/* Badge */}
             {!esgotado && (
               <div className="absolute -top-3 right-4 px-3 py-1 bg-antique-gold rounded-full text-xs text-deep-purple font-heading font-bold shadow-lg">
-                {descontoPercent}% OFF · Fundador
+                Fundador · {vagasTotal} vagas
               </div>
             )}
 
@@ -210,7 +210,7 @@ export function PrimeOfferAlternada() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">Pontos em viagens: <strong className="text-antique-gold">2x</strong></span>
+                    <span className="text-white">Pontos em viagens: <strong className="text-antique-gold">1,5 pt/R$</strong></span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>

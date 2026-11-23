@@ -282,11 +282,7 @@ export function Plans() {
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
                   <span className="text-[#a27937]">★</span>
-                  <span className="text-white">2 convites exclusivos para amigos</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[#a27937]">★</span>
-                  <span className="text-white">Participação no sorteio de 200 mil pts</span>
+                  <span className="text-white">Prioridade na cotação</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-[#a27937]">★</span>
@@ -294,7 +290,27 @@ export function Plans() {
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Acesso antecipado a experiências</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Experiências com desconto</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Selo e número de fundador</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
                   <span className="text-white">Pontos não expiram</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">2 convites exclusivos para amigos</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Número da sorte: concorra a 200 mil pts</span>
                 </li>
               </ul>
             </div>
