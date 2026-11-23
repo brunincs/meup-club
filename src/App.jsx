@@ -210,6 +210,7 @@ function App() {
           <Route path="/admin/indicacoes" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
           <Route path="/admin/vendas" element={<AdminRoute><AdminSales /></AdminRoute>} />
           <Route path="/admin/usuarios" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+          <Route path="/admin/clientes" element={<AdminRoute><AdminUsers /></AdminRoute>} />
           <Route path="/admin/tarefas" element={<AdminRoute><AdminTasks /></AdminRoute>} />
           <Route path="/admin/recompensas" element={<AdminRoute><AdminRewards /></AdminRoute>} />
           <Route path="/admin/historico" element={<AdminRoute><AdminHistory /></AdminRoute>} />
