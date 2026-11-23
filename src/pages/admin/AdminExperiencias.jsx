@@ -464,7 +464,7 @@ export function AdminExperiencias() {
                       </p>
                       <div className="flex items-center gap-4 text-xs text-graphite/60 font-heading">
                         <span className="font-mono font-semibold text-antique-gold">
-                          {exp.pontos.toLocaleString('pt-BR')} pts
+                          {(exp.pontos ?? (exp.valor_reais ? Math.round(exp.valor_reais * FATOR_FREE) : 0)).toLocaleString('pt-BR')} pts
                         </span>
                         <span>Classe: {level?.shortName || 'Todas'}</span>
                         <span>Ordem: {exp.ordem}</span>

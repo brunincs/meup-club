@@ -158,22 +158,22 @@ export function AdminFundadores() {
                     >
                       <td className="px-4 py-4">
                         <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-heading font-bold text-sm">
-                          #{fundador.vaga_numero}
+                          #{fundador.fundador_numero}
                         </span>
                       </td>
                       <td className="px-4 py-4">
                         <div>
                           <p className="text-sm font-heading font-medium text-graphite">
-                            {fundador.user_name || 'Cliente'}
+                            {fundador.name || 'Cliente'}
                           </p>
                           <p className="text-xs text-graphite/60">
-                            {fundador.user_email || '—'}
+                            {fundador.email || '—'}
                           </p>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-center">
                         <span className="text-lg font-display font-bold text-deep-purple tracking-wider">
-                          {fundador.numero_sorte}
+                          {fundador.fundador_numero_sorte || '—'}
                         </span>
                       </td>
                       <td className="px-4 py-4">
@@ -241,12 +241,12 @@ export function AdminFundadores() {
 
             <div className="p-6">
               <p className="text-sm text-graphite mb-4">
-                Tem certeza que deseja registrar <strong>{confirmGanhador.user_name}</strong> como ganhador?
+                Tem certeza que deseja registrar <strong>{confirmGanhador.name}</strong> como ganhador?
               </p>
 
               <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 mb-4">
                 <p className="text-sm text-amber-800">
-                  <strong>Número da sorte:</strong> {confirmGanhador.numero_sorte}
+                  <strong>Número da sorte:</strong> {confirmGanhador.fundador_numero_sorte || '—'}
                 </p>
                 <p className="text-sm text-amber-800 mt-1">
                   <strong>Prêmio:</strong> 200.000 pontos serão creditados automaticamente
