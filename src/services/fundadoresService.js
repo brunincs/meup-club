@@ -178,9 +178,12 @@ export async function adminGetFundadores() {
         fundador_numero,
         fundador_numero_sorte,
         is_fundador,
-        plano,
         created_at,
-        prime_ativado_em
+        subscriptions (
+          plano,
+          status,
+          started_at
+        )
       `)
       .eq('is_fundador', true)
       .not('fundador_numero', 'is', null)
