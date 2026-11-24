@@ -5,6 +5,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase'
+import { invalidateMetricasCache } from '@/services/slotsService'
 
 // URL do app (para mensagens WhatsApp)
 export const APP_URL = import.meta.env.VITE_APP_URL || window.location.origin
@@ -22,6 +23,9 @@ export async function aprovarUsuario(userId, plano = 'free', criarAssinatura = f
 
     if (error) throw error
     if (!data?.success) throw new Error(data?.error || 'Erro ao aprovar')
+
+    // Invalidar cache após aprovação
+    invalidateMetricasCache()
 
     return { success: true, data }
   } catch (error) {
@@ -110,6 +114,12 @@ export async function aprovarPorLink(userId, codigo) {
     })
 
     if (error) throw error
+
+    // Invalidar cache após aprovação
+    if (data?.success) {
+      invalidateMetricasCache()
+    }
+
     return data
   } catch (error) {
     console.error('Erro ao aprovar por link:', error)
@@ -171,6 +181,12 @@ export async function aprovarLote(userIds) {
     })
 
     if (error) throw error
+
+    // Invalidar cache após aprovação em lote
+    if (data?.success) {
+      invalidateMetricasCache()
+    }
+
     return data
   } catch (error) {
     console.error('Erro ao aprovar em lote:', error)

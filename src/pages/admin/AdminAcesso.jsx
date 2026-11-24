@@ -7,8 +7,8 @@ import {
   adminExportCSV,
   adminGetWaitlistStats
 } from '@/services/waitlistService'
-import { getSlotsStatus } from '@/services/slotsService'
-import { APP_URL } from '@/services/acessoService'
+import { getSlotsStatus, invalidateMetricasCache } from '@/services/slotsService'
+import { APP_URL, getMetricasClube } from '@/services/acessoService'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
@@ -103,9 +103,15 @@ function SolicitacoesTab() {
 
       setSolicitacoes(solicComEtiquetas)
 
-      // Buscar contagem de vagas
-      const { data: vagasData } = await supabase.rpc('contar_vagas')
-      setVagas(vagasData)
+      // Buscar contagem de vagas via serviço centralizado
+      const slotsResult = await getSlotsStatus()
+      if (slotsResult.success) {
+        setVagas({
+          free: slotsResult.free,
+          prime: slotsResult.prime,
+          convites: slotsResult.convites
+        })
+      }
     } catch (err) {
       console.error('Erro ao carregar solicitações:', err)
       toast.error('Erro ao carregar dados')
@@ -740,10 +746,15 @@ function InvitesTab() {
 // ABA: CONFIGURAÇÕES
 // ============================================
 function ConfigTab() {
-  const [configs, setConfigs] = useState([])
   const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(null)
-  const [editValue, setEditValue] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [linkAtivo, setLinkAtivo] = useState(true)
+  const [linkCodigo, setLinkCodigo] = useState('LISTA27')
+  const [linkExpira, setLinkExpira] = useState('')
+  const [vagasFree, setVagasFree] = useState('70')
+  const [vagasPrime, setVagasPrime] = useState('30')
+  const [vagasConvites, setVagasConvites] = useState('60')
+  const [entradasPorLink, setEntradasPorLink] = useState(0)
 
   useEffect(() => {
     loadConfigs()
@@ -752,105 +763,197 @@ function ConfigTab() {
   const loadConfigs = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('plano_config')
-        .select('*')
-        .order('key')
+      // Buscar configurações do app_config
+      const { data: configs, error } = await supabase
+        .from('app_config')
+        .select('key, value')
 
       if (error) throw error
-      setConfigs(data || [])
+
+      // Mapear valores
+      const configMap = {}
+      configs?.forEach(c => { configMap[c.key] = c.value })
+
+      setLinkAtivo(configMap.link_lista_ativo === 'true')
+      setLinkCodigo(configMap.link_lista_codigo || 'LISTA27')
+      setLinkExpira(configMap.link_lista_expira_em?.split('T')[0] || '2026-11-30')
+      setVagasFree(configMap.vagas_free_total || '70')
+      setVagasPrime(configMap.vagas_prime_total || '30')
+      setVagasConvites(configMap.vagas_convidados_total || '60')
+
+      // Contar entradas pelo link
+      const { count } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('origem_acesso', 'link_lista')
+
+      setEntradasPorLink(count || 0)
     } catch (err) {
-      console.error(err)
+      console.error('Erro ao carregar configs:', err)
+      toast.error('Erro ao carregar configurações')
     }
     setLoading(false)
   }
 
-  const handleSave = async (key) => {
+  const saveConfig = async (key, value) => {
     try {
       const { error } = await supabase
-        .from('plano_config')
-        .update({ value: editValue, updated_at: new Date().toISOString() })
-        .eq('key', key)
+        .from('app_config')
+        .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
 
       if (error) throw error
-
-      setEditing(null)
-      loadConfigs()
-      toast.success('Configuração atualizada')
+      return true
     } catch (err) {
-      toast.error('Erro ao salvar')
+      console.error('Erro ao salvar:', err)
+      return false
     }
   }
 
+  const handleSaveAll = async () => {
+    setSaving(true)
+    try {
+      const updates = [
+        saveConfig('link_lista_ativo', linkAtivo.toString()),
+        saveConfig('link_lista_codigo', linkCodigo.toUpperCase()),
+        saveConfig('link_lista_expira_em', `${linkExpira}T23:59:59-03:00`),
+        saveConfig('vagas_free_total', vagasFree),
+        saveConfig('vagas_prime_total', vagasPrime),
+        saveConfig('vagas_convidados_total', vagasConvites)
+      ]
+
+      await Promise.all(updates)
+      toast.success('Configurações salvas!')
+    } catch (err) {
+      toast.error('Erro ao salvar')
+    }
+    setSaving(false)
+  }
+
+  const copyLink = () => {
+    const url = `${window.location.origin}/entrar?c=${linkCodigo}`
+    navigator.clipboard.writeText(url)
+    toast.success('Link copiado!')
+  }
+
+  if (loading) {
+    return <div className="text-center py-8 text-gray-500">Carregando...</div>
+  }
+
   return (
-    <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-      <table className="w-full">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chave</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-24">Ação</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {loading ? (
-            <tr>
-              <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
-                Carregando...
-              </td>
-            </tr>
-          ) : (
-            configs.map(config => (
-              <tr key={config.key} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm font-mono text-gray-700">{config.key}</td>
-                <td className="px-4 py-3">
-                  {editing === config.key ? (
-                    <input
-                      type="text"
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-200 rounded text-sm"
-                      autoFocus
-                    />
-                  ) : (
-                    <span className="text-sm">{config.value}</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-500">{config.description}</td>
-                <td className="px-4 py-3">
-                  {editing === config.key ? (
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => handleSave(config.key)}
-                        className="px-2 py-1 bg-green-500 text-white rounded text-xs"
-                      >
-                        Salvar
-                      </button>
-                      <button
-                        onClick={() => setEditing(null)}
-                        className="px-2 py-1 bg-gray-200 text-gray-600 rounded text-xs"
-                      >
-                        X
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setEditing(config.key)
-                        setEditValue(config.value)
-                      }}
-                      className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs hover:bg-gray-200"
-                    >
-                      Editar
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+    <div className="space-y-6">
+      {/* Link de Entrada */}
+      <div className="bg-white rounded-xl border border-gray-100 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-heading font-semibold text-graphite">Link de Entrada Automática</h3>
+          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+            linkAtivo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+          }`}>
+            {linkAtivo ? 'Ativo' : 'Inativo'}
+          </span>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Status</label>
+            <button
+              onClick={() => setLinkAtivo(!linkAtivo)}
+              className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                linkAtivo
+                  ? 'bg-green-500 text-white hover:bg-green-600'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {linkAtivo ? 'Desativar Link' : 'Ativar Link'}
+            </button>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Código</label>
+            <input
+              type="text"
+              value={linkCodigo}
+              onChange={(e) => setLinkCodigo(e.target.value.toUpperCase())}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono"
+              placeholder="LISTA27"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Expira em</label>
+            <input
+              type="date"
+              value={linkExpira}
+              onChange={(e) => setLinkExpira(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Entradas pelo link</label>
+            <div className="px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg text-sm font-semibold text-purple-700">
+              {entradasPorLink} usuário(s)
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          <code className="flex-1 text-sm text-gray-700 font-mono truncate">
+            {window.location.origin}/entrar?c={linkCodigo}
+          </code>
+          <button
+            onClick={copyLink}
+            className="px-4 py-2 bg-antique-gold text-deep-purple rounded-lg text-sm font-semibold hover:bg-antique-gold/90"
+          >
+            Copiar Link
+          </button>
+        </div>
+      </div>
+
+      {/* Vagas */}
+      <div className="bg-white rounded-xl border border-gray-100 p-6">
+        <h3 className="font-heading font-semibold text-graphite mb-4">Configuração de Vagas</h3>
+
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Vagas Free (total)</label>
+            <input
+              type="number"
+              value={vagasFree}
+              onChange={(e) => setVagasFree(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+              min="0"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Vagas Prime/Fundador (total)</label>
+            <input
+              type="number"
+              value={vagasPrime}
+              onChange={(e) => setVagasPrime(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+              min="0"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Vagas Convites (total)</label>
+            <input
+              type="number"
+              value={vagasConvites}
+              onChange={(e) => setVagasConvites(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+              min="0"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Botão Salvar */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleSaveAll}
+          disabled={saving}
+          className="px-6 py-3 bg-antique-gold text-deep-purple rounded-xl text-sm font-semibold hover:bg-antique-gold/90 disabled:opacity-50"
+        >
+          {saving ? 'Salvando...' : 'Salvar Configurações'}
+        </button>
+      </div>
     </div>
   )
 }

@@ -1,9 +1,38 @@
 // ============================================
 // SERVIÇO DE VAGAS - Meup Club
 // Gerencia vagas do clube exclusivo
+// Fonte única: metricas_clube() RPC
 // ============================================
 
 import { supabase } from '@/lib/supabase'
+
+// Cache para evitar múltiplas chamadas
+let _metricasCache = null
+let _metricasCacheTime = 0
+const CACHE_TTL = 30000 // 30 segundos
+
+/**
+ * Busca métricas do clube (fonte única de verdade)
+ * Com cache de 30 segundos
+ */
+async function getMetricasCached() {
+  const now = Date.now()
+  if (_metricasCache && (now - _metricasCacheTime) < CACHE_TTL) {
+    return _metricasCache
+  }
+
+  try {
+    const { data, error } = await supabase.rpc('metricas_clube')
+    if (error) throw error
+    _metricasCache = data
+    _metricasCacheTime = now
+    return data
+  } catch (error) {
+    // Fallback para RPC antiga se metricas_clube não existir
+    console.warn('metricas_clube não disponível, usando fallback:', error.message)
+    return null
+  }
+}
 
 /**
  * Busca status atual das vagas
@@ -17,6 +46,35 @@ import { supabase } from '@/lib/supabase'
  */
 export async function getSlotsStatus() {
   try {
+    // Tenta usar metricas_clube() primeiro
+    const metricas = await getMetricasCached()
+
+    if (metricas) {
+      return {
+        success: true,
+        prime: {
+          total: metricas.vagas_prime_total || 30,
+          ocupadas: metricas.vagas_prime_ocupadas || 0,
+          disponiveis: metricas.vagas_prime_disponiveis || 30
+        },
+        free: {
+          total: metricas.vagas_free_total || 70,
+          ocupadas: metricas.vagas_free_ocupadas || 0,
+          disponiveis: metricas.vagas_free_disponiveis || 70
+        },
+        convites: {
+          total: metricas.convites_vagas_total || 0,
+          emitidos: metricas.convites_emitidos || 0,
+          aceitos: metricas.convites_aceitos || 0
+        },
+        totais: {
+          membros: metricas.total_usuarios || 0,
+          fundadores: metricas.prime_fundadores || 0
+        }
+      }
+    }
+
+    // Fallback: RPC antiga
     const { data, error } = await supabase.rpc('get_vagas_status')
 
     if (error) throw error
@@ -66,6 +124,14 @@ export async function getSlotsStatus() {
       error: error.message
     }
   }
+}
+
+/**
+ * Invalida o cache de métricas (usar após operações que alteram dados)
+ */
+export function invalidateMetricasCache() {
+  _metricasCache = null
+  _metricasCacheTime = 0
 }
 
 /**

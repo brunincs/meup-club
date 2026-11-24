@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { supabase } from '@/lib/supabase'
+import { getMetricasClubeAdmin } from '@/services/adminService'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -551,29 +552,38 @@ function formatCurrency(value) {
 
 async function fetchClientesMetrics(datas) {
   try {
-    // Total de clientes (não-admin)
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .neq('role', 'admin')
+    // Tenta usar metricas_clube() como fonte única
+    const metricasResult = await getMetricasClubeAdmin()
+    let totalClientes, freeCount, primeCount
 
-    const totalClientes = profiles?.length || 0
-    const clienteIds = new Set(profiles?.map(p => p.id) || [])
+    if (metricasResult.success && metricasResult.metricas) {
+      const m = metricasResult.metricas
+      totalClientes = m.total_usuarios || 0
+      freeCount = m.usuarios_free || 0
+      primeCount = m.usuarios_prime || 0
+    } else {
+      // Fallback: queries individuais
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, role')
+        .neq('role', 'admin')
 
-    // Clientes Prime (assinaturas ativas de não-admins)
-    const { data: assinaturas } = await supabase
-      .from('subscriptions')
-      .select('user_id')
-      .eq('status', 'active')
+      totalClientes = profiles?.length || 0
+      const clienteIds = new Set(profiles?.map(p => p.id) || [])
 
-    // Filtrar apenas assinaturas de não-admins
-    const primeUserIds = new Set(
-      (assinaturas || [])
-        .filter(s => clienteIds.has(s.user_id))
-        .map(s => s.user_id)
-    )
-    const primeCount = primeUserIds.size
-    const freeCount = totalClientes - primeCount
+      const { data: assinaturas } = await supabase
+        .from('subscriptions')
+        .select('user_id')
+        .eq('status', 'active')
+
+      const primeUserIds = new Set(
+        (assinaturas || [])
+          .filter(s => clienteIds.has(s.user_id))
+          .map(s => s.user_id)
+      )
+      primeCount = primeUserIds.size
+      freeCount = totalClientes - primeCount
+    }
 
     // Novos no período
     const { count: novosNoPeriodo } = await supabase

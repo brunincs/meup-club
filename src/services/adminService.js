@@ -1,9 +1,45 @@
 // ============================================
 // SERVIÇO ADMIN - DADOS REAIS DO SUPABASE
+// Fonte única: metricas_clube() RPC
 // ============================================
 
 import { supabase } from '@/lib/supabase'
 import { levels } from './pointsSystem'
+
+// Cache compartilhado para metricas_clube
+let _metricasAdminCache = null
+let _metricasAdminCacheTime = 0
+const CACHE_TTL = 30000 // 30 segundos
+
+/**
+ * Busca métricas do clube (fonte única de verdade)
+ * Com cache de 30 segundos
+ */
+export async function getMetricasClubeAdmin() {
+  const now = Date.now()
+  if (_metricasAdminCache && (now - _metricasAdminCacheTime) < CACHE_TTL) {
+    return { success: true, metricas: _metricasAdminCache }
+  }
+
+  try {
+    const { data, error } = await supabase.rpc('metricas_clube')
+    if (error) throw error
+    _metricasAdminCache = data
+    _metricasAdminCacheTime = now
+    return { success: true, metricas: data }
+  } catch (error) {
+    console.warn('metricas_clube não disponível:', error.message)
+    return { success: false, metricas: null, error: error.message }
+  }
+}
+
+/**
+ * Invalida o cache de métricas
+ */
+export function invalidateMetricasAdminCache() {
+  _metricasAdminCache = null
+  _metricasAdminCacheTime = 0
+}
 
 /**
  * Calcula o nível baseado nos pontos
@@ -442,6 +478,7 @@ export async function fetchAdminStats() {
  * - Free vs Prime (TOTAL e novos no mês)
  * - Conversão Free→Prime no mês
  * - Pontos emitidos vs resgatados no mês
+ * Usa metricas_clube() como fonte principal quando disponível
  */
 export async function fetchAdminMetrics() {
   try {
@@ -449,21 +486,34 @@ export async function fetchAdminMetrics() {
     const hoje = new Date()
     const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString()
 
-    // 1. Total de clientes
-    const { count: totalClientes } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .neq('role', 'admin')
+    // Tenta usar metricas_clube() como fonte única
+    const metricasResult = await getMetricasClubeAdmin()
+    let totalClientes, freeCount, primeCount
 
-    // 2. Clientes Prime (assinaturas ativas)
-    const { data: assinaturasPrime } = await supabase
-      .from('subscriptions')
-      .select('user_id')
-      .eq('status', 'active')
+    if (metricasResult.success && metricasResult.metricas) {
+      const m = metricasResult.metricas
+      totalClientes = m.total_usuarios || 0
+      freeCount = m.usuarios_free || 0
+      primeCount = m.usuarios_prime || 0
+    } else {
+      // Fallback: queries individuais
+      // 1. Total de clientes
+      const { count: tc } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .neq('role', 'admin')
+      totalClientes = tc || 0
 
-    const primeUserIds = new Set(assinaturasPrime?.map(s => s.user_id) || [])
-    const primeCount = primeUserIds.size
-    const freeCount = (totalClientes || 0) - primeCount
+      // 2. Clientes Prime (assinaturas ativas)
+      const { data: assinaturasPrime } = await supabase
+        .from('subscriptions')
+        .select('user_id')
+        .eq('status', 'active')
+
+      const primeUserIds = new Set(assinaturasPrime?.map(s => s.user_id) || [])
+      primeCount = primeUserIds.size
+      freeCount = totalClientes - primeCount
+    }
 
     // 3. Novos clientes no mês
     const { count: novosNoMes } = await supabase

@@ -5,7 +5,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
-import { adminGetFundadores, adminRegistrarGanhador, getFundadoresCount } from '@/services/fundadoresService'
+import { adminGetFundadores, adminRegistrarGanhador } from '@/services/fundadoresService'
+import { getSlotsStatus } from '@/services/slotsService'
 import { SeloFundador } from '@/components/ui/SeloFundador'
 import toast from 'react-hot-toast'
 
@@ -17,19 +18,20 @@ export function AdminFundadores() {
 
   const loadData = async () => {
     setLoading(true)
-    const [fundadoresResult, vagasResult] = await Promise.all([
+    const [fundadoresResult, slotsResult] = await Promise.all([
       adminGetFundadores(),
-      getFundadoresCount()
+      getSlotsStatus()
     ])
 
     if (fundadoresResult.success) {
       setFundadores(fundadoresResult.fundadores)
     }
-    if (vagasResult.success) {
+    if (slotsResult.success) {
+      // Usar vagas prime como referência para fundadores
       setVagas({
-        usadas: vagasResult.vagas_usadas,
-        total: vagasResult.vagas_total,
-        disponiveis: vagasResult.vagas_disponiveis
+        usadas: slotsResult.prime.ocupadas,
+        total: slotsResult.prime.total,
+        disponiveis: slotsResult.prime.disponiveis
       })
     }
     setLoading(false)
