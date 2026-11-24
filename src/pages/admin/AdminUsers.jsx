@@ -5,7 +5,7 @@ import { CreditAdjustModal } from '@/components/admin/CreditAdjustModal'
 import { fetchAllUsers, creditPoints, fetchUserTransactions, fetchClientProfile, revealClientCpf } from '@/services/adminService'
 import { fetchSolicitacoesCliente } from '@/services/experienciasService'
 import { ativarPrime, cancelarPrime, fetchSubscriptionStatus, formatCiclo, fetchPlanosConfig } from '@/services/subscriptionService'
-import { aprovarUsuario, colocarEmEspera, recusarUsuario, abrirWhatsAppAprovacao } from '@/services/acessoService'
+import { aprovarUsuario, colocarEmEspera, recusarUsuario, abrirWhatsAppAprovacao, aprovarLote } from '@/services/acessoService'
 import { formatPrice } from '@/config/contact'
 import { levels } from '@/services/pointsSystem'
 import { format } from '@/services/copy'
@@ -632,6 +632,9 @@ export function AdminUsers() {
   const [managingPrime, setManagingPrime] = useState(null)
   const [approvalMenuOpen, setApprovalMenuOpen] = useState(null)
   const [actionLoading, setActionLoading] = useState(null)
+  const [selectedUsers, setSelectedUsers] = useState([])
+  const [batchLoading, setBatchLoading] = useState(false)
+  const [ocultarTeste, setOcultarTeste] = useState(true)
 
   // Buscar usuários do Supabase
   const loadUsers = useCallback(async () => {
@@ -717,8 +720,52 @@ export function AdminUsers() {
   }
 
   // Filtrar e ordenar usuários
+  // Handler para aprovação em lote
+  const handleAprovarLote = async () => {
+    if (selectedUsers.length === 0) {
+      toast.error('Selecione pelo menos um usuário')
+      return
+    }
+
+    setBatchLoading(true)
+    const resultado = await aprovarLote(selectedUsers)
+
+    if (resultado?.success) {
+      toast.success(`${resultado.aprovados} usuário(s) aprovado(s)!`)
+      if (resultado.ficaram_de_fora > 0) {
+        toast.info(`${resultado.ficaram_de_fora} ficaram de fora por falta de vagas`)
+      }
+      setSelectedUsers([])
+      loadUsers()
+    } else {
+      toast.error(resultado?.error || 'Erro ao aprovar em lote')
+    }
+    setBatchLoading(false)
+  }
+
+  // Selecionar/deselecionar usuário
+  const toggleSelectUser = (userId) => {
+    setSelectedUsers(prev =>
+      prev.includes(userId)
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    )
+  }
+
+  // Selecionar todos em análise
+  const selectAllEmAnalise = () => {
+    const emAnaliseIds = filteredUsers
+      .filter(u => u.status_acesso === 'em_analise')
+      .map(u => u.id)
+    setSelectedUsers(emAnaliseIds)
+  }
+
+  // Filtrar e ordenar usuários
   const filteredUsers = users
     .filter(user => {
+      // Filtro de teste/equipe
+      if (ocultarTeste && user.is_teste) return false
+      // Filtro de status
       if (statusFilter === 'todos') return true
       if (statusFilter === 'em_analise') return user.status_acesso === 'em_analise'
       if (statusFilter === 'em_espera') return user.status_acesso === 'em_espera'
@@ -732,6 +779,9 @@ export function AdminUsers() {
       const bOrder = order[b.status_acesso] ?? 2
       return aOrder - bOrder
     })
+
+  // Contagem de selecionados em análise
+  const emAnaliseCount = filteredUsers.filter(u => u.status_acesso === 'em_analise').length
 
   return (
     <AdminLayout>
@@ -751,7 +801,7 @@ export function AdminUsers() {
             placeholder="Buscar por nome ou email..."
             className="w-full px-4 py-3 rounded-xl bg-white border border-[#ddd1d0]/50 text-[#1f1f1f] placeholder:text-[#a39695] focus:outline-none focus:border-[#a27937]/50 focus:ring-2 focus:ring-[#a27937]/20 transition-all font-heading"
           />
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {[
               { value: 'todos', label: 'Todos' },
               { value: 'em_analise', label: 'Em análise' },
@@ -770,7 +820,49 @@ export function AdminUsers() {
                 {filter.label}
               </button>
             ))}
+            <div className="flex-1" />
+            <label className="flex items-center gap-2 text-xs font-heading text-graphite/70 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={ocultarTeste}
+                onChange={(e) => setOcultarTeste(e.target.checked)}
+                className="w-4 h-4 rounded border-dusty-rose/30"
+              />
+              Ocultar teste/equipe
+            </label>
           </div>
+
+          {/* Ações em lote */}
+          {emAnaliseCount > 0 && (
+            <div className="flex flex-wrap items-center gap-2 p-3 bg-blue-50 rounded-xl border border-blue-200">
+              <button
+                onClick={selectAllEmAnalise}
+                className="px-3 py-1.5 rounded-lg text-xs font-heading font-medium bg-white border border-blue-300 text-blue-700 hover:bg-blue-100"
+              >
+                Selecionar {emAnaliseCount} em análise
+              </button>
+              {selectedUsers.length > 0 && (
+                <>
+                  <span className="text-xs text-blue-700 font-heading">
+                    {selectedUsers.length} selecionado(s)
+                  </span>
+                  <button
+                    onClick={handleAprovarLote}
+                    disabled={batchLoading}
+                    className="px-4 py-1.5 rounded-lg text-xs font-heading font-semibold bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
+                  >
+                    {batchLoading ? 'Aprovando...' : 'Aprovar selecionados (Free)'}
+                  </button>
+                  <button
+                    onClick={() => setSelectedUsers([])}
+                    className="px-3 py-1.5 rounded-lg text-xs font-heading text-graphite/60 hover:text-graphite"
+                  >
+                    Limpar
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Users Table */}
@@ -789,10 +881,14 @@ export function AdminUsers() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-dusty-rose/20 bg-ice-white">
+                    <th className="w-10 px-2 py-3">
+                      <span className="sr-only">Selecionar</span>
+                    </th>
                     <th className="text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Cliente</th>
                     <th className="hidden sm:table-cell text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Classe</th>
                     <th className="text-right text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Pontos</th>
-                    <th className="hidden md:table-cell text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Desde</th>
+                    <th className="hidden md:table-cell text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Origem</th>
+                    <th className="hidden lg:table-cell text-left text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Desde</th>
                     <th className="text-right text-xs font-heading font-semibold text-graphite/70 uppercase tracking-wide px-4 py-3">Ações</th>
                   </tr>
                 </thead>
@@ -807,8 +903,18 @@ export function AdminUsers() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: index * 0.03 }}
-                      className="hover:bg-ice-white/50 transition-colors"
+                      className={`hover:bg-ice-white/50 transition-colors ${selectedUsers.includes(user.id) ? 'bg-blue-50' : ''}`}
                     >
+                      <td className="px-2 py-4">
+                        {needsApproval && (
+                          <input
+                            type="checkbox"
+                            checked={selectedUsers.includes(user.id)}
+                            onChange={() => toggleSelectUser(user.id)}
+                            className="w-4 h-4 rounded border-dusty-rose/30 text-antique-gold focus:ring-antique-gold/50"
+                          />
+                        )}
+                      </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
                           <div>
@@ -843,6 +949,18 @@ export function AdminUsers() {
                         </span>
                       </td>
                       <td className="hidden md:table-cell px-4 py-4">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-heading ${
+                          user.origem_acesso === 'link_lista' ? 'bg-purple-100 text-purple-700' :
+                          user.origem_acesso === 'convite' ? 'bg-green-100 text-green-700' :
+                          user.origem_acesso === 'admin' ? 'bg-amber-100 text-amber-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {user.origem_acesso === 'link_lista' ? 'Link' :
+                           user.origem_acesso === 'convite' ? 'Convite' :
+                           user.origem_acesso === 'admin' ? 'Admin' : 'Site'}
+                        </span>
+                      </td>
+                      <td className="hidden lg:table-cell px-4 py-4">
                         <span className="text-sm text-graphite/70 font-heading">{user.joinDate}</span>
                       </td>
                       <td className="px-4 py-4">

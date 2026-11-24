@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { getReferrerByCode } from '@/services/referralService'
 import { validateInviteCode, acceptInvite } from '@/services/inviteService'
+import { aprovarPorLink, getCodigoEntrada, limparCodigoEntrada } from '@/services/acessoService'
 import { useEligibility, useCPFValidation } from '@/hooks/useEligibility'
 import { usePreLaunch } from '@/hooks/usePreLaunch'
 import { checkAvailability } from '@/services/slotsService'
@@ -205,7 +206,7 @@ export function Cadastro() {
       return
     }
 
-    // Se não verificou elegibilidade ainda e não tem convite, verifica agora
+    // Verificar CPF duplicado (mantém esta verificação)
     if (!eligibilityChecked && !inviteInfo) {
       const result = await checkCPF(cpf)
       setEligibilityChecked(true)
@@ -214,28 +215,27 @@ export function Cadastro() {
         toast.error('Este CPF já está cadastrado')
         return
       }
+      // Nota: não bloqueia mais por elegibilidade - admin decide após cadastro
+    }
 
-      // Se não é elegível e não tem convite, bloqueia
-      if (!result.elegivel && !inviteInfo) {
-        return // A mensagem é exibida no UI
+    // Apenas verificar CPF duplicado se já checou
+    if (eligibilityChecked) {
+      const result = await checkCPF(cpf)
+      if (result.cpf_exists) {
+        toast.error('Este CPF já está cadastrado')
+        return
       }
-    }
-
-    // Se não é elegível e não tem convite, bloqueia
-    if (!isEligible && !inviteInfo && eligibilityChecked) {
-      toast.error('Acesso restrito a clientes Me,up ou convidados')
-      return
-    }
-
-    // Verifica vagas
-    if (!inviteInfo && !slotsAvailable) {
-      toast.error('Vagas esgotadas no momento')
-      return
     }
 
     setLoading(true)
 
     try {
+      // Determinar origem do cadastro
+      const codigoEntrada = getCodigoEntrada()
+      let origemCadastro = 'site'
+      if (inviteInfo) origemCadastro = 'convite'
+      else if (codigoEntrada) origemCadastro = 'link_lista'
+
       // Criar usuário
       const { data, error } = await signUp({
         email,
@@ -245,7 +245,7 @@ export function Cadastro() {
         whatsapp: whatsapp.replace(/\D/g, ''),
         referrerId: referrerInfo?.id || null,
         acceptedTerms: true,
-        origemCadastro: inviteInfo ? 'convite' : 'direto'
+        origemCadastro
       })
 
       if (error) {
@@ -257,10 +257,34 @@ export function Cadastro() {
       // Se foi via convite, aceita o convite
       if (inviteInfo && data?.user) {
         await acceptInvite(inviteInfo.convite_id, data.user.id)
-      }
+        toast.success('Conta criada com sucesso!')
+        navigate('/dashboard')
+      } else if (data?.user) {
+        // Verificar se veio pelo link de entrada automática
+        const codigoEntrada = getCodigoEntrada()
 
-      toast.success('Conta criada com sucesso!')
-      navigate('/dashboard')
+        if (codigoEntrada) {
+          // Tentar aprovação automática
+          const resultado = await aprovarPorLink(data.user.id, codigoEntrada)
+          limparCodigoEntrada()
+
+          if (resultado?.success && resultado?.status === 'aprovado') {
+            toast.success('Bem-vindo ao Me,up Club!')
+            navigate('/dashboard')
+          } else if (resultado?.status === 'em_espera') {
+            toast.success(resultado.message || 'Você está na lista de espera.')
+            navigate('/dashboard')
+          } else {
+            // Código inválido/expirado - fluxo normal
+            toast.success('Conta criada! Aguarde a aprovação.')
+            navigate('/dashboard')
+          }
+        } else {
+          // Sem código: vai para análise
+          toast.success('Conta criada! Aguarde a aprovação.')
+          navigate('/dashboard')
+        }
+      }
     } catch (err) {
       toast.error('Erro ao criar conta')
       setLoading(false)
@@ -459,18 +483,9 @@ export function Cadastro() {
                         ✓ Cliente Me,up identificado! Bem-vindo de volta.
                       </p>
                     ) : (
-                      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-400/30">
-                        <p className="text-xs text-amber-200">
-                          CPF não encontrado na base de clientes.
-                        </p>
-                        <p className="text-xs text-amber-200/70 mt-1">
-                          O Me,up Club é exclusivo para clientes. Você pode{' '}
-                          <Link to="/" className="text-antique-gold underline">
-                            registrar interesse
-                          </Link>{' '}
-                          ou usar um convite de fundador.
-                        </p>
-                      </div>
+                      <p className="text-xs text-ice-white/60">
+                        Sua solicitação será analisada pela nossa equipe.
+                      </p>
                     )}
                   </motion.div>
                 )}
@@ -603,7 +618,7 @@ export function Cadastro() {
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               type="submit"
-              disabled={loading || (!isEligible && !inviteInfo && eligibilityChecked)}
+              disabled={loading}
               className="w-full py-3.5 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold disabled:opacity-50 transition-all shadow-lg shadow-antique-gold/20 hover:bg-accent-light mt-2"
             >
               {loading ? 'Criando conta...' : 'Criar conta'}

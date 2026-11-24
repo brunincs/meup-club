@@ -20,6 +20,7 @@ const Plans = lazy(() => import('@/pages/Plans').then(m => ({ default: m.Plans }
 const EsqueciSenha = lazy(() => import('@/pages/EsqueciSenha').then(m => ({ default: m.EsqueciSenha })))
 const RedefinirSenha = lazy(() => import('@/pages/RedefinirSenha').then(m => ({ default: m.RedefinirSenha })))
 const InviteSignup = lazy(() => import('@/pages/InviteSignup'))
+const Entrar = lazy(() => import('@/pages/Entrar'))
 
 // Lazy load - Páginas protegidas (usuário logado)
 const Rewards = lazy(() => import('@/pages/Rewards').then(m => ({ default: m.Rewards })))
@@ -173,6 +174,14 @@ function App() {
             element={
               <RootLayout>
                 <EuQuero />
+              </RootLayout>
+            }
+          />
+          <Route
+            path="/entrar"
+            element={
+              <RootLayout>
+                <Entrar />
               </RootLayout>
             }
           />

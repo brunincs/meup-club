@@ -97,3 +97,83 @@ export function abrirWhatsAppAprovacao(phone, name) {
   )
   window.open(`https://wa.me/55${phone?.replace(/\D/g, '')}?text=${msg}`, '_blank')
 }
+
+/**
+ * Tenta aprovar automaticamente via código de entrada
+ * Usado após cadastro quando usuário veio pelo link /entrar?c=CODIGO
+ */
+export async function aprovarPorLink(userId, codigo) {
+  try {
+    const { data, error } = await supabase.rpc('aprovar_por_link', {
+      p_user_id: userId,
+      p_codigo: codigo
+    })
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Erro ao aprovar por link:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Busca código de entrada do localStorage
+ * Retorna null se não existir ou estiver expirado (> 1 hora)
+ */
+export function getCodigoEntrada() {
+  const codigo = localStorage.getItem('meup_entrada_codigo')
+  const timestamp = localStorage.getItem('meup_entrada_timestamp')
+
+  if (!codigo || !timestamp) return null
+
+  // Expira após 1 hora
+  const uma_hora = 60 * 60 * 1000
+  if (Date.now() - parseInt(timestamp) > uma_hora) {
+    limparCodigoEntrada()
+    return null
+  }
+
+  return codigo
+}
+
+/**
+ * Limpa código de entrada do localStorage
+ */
+export function limparCodigoEntrada() {
+  localStorage.removeItem('meup_entrada_codigo')
+  localStorage.removeItem('meup_entrada_timestamp')
+}
+
+/**
+ * Busca métricas do clube (fonte única da verdade)
+ * Requer admin
+ */
+export async function getMetricasClube() {
+  try {
+    const { data, error } = await supabase.rpc('metricas_clube')
+
+    if (error) throw error
+    return { success: true, metricas: data }
+  } catch (error) {
+    console.error('Erro ao buscar métricas:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Aprovar usuários em lote
+ */
+export async function aprovarLote(userIds) {
+  try {
+    const { data, error } = await supabase.rpc('admin_aprovar_lote', {
+      p_user_ids: userIds
+    })
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Erro ao aprovar em lote:', error)
+    return { success: false, error: error.message }
+  }
+}
