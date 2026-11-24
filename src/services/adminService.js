@@ -42,7 +42,7 @@ function sanitizeSearchInput(input) {
 export async function fetchAllUsers(searchQuery = '') {
   let query = supabase
     .from('profiles')
-    .select('id, name, email, points, role, created_at')
+    .select('id, name, email, phone, points, role, status_acesso, created_at')
     .order('created_at', { ascending: false })
 
   const sanitizedQuery = sanitizeSearchInput(searchQuery)

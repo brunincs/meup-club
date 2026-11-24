@@ -137,6 +137,7 @@ const menuGroups = [
   {
     title: 'CLIENTES',
     items: [
+      { path: '/admin/acesso', label: 'Aprovações', icon: 'users', badgeKey: 'aprovacoes' },
       { path: '/admin/usuarios', label: 'Clientes', icon: 'users' },
       { path: '/admin/assinaturas', label: 'Assinaturas', icon: 'crown' },
       { path: '/admin/fundadores', label: 'Fundadores', icon: 'founders' }
@@ -422,6 +423,7 @@ export function AdminLayout({ children, title = 'Admin', subtitle = '' }) {
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [pendingCounts, setPendingCounts] = useState({
+    aprovacoes: 0,
     emissoes: 0,
     indicacoes: 0,
     resgates: 0
@@ -431,13 +433,15 @@ export function AdminLayout({ children, title = 'Admin', subtitle = '' }) {
   useEffect(() => {
     async function fetchPendingCounts() {
       try {
-        const [emissoes, indicacoes, resgates] = await Promise.all([
+        const [aprovacoes, emissoes, indicacoes, resgates] = await Promise.all([
+          supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('status_acesso', 'em_analise'),
           supabase.from('emissoes').select('id', { count: 'exact', head: true }).eq('status', 'pendente'),
           supabase.from('referrals').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
           supabase.from('resgate_solicitacoes').select('id', { count: 'exact', head: true }).in('status', ['pendente', 'em_preparacao'])
         ])
 
         setPendingCounts({
+          aprovacoes: aprovacoes.count || 0,
           emissoes: emissoes.count || 0,
           indicacoes: indicacoes.count || 0,
           resgates: resgates.count || 0

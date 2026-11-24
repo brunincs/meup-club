@@ -8,17 +8,19 @@ import {
   adminGetWaitlistStats
 } from '@/services/waitlistService'
 import { getSlotsStatus } from '@/services/slotsService'
+import { APP_URL } from '@/services/acessoService'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
 /**
  * AdminAcesso - Gestão do modelo exclusivo
- * 5 Abas: Lista de Espera, Base de Clientes, Vagas, Convites, Configurações
+ * 6 Abas: Solicitações, Lista de Espera, Base de Clientes, Vagas, Convites, Configurações
  */
 export default function AdminAcesso() {
-  const [activeTab, setActiveTab] = useState('waitlist')
+  const [activeTab, setActiveTab] = useState('solicitacoes')
 
   const tabs = [
+    { id: 'solicitacoes', label: 'Solicitações' },
     { id: 'waitlist', label: 'Lista de Espera' },
     { id: 'clients', label: 'Base de Clientes' },
     { id: 'slots', label: 'Vagas' },
@@ -48,12 +50,293 @@ export default function AdminAcesso() {
       </div>
 
       {/* Tab Content */}
+      {activeTab === 'solicitacoes' && <SolicitacoesTab />}
       {activeTab === 'waitlist' && <WaitlistTab />}
       {activeTab === 'clients' && <ClientsTab />}
       {activeTab === 'slots' && <SlotsTab />}
       {activeTab === 'invites' && <InvitesTab />}
       {activeTab === 'config' && <ConfigTab />}
     </AdminLayout>
+  )
+}
+
+// ============================================
+// ABA: SOLICITAÇÕES DE ACESSO
+// ============================================
+function SolicitacoesTab() {
+  const [solicitacoes, setSolicitacoes] = useState([])
+  const [vagas, setVagas] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(null)
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      // Buscar solicitações pendentes
+      const { data: solic, error: solicError } = await supabase
+        .from('profiles')
+        .select('id, name, email, phone, cpf, status_acesso, solicitacao_acesso_em, created_at, convidado_por')
+        .in('status_acesso', ['em_analise', 'em_espera'])
+        .order('solicitacao_acesso_em', { ascending: true })
+
+      if (solicError) throw solicError
+
+      // Calcular etiquetas para cada solicitação
+      const solicComEtiquetas = await Promise.all(
+        (solic || []).map(async (s) => {
+          const { data: etiqueta } = await supabase.rpc('calcular_etiqueta_acesso', { p_user_id: s.id })
+          const horasAguardando = s.solicitacao_acesso_em
+            ? (Date.now() - new Date(s.solicitacao_acesso_em).getTime()) / (1000 * 60 * 60)
+            : 0
+          return {
+            ...s,
+            etiqueta: etiqueta || 'nao_cliente',
+            horas_aguardando: horasAguardando,
+            urgente: horasAguardando > 24
+          }
+        })
+      )
+
+      setSolicitacoes(solicComEtiquetas)
+
+      // Buscar contagem de vagas
+      const { data: vagasData } = await supabase.rpc('contar_vagas')
+      setVagas(vagasData)
+    } catch (err) {
+      console.error('Erro ao carregar solicitações:', err)
+      toast.error('Erro ao carregar dados')
+    }
+    setLoading(false)
+  }
+
+  const handleAprovar = async (userId, plano = 'free', criarAssinatura = false) => {
+    setActionLoading(userId)
+    try {
+      const { data, error } = await supabase.rpc('admin_aprovar_usuario', {
+        p_user_id: userId,
+        p_plano: plano,
+        p_criar_assinatura: criarAssinatura
+      })
+
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Erro ao aprovar')
+
+      toast.success('Usuário aprovado!')
+      loadData()
+    } catch (err) {
+      toast.error(err.message || 'Erro ao aprovar')
+    }
+    setActionLoading(null)
+  }
+
+  const handleRecusar = async (userId) => {
+    const motivo = prompt('Motivo da recusa (opcional):')
+    setActionLoading(userId)
+    try {
+      const { data, error } = await supabase.rpc('admin_recusar_usuario', {
+        p_user_id: userId,
+        p_motivo: motivo || null
+      })
+
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Erro ao recusar')
+
+      toast.success('Usuário recusado')
+      loadData()
+    } catch (err) {
+      toast.error(err.message || 'Erro ao recusar')
+    }
+    setActionLoading(null)
+  }
+
+  const handleEspera = async (userId) => {
+    setActionLoading(userId)
+    try {
+      const { data, error } = await supabase.rpc('admin_espera_usuario', {
+        p_user_id: userId,
+        p_motivo: null
+      })
+
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Erro')
+
+      toast.success('Colocado em espera')
+      loadData()
+    } catch (err) {
+      toast.error(err.message || 'Erro')
+    }
+    setActionLoading(null)
+  }
+
+  const abrirWhatsApp = (phone, name) => {
+    const msg = encodeURIComponent(
+      `Olá${name ? ' ' + name.split(' ')[0] : ''}! Sua conta no Me,up Club foi aprovada! 🎉\n\nAcesse: ${APP_URL}/login`
+    )
+    window.open(`https://wa.me/55${phone?.replace(/\D/g, '')}?text=${msg}`, '_blank')
+  }
+
+  const getEtiquetaStyle = (etiqueta) => {
+    if (etiqueta?.startsWith('convidado_de:')) {
+      return { bg: 'bg-purple-100', text: 'text-purple-700', label: etiqueta.replace('convidado_de:', 'Convidado de ') }
+    }
+    switch (etiqueta) {
+      case 'cliente_emissao':
+        return { bg: 'bg-green-100', text: 'text-green-700', label: 'Cliente com emissão' }
+      case 'cliente_base':
+        return { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Cliente da base' }
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Não cliente' }
+    }
+  }
+
+  return (
+    <div>
+      {/* Contadores de vagas */}
+      {vagas && (
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="p-4 rounded-xl bg-green-50 border border-green-200">
+            <p className="text-xs font-medium text-green-600 mb-1">Free</p>
+            <p className="text-2xl font-bold text-green-700">
+              {vagas.free?.ocupadas || 0}/{vagas.free?.total || 70}
+            </p>
+            <p className="text-xs text-green-600">{vagas.free?.disponiveis || 0} disponíveis</p>
+          </div>
+          <div className="p-4 rounded-xl bg-purple-50 border border-purple-200">
+            <p className="text-xs font-medium text-purple-600 mb-1">Prime</p>
+            <p className="text-2xl font-bold text-purple-700">
+              {vagas.prime?.ocupadas || 0}/{vagas.prime?.total || 30}
+            </p>
+            <p className="text-xs text-purple-600">{vagas.prime?.disponiveis || 0} disponíveis</p>
+          </div>
+          <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
+            <p className="text-xs font-medium text-blue-600 mb-1">Convites</p>
+            <p className="text-2xl font-bold text-blue-700">
+              {vagas.convites?.usados || 0}/{vagas.convites?.total || 60}
+            </p>
+            <p className="text-xs text-blue-600">{vagas.convites?.disponiveis || 0} disponíveis</p>
+          </div>
+        </div>
+      )}
+
+      {/* Alerta de pendentes */}
+      {solicitacoes.filter(s => s.urgente).length > 0 && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
+          <span className="text-red-500">⚠️</span>
+          <span className="text-sm text-red-700">
+            {solicitacoes.filter(s => s.urgente).length} solicitação(ões) aguardando há mais de 24h
+          </span>
+        </div>
+      )}
+
+      {/* Lista */}
+      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Solicitante</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Etiqueta</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aguardando</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                  Carregando...
+                </td>
+              </tr>
+            ) : solicitacoes.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                  Nenhuma solicitação pendente
+                </td>
+              </tr>
+            ) : (
+              solicitacoes.map(s => {
+                const etiquetaStyle = getEtiquetaStyle(s.etiqueta)
+                const isLoading = actionLoading === s.id
+
+                return (
+                  <tr key={s.id} className={`hover:bg-gray-50 ${s.urgente ? 'bg-red-50/50' : ''}`}>
+                    <td className="px-4 py-3">
+                      <div>
+                        <p className="font-medium text-sm">{s.name || 'Sem nome'}</p>
+                        <p className="text-xs text-gray-500">{s.email}</p>
+                        {s.phone && <p className="text-xs text-gray-400">{s.phone}</p>}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${etiquetaStyle.bg} ${etiquetaStyle.text}`}>
+                        {etiquetaStyle.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        s.status_acesso === 'em_espera' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {s.status_acesso === 'em_espera' ? 'Em espera' : 'Em análise'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-sm ${s.urgente ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                        {Math.floor(s.horas_aguardando)}h
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        <button
+                          onClick={() => handleAprovar(s.id, 'free')}
+                          disabled={isLoading}
+                          className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+                        >
+                          {isLoading ? '...' : 'Free'}
+                        </button>
+                        <button
+                          onClick={() => handleAprovar(s.id, 'prime', true)}
+                          disabled={isLoading}
+                          className="px-2 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50"
+                        >
+                          Prime
+                        </button>
+                        <button
+                          onClick={() => handleEspera(s.id)}
+                          disabled={isLoading}
+                          className="px-2 py-1 text-xs bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50"
+                        >
+                          Espera
+                        </button>
+                        <button
+                          onClick={() => handleRecusar(s.id)}
+                          disabled={isLoading}
+                          className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                        >
+                          Recusar
+                        </button>
+                        {s.phone && (
+                          <button
+                            onClick={() => abrirWhatsApp(s.phone, s.name)}
+                            className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                            title="Enviar boas-vindas no WhatsApp"
+                          >
+                            📱
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }
 

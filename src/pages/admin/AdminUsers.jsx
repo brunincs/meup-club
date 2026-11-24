@@ -5,6 +5,7 @@ import { CreditAdjustModal } from '@/components/admin/CreditAdjustModal'
 import { fetchAllUsers, creditPoints, fetchUserTransactions, fetchClientProfile, revealClientCpf } from '@/services/adminService'
 import { fetchSolicitacoesCliente } from '@/services/experienciasService'
 import { ativarPrime, cancelarPrime, fetchSubscriptionStatus, formatCiclo, fetchPlanosConfig } from '@/services/subscriptionService'
+import { aprovarUsuario, colocarEmEspera, recusarUsuario, abrirWhatsAppAprovacao } from '@/services/acessoService'
 import { formatPrice } from '@/config/contact'
 import { levels } from '@/services/pointsSystem'
 import { format } from '@/services/copy'
@@ -623,11 +624,14 @@ export function AdminUsers() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('todos')
   const [adjustingUser, setAdjustingUser] = useState(null)
   const [viewingTransactions, setViewingTransactions] = useState(null)
   const [viewingTasks, setViewingTasks] = useState(null)
   const [viewingProfile, setViewingProfile] = useState(null)
   const [managingPrime, setManagingPrime] = useState(null)
+  const [approvalMenuOpen, setApprovalMenuOpen] = useState(null)
+  const [actionLoading, setActionLoading] = useState(null)
 
   // Buscar usuários do Supabase
   const loadUsers = useCallback(async () => {
@@ -671,6 +675,64 @@ export function AdminUsers() {
     }
   }
 
+  // Handlers de aprovação
+  const handleAprovar = async (user, plano, criarAssinatura = false) => {
+    setActionLoading(user.id)
+    setApprovalMenuOpen(null)
+    const result = await aprovarUsuario(user.id, plano, criarAssinatura)
+    if (result.success) {
+      toast.success(`${user.name} aprovado como ${plano === 'prime' ? 'Prime Fundador' : 'Free'}!`)
+      loadUsers()
+    } else {
+      toast.error(result.error || 'Erro ao aprovar')
+    }
+    setActionLoading(null)
+  }
+
+  const handleEspera = async (user) => {
+    setActionLoading(user.id)
+    setApprovalMenuOpen(null)
+    const result = await colocarEmEspera(user.id)
+    if (result.success) {
+      toast.success(`${user.name} colocado em espera`)
+      loadUsers()
+    } else {
+      toast.error(result.error || 'Erro')
+    }
+    setActionLoading(null)
+  }
+
+  const handleRecusar = async (user) => {
+    const motivo = prompt('Motivo da recusa (opcional):')
+    setActionLoading(user.id)
+    setApprovalMenuOpen(null)
+    const result = await recusarUsuario(user.id, motivo)
+    if (result.success) {
+      toast.success(`${user.name} recusado`)
+      loadUsers()
+    } else {
+      toast.error(result.error || 'Erro ao recusar')
+    }
+    setActionLoading(null)
+  }
+
+  // Filtrar e ordenar usuários
+  const filteredUsers = users
+    .filter(user => {
+      if (statusFilter === 'todos') return true
+      if (statusFilter === 'em_analise') return user.status_acesso === 'em_analise'
+      if (statusFilter === 'em_espera') return user.status_acesso === 'em_espera'
+      if (statusFilter === 'aprovados') return user.status_acesso === 'aprovado' || !user.status_acesso
+      return true
+    })
+    .sort((a, b) => {
+      // em_analise primeiro, depois em_espera, depois resto
+      const order = { 'em_analise': 0, 'em_espera': 1, 'aprovado': 2 }
+      const aOrder = order[a.status_acesso] ?? 2
+      const bOrder = order[b.status_acesso] ?? 2
+      return aOrder - bOrder
+    })
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -680,8 +742,8 @@ export function AdminUsers() {
           subtitle={`${users.length} cliente${users.length !== 1 ? 's' : ''} cadastrado${users.length !== 1 ? 's' : ''}`}
         />
 
-        {/* Search */}
-        <div>
+        {/* Search + Filters */}
+        <div className="space-y-3">
           <input
             type="text"
             value={searchQuery}
@@ -689,6 +751,26 @@ export function AdminUsers() {
             placeholder="Buscar por nome ou email..."
             className="w-full px-4 py-3 rounded-xl bg-white border border-[#ddd1d0]/50 text-[#1f1f1f] placeholder:text-[#a39695] focus:outline-none focus:border-[#a27937]/50 focus:ring-2 focus:ring-[#a27937]/20 transition-all font-heading"
           />
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'todos', label: 'Todos' },
+              { value: 'em_analise', label: 'Em análise' },
+              { value: 'em_espera', label: 'Em espera' },
+              { value: 'aprovados', label: 'Aprovados' }
+            ].map(filter => (
+              <button
+                key={filter.value}
+                onClick={() => setStatusFilter(filter.value)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-heading font-medium transition-colors ${
+                  statusFilter === filter.value
+                    ? 'bg-deep-purple text-white'
+                    : 'bg-white border border-dusty-rose/30 text-graphite/70 hover:bg-dusty-rose/10'
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Users Table */}
@@ -715,7 +797,11 @@ export function AdminUsers() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-dusty-rose/10">
-                  {users.map((user, index) => (
+                  {filteredUsers.map((user, index) => {
+                    const needsApproval = user.status_acesso === 'em_analise' || user.status_acesso === 'em_espera'
+                    const isLoading = actionLoading === user.id
+
+                    return (
                     <motion.tr
                       key={user.id}
                       initial={{ opacity: 0 }}
@@ -724,9 +810,26 @@ export function AdminUsers() {
                       className="hover:bg-ice-white/50 transition-colors"
                     >
                       <td className="px-4 py-4">
-                        <div>
-                          <p className="text-sm font-heading font-medium text-graphite">{user.name}</p>
-                          <p className="text-xs text-graphite/60">{user.email}</p>
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <p className="text-sm font-heading font-medium text-graphite">{user.name}</p>
+                            <p className="text-xs text-graphite/60">{user.email}</p>
+                          </div>
+                          {user.status_acesso === 'em_analise' && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-heading font-medium bg-blue-100 text-blue-700">
+                              Em análise
+                            </span>
+                          )}
+                          {user.status_acesso === 'em_espera' && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-heading font-medium bg-amber-100 text-amber-700">
+                              Em espera
+                            </span>
+                          )}
+                          {user.status_acesso === 'recusado' && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-heading font-medium bg-gray-100 text-gray-600">
+                              Recusado
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="hidden sm:table-cell px-4 py-4">
@@ -744,12 +847,64 @@ export function AdminUsers() {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-1.5 sm:gap-2">
-                          <button
-                            onClick={() => setAdjustingUser(user)}
-                            className="px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-semibold bg-antique-gold text-deep-purple hover:bg-accent-light transition-colors shadow-sm whitespace-nowrap"
-                          >
-                            Creditar
-                          </button>
+                          {needsApproval ? (
+                            <div className="relative">
+                              <button
+                                onClick={() => setApprovalMenuOpen(approvalMenuOpen === user.id ? null : user.id)}
+                                disabled={isLoading}
+                                className="px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-semibold bg-antique-gold text-deep-purple hover:bg-accent-light transition-colors shadow-sm whitespace-nowrap disabled:opacity-50"
+                              >
+                                {isLoading ? '...' : 'Aprovar ▾'}
+                              </button>
+                              {approvalMenuOpen === user.id && (
+                                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-dusty-rose/20 py-1 z-20">
+                                  <button
+                                    onClick={() => handleAprovar(user, 'free')}
+                                    className="w-full px-4 py-2 text-left text-sm font-heading hover:bg-green-50 text-green-700"
+                                  >
+                                    Aprovar Free
+                                  </button>
+                                  <button
+                                    onClick={() => handleAprovar(user, 'prime', true)}
+                                    className="w-full px-4 py-2 text-left text-sm font-heading hover:bg-purple-50 text-purple-700"
+                                  >
+                                    Aprovar Prime Fundador
+                                  </button>
+                                  <hr className="my-1 border-dusty-rose/20" />
+                                  <button
+                                    onClick={() => handleEspera(user)}
+                                    className="w-full px-4 py-2 text-left text-sm font-heading hover:bg-amber-50 text-amber-700"
+                                  >
+                                    Colocar em espera
+                                  </button>
+                                  <button
+                                    onClick={() => handleRecusar(user)}
+                                    className="w-full px-4 py-2 text-left text-sm font-heading hover:bg-red-50 text-red-600"
+                                  >
+                                    Recusar
+                                  </button>
+                                  {user.phone && (
+                                    <>
+                                      <hr className="my-1 border-dusty-rose/20" />
+                                      <button
+                                        onClick={() => { abrirWhatsAppAprovacao(user.phone, user.name); setApprovalMenuOpen(null) }}
+                                        className="w-full px-4 py-2 text-left text-sm font-heading hover:bg-green-50 text-green-600"
+                                      >
+                                        📱 WhatsApp
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setAdjustingUser(user)}
+                              className="px-4 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-semibold bg-antique-gold text-deep-purple hover:bg-accent-light transition-colors shadow-sm whitespace-nowrap"
+                            >
+                              Creditar
+                            </button>
+                          )}
                           <div className="flex gap-1.5 sm:gap-2">
                             <button
                               onClick={() => setManagingPrime(user)}
@@ -779,16 +934,17 @@ export function AdminUsers() {
                         </div>
                       </td>
                     </motion.tr>
-                  ))}
+                  )})}
+
                 </tbody>
               </table>
             </div>
           )}
 
-          {!loading && users.length === 0 && (
+          {!loading && filteredUsers.length === 0 && (
             <div className="p-8 text-center">
               <p className="text-sm text-graphite/70 font-heading">
-                {searchQuery ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado ainda'}
+                {searchQuery || statusFilter !== 'todos' ? 'Nenhum cliente encontrado com esses filtros' : 'Nenhum cliente cadastrado ainda'}
               </p>
             </div>
           )}
