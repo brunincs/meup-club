@@ -750,11 +750,11 @@ $$;
 -- 10. GRANT PERMISSIONS
 -- ══════════════════════════════════════════════════════════════════════════════
 
-GRANT EXECUTE ON FUNCTION public.get_config TO authenticated;
-GRANT EXECUTE ON FUNCTION public.aprovar_por_link TO authenticated;
-GRANT EXECUTE ON FUNCTION public.metricas_clube TO authenticated;
-GRANT EXECUTE ON FUNCTION public.admin_aprovar_lote TO authenticated;
-GRANT EXECUTE ON FUNCTION public.aceitar_convite TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_config(TEXT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.aprovar_por_link(UUID, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.metricas_clube() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.admin_aprovar_lote(UUID[]) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.aceitar_convite(TEXT, UUID) TO authenticated;
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- FIM DA MIGRATION 213
