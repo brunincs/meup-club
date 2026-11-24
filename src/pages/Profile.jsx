@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 import { useUserLevel } from '@/hooks/useUserLevel'
 import { usePWA } from '@/hooks/usePWA'
 import { DashboardHeader } from '@/components/dashboard'
@@ -305,6 +306,27 @@ function EditProfileForm({ profile, onSave, saving }) {
 
   const [showCPF, setShowCPF] = useState(false)
   const [errors, setErrors] = useState({})
+  const [birthDateLocked, setBirthDateLocked] = useState(false)
+  const [birthDateMessage, setBirthDateMessage] = useState('')
+
+  // Verificar se pode editar birth_date
+  useEffect(() => {
+    async function checkBirthDateEdit() {
+      if (!profile?.id) return
+      try {
+        const { data, error } = await supabase.rpc('can_edit_birth_date', { p_user_id: profile.id })
+        if (!error && data) {
+          setBirthDateLocked(!data.can_edit)
+          if (!data.can_edit) {
+            setBirthDateMessage(data.reason || 'Data já definida')
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao verificar edição de birth_date:', err)
+      }
+    }
+    checkBirthDateEdit()
+  }, [profile?.id])
 
   // Atualizar form quando profile mudar
   useEffect(() => {
@@ -432,13 +454,24 @@ function EditProfileForm({ profile, onSave, saving }) {
             <div>
               <label className="block text-xs text-[#32113f] font-medium mb-2">
                 Data de nascimento
+                {birthDateLocked && (
+                  <span className="ml-2 text-[10px] text-[#a39695] font-normal">
+                    (bloqueado)
+                  </span>
+                )}
               </label>
               <input
                 type="date"
                 value={form.birth_date}
-                onChange={(e) => handleChange('birth_date', e.target.value)}
-                className={`${inputClass} ${inputNormalClass}`}
+                onChange={(e) => !birthDateLocked && handleChange('birth_date', e.target.value)}
+                disabled={birthDateLocked}
+                className={`${inputClass} ${inputNormalClass} ${birthDateLocked ? 'bg-[#edf0f1] cursor-not-allowed opacity-70' : ''}`}
               />
+              {birthDateLocked && birthDateMessage && (
+                <p className="text-[10px] text-[#a39695] mt-1">
+                  {birthDateMessage}
+                </p>
+              )}
             </div>
 
             {/* Cidade */}

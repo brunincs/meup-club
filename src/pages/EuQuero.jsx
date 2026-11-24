@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { usePreLaunch, formatOpeningDate } from '@/hooks/usePreLaunch'
 import { CountdownTimer } from '@/components/landing-alternada/CountdownTimer'
@@ -127,7 +128,7 @@ export function EuQuero() {
                 </motion.div>
               )}
 
-              {/* Form Card */}
+              {/* CTA Card */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -135,15 +136,29 @@ export function EuQuero() {
                 className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 max-w-md mx-auto"
               >
                 <h2 className="font-display font-semibold text-ice-white text-xl mb-2">
-                  {isPreLaunch ? 'Garanta seu lugar' : 'Entre na lista de espera'}
+                  Crie sua conta e reserve seu lugar
                 </h2>
                 <p className="text-ice-white/60 text-sm mb-6">
-                  {isPreLaunch
-                    ? 'Registre seu interesse e seja avisado na abertura'
-                    : 'Registre seu interesse para a próxima abertura'
-                  }
+                  Sua solicitação será analisada pela nossa equipe.
+                  Respondemos em até 24h úteis.
                 </p>
 
+                {/* Botão primário: criar conta */}
+                <Link
+                  to="/cadastro"
+                  className="block w-full py-3.5 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold text-center shadow-lg shadow-antique-gold/20 hover:bg-accent-light transition-colors mb-4"
+                >
+                  Criar minha conta
+                </Link>
+
+                {/* Divisor */}
+                <div className="flex items-center gap-3 my-6">
+                  <div className="flex-1 h-px bg-white/10" />
+                  <span className="text-ice-white/40 text-xs">ou registre interesse</span>
+                  <div className="flex-1 h-px bg-white/10" />
+                </div>
+
+                {/* Waitlist como secundário */}
                 <WaitlistForm origin="pagina_eu_quero" />
               </motion.div>
 
