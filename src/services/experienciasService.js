@@ -59,21 +59,23 @@ export async function fetchExperiencias(includeInactive = false) {
 
 /**
  * Cria uma nova experiência (apenas admin)
- * Usa valor_reais e calcula pontos automaticamente
+ * Usa valor_referencia_reais, pontos_prime e pontos_free (catálogo v2)
  */
 export async function createExperiencia(experiencia) {
   try {
-    // Calcular pontos baseado em valor_reais (fator Free = 150)
-    const valorReais = experiencia.valor_reais || (experiencia.pontos / 150)
-    const pontos = experiencia.pontos || Math.round(valorReais * 150)
-
     const { data, error } = await supabase
       .from('experiencias')
       .insert([{
         nome: experiencia.nome,
         descricao: experiencia.descricao,
-        valor_reais: valorReais,
-        pontos: pontos,
+        // Campos v2 (fonte única)
+        valor_referencia_reais: experiencia.valor_referencia_reais || null,
+        pontos_prime: experiencia.pontos_prime || null,
+        pontos_free: experiencia.pontos_free || null,
+        tipo: experiencia.tipo || 'fixo',
+        // Compatibilidade com colunas antigas
+        pontos: experiencia.pontos_free || experiencia.pontos || null,
+        // Outros campos
         classe_minima: experiencia.classe_minima || 1,
         selo: experiencia.selo || null,
         imagem_url: experiencia.imagem_url || null,
@@ -96,20 +98,23 @@ export async function createExperiencia(experiencia) {
 
 /**
  * Atualiza uma experiência existente (apenas admin)
+ * Usa valor_referencia_reais, pontos_prime e pontos_free (catálogo v2)
  */
 export async function updateExperiencia(id, updates) {
   try {
-    // Calcular pontos baseado em valor_reais (fator Free = 150)
-    const valorReais = updates.valor_reais || (updates.pontos / 150)
-    const pontos = updates.pontos || Math.round(valorReais * 150)
-
     const { data, error } = await supabase
       .from('experiencias')
       .update({
         nome: updates.nome,
         descricao: updates.descricao,
-        valor_reais: valorReais,
-        pontos: pontos,
+        // Campos v2 (fonte única)
+        valor_referencia_reais: updates.valor_referencia_reais || null,
+        pontos_prime: updates.pontos_prime || null,
+        pontos_free: updates.pontos_free || null,
+        tipo: updates.tipo || 'fixo',
+        // Compatibilidade com colunas antigas
+        pontos: updates.pontos_free || updates.pontos || null,
+        // Outros campos
         classe_minima: updates.classe_minima,
         selo: updates.selo || null,
         imagem_url: updates.imagem_url,

@@ -19,18 +19,31 @@ const seloConfig = {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// CÁLCULO DE PONTOS (mesma lógica do SQL: calcular_pontos_experiencia)
+// ══════════════════════════════════════════════════════════════════════════════
+// Fatores oficiais (fonte: plano_config)
+const FATOR_PRIME = 125
+const FATOR_FREE = 150
+const ARREDONDAMENTO = 250
+
+// Calcula pontos arredondando para cima ao múltiplo de 250
+function calcularPontos(valorReais, fator) {
+  if (!valorReais || valorReais <= 0) return 0
+  const pontos = valorReais * fator
+  return Math.ceil(pontos / ARREDONDAMENTO) * ARREDONDAMENTO
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // MODAL DE CRIAR/EDITAR EXPERIÊNCIA
 // ══════════════════════════════════════════════════════════════════════════════
-// Fatores de conversão
-const FATOR_FREE = 150
-const FATOR_PRIME = 130
 
 function ExperienciaModal({ experiencia, onClose, onSave }) {
   const isEditing = !!experiencia?.id
   const [formData, setFormData] = useState({
     nome: experiencia?.nome || '',
     descricao: experiencia?.descricao || '',
-    valor_reais: experiencia?.valor_reais || (experiencia?.pontos ? Math.round(experiencia.pontos / FATOR_FREE) : ''),
+    valor_referencia_reais: experiencia?.valor_referencia_reais || '',
+    tipo: experiencia?.tipo || 'fixo',
     classe_minima: experiencia?.classe_minima || 1,
     selo: experiencia?.selo || '',
     imagem_url: experiencia?.imagem_url || '',
@@ -40,24 +53,46 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
   })
   const [saving, setSaving] = useState(false)
 
-  // Calcular pontos em tempo real
-  const valorReais = parseFloat(formData.valor_reais) || 0
-  const pontosFree = Math.round(valorReais * FATOR_FREE)
-  const pontosPrime = Math.round(valorReais * FATOR_PRIME)
+  // Ajuste manual de pontos (libera edição direta de Prime/Free)
+  const [ajusteManual, setAjusteManual] = useState(false)
+  const [pontosManual, setPontosManual] = useState({
+    prime: experiencia?.pontos_prime || '',
+    free: experiencia?.pontos_free || ''
+  })
+
+  // Calcular pontos em tempo real (com arredondamento correto)
+  const valorReais = parseFloat(formData.valor_referencia_reais) || 0
+  const pontosPrimeCalc = calcularPontos(valorReais, FATOR_PRIME)
+  const pontosFreeCalc = calcularPontos(valorReais, FATOR_FREE)
+
+  // Pontos finais (manual ou calculado)
+  const pontosPrime = ajusteManual ? (parseInt(pontosManual.prime) || 0) : pontosPrimeCalc
+  const pontosFree = ajusteManual ? (parseInt(pontosManual.free) || 0) : pontosFreeCalc
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!formData.nome || !formData.descricao || !formData.valor_reais) {
-      toast.error('Preencha todos os campos obrigatórios')
+    // Tipos sem valor obrigatório
+    const tipoSemValor = ['sob_consulta', 'privilegio'].includes(formData.tipo)
+
+    if (!formData.nome || !formData.descricao) {
+      toast.error('Preencha nome e descrição')
+      return
+    }
+
+    if (!tipoSemValor && !formData.valor_referencia_reais) {
+      toast.error('Preencha o valor de referência')
       return
     }
 
     setSaving(true)
     await onSave({
       ...formData,
-      valor_reais: parseFloat(formData.valor_reais),
-      pontos: pontosFree, // Manter compatibilidade
+      valor_referencia_reais: parseFloat(formData.valor_referencia_reais) || null,
+      pontos_prime: tipoSemValor ? null : pontosPrime,
+      pontos_free: tipoSemValor ? null : pontosFree,
+      // Compatibilidade com colunas antigas
+      pontos: tipoSemValor ? null : pontosFree,
       classe_minima: parseInt(formData.classe_minima),
       ordem: parseInt(formData.ordem) || 0,
       selo: formData.selo || null,
@@ -111,21 +146,36 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
             />
           </div>
 
-          {/* Valor em Reais e Classe */}
+          {/* Tipo da experiência */}
+          <div>
+            <CustomSelect
+              label="Tipo"
+              value={formData.tipo}
+              onChange={(val) => setFormData({ ...formData, tipo: val })}
+              options={[
+                { value: 'fixo', label: 'Fixo (preço definido)' },
+                { value: 'sob_consulta', label: 'Sob consulta' },
+                { value: 'em_breve', label: 'Em breve' },
+                { value: 'privilegio', label: 'Privilégio (sem pontos)' }
+              ]}
+              variant="light"
+            />
+          </div>
+
+          {/* Valor de referência e Classe */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-graphite/60 font-heading mb-1.5">
-                Valor em R$ <span className="text-red-500">*</span>
+                Valor de referência (R$) {!['sob_consulta', 'privilegio'].includes(formData.tipo) && <span className="text-red-500">*</span>}
               </label>
               <input
                 type="number"
                 step="0.01"
-                value={formData.valor_reais}
-                onChange={(e) => setFormData({ ...formData, valor_reais: e.target.value })}
-                placeholder="Ex: 100.00"
-                min="1"
+                value={formData.valor_referencia_reais}
+                onChange={(e) => setFormData({ ...formData, valor_referencia_reais: e.target.value })}
+                placeholder={['sob_consulta', 'privilegio'].includes(formData.tipo) ? 'Opcional' : 'Ex: 100.00'}
+                min="0"
                 className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
-                required
               />
             </div>
             <div>
@@ -143,19 +193,79 @@ function ExperienciaModal({ experiencia, onClose, onSave }) {
           </div>
 
           {/* Preview de preços calculados */}
-          {valorReais > 0 && (
-            <div className="p-4 rounded-xl bg-gradient-to-r from-gray-50 to-amber-50 border border-gray-200">
-              <p className="text-xs text-graphite/60 font-heading mb-2">Custo em pontos (calculado):</p>
+          {valorReais > 0 && !['sob_consulta', 'privilegio'].includes(formData.tipo) && (
+            <div className="p-4 rounded-xl bg-gradient-to-r from-gray-50 to-amber-50 border border-gray-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-graphite/60 font-heading">Custo em pontos:</p>
+                <label className="flex items-center gap-2 text-xs text-graphite/60 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={ajusteManual}
+                    onChange={(e) => {
+                      setAjusteManual(e.target.checked)
+                      if (e.target.checked) {
+                        setPontosManual({ prime: pontosPrimeCalc, free: pontosFreeCalc })
+                      }
+                    }}
+                    className="rounded border-gray-300 text-antique-gold focus:ring-antique-gold/50"
+                  />
+                  Ajustar manualmente
+                </label>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-2 rounded-lg bg-white border border-gray-200">
-                  <p className="text-xs text-graphite/60">Free</p>
-                  <p className="text-lg font-display font-bold text-graphite">{pontosFree.toLocaleString('pt-BR')}</p>
-                </div>
                 <div className="text-center p-2 rounded-lg bg-amber-100 border border-amber-200">
-                  <p className="text-xs text-amber-700">Prime</p>
-                  <p className="text-lg font-display font-bold text-amber-700">{pontosPrime.toLocaleString('pt-BR')}</p>
+                  <p className="text-xs text-amber-700 mb-1">Prime</p>
+                  {ajusteManual ? (
+                    <input
+                      type="number"
+                      value={pontosManual.prime}
+                      onChange={(e) => setPontosManual({ ...pontosManual, prime: e.target.value })}
+                      step="250"
+                      min="0"
+                      className="w-full text-center text-lg font-display font-bold text-amber-700 bg-transparent border-b border-amber-300 focus:outline-none"
+                    />
+                  ) : (
+                    <p className="text-lg font-display font-bold text-amber-700">{pontosPrime.toLocaleString('pt-BR')}</p>
+                  )}
+                </div>
+                <div className="text-center p-2 rounded-lg bg-white border border-gray-200">
+                  <p className="text-xs text-graphite/60 mb-1">Free</p>
+                  {ajusteManual ? (
+                    <input
+                      type="number"
+                      value={pontosManual.free}
+                      onChange={(e) => setPontosManual({ ...pontosManual, free: e.target.value })}
+                      step="250"
+                      min="0"
+                      className="w-full text-center text-lg font-display font-bold text-graphite bg-transparent border-b border-gray-300 focus:outline-none"
+                    />
+                  ) : (
+                    <p className="text-lg font-display font-bold text-graphite">{pontosFree.toLocaleString('pt-BR')}</p>
+                  )}
                 </div>
               </div>
+
+              <p className="text-xs text-graphite/70 text-center pt-1 border-t border-gray-200">
+                O cliente vai ver: <span className="font-semibold text-amber-700">Prime {pontosPrime.toLocaleString('pt-BR')} pts</span> · <span className="font-semibold">Free {pontosFree.toLocaleString('pt-BR')} pts</span>
+              </p>
+            </div>
+          )}
+
+          {/* Aviso para tipos especiais */}
+          {formData.tipo === 'sob_consulta' && (
+            <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-700">
+              Sob consulta: o cliente verá "a partir de X pts" (se houver valor de referência) ou "consulte".
+            </div>
+          )}
+          {formData.tipo === 'privilegio' && (
+            <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-700">
+              Privilégio: o cliente verá "Privilégio · sem pontos" — não consome saldo.
+            </div>
+          )}
+          {formData.tipo === 'em_breve' && (
+            <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs text-graphite/70">
+              Em breve: aparece com selo "Em breve" e não permite resgate.
             </div>
           )}
 
@@ -463,9 +573,36 @@ export function AdminExperiencias() {
                         {exp.descricao}
                       </p>
                       <div className="flex items-center gap-4 text-xs text-graphite/60 font-heading">
-                        <span className="font-mono font-semibold text-antique-gold">
-                          {(exp.pontos ?? (exp.valor_reais ? Math.round(exp.valor_reais * FATOR_FREE) : 0)).toLocaleString('pt-BR')} pts
-                        </span>
+                        {/* Pontos por tipo */}
+                        {exp.tipo === 'privilegio' ? (
+                          <span className="font-semibold text-purple-600">Privilégio · sem pontos</span>
+                        ) : exp.tipo === 'sob_consulta' ? (
+                          <span className="font-semibold text-blue-600">
+                            {exp.pontos_prime ? `a partir de ${exp.pontos_prime.toLocaleString('pt-BR')} pts` : 'Sob consulta'}
+                          </span>
+                        ) : exp.tipo === 'em_breve' ? (
+                          <span className="flex items-center gap-2">
+                            <span className="px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 text-[10px] font-medium">Em breve</span>
+                            {exp.pontos_prime ? (
+                              <span className="text-gray-500">{exp.pontos_prime.toLocaleString('pt-BR')} pts</span>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </span>
+                        ) : (
+                          <>
+                            <span className="font-semibold text-amber-600">
+                              Prime {exp.pontos_prime ? exp.pontos_prime.toLocaleString('pt-BR') : '—'}
+                            </span>
+                            <span className="font-semibold text-graphite">
+                              Free {exp.pontos_free ? exp.pontos_free.toLocaleString('pt-BR') : '—'}
+                            </span>
+                            {(!exp.pontos_prime || !exp.pontos_free) && (
+                              <span className="text-red-500 text-[10px]">⚠ sem preço</span>
+                            )}
+                          </>
+                        )}
+                        <span className="text-graphite/40">|</span>
                         <span>Classe: {level?.shortName || 'Todas'}</span>
                         <span>Ordem: {exp.ordem}</span>
                       </div>
