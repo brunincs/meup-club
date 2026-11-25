@@ -405,15 +405,24 @@ export function AdminExperiencias() {
   const [filter, setFilter] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [editingExperiencia, setEditingExperiencia] = useState(null)
+  const [erro, setErro] = useState(null)
 
   // Carregar experiências
   const loadExperiencias = async () => {
     setLoading(true)
-    const result = await fetchExperiencias(true) // incluir inativas
-    if (result.success) {
-      setExperiencias(result.experiencias)
-    } else {
-      toast.error('Erro ao carregar experiências')
+    setErro(null)
+    try {
+      const result = await fetchExperiencias(true) // incluir inativas
+      if (result.success) {
+        setExperiencias(result.experiencias || [])
+      } else {
+        setErro(result.error || 'Erro ao carregar')
+        toast.error('Erro ao carregar experiências')
+      }
+    } catch (e) {
+      console.error('Erro fetchExperiencias:', e)
+      setErro(e.message)
+      toast.error('Erro: ' + e.message)
     }
     setLoading(false)
   }
@@ -504,6 +513,13 @@ export function AdminExperiencias() {
             </button>
           ))}
         </div>
+
+        {/* Erro */}
+        {erro && (
+          <div className="p-4 rounded-xl bg-red-100 border border-red-300 text-red-700 text-sm">
+            Erro: {erro}
+          </div>
+        )}
 
         {/* Lista de Experiências */}
         <div className="space-y-3">
