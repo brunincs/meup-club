@@ -578,13 +578,13 @@ export function AdminExperiencias() {
                           <span className="font-semibold text-purple-600">Privilégio · sem pontos</span>
                         ) : exp.tipo === 'sob_consulta' ? (
                           <span className="font-semibold text-blue-600">
-                            {exp.pontos_prime ? `a partir de ${exp.pontos_prime.toLocaleString('pt-BR')} pts` : 'Sob consulta'}
+                            {exp.pontos_prime ? `a partir de ${Number(exp.pontos_prime).toLocaleString('pt-BR')} pts` : 'Sob consulta'}
                           </span>
                         ) : exp.tipo === 'em_breve' ? (
                           <span className="flex items-center gap-2">
                             <span className="px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 text-[10px] font-medium">Em breve</span>
                             {exp.pontos_prime ? (
-                              <span className="text-gray-500">{exp.pontos_prime.toLocaleString('pt-BR')} pts</span>
+                              <span className="text-gray-500">{Number(exp.pontos_prime).toLocaleString('pt-BR')} pts</span>
                             ) : (
                               <span className="text-gray-400">—</span>
                             )}
@@ -592,10 +592,10 @@ export function AdminExperiencias() {
                         ) : (
                           <>
                             <span className="font-semibold text-amber-600">
-                              Prime {exp.pontos_prime ? exp.pontos_prime.toLocaleString('pt-BR') : '—'}
+                              Prime {exp.pontos_prime ? Number(exp.pontos_prime).toLocaleString('pt-BR') : '—'}
                             </span>
                             <span className="font-semibold text-graphite">
-                              Free {exp.pontos_free ? exp.pontos_free.toLocaleString('pt-BR') : '—'}
+                              Free {exp.pontos_free ? Number(exp.pontos_free).toLocaleString('pt-BR') : '—'}
                             </span>
                             {(!exp.pontos_prime || !exp.pontos_free) && (
                               <span className="text-red-500 text-[10px]">⚠ sem preço</span>
