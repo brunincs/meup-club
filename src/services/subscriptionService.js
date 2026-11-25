@@ -224,10 +224,20 @@ export async function ativarPrime(userId, ciclo, origem = 'manual', origemRef = 
       p_provider_subscription_id: null
     })
 
-    if (error) throw error
+    if (error) {
+      console.error('Erro Supabase ao ativar Prime:', error)
+      return {
+        success: false,
+        error: error.message || error.details || error.hint || 'Erro ao comunicar com o servidor'
+      }
+    }
+
+    if (!data) {
+      return { success: false, error: 'Resposta vazia do servidor' }
+    }
 
     if (!data.success) {
-      return { success: false, error: data.error }
+      return { success: false, error: data.error || 'Erro desconhecido' }
     }
 
     return {
@@ -239,7 +249,10 @@ export async function ativarPrime(userId, ciclo, origem = 'manual', origemRef = 
     }
   } catch (error) {
     console.error('Erro ao ativar Prime:', error)
-    return { success: false, error: error.message }
+    const errorMsg = typeof error === 'string'
+      ? error
+      : error?.message || error?.details || 'Erro inesperado ao ativar Prime'
+    return { success: false, error: errorMsg }
   }
 }
 
@@ -257,10 +270,20 @@ export async function cancelarPrime(userId, origem = 'manual', origemRef = null)
       p_origem_ref: origemRef
     })
 
-    if (error) throw error
+    if (error) {
+      console.error('Erro Supabase ao cancelar Prime:', error)
+      return {
+        success: false,
+        error: error.message || error.details || error.hint || 'Erro ao comunicar com o servidor'
+      }
+    }
+
+    if (!data) {
+      return { success: false, error: 'Resposta vazia do servidor' }
+    }
 
     if (!data.success) {
-      return { success: false, error: data.error }
+      return { success: false, error: data.error || 'Erro desconhecido' }
     }
 
     return {
@@ -270,7 +293,10 @@ export async function cancelarPrime(userId, origem = 'manual', origemRef = null)
     }
   } catch (error) {
     console.error('Erro ao cancelar Prime:', error)
-    return { success: false, error: error.message }
+    const errorMsg = typeof error === 'string'
+      ? error
+      : error?.message || error?.details || 'Erro inesperado ao cancelar Prime'
+    return { success: false, error: errorMsg }
   }
 }
 
