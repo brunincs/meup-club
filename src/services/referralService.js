@@ -5,12 +5,46 @@
 
 import { supabase } from '@/lib/supabase'
 
-// Constantes de pontos (fallback - valores reais vêm do plano_config)
-export const PONTOS_POR_INDICACAO_FREE = 3000   // Free: 3.000 pontos
+// Fallbacks (valores reais vêm do plano_config via RPC)
+export const PONTOS_POR_INDICACAO_FREE = 2000   // Free: 2.000 pontos
 export const PONTOS_POR_INDICACAO_PRIME = 5000  // Prime: 5.000 pontos
-export const PONTOS_POR_INDICACAO = 3000        // Fallback genérico
-export const PONTOS_BOAS_VINDAS = 500           // Creditado na primeira emissao aprovada
-export const LIMITE_INDICACOES_AUTO = 20        // Máximo de indicações automáticas por pessoa
+export const PONTOS_POR_INDICACAO = 2000        // Fallback genérico
+export const PONTOS_BOAS_VINDAS = 5000          // Boas-vindas Prime
+
+/**
+ * Busca configurações de indicação do plano_config
+ * @returns {Promise<object>}
+ */
+export async function getConfigIndicacao() {
+  try {
+    const { data, error } = await supabase.rpc('get_config_indicacao')
+    if (error) throw error
+    return {
+      success: true,
+      config: data?.[0] || {
+        pontos_indicacao_free: PONTOS_POR_INDICACAO_FREE,
+        pontos_indicacao_prime: PONTOS_POR_INDICACAO_PRIME,
+        pontos_boas_vindas_prime: PONTOS_BOAS_VINDAS,
+        indicacao_so_novos_clientes: true,
+        pontos_por_real_free: 0.5,
+        pontos_por_real_prime: 1.5
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao buscar config indicação:', error)
+    return {
+      success: false,
+      config: {
+        pontos_indicacao_free: PONTOS_POR_INDICACAO_FREE,
+        pontos_indicacao_prime: PONTOS_POR_INDICACAO_PRIME,
+        pontos_boas_vindas_prime: PONTOS_BOAS_VINDAS,
+        indicacao_so_novos_clientes: true,
+        pontos_por_real_free: 0.5,
+        pontos_por_real_prime: 1.5
+      }
+    }
+  }
+}
 
 // ============================================
 // FUNÇÕES PARA O CLIENTE (PORTAL)
@@ -32,7 +66,8 @@ export async function getMyReferralCode(userId) {
     if (error) throw error
 
     const code = data?.referral_code || ''
-    const link = code ? `${window.location.origin}/cadastro?ref=${code}` : ''
+    // Link oficial: /ref/:code (redireciona para cadastro com código)
+    const link = code ? `${window.location.origin}/ref/${code}` : ''
 
     return { success: true, code, link }
   } catch (error) {

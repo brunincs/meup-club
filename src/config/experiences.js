@@ -19,7 +19,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Quantos pontos o cliente ganha por cada R$ 1 gasto em viagens.
 // Se mudar a taxa, mude APENAS aqui.
-export const PONTOS_POR_REAL = 1
+export const PONTOS_POR_REAL = 0.5
 
 // Quantos pontos o cliente ganha por cada indicação que fecha viagem.
 // Valor fixo por indicação convertida (não é percentual).

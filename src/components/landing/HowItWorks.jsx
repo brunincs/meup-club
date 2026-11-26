@@ -20,8 +20,8 @@ const waysToEarn = [
     id: 'travel',
     badge: 'Viajando',
     title: 'Suas viagens rendem',
-    // Regra: 1 ponto por R$ 1 gasto (PONTOS_POR_REAL)
-    highlight: `${PONTOS_POR_REAL} pt / R$ 1`,
+    // Regra: 0,5 ponto por R$ 1 (Free) - PONTOS_POR_REAL
+    highlight: `${PONTOS_POR_REAL.toLocaleString('pt-BR')} pt / R$ 1`,
     description: 'Comprou passagem com a Me,up? Os pontos entram automaticamente.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">

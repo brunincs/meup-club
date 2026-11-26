@@ -100,7 +100,7 @@ export function TripSubmitCard({ variant = 'dark' }) {
                 Lançar Viagem
               </h3>
               <p className={`text-xs ${isDark ? 'text-dusty-rose' : 'text-graphite/60'}`}>
-                {isPrime ? 'Lançado pela equipe' : 'Ganhe 1 ponto por R$1'}
+                {isPrime ? 'Lançado pela equipe' : 'Ganhe 0,5 pt por R$1'}
               </p>
             </div>
           </div>

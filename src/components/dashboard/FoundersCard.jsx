@@ -56,8 +56,7 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
     return null
   }
 
-  // FUNDADOR - Mostra selo e número da sorte
-  // Layout empilhado no mobile: selo no topo, depois título, número, texto e link
+  // FUNDADOR - Mostra selo e benefícios
   if (fundadorData?.is_fundador) {
     return (
       <motion.div
@@ -66,16 +65,14 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
         className="rounded-2xl p-6 relative overflow-hidden bg-white shadow-sm"
         style={{ border: '1px solid #ddd1d0' }}
       >
-        {/* Layout Mobile: empilhado */}
         <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
-          {/* Selo Fundador compacto no topo */}
+          {/* Selo Fundador */}
           <div className="mb-4">
             <img
               src="/brand/selo-fundador-sm.svg"
               alt="Fundador"
               className="h-10 w-auto"
               onError={(e) => {
-                // Fallback para o SeloFundador se imagem não existir
                 e.target.style.display = 'none'
                 e.target.nextSibling.style.display = 'block'
               }}
@@ -87,42 +84,19 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
 
           {/* Título */}
           <h3 className="text-lg font-display font-bold mb-2 text-antique-gold">
-            Seu número da sorte
+            Você é Fundador
           </h3>
 
-          {/* Número grande */}
-          <p className="text-4xl sm:text-3xl font-display font-bold tracking-wider mb-3 text-deep-purple">
-            {fundadorData.numero_sorte}
-          </p>
-
-          {/* Texto explicativo */}
+          {/* Benefícios */}
           <p className="text-sm mb-4 max-w-xs text-graphite/70">
-            Concorrendo a 200 mil pontos na Ação Fundadores
+            Preço garantido na renovação · 1,5 pt/R$ · 5.000 pts de boas-vindas
           </p>
 
-          {/* Link do regulamento */}
-          <a
-            href={regulamentoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs underline text-antique-gold hover:text-deep-purple"
-          >
-            Ver regulamento
-          </a>
+          {/* Badge */}
+          <span className="text-xs px-3 py-1 rounded-full bg-antique-gold/10 text-antique-gold border border-antique-gold/30">
+            Prime Fundador
+          </span>
         </div>
-
-        {fundadorData.ganhador && (
-          <div className="mt-4 p-4 rounded-xl bg-green-500/20 border border-green-400/30 text-center sm:text-left">
-            <p className="text-sm font-heading font-bold text-green-400">
-              🎉 Parabéns! Você foi o ganhador!
-            </p>
-            {fundadorData.premio_creditado && (
-              <p className="text-xs text-green-300 mt-1">
-                200.000 pontos creditados na sua conta
-              </p>
-            )}
-          </div>
-        )}
       </motion.div>
     )
   }
@@ -157,7 +131,7 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
           </h3>
           <p className={`text-sm mb-2 ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
             Prime por <span className={`line-through ${isLight ? 'text-graphite/40' : 'text-dusty-rose/60'}`}>R$ 997</span>{' '}
-            <span className={`font-semibold ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>R$ 597/ano</span> e concorra a 200 mil pontos
+            <span className={`font-semibold ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>R$ 597/ano</span> + 5.000 pts de boas-vindas
           </p>
 
           {(() => {

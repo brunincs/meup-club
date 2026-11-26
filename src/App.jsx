@@ -30,6 +30,7 @@ const MeusResgates = lazy(() => import('@/pages/MeusResgates'))
 const MinhasViagens = lazy(() => import('@/pages/MinhasViagens'))
 const Jornada = lazy(() => import('@/pages/Jornada').then(m => ({ default: m.Jornada })))
 const Convites = lazy(() => import('@/pages/Convites').then(m => ({ default: m.Convites })))
+const RefRedirect = lazy(() => import('@/pages/RefRedirect').then(m => ({ default: m.RefRedirect })))
 
 // Lazy load - Todas as páginas admin
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
@@ -198,10 +199,14 @@ function App() {
           <Route path="/jornada" element={<ProtectedRoute><Jornada /></ProtectedRoute>} />
           <Route path="/convites" element={<ProtectedRoute><Convites /></ProtectedRoute>} />
 
-          {/* Referral redirect - redireciona para /eu-quero sem gerar vínculo */}
+          {/* Referral redirect - guarda código e redireciona para cadastro */}
           <Route
             path="/ref/:code"
-            element={<Navigate to="/eu-quero" replace />}
+            element={
+              <Suspense fallback={<div className="min-h-screen bg-deep-purple" />}>
+                <RefRedirect />
+              </Suspense>
+            }
           />
 
           {/* Invite signup - Modelo Exclusivo 2026 */}

@@ -76,7 +76,7 @@ export function HowItWorksAlternada() {
               <div className="flex items-start justify-between py-3 border-b border-white/10">
                 <span className="text-sm font-heading font-medium text-ice-white/70">Free</span>
                 <div className="text-right">
-                  <span className="text-sm font-heading font-semibold text-ice-white">1 pt por R$ 1</span>
+                  <span className="text-sm font-heading font-semibold text-ice-white">0,5 pt por R$ 1</span>
                   <p className="text-xs text-ice-white/50 mt-0.5">você lança, a gente aprova</p>
                 </div>
               </div>

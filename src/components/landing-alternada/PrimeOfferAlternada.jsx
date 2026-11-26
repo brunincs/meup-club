@@ -257,14 +257,12 @@ export function PrimeOfferAlternada() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">2 convites exclusivos para amigos</span>
+                    <span className="text-white">Indicação vale 5.000 pts</span>
                   </li>
-                  {!esgotado && (
-                    <li className="flex items-start gap-2">
-                      <span className="text-antique-gold mt-0.5">★</span>
-                      <span className="text-white">Número da sorte: concorra a 200 mil pts</span>
-                    </li>
-                  )}
+                  <li className="flex items-start gap-2">
+                    <span className="text-antique-gold mt-0.5">★</span>
+                    <span className="text-white">+5.000 pts de boas-vindas</span>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -285,7 +283,7 @@ export function PrimeOfferAlternada() {
           </motion.div>
         </div>
 
-        {/* Banner Ação Fundadores - 200k pts */}
+        {/* Banner Prime Fundadores - Benefícios */}
         {!esgotado && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -307,16 +305,19 @@ export function PrimeOfferAlternada() {
 
                 {/* Título */}
                 <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-2">
-                  Concorra a {(premioTotal).toLocaleString('pt-BR')} pontos
+                  Vantagens exclusivas do Fundador
                 </h3>
                 <GoldLine width="60px" className="mb-5" />
 
-                <p className="text-sm text-ice-white/80 mb-5">
-                  Cada fundador recebe um número da sorte e concorre a {(premioTotal).toLocaleString('pt-BR')} pontos.
-                  O resultado sai conforme o regulamento.
-                </p>
+                <ul className="text-sm text-ice-white/80 mb-5 space-y-2">
+                  <li>• Preço garantido de R$ 597/ano na renovação</li>
+                  <li>• 1,5 ponto a cada R$ 1 em viagens</li>
+                  <li>• +5.000 pts de boas-vindas</li>
+                  <li>• Indicação vale 5.000 pts</li>
+                  <li>• Selo de Fundador permanente</li>
+                </ul>
 
-                {/* Contador de vagas - só mostra a partir de 5 vendidas */}
+                {/* Contador de vagas */}
                 <div className="mb-5">
                   {vagasVendidas >= 5 ? (
                     <>
@@ -342,29 +343,17 @@ export function PrimeOfferAlternada() {
                 </div>
 
                 {/* CTA */}
-                <div className="flex flex-wrap items-center gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleGarantirVaga}
-                    className="px-5 py-2.5 rounded-xl bg-antique-gold hover:bg-[#8b6830] text-deep-purple font-heading font-semibold text-sm transition-colors"
-                  >
-                    Quero ser Fundador
-                  </motion.button>
-                  {regulamentoUrl && (
-                    <a
-                      href={regulamentoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-ice-white/70 hover:text-ice-white underline"
-                    >
-                      Regulamento
-                    </a>
-                  )}
-                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleGarantirVaga}
+                  className="px-5 py-2.5 rounded-xl bg-antique-gold hover:bg-[#8b6830] text-deep-purple font-heading font-semibold text-sm transition-colors"
+                >
+                  Quero ser Fundador
+                </motion.button>
               </div>
 
-              {/* Coluna Direita - Prêmio */}
+              {/* Coluna Direita - Destaque */}
               <div className="p-6 md:p-8 bg-gradient-to-br from-antique-gold/10 to-antique-gold/5 flex flex-col items-center justify-center text-center order-1 md:order-2">
                 {/* Aviãozinho */}
                 <div className="w-16 h-16 mb-4">
@@ -374,16 +363,16 @@ export function PrimeOfferAlternada() {
                   </svg>
                 </div>
 
-                {/* Valor do prêmio */}
+                {/* Valor */}
                 <p className="text-4xl md:text-5xl font-display font-bold text-antique-gold mb-1">
-                  {(premioTotal).toLocaleString('pt-BR')}
+                  R$ 597
                 </p>
                 <p className="text-lg text-ice-white/80 font-heading mb-4">
-                  pontos em sorteio
+                  por ano (6x R$ 99,50)
                 </p>
 
                 <p className="text-sm text-ice-white/70">
-                  Entre os fundadores
+                  Preço garantido para sempre
                 </p>
               </div>
             </div>

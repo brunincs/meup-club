@@ -23,4 +23,5 @@ export { TripSubmitCard } from './TripSubmitCard'
 export { FoundersCard } from './FoundersCard'
 export { NextTripCard } from './NextTripCard'
 export { HojeSection } from './HojeSection'
-export { InviteCard } from './InviteCard'
+export { ReferralCard } from './ReferralCard'
+// InviteCard removido - substituído por ReferralCard

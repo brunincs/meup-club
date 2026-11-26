@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { getReferrerByCode } from '@/services/referralService'
 import { validateInviteCode, acceptInvite } from '@/services/inviteService'
-import { aprovarPorLink, getCodigoEntrada, limparCodigoEntrada } from '@/services/acessoService'
+import { aprovarPorLink, aprovarPorIndicacao, getCodigoEntrada, limparCodigoEntrada } from '@/services/acessoService'
 import { useEligibility, useCPFValidation } from '@/hooks/useEligibility'
 import { usePreLaunch } from '@/hooks/usePreLaunch'
 import { checkAvailability } from '@/services/slotsService'
@@ -39,9 +39,16 @@ export function Cadastro() {
   const { checkCPF, isEligible, eligibilitySource, eligibilityMessage, loading: eligibilityLoading } = useEligibility()
   const { format: formatCPF, validate: validateCPFFormat, isValid: cpfFormatValid } = useCPFValidation()
 
-  // Código de indicação ou convite da URL
-  const refCodeFromUrl = searchParams.get('ref')
+  // Código de indicação ou convite da URL (ou localStorage como fallback)
+  const refCodeFromUrl = searchParams.get('ref') || localStorage.getItem('referral_code')
   const inviteCodeFromUrl = searchParams.get('convite')
+
+  // Limpar localStorage após usar
+  useEffect(() => {
+    if (refCodeFromUrl && localStorage.getItem('referral_code')) {
+      localStorage.removeItem('referral_code')
+    }
+  }, [refCodeFromUrl])
 
   // Estados de indicação/convite
   const [manualCode, setManualCode] = useState('')
@@ -264,7 +271,7 @@ export function Cadastro() {
         const codigoEntrada = getCodigoEntrada()
 
         if (codigoEntrada) {
-          // Tentar aprovação automática
+          // Tentar aprovação automática via link da lista
           const resultado = await aprovarPorLink(data.user.id, codigoEntrada)
           limparCodigoEntrada()
 
@@ -276,6 +283,21 @@ export function Cadastro() {
             navigate('/dashboard')
           } else {
             // Código inválido/expirado - fluxo normal
+            toast.success('Conta criada! Aguarde a aprovação.')
+            navigate('/dashboard')
+          }
+        } else if (referrerInfo?.id) {
+          // Cadastro via indicação - entrada automática
+          const resultado = await aprovarPorIndicacao(data.user.id, referrerInfo.id)
+
+          if (resultado?.success && resultado?.status === 'aprovado') {
+            toast.success(`Bem-vindo ao Me,up Club! Indicado por ${referrerInfo.name}.`)
+            navigate('/dashboard')
+          } else if (resultado?.action === 'em_espera') {
+            toast.success(resultado.message || 'Você está na lista de espera.')
+            navigate('/dashboard')
+          } else {
+            // Fallback - conta criada mas não aprovada
             toast.success('Conta criada! Aguarde a aprovação.')
             navigate('/dashboard')
           }

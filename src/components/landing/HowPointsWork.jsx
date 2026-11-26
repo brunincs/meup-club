@@ -21,7 +21,7 @@ const steps = [
   {
     number: '01',
     title: 'Você viaja',
-    description: 'A cada R$ 1 em passagens emitidas com a Me,up, você acumula 1 ponto. Prime Anual: 1,5x pontos.',
+    description: 'Free: 0,5 ponto por R$ 1. Prime: 1,5 ponto por R$ 1 (3x mais).',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />

@@ -34,7 +34,7 @@ const faqs = [
   {
     category: 'pontos',
     question: 'Como eu ganho pontos?',
-    answer: 'Você ganha pontos de várias formas: viajando com a Me,up (1 ponto por real gasto), indicando amigos, completando tarefas no app, e recebendo bônus especiais. Assinantes Prime Anual ganham 1,5x mais pontos nas viagens.'
+    answer: 'Você ganha pontos de várias formas: viajando com a Me,up (0,5 ponto por real no Free, 1,5 no Prime), indicando amigos, completando tarefas no app, e recebendo bônus especiais.'
   },
   {
     category: 'pontos',
@@ -126,39 +126,31 @@ Se o Prime for cancelado nesse prazo, os bônus são estornados automaticamente.
 O pagamento é processado de forma segura pelo Asaas.`
   },
 
-  // AÇÃO FUNDADORES
+  // PRIME FUNDADORES
   {
     category: 'fundadores',
-    question: 'O que é a Ação Fundadores?',
-    answer: `A Ação Fundadores é uma oportunidade exclusiva para os **30 primeiros** assinantes do Prime:
+    question: 'O que é o Prime Fundadores?',
+    answer: `O Prime Fundadores é uma oportunidade exclusiva para os **30 primeiros** assinantes do Prime:
 
-• Preço especial: **R$ 597/ano** (de R$ 997 - 40% de desconto)
+• Preço especial: **R$ 597/ano** (6x R$ 99,50)
 • Selo de Fundador permanente
-• 1 número da sorte para concorrer a **200.000 pontos**
-• 2 convites exclusivos para amigos
-• Experiências e prioridades exclusivas
+• +5.000 pts de boas-vindas
+• Experiências por menos pontos
+• Indicação vale 5.000 pts
 
 Fundadores renovam pelo mesmo valor enquanto mantiverem a assinatura ativa.`
   },
   {
     category: 'fundadores',
-    question: 'Quanto valem 200 mil pontos?',
-    answer: 'Com 200.000 pontos você pode resgatar experiências equivalentes a mais de R$ 1.200, como upgrades de classe, acesso a lounges ou diversas experiências premium no clube.'
-  },
-  {
-    category: 'fundadores',
-    question: 'Como funciona o número da sorte?',
-    answer: 'Ao ativar seu Prime como Fundador, você recebe automaticamente um número da sorte único. Esse número participa de uma Ação Promocional conforme o regulamento autorizado. O ganhador é definido com base no resultado da Loteria Federal e recebe 200.000 pontos creditados na conta.'
-  },
-  {
-    category: 'fundadores',
     question: 'E se eu cancelar no período de arrependimento?',
-    answer: 'Se você cancelar a assinatura nos primeiros 7 dias, você perde a vaga de Fundador e o número da sorte. Os bônus ainda bloqueados (boas-vindas, indicação) são cancelados automaticamente. A vaga pode ser ocupada pelo próximo assinante.'
+    answer: 'Se você cancelar a assinatura nos primeiros 7 dias, você perde a vaga de Fundador. Os bônus ainda bloqueados (boas-vindas, indicação) são cancelados automaticamente. A vaga pode ser ocupada pelo próximo assinante.'
   },
+
+  // INDICAÇÃO
   {
-    category: 'fundadores',
-    question: 'Onde vejo o regulamento completo?',
-    answer: 'O regulamento completo da Ação Fundadores está disponível em [link do regulamento]. Lá você encontra todas as regras, prazos e condições da promoção.'
+    category: 'geral',
+    question: 'Como funciona a indicação?',
+    answer: 'Compartilhe seu link de indicação. Quando seu indicado comprar a primeira viagem com a Me,up, você ganha **2.000 pts** (Free) ou **5.000 pts** (Prime). Se ele assinar o Prime, você ganha mais **3.000 pts**.'
   }
 ]
 

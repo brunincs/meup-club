@@ -242,7 +242,7 @@ export function Jornada() {
   // Texto para viagem (formato brasileiro: 1,5)
   const textoViagem = isPrime
     ? `${multiplicadorViagem.toLocaleString('pt-BR')} ponto por real`
-    : `1 ponto por real · 1,5 no Prime`
+    : `0,5 ponto por real · 1,5 no Prime`
 
   // Texto para check-in
   const textoCheckin = `+${pontosCheckin} pts por dia`

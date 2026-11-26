@@ -193,3 +193,28 @@ export async function aprovarLote(userIds) {
     return { success: false, error: error.message }
   }
 }
+
+/**
+ * Aprovar por indicação
+ * Usado no cadastro quando usuário veio pelo link /ref/CODIGO
+ */
+export async function aprovarPorIndicacao(userId, referrerId) {
+  try {
+    const { data, error } = await supabase.rpc('aprovar_por_indicacao', {
+      p_user_id: userId,
+      p_referrer_id: referrerId
+    })
+
+    if (error) throw error
+
+    // Invalidar cache após aprovação
+    if (data?.success) {
+      invalidateMetricasCache()
+    }
+
+    return data
+  } catch (error) {
+    console.error('Erro ao aprovar por indicação:', error)
+    return { success: false, error: error.message }
+  }
+}

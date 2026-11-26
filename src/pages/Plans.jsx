@@ -161,7 +161,7 @@ export function Plans() {
             <ul className="space-y-3 text-sm text-dusty-rose/80 mb-8">
               <li className="flex items-center gap-2">
                 <span className="text-green-400">✓</span>
-                Pontos por viagem: <strong className="text-white">1 pt/R$</strong>
+                Pontos por viagem: <strong className="text-white">0,5 pt/R$</strong>
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-green-400">✓</span>
@@ -303,14 +303,6 @@ export function Plans() {
                 <li className="flex items-center gap-2">
                   <span className="text-[#a27937]">★</span>
                   <span className="text-white">Pontos não expiram</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[#a27937]">★</span>
-                  <span className="text-white">2 convites exclusivos para amigos</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[#a27937]">★</span>
-                  <span className="text-white">Número da sorte: concorra a 200 mil pts</span>
                 </li>
               </ul>
             </div>

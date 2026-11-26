@@ -15,8 +15,8 @@ const FAQ_ITEMS = [
   },
   {
     id: 2,
-    question: 'Como funciona o sorteio dos 200 mil pontos?',
-    answer: 'Cada fundador recebe um número da sorte e concorre a 200.000 pontos. O sorteio será realizado conforme o regulamento, e um único fundador leva o prêmio completo.'
+    question: 'Como funciona a indicação?',
+    answer: 'Compartilhe seu link de indicação. Quando seu indicado comprar a primeira viagem com a Me,up, você ganha 2.000 pts (Free) ou 5.000 pts (Prime). Se ele assinar o Prime, você ganha mais 3.000 pts.'
   },
   {
     id: 3,
@@ -30,13 +30,13 @@ const FAQ_ITEMS = [
   },
   {
     id: 5,
-    question: 'O que é um convite de fundador?',
-    answer: 'Cada fundador pode convidar 2 pessoas especiais para entrar no clube (mesmo que não sejam clientes). O convidado entra como Free e, se comprar uma passagem dentro de 7 dias, pode ativar o Prime pelo preço de fundador. O fundador ganha 3.000 pontos quando o convidado ativa o Prime.'
+    question: 'Quanto ganho por indicação?',
+    answer: 'Free ganha 2.000 pts por indicação e Prime ganha 5.000 pts. Quando seu indicado ativa o Prime, você ganha mais 3.000 pts e ele ganha 1.000 pts de bônus.'
   },
   {
     id: 6,
-    question: 'Como funciona o multiplicador 2x?',
-    answer: 'No Prime, toda viagem que você faz com a Me,up rende o dobro de pontos. Uma viagem que daria 10.000 pontos passa a dar 20.000. Isso acelera muito seu acúmulo.'
+    question: 'Como funciona o multiplicador de pontos?',
+    answer: 'Free ganha 0,5 ponto a cada R$ 1 em viagens. Prime ganha 1,5 ponto a cada R$ 1 (3x mais). Uma viagem de R$ 5.000 rende 2.500 pts no Free e 7.500 pts no Prime.'
   },
   {
     id: 7,
@@ -45,8 +45,8 @@ const FAQ_ITEMS = [
   },
   {
     id: 8,
-    question: 'O que acontece se as vagas de fundador acabarem?',
-    answer: 'Depois das 30 vagas Prime e 70 vagas Free, novas pessoas entram em lista de espera. Convidados de fundadores entram fora dessas cotas — por isso os convites são valiosos.'
+    question: 'O que acontece se as vagas acabarem?',
+    answer: 'Depois das 30 vagas Prime Fundador e 70 vagas Free, novas pessoas entram em lista de espera. Indicados de membros entram diretamente, ocupando vagas Free disponíveis.'
   }
 ]
 

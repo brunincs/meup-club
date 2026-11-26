@@ -7,7 +7,7 @@ import {
   HeroSection,
   NextTripCard,
   FoundersCard,
-  InviteCard
+  ReferralCard
 } from '@/components/dashboard'
 import { HojeSection } from '@/components/dashboard/HojeSection'
 import { ExperienciasParaVoce } from '@/components/dashboard/ExperienciasParaVoce'
@@ -89,7 +89,7 @@ export function Dashboard() {
 
             {/* Bloco 3.5: Convites (BRANCO) */}
             <SafeSection name="Convites" silent>
-              <InviteCard showForFree />
+              <ReferralCard />
             </SafeSection>
 
             {/* Bloco 3.6: Experiências para você (BRANCO) */}
@@ -121,7 +121,7 @@ export function Dashboard() {
                 <NextTripCard variant="light" />
               </SafeSection>
               <SafeSection name="Convites" silent>
-                <InviteCard showForFree />
+                <ReferralCard />
               </SafeSection>
               <SafeSection name="Fundadores" silent>
                 <FoundersCard variant="light" foundersOnly />
