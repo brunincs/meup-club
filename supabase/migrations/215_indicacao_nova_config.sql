@@ -161,12 +161,13 @@ BEGIN
   v_liberar_em := NOW() + (v_dias_pendente || ' days')::INTERVAL;
 
   -- PONTOS DE BOAS-VINDAS para o assinante (BLOQUEADOS)
+  -- Cast explícito para evitar ambiguidade com overloads de creditar_pontos_bloqueados
   PERFORM creditar_pontos_bloqueados(
     v_subscription.user_id,
     v_pontos_boas_vindas,
-    'Bônus de boas-vindas Prime Anual',
+    'Bônus de boas-vindas Prime Anual'::TEXT,
     v_liberar_em,
-    NULL,
+    NULL::UUID,
     p_subscription_id
   );
 
@@ -201,7 +202,7 @@ BEGIN
   PERFORM creditar_pontos_bloqueados(
     v_referral.referred_id,
     v_pontos_indicado,
-    'Bônus: você assinou o Prime Anual',
+    'Bônus: você assinou o Prime Anual'::TEXT,
     v_liberar_em,
     v_referral.id,
     p_subscription_id
@@ -239,7 +240,7 @@ BEGIN
   PERFORM creditar_pontos_bloqueados(
     v_referral.referrer_id,
     v_pontos_indicador,
-    'Indicação: ' || v_indicado_nome || ' virou Prime',
+    ('Indicação: ' || v_indicado_nome || ' virou Prime')::TEXT,
     v_liberar_em,
     v_referral.id,
     p_subscription_id
