@@ -588,6 +588,8 @@ DECLARE
   v_indicado_nome TEXT;
   v_so_novos_clientes BOOLEAN;
   v_ja_era_cliente BOOLEAN;
+  v_balance_before INTEGER;
+  v_balance_after INTEGER;
 BEGIN
   -- Verificar se já creditou para esta emissão
   IF EXISTS (
@@ -623,7 +625,7 @@ BEGIN
       SELECT 1 FROM base_clientes bc
       WHERE (bc.email = (SELECT email FROM profiles WHERE id = p_user_id)
          OR bc.cpf = (SELECT cpf FROM profiles WHERE id = p_user_id))
-      AND bc.data_compra IS NOT NULL
+      AND bc.ultima_compra IS NOT NULL
     ) OR EXISTS (
       SELECT 1 FROM emissoes e
       WHERE e.user_id = p_user_id
@@ -657,12 +659,16 @@ BEGIN
     v_pontos := COALESCE((SELECT valor FROM plano_config WHERE chave = 'pontos_indicacao_free'), 2000);
   END IF;
 
+  -- Buscar saldo atual
+  SELECT COALESCE(points, 0) INTO v_balance_before FROM profiles WHERE id = v_referral.referrer_id;
+  v_balance_after := v_balance_before + v_pontos;
+
   -- Creditar pontos na hora (sem carência)
-  INSERT INTO point_transactions (user_id, amount, type, description, referral_id)
-  VALUES (v_referral.referrer_id, v_pontos, 'referral', 'Indicação: ' || v_indicado_nome || ' viajou', v_referral.id);
+  INSERT INTO point_transactions (user_id, amount, type, reason, reference_id, balance_before, balance_after)
+  VALUES (v_referral.referrer_id, v_pontos, 'referral', 'Indicação: ' || v_indicado_nome || ' viajou', v_referral.id, v_balance_before, v_balance_after);
 
   UPDATE profiles SET
-    points = COALESCE(points, 0) + v_pontos,
+    points = v_balance_after,
     updated_at = NOW()
   WHERE id = v_referral.referrer_id;
 
