@@ -13,7 +13,9 @@ import { CrownIcon, CheckIcon } from '@/components/ui/Icons'
  * ║  REGRAS DE PONTOS (atualizado 2024):                                       ║
  * ║  - Viagem: Free 0,5 pt/R$ | Prime Anual 1,5 pt/R$ (3x)                     ║
  * ║  - Indicação (1ª viagem): Free +2.000 pts | Prime +5.000 pts               ║
- * ║  - Indicado vira Prime: só Prime ganha (+3.000, indicado +1.000)           ║
+ * ║  - Indicado vira Prime Anual:                                              ║
+ * ║    • Indicado SEMPRE ganha +1.000 pts (independente do plano do indicador) ║
+ * ║    • Indicador Prime ganha +3.000 pts extras                               ║
  * ║                                                                            ║
  * ║  REGRAS DE CONTEÚDO:                                                       ║
  * ║  - NÃO mostrar conversão de ponto em reais no RESGATE                      ║
@@ -59,10 +61,10 @@ const steps = [
 
 // Timeline de indicação - valores atualizados
 // Primeira viagem: Free 2.000 / Prime 5.000
-// Indicado vira Prime Anual: só indicador Prime ganha (+3.000, indicado +1.000)
+// Indicado vira Prime Anual: indicado SEMPRE ganha +1.000, indicador Prime ganha +3.000
 const referralTimeline = [
   { label: 'Primeira viagem', points: '+2.000 / +5.000 pts', primeOnly: false, note: 'Free / Prime' },
-  { label: 'Prime Anual', points: '+3.000 pts', primeOnly: true, note: 'Só Prime · ele +1.000' }
+  { label: 'Indicado vira Prime', points: '+1.000 pts', primeOnly: false, note: 'Sempre · indicador Prime +3.000' }
 ]
 
 export function HowPointsWork() {
@@ -176,7 +178,7 @@ export function HowPointsWork() {
           </div>
 
           <p className="text-center text-xs text-deep-purple/60 mt-4 font-heading">
-            Todos ganham na primeira viagem. Prime ganha mais e recebe bônus extra quando indicado vira Prime.
+            Indicou alguém? Você ganha quando ele viaja e ele ganha quando vira Prime.
           </p>
         </motion.div>
       </div>
