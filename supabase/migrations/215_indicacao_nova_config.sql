@@ -197,7 +197,17 @@ BEGIN
   v_pontos_indicador := COALESCE((SELECT valor FROM plano_config WHERE chave = 'pontos_indicado_virou_prime_indicador'), 3000);
   v_pontos_indicado := COALESCE((SELECT valor FROM plano_config WHERE chave = 'pontos_indicado_virou_prime_indicado'), 1000);
 
-  -- Se indicador é FREE, registrar ganho perdido
+  -- INDICADO sempre ganha +1.000 pts ao virar Prime (independente do plano do indicador)
+  PERFORM creditar_pontos_bloqueados(
+    v_referral.referred_id,
+    v_pontos_indicado,
+    'Bônus: você assinou o Prime Anual',
+    v_liberar_em,
+    v_referral.id,
+    p_subscription_id
+  );
+
+  -- Se indicador é FREE, registrar ganho perdido (ele não ganha, mas indicado já ganhou acima)
   IF v_indicador_plano = 'free' THEN
     INSERT INTO missed_earnings (user_id, referral_id, referred_name, evento, valor_perdido, mensagem)
     VALUES (
@@ -217,27 +227,19 @@ BEGIN
 
     RETURN jsonb_build_object(
       'success', true,
-      'message', 'Bônus de boas-vindas creditado. Indicador é Free - bônus de indicação não creditado.',
+      'message', 'Bônus de boas-vindas creditado. Indicado ganhou +' || v_pontos_indicado || ' pts. Indicador é Free - bônus não creditado.',
       'pontos_boas_vindas', v_pontos_boas_vindas,
+      'pontos_indicado', v_pontos_indicado,
       'liberar_em', v_liberar_em,
       'indicador_plano', 'free'
     );
   END IF;
 
-  -- Indicador é PRIME - criar pontos bloqueados
+  -- Indicador é PRIME - criar pontos bloqueados para ele também
   PERFORM creditar_pontos_bloqueados(
     v_referral.referrer_id,
     v_pontos_indicador,
     'Indicação: ' || v_indicado_nome || ' virou Prime',
-    v_liberar_em,
-    v_referral.id,
-    p_subscription_id
-  );
-
-  PERFORM creditar_pontos_bloqueados(
-    v_referral.referred_id,
-    v_pontos_indicado,
-    'Bônus: você assinou o Prime Anual',
     v_liberar_em,
     v_referral.id,
     p_subscription_id
