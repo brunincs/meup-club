@@ -1,17 +1,27 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/motion'
 import { GoldLine } from '@/components/ui/GoldLine'
-import { PONTOS_POR_INDICACAO, PONTOS_POR_REAL, formatPoints } from '@/config/experiences'
+import {
+  PONTOS_POR_REAL_FREE,
+  PONTOS_POR_REAL_PRIME,
+  PONTOS_POR_INDICACAO_FREE,
+  PONTOS_POR_INDICACAO_PRIME,
+  formatPoints
+} from '@/config/experiences'
 
 /**
  * ╔════════════════════════════════════════════════════════════════════════════╗
  * ║  REGRAS DE PONTOS                                                          ║
  * ║                                                                            ║
- * ║  1. Viagem própria: 1 ponto por R$ 1 gasto (PONTOS_POR_REAL)               ║
- * ║  2. Indicação: 3.000 pontos fixos por indicação convertida                 ║
- * ║     (PONTOS_POR_INDICACAO em config/experiences.js)                        ║
- * ║  3. Bônus de primeira viagem: a definir                                    ║
- * ║  4. Multiplicador por classe: a definir                                    ║
+ * ║  1. Viagem própria:                                                        ║
+ * ║     - Free: 0,5 pt por R$ 1 (PONTOS_POR_REAL_FREE)                         ║
+ * ║     - Prime Anual: 1,5 pt por R$ 1 (PONTOS_POR_REAL_PRIME) = 3x            ║
+ * ║  2. Indicação (quando indicado faz primeira viagem):                       ║
+ * ║     - Free: 2.000 pts (PONTOS_POR_INDICACAO_FREE)                          ║
+ * ║     - Prime: 5.000 pts (PONTOS_POR_INDICACAO_PRIME)                        ║
+ * ║  3. Indicado vira Prime Anual (só indicador Prime recebe):                 ║
+ * ║     - Indicador: +3.000 pts                                                ║
+ * ║     - Indicado: +1.000 pts                                                 ║
  * ╚════════════════════════════════════════════════════════════════════════════╝
  */
 
@@ -20,9 +30,9 @@ const waysToEarn = [
     id: 'travel',
     badge: 'Viajando',
     title: 'Suas viagens rendem',
-    // Regra: 0,5 ponto por R$ 1 (Free) - PONTOS_POR_REAL
-    highlight: `${PONTOS_POR_REAL.toLocaleString('pt-BR')} pt / R$ 1`,
-    description: 'Comprou passagem com a Me,up? Os pontos entram automaticamente.',
+    // Free: 0,5 pt/R$ | Prime: 1,5 pt/R$ (3x)
+    highlight: `${PONTOS_POR_REAL_FREE.toLocaleString('pt-BR')} a ${PONTOS_POR_REAL_PRIME.toLocaleString('pt-BR')} pt / R$ 1`,
+    description: 'Free: 0,5 pt/R$. Prime Anual: 1,5 pt/R$ (3x mais).',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
@@ -34,9 +44,9 @@ const waysToEarn = [
     id: 'referral',
     badge: 'Indicando',
     title: 'Cada indicação rende',
-    // Valor fixo de 3.000 pontos por indicação convertida (PONTOS_POR_INDICACAO)
-    highlight: `+${formatPoints(PONTOS_POR_INDICACAO)} pts`,
-    description: 'Indicou alguém e a pessoa viajou? Os pontos são seus.',
+    // Free: 2.000 pts | Prime: 5.000 pts
+    highlight: `+${formatPoints(PONTOS_POR_INDICACAO_FREE)} a ${formatPoints(PONTOS_POR_INDICACAO_PRIME)} pts`,
+    description: 'Free: 2.000 pts. Prime: 5.000 pts quando indicado viaja.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />

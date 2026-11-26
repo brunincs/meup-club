@@ -18,12 +18,20 @@
 // CONSTANTES DE PONTOS - ÚNICA FONTE DE VERDADE
 // ══════════════════════════════════════════════════════════════════════════════
 // Quantos pontos o cliente ganha por cada R$ 1 gasto em viagens.
-// Se mudar a taxa, mude APENAS aqui.
+// Free: 0.5 pt/R$ | Prime Anual: 1.5 pt/R$ (3x)
 export const PONTOS_POR_REAL = 0.5
+export const PONTOS_POR_REAL_FREE = 0.5
+export const PONTOS_POR_REAL_PRIME = 1.5
 
 // Quantos pontos o cliente ganha por cada indicação que fecha viagem.
-// Valor fixo por indicação convertida (não é percentual).
-export const PONTOS_POR_INDICACAO = 3000
+// Free: 2.000 pts | Prime: 5.000 pts (quando indicado faz primeira viagem)
+export const PONTOS_POR_INDICACAO_FREE = 2000
+export const PONTOS_POR_INDICACAO_PRIME = 5000
+export const PONTOS_POR_INDICACAO = PONTOS_POR_INDICACAO_FREE // legado, usar o menor
+
+// Pontos quando indicado vira Prime Anual (só indicador Prime recebe)
+export const PONTOS_INDICADO_VIROU_PRIME_INDICADOR = 3000
+export const PONTOS_INDICADO_VIROU_PRIME_INDICADO = 1000
 
 // ══════════════════════════════════════════════════════════════════════════════
 // IMAGENS PLACEHOLDER (Unsplash)

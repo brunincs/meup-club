@@ -10,9 +10,13 @@ import { CrownIcon, CheckIcon } from '@/components/ui/Icons'
  * ║  Seção que explica o ciclo de pontos de forma clara e acolhedora.          ║
  * ║  Layout: 3 colunas lado a lado (desktop), empilhado no mobile.             ║
  * ║                                                                            ║
+ * ║  REGRAS DE PONTOS (atualizado 2024):                                       ║
+ * ║  - Viagem: Free 0,5 pt/R$ | Prime Anual 1,5 pt/R$ (3x)                     ║
+ * ║  - Indicação (1ª viagem): Free +2.000 pts | Prime +5.000 pts               ║
+ * ║  - Indicado vira Prime: só Prime ganha (+3.000, indicado +1.000)           ║
+ * ║                                                                            ║
  * ║  REGRAS DE CONTEÚDO:                                                       ║
  * ║  - NÃO mostrar conversão de ponto em reais no RESGATE                      ║
- * ║  - Regras de GANHO podem ser mostradas (1 pt / R$ 1, 3.000 por indicação)  ║
  * ║  - Usar linguagem de experiência, não matemática                           ║
  * ╚════════════════════════════════════════════════════════════════════════════╝
  */
@@ -21,7 +25,7 @@ const steps = [
   {
     number: '01',
     title: 'Você viaja',
-    description: 'Free: 0,5 ponto por R$ 1. Prime: 1,5 ponto por R$ 1 (3x mais).',
+    description: 'Free: 0,5 pt/R$. Prime Anual: 1,5 pt/R$ (3x mais).',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
@@ -31,7 +35,7 @@ const steps = [
   {
     number: '02',
     title: 'Você indica',
-    description: 'Indique amigos e ganhe pontos na primeira viagem e na assinatura Prime Anual.',
+    description: 'Free: +2.000 pts. Prime: +5.000 pts quando indicado viaja.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
         <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -53,10 +57,12 @@ const steps = [
   },
 ]
 
-// Timeline de indicação (Viagem e Prime Anual - ambos Free e Prime ganham)
+// Timeline de indicação - valores atualizados
+// Primeira viagem: Free 2.000 / Prime 5.000
+// Indicado vira Prime Anual: só indicador Prime ganha (+3.000, indicado +1.000)
 const referralTimeline = [
-  { label: 'Primeira viagem', points: '+3.000 / +5.000 pts', primeOnly: false, note: 'Free / Prime' },
-  { label: 'Prime Anual', points: '+2.000 / +3.000 pts', primeOnly: false, note: 'Free / Prime · ele +1.000' }
+  { label: 'Primeira viagem', points: '+2.000 / +5.000 pts', primeOnly: false, note: 'Free / Prime' },
+  { label: 'Prime Anual', points: '+3.000 pts', primeOnly: true, note: 'Só Prime · ele +1.000' }
 ]
 
 export function HowPointsWork() {
@@ -170,7 +176,7 @@ export function HowPointsWork() {
           </div>
 
           <p className="text-center text-xs text-deep-purple/60 mt-4 font-heading">
-            Todos ganham na indicação. Prime ganha mais em todas as etapas.
+            Todos ganham na primeira viagem. Prime ganha mais e recebe bônus extra quando indicado vira Prime.
           </p>
         </motion.div>
       </div>
