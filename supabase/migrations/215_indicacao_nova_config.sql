@@ -46,15 +46,7 @@ ON CONFLICT (chave) DO UPDATE SET descricao = EXCLUDED.descricao;
 
 
 -- ============================================
--- 2. ATUALIZAR plano_config (tabela de planos) - pontos_indicacao
--- ============================================
-
-UPDATE plano_config SET pontos_indicacao = 2000 WHERE plano = 'free';
-UPDATE plano_config SET pontos_indicacao = 5000 WHERE plano = 'prime';
-
-
--- ============================================
--- 3. FUNÇÃO: get_config_indicacao
+-- 2. FUNÇÃO: get_config_indicacao
 -- Retorna configurações de indicação do plano_config
 -- ============================================
 
