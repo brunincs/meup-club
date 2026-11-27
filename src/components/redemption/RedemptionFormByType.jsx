@@ -3,7 +3,7 @@
 // Renderiza campos diferentes baseado no tipo_entrega
 // ============================================
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { EmissaoSelector } from './EmissaoSelector'
 import { TrechoSelector } from '@/components/viagens/TrechoSelector'
@@ -63,33 +63,25 @@ export function RedemptionFormByType({
   isDark = true,
   allowMultiPassenger = false // Permitir múltiplos passageiros (ex: assento para casal)
 }) {
-  const [formData, setFormDataInternal] = useState(initialData)
+  // COMPONENTE CONTROLADO: usar initialData diretamente como fonte de verdade
+  const formData = initialData
   const [cepLoading, setCepLoading] = useState(false)
-  const onChangeRef = useRef(onChange)
-
-  // Manter ref atualizada
-  useEffect(() => {
-    onChangeRef.current = onChange
-  }, [onChange])
 
   const config = TIPO_ENTREGA_CONFIG[tipoEntrega] || TIPO_ENTREGA_CONFIG.voucher
 
-  // Wrapper para setFormData que também notifica o pai
-  const setFormData = useCallback((updater) => {
-    setFormDataInternal(prev => {
-      const newData = typeof updater === 'function' ? updater(prev) : updater
-      // Notificar pai imediatamente com os novos dados
-      if (onChangeRef.current) {
-        // Usar setTimeout para garantir que o estado do React foi atualizado
-        setTimeout(() => onChangeRef.current(newData), 0)
-      }
-      return newData
-    })
-  }, [])
+  // Atualizar dados - chama onChange diretamente
+  const handleChange = useCallback((field, value) => {
+    if (onChange) {
+      onChange({ ...formData, [field]: value })
+    }
+  }, [onChange, formData])
 
-  const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+  // Atualizar múltiplos campos de uma vez
+  const updateMultipleFields = useCallback((updates) => {
+    if (onChange) {
+      onChange({ ...formData, ...updates })
+    }
+  }, [onChange, formData])
 
   // Buscar CEP via ViaCEP (dispara ao digitar 8 dígitos)
   const fetchCep = async (cep) => {
@@ -158,9 +150,18 @@ export function RedemptionFormByType({
             viagemId={formData.viagemId}
             vooId={formData.vooId}
             onChange={(viagemId, vooId, dados) => {
-              handleChange('viagemId', viagemId)
-              handleChange('vooId', vooId)
-              handleChange('viagemData', dados)
+              // Atualizar todos os campos de uma vez - componente controlado
+              // Limpar passageiro quando viagem/trecho muda
+              updateMultipleFields({
+                viagemId: viagemId,
+                vooId: vooId,
+                viagemData: dados,
+                // Limpar seleção de passageiro quando trecho muda
+                passageiroId: null,
+                passageiroIds: [],
+                passageiros: [],
+                passageiro: ''
+              })
             }}
             isDark={isDark}
             disabled={disabled}
@@ -208,25 +209,23 @@ export function RedemptionFormByType({
             subtipoEntrega={subtipoEntrega}
             value={formData.passageiroIds || formData.passageiroId}
             onChange={(ids, passageiros) => {
-              // IMPORTANTE: Atualizar todos os campos de uma vez para evitar estado inconsistente
+              // Atualizar todos os campos de uma vez - componente controlado
               if (Array.isArray(ids)) {
                 // Multi-select
-                setFormData(prev => ({
-                  ...prev,
+                updateMultipleFields({
                   passageiroIds: ids,
                   passageiros: passageiros,
                   passageiro: passageiros.map(p => p.nome).join(', '),
                   passageiroId: passageiros.length > 0 ? passageiros[0].id : null
-                }))
+                })
               } else {
                 // Single-select
-                setFormData(prev => ({
-                  ...prev,
+                updateMultipleFields({
                   passageiroId: ids,
                   passageiroIds: ids ? [ids] : [],
                   passageiros: passageiros,
                   passageiro: passageiros.length > 0 ? passageiros[0].nome : ''
-                }))
+                })
               }
             }}
             multiSelect={allowMultiPassenger}
