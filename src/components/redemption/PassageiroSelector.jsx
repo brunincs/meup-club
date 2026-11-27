@@ -55,7 +55,7 @@ export function PassageiroSelector({
         onChange(multiSelect ? [pax.id] : pax.id, [pax])
       }
     }
-  }, [passageiros])
+  }, [passageiros, onChange, multiSelect, selectedIds.length])
 
   const loadPassageiros = async () => {
     setLoading(true)

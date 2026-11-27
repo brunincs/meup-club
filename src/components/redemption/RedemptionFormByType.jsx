@@ -3,7 +3,7 @@
 // Renderiza campos diferentes baseado no tipo_entrega
 // ============================================
 
-import { useState, useCallback } from 'react'
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { EmissaoSelector } from './EmissaoSelector'
 import { TrechoSelector } from '@/components/viagens/TrechoSelector'
@@ -63,25 +63,32 @@ export function RedemptionFormByType({
   isDark = true,
   allowMultiPassenger = false // Permitir múltiplos passageiros (ex: assento para casal)
 }) {
-  // COMPONENTE CONTROLADO: usar initialData diretamente como fonte de verdade
-  const formData = initialData
+  // COMPONENTE CONTROLADO: usar initialData como fonte de verdade
+  // Atualizar refs IMEDIATAMENTE no render (não no useEffect que é async)
+  const initialDataRef = useRef(initialData)
+  const onChangeRef = useRef(onChange)
+
+  // Atualizar refs sincronamente no render
+  initialDataRef.current = initialData
+  onChangeRef.current = onChange
+
   const [cepLoading, setCepLoading] = useState(false)
 
   const config = TIPO_ENTREGA_CONFIG[tipoEntrega] || TIPO_ENTREGA_CONFIG.voucher
 
-  // Atualizar dados - chama onChange diretamente
-  const handleChange = useCallback((field, value) => {
-    if (onChange) {
-      onChange({ ...formData, [field]: value })
+  // Atualizar dados - usa ref para garantir dados atuais
+  const handleChange = (field, value) => {
+    if (onChangeRef.current) {
+      onChangeRef.current({ ...initialDataRef.current, [field]: value })
     }
-  }, [onChange, formData])
+  }
 
   // Atualizar múltiplos campos de uma vez
-  const updateMultipleFields = useCallback((updates) => {
-    if (onChange) {
-      onChange({ ...formData, ...updates })
+  const updateMultipleFields = (updates) => {
+    if (onChangeRef.current) {
+      onChangeRef.current({ ...initialDataRef.current, ...updates })
     }
-  }, [onChange, formData])
+  }
 
   // Buscar CEP via ViaCEP (dispara ao digitar 8 dígitos)
   const fetchCep = async (cep) => {
@@ -94,13 +101,12 @@ export function RedemptionFormByType({
       const data = await response.json()
 
       if (!data.erro) {
-        setFormData(prev => ({
-          ...prev,
-          logradouro: data.logradouro || prev.logradouro,
-          bairro: data.bairro || prev.bairro,
-          cidade: data.localidade || prev.cidade,
-          estado: data.uf || prev.estado
-        }))
+        updateMultipleFields({
+          logradouro: data.logradouro || initialDataRef.current.logradouro,
+          bairro: data.bairro || initialDataRef.current.bairro,
+          cidade: data.localidade || initialDataRef.current.cidade,
+          estado: data.uf || initialDataRef.current.estado
+        })
       }
     } catch (error) {
       console.error('Erro ao buscar CEP:', error)
@@ -147,8 +153,8 @@ export function RedemptionFormByType({
         {/* Seletor de Viagem + Trecho (TrechoSelector já tem labels próprios) */}
         {fields.includes('emissao') && (
           <TrechoSelector
-            viagemId={formData.viagemId}
-            vooId={formData.vooId}
+            viagemId={initialData.viagemId}
+            vooId={initialData.vooId}
             onChange={(viagemId, vooId, dados) => {
               // Atualizar todos os campos de uma vez - componente controlado
               // Limpar passageiro quando viagem/trecho muda
@@ -171,10 +177,10 @@ export function RedemptionFormByType({
         )}
 
         {/* Trecho (fallback se não tiver viagem selecionada) */}
-        {fields.includes('trecho') && !formData.viagemId && (
+        {fields.includes('trecho') && !initialData.viagemId && (
           <FormField label="Trecho" required isDark={isDark}>
             <CustomSelect
-              value={formData.trecho || ''}
+              value={initialData.trecho || ''}
               onChange={(val) => handleChange('trecho', val)}
               options={[
                 { value: 'ida', label: 'Somente Ida' },
@@ -193,7 +199,7 @@ export function RedemptionFormByType({
           <FormField label="Aeroporto" required isDark={isDark}>
             <input
               type="text"
-              value={formData.aeroporto || ''}
+              value={initialData.aeroporto || ''}
               onChange={(e) => handleChange('aeroporto', e.target.value)}
               placeholder="Ex: GRU, CGH, GIG..."
               disabled={disabled}
@@ -203,11 +209,11 @@ export function RedemptionFormByType({
         )}
 
         {/* Passageiro - Usar selector quando há voo selecionado */}
-        {fields.includes('passageiro') && formData.vooId && (
+        {fields.includes('passageiro') && initialData.vooId && (
           <PassageiroSelector
-            vooId={formData.vooId}
+            vooId={initialData.vooId}
             subtipoEntrega={subtipoEntrega}
-            value={formData.passageiroIds || formData.passageiroId}
+            value={initialData.passageiroIds || initialData.passageiroId}
             onChange={(ids, passageiros) => {
               // Atualizar todos os campos de uma vez - componente controlado
               if (Array.isArray(ids)) {
@@ -239,7 +245,7 @@ export function RedemptionFormByType({
         {fields.includes('preferencia') && (
           <FormField label="Preferência de Assento" isDark={isDark}>
             <CustomSelect
-              value={formData.preferencia || ''}
+              value={initialData.preferencia || ''}
               onChange={(val) => handleChange('preferencia', val)}
               options={[
                 { value: 'janela', label: 'Janela' },
@@ -258,7 +264,7 @@ export function RedemptionFormByType({
         {fields.includes('observacao') && (
           <FormField label="Observações (opcional)" isDark={isDark}>
             <textarea
-              value={formData.observacao || ''}
+              value={initialData.observacao || ''}
               onChange={(e) => handleChange('observacao', e.target.value)}
               placeholder="Informações adicionais..."
               rows={2}
@@ -283,7 +289,7 @@ export function RedemptionFormByType({
           <FormField label="Destino" required isDark={isDark}>
             <input
               type="text"
-              value={formData.destino || ''}
+              value={initialData.destino || ''}
               onChange={(e) => handleChange('destino', e.target.value)}
               placeholder="Ex: Paris, França"
               disabled={disabled}
@@ -293,7 +299,7 @@ export function RedemptionFormByType({
           <FormField label="Duração (dias)" required isDark={isDark}>
             <input
               type="number"
-              value={formData.duracao || ''}
+              value={initialData.duracao || ''}
               onChange={(e) => handleChange('duracao', e.target.value)}
               placeholder="7"
               min="1"
@@ -307,7 +313,7 @@ export function RedemptionFormByType({
           <FormField label="Data de Ida" required isDark={isDark}>
             <input
               type="date"
-              value={formData.dataIda || ''}
+              value={initialData.dataIda || ''}
               onChange={(e) => handleChange('dataIda', e.target.value)}
               disabled={disabled}
               className={inputClass(isDark)}
@@ -316,7 +322,7 @@ export function RedemptionFormByType({
           <FormField label="Data de Volta" required isDark={isDark}>
             <input
               type="date"
-              value={formData.dataVolta || ''}
+              value={initialData.dataVolta || ''}
               onChange={(e) => handleChange('dataVolta', e.target.value)}
               disabled={disabled}
               className={inputClass(isDark)}
@@ -329,7 +335,7 @@ export function RedemptionFormByType({
           <>
             <FormField label="Viajantes" required isDark={isDark} hint="Nome completo e data de nascimento de cada viajante">
               <textarea
-                value={formData.viajantes || ''}
+                value={initialData.viajantes || ''}
                 onChange={(e) => handleChange('viajantes', e.target.value)}
                 placeholder="João da Silva - 15/03/1980&#10;Maria da Silva - 22/07/1985"
                 rows={3}
@@ -345,7 +351,7 @@ export function RedemptionFormByType({
           <>
             <FormField label="Estilo de Viagem" isDark={isDark}>
               <CustomSelect
-                value={formData.estilo || ''}
+                value={initialData.estilo || ''}
                 onChange={(val) => handleChange('estilo', val)}
                 options={[
                   { value: 'cultural', label: 'Cultural (museus, história)' },
@@ -362,7 +368,7 @@ export function RedemptionFormByType({
             </FormField>
             <FormField label="Interesses e preferências" isDark={isDark}>
               <textarea
-                value={formData.interesses || ''}
+                value={initialData.interesses || ''}
                 onChange={(e) => handleChange('interesses', e.target.value)}
                 placeholder="Restaurantes, atrações que gostaria de visitar, restrições alimentares..."
                 rows={3}
@@ -384,7 +390,7 @@ export function RedemptionFormByType({
         <FormField label="Nome do Destinatário" required isDark={isDark}>
           <input
             type="text"
-            value={formData.destinatario || ''}
+            value={initialData.destinatario || ''}
             onChange={(e) => handleChange('destinatario', e.target.value)}
             placeholder="Nome completo"
             disabled={disabled}
@@ -398,7 +404,7 @@ export function RedemptionFormByType({
             <div className="relative">
               <input
                 type="text"
-                value={formData.cep || ''}
+                value={initialData.cep || ''}
                 onChange={(e) => handleCepChange(e.target.value)}
                 placeholder="00000-000"
                 disabled={disabled}
@@ -421,7 +427,7 @@ export function RedemptionFormByType({
           <FormField label="Cidade" required isDark={isDark} className="col-span-2">
             <input
               type="text"
-              value={formData.cidade || ''}
+              value={initialData.cidade || ''}
               onChange={(e) => handleChange('cidade', e.target.value)}
               placeholder="Cidade"
               disabled={disabled}
@@ -434,7 +440,7 @@ export function RedemptionFormByType({
         <FormField label="Endereço" required isDark={isDark}>
           <input
             type="text"
-            value={formData.logradouro || ''}
+            value={initialData.logradouro || ''}
             onChange={(e) => handleChange('logradouro', e.target.value)}
             placeholder="Rua, Avenida..."
             disabled={disabled}
@@ -446,7 +452,7 @@ export function RedemptionFormByType({
           <FormField label="Número" required isDark={isDark}>
             <input
               type="text"
-              value={formData.numero || ''}
+              value={initialData.numero || ''}
               onChange={(e) => handleChange('numero', e.target.value)}
               placeholder="123"
               disabled={disabled}
@@ -456,7 +462,7 @@ export function RedemptionFormByType({
           <FormField label="Complemento" isDark={isDark} className="col-span-2">
             <input
               type="text"
-              value={formData.complemento || ''}
+              value={initialData.complemento || ''}
               onChange={(e) => handleChange('complemento', e.target.value)}
               placeholder="Apto, Bloco..."
               disabled={disabled}
@@ -469,7 +475,7 @@ export function RedemptionFormByType({
           <FormField label="Bairro" required isDark={isDark}>
             <input
               type="text"
-              value={formData.bairro || ''}
+              value={initialData.bairro || ''}
               onChange={(e) => handleChange('bairro', e.target.value)}
               placeholder="Bairro"
               disabled={disabled}
@@ -478,7 +484,7 @@ export function RedemptionFormByType({
           </FormField>
           <FormField label="Estado" required isDark={isDark}>
             <CustomSelect
-              value={formData.estado || ''}
+              value={initialData.estado || ''}
               onChange={(val) => handleChange('estado', val)}
               options={['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'].map(uf => ({
                 value: uf,
@@ -495,7 +501,7 @@ export function RedemptionFormByType({
         <FormField label="Telefone para contato" isDark={isDark}>
           <input
             type="tel"
-            value={formData.telefone || ''}
+            value={initialData.telefone || ''}
             onChange={(e) => handleChange('telefone', e.target.value)}
             placeholder="(00) 00000-0000"
             disabled={disabled}
