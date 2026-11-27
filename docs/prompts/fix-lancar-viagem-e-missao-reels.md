@@ -7,12 +7,14 @@ Já corrigi no arquivo: `src/services/emissaoService.js` usava `PONTOS_POR_REAL`
 - Testar o envio do card com conta Free: enviar → toast de sucesso → aparece em Admin > Emissões.
 - `pontos_estimados` é só estimativa. Os pontos reais saem do `aprovar_emissao_seguro` no servidor (Free 0,5 / Prime 1,5). Conferir que a RPC usa o plano do usuário.
 
-## 2. Missão do Reels pelo dashboard vira "Em análise" sem abrir o Reels e sem pedir o @
-O `MissionsSection.jsx` (dashboard) chama `solicitarTarefa` direto. O fluxo certo (botão "Abrir o Reels" + "Já comentei" + modal do @) só existe em `Tasks.jsx`.
-- No dashboard, para missões com `link_url` ou que pedem @ do Instagram: mostrar os mesmos dois botões, **"Abrir o Reels ↗"** e **"Já comentei"**. O "Já comentei" abre o modal do @ (extrair o modal de Tasks.jsx para `components/missions/InstagramHandleModal.jsx` e usar nos dois lugares). Se for mais simples, o botão do dashboard pode só levar para `/tarefas#<id>`, já rolando até a missão.
-- Nunca criar solicitação de missão do Instagram sem o @ (validar também no servidor/RPC: se a tarefa exige @, recusar sem `dados_extras.instagram`).
-- Solicitações que já ficaram pendentes sem @: permitir que o usuário informe o @ depois (no card "Em análise", link "Informar meu @"), e no admin mostrar "sem @ informado".
-- Conferir que a página `/tarefas` abre sem erro e que a missão aparece lá com os botões certos.
+## 2. Missão do Reels pelo dashboard: JÁ AJUSTADO (decisão: dashboard só leva para Missões)
+Já editei:
+- `MissionsSection.jsx`: missões do Instagram ou com link agora fazem `navigate('/tarefas#missao-<id>')` em vez de criar a solicitação.
+- `Tasks.jsx`: o card ganhou `id="missao-<id>"`, e um useEffect abre a aba certa (unica → Conquistas) e rola até a missão.
+Falta você:
+- Rodar o build e conferir que compila (aqui não consegui buildar).
+- No servidor, recusar solicitação de missão do Instagram sem `dados_extras.instagram`.
+- Para quem já ficou "Em análise" sem @: no card, link "Informar meu @" que abre o modal e salva o @ na solicitação existente. No admin, mostrar "sem @".
 
 ## Teste
 Conta Free de teste: (a) enviar card de viagem → ok; (b) no dashboard, Abrir o Reels → abre o post; Já comentei → pede @ → Em análise com o @ → aparece no admin com o @.

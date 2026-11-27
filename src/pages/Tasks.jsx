@@ -184,6 +184,7 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
 
   return (
     <motion.div
+      id={`missao-${task.id}`}
       layout
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -543,6 +544,20 @@ export function Tasks() {
       setActiveTab('oneTime')
     }
   }, [isLoadingTarefas, tasksSummary])
+
+  // Vindo do dashboard com #missao-<id>: abrir a aba certa e rolar até a missão
+  useEffect(() => {
+    if (isLoadingTarefas) return
+    const hash = window.location.hash || ''
+    if (!hash.startsWith('#missao-')) return
+    const id = hash.replace('#missao-', '')
+    const alvo = tarefas.find(t => String(t.id) === id)
+    if (alvo) setActiveTab(alvo.tipo === 'unica' ? 'oneTime' : 'daily')
+    const t = setTimeout(() => {
+      document.getElementById(`missao-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 400)
+    return () => clearTimeout(t)
+  }, [isLoadingTarefas, tarefas])
 
   // Validar e formatar @ do Instagram
   const validateInstagramHandle = (handle) => {

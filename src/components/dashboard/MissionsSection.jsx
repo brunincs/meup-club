@@ -423,6 +423,13 @@ export function MissionsSection({ variant = 'dark' }) {
       return
     }
 
+    // Missões do Instagram/link externo: o fluxo completo (Abrir o Reels + Já comentei + @)
+    // fica na página de Missões. Do dashboard só leva para lá.
+    if (isInstagramMission(mission) || mission.link_url || mission.linkUrl) {
+      navigate(`/tarefas#missao-${mission.id}`)
+      return
+    }
+
     const action = getMissionAction(mission.name)
 
     // Se é missão externa, abre o link primeiro
@@ -484,7 +491,7 @@ export function MissionsSection({ variant = 'dark' }) {
       // Missão com verificação automática - vai para a rota
       handleGoToMission(mission)
     }
-  }, [user, handleGoToMission, isInstagramMission])
+  }, [user, handleGoToMission, isInstagramMission, navigate])
 
   // Handler para submeter missão de Instagram com @
   const handleInstagramSubmit = useCallback(async (instagramHandle) => {

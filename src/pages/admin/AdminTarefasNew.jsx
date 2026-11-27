@@ -705,7 +705,7 @@ export function AdminTarefasNew() {
                         {sol.userEmail && <span className="text-graphite/50"> · {sol.userEmail}</span>}
                       </p>
                       {/* Instagram handle com link */}
-                      {sol.instagramHandle && (
+                      {sol.instagramHandle ? (
                         <p className="text-xs font-heading mt-1">
                           <span className="text-graphite/50">Instagram: </span>
                           <a
@@ -716,6 +716,10 @@ export function AdminTarefasNew() {
                           >
                             {sol.instagramHandle} ↗
                           </a>
+                        </p>
+                      ) : (sol.tarefaLinkUrl?.includes('instagram.com') || sol.tarefaNome?.toLowerCase().includes('instagram') || sol.tarefaNome?.toLowerCase().includes('reels')) && (
+                        <p className="text-xs font-heading mt-1 text-red-500">
+                          sem @ informado
                         </p>
                       )}
                       {/* Link do Reels (se a tarefa tiver link_url) */}
