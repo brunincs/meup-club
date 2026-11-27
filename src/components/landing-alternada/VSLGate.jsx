@@ -139,41 +139,56 @@ export function VSLGate({ children }) {
 
   // Rastrear tempo assistido
   const handleTimeUpdate = useCallback(() => {
-    const video = videoRef.current
-    if (!video || isUnlocked) return
+    try {
+      const video = videoRef.current
+      if (!video || isUnlocked) return
 
-    const currentTime = Math.floor(video.currentTime)
+      const currentTime = Math.floor(video.currentTime)
 
-    // Se o tempo avançou (evita pulos para trás)
-    if (currentTime > lastTimeRef.current) {
-      // Calcular incremento real (máximo 3s para tolerar buffering)
-      const delta = Math.min(currentTime - lastTimeRef.current, 3)
+      // Se o tempo avançou (evita pulos para trás)
+      if (currentTime > lastTimeRef.current) {
+        // Calcular incremento real (máximo 3s para tolerar buffering)
+        const delta = Math.min(currentTime - lastTimeRef.current, 3)
 
-      setWatchedSeconds(prev => prev + delta)
-      lastTimeRef.current = currentTime
+        setWatchedSeconds(prev => {
+          const newVal = prev + delta
+          // Log a cada 10 segundos para debug
+          if (Math.floor(newVal / 10) > Math.floor(prev / 10)) {
+            console.log(`[VSL] ${newVal}s assistidos`)
+          }
+          return newVal
+        })
+        lastTimeRef.current = currentTime
+      }
+    } catch (err) {
+      console.error('[VSL] Erro em handleTimeUpdate:', err)
     }
   }, [isUnlocked])
 
   // Efeito para disparar eventos e liberar página
   useEffect(() => {
-    if (isUnlocked) return
+    try {
+      if (isUnlocked) return
 
-    // Marco 30s
-    if (watchedSeconds >= 30 && !events30sRef.current) {
-      events30sRef.current = true
-      console.log('[VSL] 30s assistidos')
-      trackEvent('vsl_30s')
-    }
+      // Marco 30s
+      if (watchedSeconds >= 30 && !events30sRef.current) {
+        events30sRef.current = true
+        console.log('[VSL] Marco 30s atingido')
+        trackEvent('vsl_30s')
+      }
 
-    // Marco 60s - liberar página
-    if (watchedSeconds >= UNLOCK_SECONDS && !events60sRef.current) {
-      events60sRef.current = true
-      console.log('[VSL] 60s - liberando página')
-      trackEvent('vsl_60s_liberou')
-      try {
-        localStorage.setItem(STORAGE_KEY, '1')
-      } catch {}
-      setIsUnlocked(true)
+      // Marco 60s - liberar página
+      if (watchedSeconds >= UNLOCK_SECONDS && !events60sRef.current) {
+        events60sRef.current = true
+        console.log('[VSL] Marco 60s - liberando página')
+        trackEvent('vsl_60s_liberou')
+        try {
+          localStorage.setItem(STORAGE_KEY, '1')
+        } catch {}
+        setIsUnlocked(true)
+      }
+    } catch (err) {
+      console.error('[VSL] Erro no efeito de eventos:', err)
     }
   }, [watchedSeconds, isUnlocked, trackEvent])
 
@@ -227,6 +242,8 @@ export function VSLGate({ children }) {
       setHasInteracted(true)
       setWatchedSeconds(0)
       lastTimeRef.current = 0
+      events30sRef.current = false
+      events60sRef.current = false
       trackEvent('vsl_play')
     } else {
       video.muted = !video.muted
@@ -289,6 +306,8 @@ export function VSLGate({ children }) {
       setHasInteracted(true)
       setWatchedSeconds(0)
       lastTimeRef.current = 0
+      events30sRef.current = false
+      events60sRef.current = false
       trackEvent('vsl_play')
     }
     const opts = { once: true, passive: true }
