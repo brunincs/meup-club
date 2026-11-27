@@ -108,6 +108,35 @@ export function VSLGate({ children }) {
   const events30sRef = useRef(false)
   const events60sRef = useRef(false)
 
+  // Track events (Supabase + Vercel Analytics) - definido antes dos efeitos que usam
+  const trackEvent = useCallback((name) => {
+    console.log(`[VSL Event] ${name}`)
+
+    // Mapear eventos internos para eventos do banco
+    const eventMap = {
+      'vsl_play': 'play',
+      'vsl_30s': 'progress_30s',
+      'vsl_60s_liberou': 'progress_60s',
+      'vsl_fim': 'complete',
+      'vsl_cta_free': 'click_free',
+      'vsl_cta_prime': 'click_prime'
+    }
+
+    const dbEvent = eventMap[name]
+    if (dbEvent) {
+      supabase.rpc('registrar_evento_vsl', {
+        p_evento: dbEvent,
+        p_sessao_id: getSessionId(),
+        p_origem_url: window.location.href
+      }).catch(() => {}) // Fire and forget
+    }
+
+    // Vercel Analytics
+    if (typeof window !== 'undefined' && window.va) {
+      window.va('event', { name })
+    }
+  }, [])
+
   // Rastrear tempo assistido
   const handleTimeUpdate = useCallback(() => {
     const video = videoRef.current
@@ -271,37 +300,6 @@ export function VSLGate({ children }) {
       window.removeEventListener('keydown', ligarSom)
     }
   }, [videoLoaded, isUnlocked])
-
-  // Track events (Supabase + Vercel Analytics)
-  const trackEvent = useCallback((name) => {
-    console.log(`[VSL Event] ${name}`)
-
-    // Mapear eventos internos para eventos do banco
-    const eventMap = {
-      'vsl_play': 'play',
-      'vsl_30s': 'progress_30s',
-      'vsl_60s_liberou': 'progress_60s',
-      'vsl_fim': 'complete',
-      'vsl_cta_free': 'click_free',
-      'vsl_cta_prime': 'click_prime'
-    }
-
-    const dbEvent = eventMap[name]
-    if (dbEvent) {
-      supabase.rpc('registrar_evento_vsl', {
-        p_evento: dbEvent,
-        p_sessao_id: getSessionId(),
-        p_origem_url: window.location.href
-      }).catch(() => {}) // Fire and forget
-    }
-
-    // Vercel Analytics
-    // @ts-ignore
-    if (typeof window !== 'undefined' && window.va) {
-      // @ts-ignore
-      window.va('event', { name })
-    }
-  }, [])
 
   // Handler para botões CTA
   const handleCTAFree = () => {
