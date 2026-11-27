@@ -225,14 +225,13 @@ export function VSLGate({ children }) {
   // Tempo restante para liberar
   const secondsToUnlock = Math.max(0, UNLOCK_SECONDS - watchedSeconds)
 
-  // Se já desbloqueado, renderiza children direto
-  if (isUnlocked) {
-    return <>{children}</>
-  }
+  // A VSL fica SEMPRE no topo (mesmo depois de liberar ou para quem já assistiu).
+  // A trava só esconde o restante da página.
 
   return (
     <div className="min-h-screen bg-deep-purple">
-      {/* Header simplificado */}
+      {/* Header simplificado (só enquanto travado; depois o Header fixo do site aparece) */}
+      {!isUnlocked && (
       <header className="py-4 px-4 md:px-8">
         <div className="container-premium">
           <img
@@ -242,9 +241,10 @@ export function VSLGate({ children }) {
           />
         </div>
       </header>
+      )}
 
       {/* VSL Section */}
-      <section className="py-8 md:py-12">
+      <section className={`py-8 md:py-12 ${isUnlocked ? 'pt-24 md:pt-28' : ''}`}>
         <div className="container-premium">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Coluna do vídeo */}
@@ -370,7 +370,12 @@ export function VSLGate({ children }) {
                   )}
                 </div>
 
-                {/* Contador regressivo */}
+                {/* Contador regressivo (travado) ou botões FREE/PRIME (liberado) */}
+                {isUnlocked ? (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
+                    <VSLCTAButtons />
+                  </motion.div>
+                ) : (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -384,6 +389,7 @@ export function VSLGate({ children }) {
                     </span>
                   </p>
                 </motion.div>
+                )}
               </motion.div>
             </div>
 
@@ -420,21 +426,29 @@ export function VSLGate({ children }) {
                   ))}
                 </ul>
 
+                {!isUnlocked && (
                 <div className="pt-4 border-t border-dusty-rose/20">
                   <p className="text-xs text-dusty-rose/60">
                     Assista ao vídeo para entender como funciona e liberar a página completa.
                   </p>
                 </div>
+                )}
               </motion.div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Conteúdo oculto visualmente mas presente no DOM (SEO) */}
-      <div className="sr-only" aria-hidden="true">
-        {children}
-      </div>
+      {/* Restante da landing: visível após liberar; antes, oculto visualmente mas no DOM (SEO) */}
+      {isUnlocked ? (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+          {children}
+        </motion.div>
+      ) : (
+        <div className="sr-only" aria-hidden="true">
+          {children}
+        </div>
+      )}
     </div>
   )
 }
