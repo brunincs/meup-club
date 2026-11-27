@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { CrownIcon, GiftIcon } from '@/components/ui/Icons'
 import { fetchPlanosConfig } from '@/services/subscriptionService'
-import { getRegulamentoUrl } from '@/services/fundadoresService'
 import { getFullSlotsData } from '@/services/slotsService'
 import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 import { formatPrice } from '@/config/contact'
@@ -15,28 +14,22 @@ import { formatPrice } from '@/config/contact'
  * SIMPLIFICADO:
  * - 30 vagas Prime fundador a R$597/ano
  * - Sem lotes (preço único)
- * - 200.000 pontos em sorteio entre fundadores
  * - Acesso exclusivo: clientes ou convidados
  */
 export function PrimeOfferAlternada() {
   const [config, setConfig] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [slotsData, setSlotsData] = useState(null)
-  const [regulamentoUrl, setRegulamentoUrl] = useState('')
 
   useEffect(() => {
     async function load() {
-      const [planosResult, slots, regUrl] = await Promise.all([
+      const [planosResult, slots] = await Promise.all([
         fetchPlanosConfig(),
-        getFullSlotsData(),
-        getRegulamentoUrl()
+        getFullSlotsData()
       ])
       if (planosResult.success) {
         setConfig(planosResult.planos)
       }
       setSlotsData(slots)
-      setRegulamentoUrl(regUrl)
-      setLoading(false)
     }
     load()
   }, [])
@@ -54,16 +47,10 @@ export function PrimeOfferAlternada() {
   const vagasTotal = slotsData?.prime?.vagas || 30
   const vagasRestantes = slotsData?.prime?.restantes || 30
   const vagasVendidas = slotsData?.prime?.vendidas || 0
-  const premioTotal = slotsData?.premio || 200000
   const esgotado = slotsData?.prime?.esgotado || false
 
   // Economia
   const economiaFundador = precoAnualCheio - precoFundador
-  const descontoPercent = Math.round((1 - precoFundador / precoAnualCheio) * 100)
-
-  // Urgência visual
-  const percentualRestante = (vagasRestantes / vagasTotal) * 100
-  const urgenciaAlta = percentualRestante <= 20
 
   return (
     <section id="prime-offer" className="relative py-16 md:py-24 bg-deep-purple overflow-hidden">
@@ -137,7 +124,7 @@ export function PrimeOfferAlternada() {
               <ul className="space-y-2.5 text-sm mb-6">
                 <li className="flex items-start gap-2 text-deep-purple/80">
                   <span className="text-green-600 mt-0.5">✓</span>
-                  <span>Pontos em viagens: <strong>1x</strong></span>
+                  <span>Pontos em viagens: <strong>0,5 pt/R$</strong></span>
                 </li>
                 <li className="flex items-start gap-2 text-deep-purple/80">
                   <span className="text-green-600 mt-0.5">✓</span>
@@ -286,102 +273,6 @@ export function PrimeOfferAlternada() {
             </motion.button>
           </motion.div>
         </div>
-
-        {/* Banner Prime Fundadores - Benefícios */}
-        {!esgotado && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-12 rounded-[20px] border border-antique-gold bg-[#32113f] overflow-hidden max-w-4xl mx-auto"
-          >
-            <div className="grid md:grid-cols-2 gap-0">
-              {/* Coluna Esquerda - Informações */}
-              <div className="p-6 md:p-8 flex flex-col justify-center order-2 md:order-1">
-                {/* Selo Fundador */}
-                <div className="mb-4">
-                  <img
-                    src="/brand/selo-fundador.svg"
-                    alt="Fundador 2026"
-                    className="h-12 w-auto"
-                  />
-                </div>
-
-                {/* Título */}
-                <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-2">
-                  Vantagens exclusivas do Fundador
-                </h3>
-                <GoldLine width="60px" className="mb-5" />
-
-                <ul className="text-sm text-ice-white/80 mb-5 space-y-2">
-                  <li>• Preço garantido de R$ 597/ano na renovação</li>
-                  <li>• 1,5 ponto a cada R$ 1 em viagens</li>
-                  <li>• A equipe Me,up lança suas viagens</li>
-                  <li>• Indicação vale 5.000 pts</li>
-                  <li>• Selo de Fundador permanente</li>
-                </ul>
-
-                {/* Contador de vagas */}
-                <div className="mb-5">
-                  {vagasVendidas >= 5 ? (
-                    <>
-                      <p className="text-sm text-ice-white/80 mb-2">
-                        <span className={urgenciaAlta ? 'text-red-400 font-semibold' : 'text-antique-gold font-semibold'}>
-                          {vagasRestantes}
-                        </span> de {vagasTotal} vagas restantes
-                      </p>
-                      <div className="h-2 bg-ice-white/10 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            urgenciaAlta ? 'bg-red-400' : 'bg-antique-gold'
-                          }`}
-                          style={{ width: `${((vagasTotal - vagasRestantes) / vagasTotal) * 100}%` }}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-sm text-antique-gold font-semibold">
-                      Apenas {vagasTotal} vagas de fundador
-                    </p>
-                  )}
-                </div>
-
-                {/* CTA */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleGarantirVaga}
-                  className="px-5 py-2.5 rounded-xl bg-antique-gold hover:bg-[#8b6830] text-deep-purple font-heading font-semibold text-sm transition-colors"
-                >
-                  Quero ser Fundador
-                </motion.button>
-              </div>
-
-              {/* Coluna Direita - Destaque */}
-              <div className="p-6 md:p-8 bg-gradient-to-br from-antique-gold/10 to-antique-gold/5 flex flex-col items-center justify-center text-center order-1 md:order-2">
-                {/* Aviãozinho */}
-                <div className="w-16 h-16 mb-4">
-                  <svg viewBox="0 0 64 64" fill="none" className="w-full h-full">
-                    <polygon points="6,40 58,16 38,60" fill="#a27937" />
-                    <polygon points="58,16 26,46 38,60" fill="#7d5a26" />
-                  </svg>
-                </div>
-
-                {/* Valor */}
-                <p className="text-4xl md:text-5xl font-display font-bold text-antique-gold mb-1">
-                  R$ 597
-                </p>
-                <p className="text-lg text-ice-white/80 font-heading mb-4">
-                  por ano (6x R$ 99,50)
-                </p>
-
-                <p className="text-sm text-ice-white/70">
-                  Preço garantido para sempre
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
       </div>
     </section>

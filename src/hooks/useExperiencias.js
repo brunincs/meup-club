@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { fetchExperienciasComPrecos } from '@/services/experienciasService'
 import { PONTOS_POR_REAL, PONTOS_POR_INDICACAO, formatPoints } from '@/config/experiences'
+import { getFotoExperiencia } from '@/config/experienciaFotos'
 
 // Re-exportar constantes para manter compatibilidade
 export { PONTOS_POR_REAL, PONTOS_POR_INDICACAO, formatPoints }
@@ -57,7 +58,7 @@ export function useExperiencias() {
       title: exp.nome,
       name: exp.nome, // Alias para compatibilidade
       description: exp.descricao,
-      image: exp.imagem_url || getPlaceholderImage(exp.nome, exp.destino),
+      image: exp.imagem_url || getFotoExperiencia(exp.nome) || getPlaceholderImage(exp.nome, exp.destino),
       // Preços por plano
       valorReais: exp.valor_reais || exp.valor_referencia_reais,
       valorReferenciaReais: exp.valor_referencia_reais,
