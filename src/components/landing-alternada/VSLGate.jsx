@@ -181,11 +181,14 @@ export function VSLGate({ children }) {
       if (watchedSeconds >= UNLOCK_SECONDS && !events60sRef.current) {
         events60sRef.current = true
         console.log('[VSL] Marco 60s - liberando página')
-        trackEvent('vsl_60s_liberou')
+        // IMPORTANTE: setIsUnlocked ANTES de trackEvent para garantir que a página libera
+        // mesmo se trackEvent falhar
         try {
           localStorage.setItem(STORAGE_KEY, '1')
         } catch {}
         setIsUnlocked(true)
+        // Track event depois de liberar (fire and forget)
+        trackEvent('vsl_60s_liberou')
       }
     } catch (err) {
       console.error('[VSL] Erro no efeito de eventos:', err)
