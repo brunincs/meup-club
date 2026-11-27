@@ -111,13 +111,16 @@ export function VSLGate({ children }) {
 
     const currentTime = Math.floor(video.currentTime)
 
-    // Só conta se avançou 1 segundo (evita pulos)
-    if (currentTime > lastTimeRef.current && currentTime - lastTimeRef.current <= 2) {
-      setWatchedSeconds(prev => {
-        const newSeconds = prev + (currentTime - lastTimeRef.current)
+    // Se o tempo avançou (evita pulos para trás)
+    if (currentTime > lastTimeRef.current) {
+      // Calcular incremento real (máximo 3s para tolerar buffering)
+      const delta = Math.min(currentTime - lastTimeRef.current, 3)
 
-        // Registrar marcos
-        if (newSeconds === 30) {
+      setWatchedSeconds(prev => {
+        const newSeconds = prev + delta
+
+        // Registrar marcos (usar >= para não perder se pular exato)
+        if (prev < 30 && newSeconds >= 30) {
           console.log('[VSL] 30s assistidos')
           trackEvent('vsl_30s')
         }
@@ -134,10 +137,10 @@ export function VSLGate({ children }) {
 
         return newSeconds
       })
-    }
 
-    lastTimeRef.current = currentTime
-  }, [isUnlocked])
+      lastTimeRef.current = currentTime
+    }
+  }, [isUnlocked, trackEvent])
 
   // Bloquear seek antes de 60s
   const handleSeeking = useCallback(() => {
