@@ -173,7 +173,7 @@ export function AuthProvider({ children }) {
 
   // CADASTRO - criar nova conta
   // IMPORTANTE: NUNCA cai no demo - só cadastra no Supabase real
-  async function signUp({ email, password, name, referrerId = null, acceptedTerms = false, codigoEntrada = null, origemCadastro = 'site', primeToken = null }) {
+  async function signUp({ email, password, name, cpf = null, whatsapp = null, referrerId = null, acceptedTerms = false, codigoEntrada = null, origemCadastro = 'site', primeToken = null }) {
     // Se Supabase não está configurado, mostrar erro claro (NÃO cair no demo!)
     if (!isSupabaseConfigured()) {
       return {
@@ -190,6 +190,8 @@ export function AuthProvider({ children }) {
         options: {
           data: {
             name,
+            cpf: cpf || undefined, // CPF (só dígitos) - será criptografado pelo trigger
+            phone: whatsapp || undefined, // WhatsApp (só dígitos)
             referred_by: referrerId, // Salva quem indicou nos metadados
             accepted_terms: acceptedTerms, // Salva aceite dos termos (LGPD)
             codigo_entrada: codigoEntrada, // Código do link (ex: LISTA27) para auto-aprovação
