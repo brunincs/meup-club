@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
+import { AdminLayout } from '@/components/admin/AdminLayout'
 import {
   adminGerarLinkPrime,
   adminListarLinksPrime,
@@ -141,6 +142,7 @@ export function AdminLinksPrime() {
   }
 
   return (
+    <AdminLayout>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -411,6 +413,7 @@ export function AdminLinksPrime() {
         )}
       </AnimatePresence>
     </div>
+    </AdminLayout>
   )
 }
 

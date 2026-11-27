@@ -141,7 +141,7 @@ const menuGroups = [
       { path: '/admin/usuarios', label: 'Clientes', icon: 'users' },
       { path: '/admin/assinaturas', label: 'Assinaturas', icon: 'crown' },
       { path: '/admin/fundadores', label: 'Fundadores', icon: 'founders' },
-      { path: '/admin/links-prime', label: 'Links Prime', icon: 'star' }
+      { path: '/admin/links-prime', label: 'Links Prime', icon: 'crown' }
     ]
   },
   {
