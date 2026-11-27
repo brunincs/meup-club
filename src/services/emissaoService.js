@@ -5,8 +5,8 @@
 
 import { supabase } from '@/lib/supabase'
 
-// Configuração de pontos (1 pt por R$1)
-const PONTOS_POR_REAL = 1
+// Configuração de pontos Free (0.5 pt por R$1)
+const PONTOS_POR_REAL_FREE = 0.5
 
 // ============================================
 // CLIENTE: CRIAR EMISSÃO
@@ -20,16 +20,16 @@ const PONTOS_POR_REAL = 1
  */
 export async function uploadCardMeup(file, userId) {
   try {
-    // Validar tipo de arquivo
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+    // Validar tipo de arquivo (inclui HEIC do iPhone)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf']
     if (!allowedTypes.includes(file.type)) {
-      return { success: false, error: 'Tipo de arquivo não permitido. Use JPG, PNG ou PDF.' }
+      return { success: false, error: 'Tipo de arquivo não permitido. Use JPG, PNG, HEIC ou PDF.' }
     }
 
-    // Validar tamanho (max 5MB)
-    const maxSize = 5 * 1024 * 1024
+    // Validar tamanho (max 10MB)
+    const maxSize = 10 * 1024 * 1024
     if (file.size > maxSize) {
-      return { success: false, error: 'Arquivo muito grande. Máximo 5MB.' }
+      return { success: false, error: 'Arquivo muito grande. Máximo 10MB.' }
     }
 
     // Gerar nome único
@@ -813,10 +813,11 @@ export function formatStatus(status) {
 }
 
 /**
- * Calcular pontos estimados (básico, sem multiplicador)
+ * Calcular pontos estimados para Free (0.5 pt por R$1)
+ * Usado no formulário do cliente para preview
  */
 export function calcularPontos(valor) {
-  return Math.floor(valor * PONTOS_POR_REAL)
+  return Math.floor(valor * PONTOS_POR_REAL_FREE)
 }
 
 /**

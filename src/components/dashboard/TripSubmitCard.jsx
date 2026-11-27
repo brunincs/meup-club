@@ -221,7 +221,7 @@ export function TripSubmitCard({ variant = 'dark' }) {
               className="text-center py-2"
             >
               <p className={`text-sm mb-4 ${isDark ? 'text-dusty-rose' : 'text-graphite/70'}`}>
-                Anexe seu card Me,up e ganhe pontos pela sua viagem
+                Envie o card da sua emissão Me,up e ganhe pontos
               </p>
               <button
                 onClick={() => setShowForm(true)}
@@ -331,7 +331,7 @@ function EmissaoForm({ userId, isDark, onSuccess, onCancel }) {
     setSubmitting(false)
 
     if (result.success) {
-      toast.success('Emissão enviada! Aguarde aprovação.')
+      toast.success('Recebemos! Seus pontos entram após a aprovação da equipe.')
       onSuccess()
     } else {
       toast.error(result.error)
@@ -353,7 +353,7 @@ function EmissaoForm({ userId, isDark, onSuccess, onCancel }) {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,.pdf"
+          accept="image/*,.pdf,.heic,.heif"
           onChange={handleFileChange}
           className="hidden"
         />
@@ -400,7 +400,7 @@ function EmissaoForm({ userId, isDark, onSuccess, onCancel }) {
             <span className="text-xl">📎</span>
             <span className="text-xs font-heading">Clique para anexar</span>
             <span className={`text-[10px] ${isDark ? 'text-dusty-rose/60' : 'text-graphite/40'}`}>
-              JPG, PNG ou PDF (max 5MB)
+              JPG, PNG, HEIC ou PDF (max 10MB)
             </span>
           </button>
         )}

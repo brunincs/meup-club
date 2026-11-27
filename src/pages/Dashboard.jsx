@@ -7,7 +7,8 @@ import {
   HeroSection,
   NextTripCard,
   FoundersCard,
-  ReferralCard
+  ReferralCard,
+  TripSubmitCard
 } from '@/components/dashboard'
 import { HojeSection } from '@/components/dashboard/HojeSection'
 import { ExperienciasParaVoce } from '@/components/dashboard/ExperienciasParaVoce'
@@ -77,6 +78,11 @@ export function Dashboard() {
         <div className="container-premium">
           {/* MOBILE: Uma coluna */}
           <div className="lg:hidden space-y-4">
+            {/* Lançar Viagem - Free envia card, Prime vê benefício */}
+            <SafeSection name="Lançar Viagem" silent>
+              <TripSubmitCard variant="light" />
+            </SafeSection>
+
             {/* Bloco 2: Próxima Viagem (BRANCO) */}
             <SafeSection name="Próxima Viagem" silent>
               <NextTripCard variant="light" />
@@ -115,8 +121,11 @@ export function Dashboard() {
               </SafeSection>
             </div>
 
-            {/* Coluna Direita (~40%): Próxima Viagem + Convites + Fundador (BRANCO) */}
+            {/* Coluna Direita (~40%): Lançar Viagem + Próxima Viagem + Convites + Fundador (BRANCO) */}
             <div className="lg:col-span-2 space-y-4">
+              <SafeSection name="Lançar Viagem" silent>
+                <TripSubmitCard variant="light" />
+              </SafeSection>
               <SafeSection name="Próxima Viagem" silent>
                 <NextTripCard variant="light" />
               </SafeSection>
