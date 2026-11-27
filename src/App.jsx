@@ -21,6 +21,7 @@ const EsqueciSenha = lazy(() => import('@/pages/EsqueciSenha').then(m => ({ defa
 const RedefinirSenha = lazy(() => import('@/pages/RedefinirSenha').then(m => ({ default: m.RedefinirSenha })))
 const InviteSignup = lazy(() => import('@/pages/InviteSignup'))
 const Entrar = lazy(() => import('@/pages/Entrar'))
+const PrimeAtivar = lazy(() => import('@/pages/PrimeAtivar'))
 
 // Lazy load - Páginas protegidas (usuário logado)
 const Rewards = lazy(() => import('@/pages/Rewards').then(m => ({ default: m.Rewards })))
@@ -50,6 +51,7 @@ const AdminFundadores = lazy(() => import('@/pages/admin/AdminFundadores').then(
 const AdminFotosDestinos = lazy(() => import('@/pages/admin/AdminFotosDestinos'))
 const AdminMetricas = lazy(() => import('@/pages/admin/AdminMetricas').then(m => ({ default: m.AdminMetricas })))
 const AdminAcesso = lazy(() => import('@/pages/admin/AdminAcesso'))
+const AdminLinksPrime = lazy(() => import('@/pages/admin/AdminLinksPrime'))
 
 // Loading fallback simples
 const PageLoader = () => (
@@ -219,6 +221,9 @@ function App() {
             }
           />
 
+          {/* Prime link activation */}
+          <Route path="/prime/ativar" element={<PrimeAtivar />} />
+
           {/* Admin routes - protegidas por AdminRoute (só role='admin') */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/indicacoes" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
@@ -238,6 +243,7 @@ function App() {
           <Route path="/admin/fotos-destinos" element={<AdminRoute><AdminFotosDestinos /></AdminRoute>} />
           <Route path="/admin/metricas" element={<AdminRoute><AdminMetricas /></AdminRoute>} />
           <Route path="/admin/acesso" element={<AdminRoute><AdminAcesso /></AdminRoute>} />
+          <Route path="/admin/links-prime" element={<AdminRoute><AdminLinksPrime /></AdminRoute>} />
 
           {/* 404 - Catch all */}
           <Route path="*" element={<NotFound />} />
