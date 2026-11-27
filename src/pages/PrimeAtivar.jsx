@@ -124,29 +124,52 @@ export function PrimeAtivar() {
     )
   }
 
-  // Link inválido
+  // Link inválido ou já usado
   if (status === 'invalid') {
+    const isUsado = error === 'Este link já foi utilizado'
     return (
       <div className="min-h-screen bg-deep-purple flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
-          <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-6">
-            <span className="text-4xl">❌</span>
+          <div className={`w-20 h-20 rounded-full ${isUsado ? 'bg-antique-gold/20' : 'bg-red-500/20'} flex items-center justify-center mx-auto mb-6`}>
+            <span className="text-4xl">{isUsado ? '👑' : '❌'}</span>
           </div>
           <h1 className="text-2xl font-display font-bold text-ice-white mb-3">
-            {error === 'Este link já foi utilizado' ? 'Link já utilizado' :
+            {isUsado ? 'Link já utilizado' :
              error === 'Este link expirou' ? 'Link expirado' :
              error === 'Este link foi cancelado' ? 'Link cancelado' :
              'Link inválido'}
           </h1>
-          <p className="text-dusty-rose mb-8">
-            {error || 'Este link não é válido.'}
+          <p className="text-dusty-rose mb-6">
+            {isUsado
+              ? 'Este link já foi usado para ativar uma conta Prime.'
+              : error || 'Este link não é válido.'}
           </p>
-          <button
-            onClick={handleWhatsApp}
-            className="px-6 py-3 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold hover:bg-accent-light transition-colors"
-          >
-            Falar no WhatsApp
-          </button>
+          {isUsado ? (
+            <div className="space-y-3">
+              <p className="text-sm text-dusty-rose mb-4">
+                Se você é o titular, faça login para acessar seu Prime.
+              </p>
+              <Link
+                to="/login"
+                className="inline-block w-full py-4 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold text-lg hover:bg-accent-light transition-colors"
+              >
+                Fazer login
+              </Link>
+              <button
+                onClick={handleWhatsApp}
+                className="w-full py-3 rounded-xl border border-white/20 text-dusty-rose font-heading font-medium hover:border-white/40 transition-colors"
+              >
+                Precisa de ajuda?
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleWhatsApp}
+              className="px-6 py-3 rounded-xl bg-antique-gold text-deep-purple font-heading font-semibold hover:bg-accent-light transition-colors"
+            >
+              Falar no WhatsApp
+            </button>
+          )}
         </div>
       </div>
     )

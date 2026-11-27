@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { getReferrerByCode } from '@/services/referralService'
 import { validateInviteCode, acceptInvite } from '@/services/inviteService'
 import { getCodigoEntrada, limparCodigoEntrada } from '@/services/acessoService'
+import { validarLinkPrime } from '@/services/primeLinkService'
 import { useEligibility, useCPFValidation } from '@/hooks/useEligibility'
 import { usePreLaunch } from '@/hooks/usePreLaunch'
 import { checkAvailability } from '@/services/slotsService'
@@ -49,15 +50,32 @@ export function Cadastro() {
   const [primeToken, setPrimeToken] = useState(null)
   const isPrimeCadastro = origemFromUrl === 'link_prime'
 
-  // Carregar prime token do localStorage
+  // Carregar e validar prime token do localStorage
   useEffect(() => {
-    if (isPrimeCadastro) {
+    async function validateAndLoadToken() {
+      if (!isPrimeCadastro) return
+
       try {
         const token = localStorage.getItem(PRIME_TOKEN_KEY)
-        if (token) setPrimeToken(token)
-      } catch {}
+        if (!token) return
+
+        // Validar se o token ainda é válido (não usado, não expirado)
+        const result = await validarLinkPrime(token)
+        if (result.success) {
+          setPrimeToken(token)
+        } else {
+          // Token inválido ou já usado - limpar e redirecionar
+          localStorage.removeItem(PRIME_TOKEN_KEY)
+          toast.error(result.error || 'Link Prime inválido')
+          navigate('/prime/ativar?t=' + token) // Mostrar página de erro apropriada
+        }
+      } catch {
+        localStorage.removeItem(PRIME_TOKEN_KEY)
+      }
     }
-  }, [isPrimeCadastro])
+
+    validateAndLoadToken()
+  }, [isPrimeCadastro, navigate])
 
   // Limpar localStorage após usar
   useEffect(() => {

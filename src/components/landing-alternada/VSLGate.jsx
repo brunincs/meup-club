@@ -301,8 +301,7 @@ export function VSLGate({ children }) {
 
   const handleCTAPrime = () => {
     trackEvent('vsl_cta_prime')
-    const msg = encodeURIComponent('Olá! Vim pela página do Me,up Club e quero ser Prime Fundador.')
-    window.open(`https://wa.me/5516988126568?text=${msg}`, '_blank')
+    window.location.href = WHATSAPP_PRIME_URL
   }
 
   // Tempo restante para liberar
@@ -536,6 +535,8 @@ export function VSLGate({ children }) {
  * Botões CTA da VSL (FREE + PRIME)
  * Usar abaixo do vídeo após liberação e no FinalCTA
  */
+const WHATSAPP_PRIME_URL = `https://wa.me/5516988126568?text=${encodeURIComponent('Olá! Vim pela página do Me,up Club e quero ser Prime Fundador.')}`
+
 export function VSLCTAButtons({ className = '', variant = 'default' }) {
   const [vagasRestantes, setVagasRestantes] = useState(null)
 
@@ -556,10 +557,10 @@ export function VSLCTAButtons({ className = '', variant = 'default' }) {
     }).catch(() => {})
   }
 
+  // Link direto (<a>) em vez de window.open: o navegador do Instagram/WhatsApp e
+  // bloqueadores de pop-up barram window.open; um link normal sempre abre o WhatsApp.
   const handlePrimeClick = () => {
     trackCTAEvent('click_prime')
-    const msg = encodeURIComponent('Olá! Vim pela página do Me,up Club e quero ser Prime Fundador.')
-    window.open(`https://wa.me/5516988126568?text=${msg}`, '_blank')
   }
 
   const handleFreeClick = () => {
@@ -569,8 +570,12 @@ export function VSLCTAButtons({ className = '', variant = 'default' }) {
   return (
     <div className={`flex flex-col sm:flex-row items-center justify-center gap-4 ${className}`}>
       {/* Botão PRIME - Principal */}
-      <motion.button
+      <motion.a
+        href={WHATSAPP_PRIME_URL}
+        target="_blank"
+        rel="noopener noreferrer"
         onClick={handlePrimeClick}
+        data-vsl-controls
         whileHover={{ scale: 1.02, boxShadow: '0 0 50px rgba(162, 121, 55, 0.4)' }}
         whileTap={{ scale: 0.98 }}
         className="group relative inline-flex flex-col items-center px-8 py-4 rounded-xl bg-antique-gold hover:bg-[#8b6830] text-deep-purple overflow-hidden transition-all duration-300 shadow-lg shadow-antique-gold/25 w-full sm:w-auto"
@@ -585,7 +590,7 @@ export function VSLCTAButtons({ className = '', variant = 'default' }) {
         <span className="relative z-10 text-xs opacity-80 mt-0.5">
           R$ 597/ano ou 6x R$ 99,50 · {vagasRestantes ?? '...'} vagas
         </span>
-      </motion.button>
+      </motion.a>
 
       {/* Botão FREE - Secundário */}
       <Link
