@@ -4,10 +4,26 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { getFundadoresCount } from '@/services/fundadoresService'
+import { supabase } from '@/lib/supabase'
 
 const STORAGE_KEY = 'meup_vsl_liberado'
+const STORAGE_SESSION_KEY = 'meup_vsl_sessao'
 const UNLOCK_SECONDS = 60
 const VIDEO_TIMEOUT_MS = 8000
+
+// Gerar ID de sessão único
+const getSessionId = () => {
+  try {
+    let sessionId = sessionStorage.getItem(STORAGE_SESSION_KEY)
+    if (!sessionId) {
+      sessionId = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      sessionStorage.setItem(STORAGE_SESSION_KEY, sessionId)
+    }
+    return sessionId
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  }
+}
 
 // Detectar bots/crawlers
 const isBot = () => {
@@ -247,15 +263,36 @@ export function VSLGate({ children }) {
     }
   }, [videoLoaded, isUnlocked])
 
-  // Track events (Vercel Analytics ou console)
-  const trackEvent = (name) => {
+  // Track events (Supabase + Vercel Analytics)
+  const trackEvent = useCallback((name) => {
     console.log(`[VSL Event] ${name}`)
+
+    // Mapear eventos internos para eventos do banco
+    const eventMap = {
+      'vsl_play': 'play',
+      'vsl_30s': 'progress_30s',
+      'vsl_60s_liberou': 'progress_60s',
+      'vsl_fim': 'complete',
+      'vsl_cta_free': 'click_free',
+      'vsl_cta_prime': 'click_prime'
+    }
+
+    const dbEvent = eventMap[name]
+    if (dbEvent) {
+      supabase.rpc('registrar_evento_vsl', {
+        p_evento: dbEvent,
+        p_sessao_id: getSessionId(),
+        p_origem_url: window.location.href
+      }).catch(() => {}) // Fire and forget
+    }
+
+    // Vercel Analytics
     // @ts-ignore
     if (typeof window !== 'undefined' && window.va) {
       // @ts-ignore
       window.va('event', { name })
     }
-  }
+  }, [])
 
   // Handler para botões CTA
   const handleCTAFree = () => {
@@ -510,14 +547,23 @@ export function VSLCTAButtons({ className = '', variant = 'default' }) {
     })
   }, [])
 
+  const trackCTAEvent = (evento) => {
+    console.log(`[VSL Event] ${evento}`)
+    supabase.rpc('registrar_evento_vsl', {
+      p_evento: evento,
+      p_sessao_id: getSessionId(),
+      p_origem_url: window.location.href
+    }).catch(() => {})
+  }
+
   const handlePrimeClick = () => {
-    console.log('[VSL Event] vsl_cta_prime')
+    trackCTAEvent('click_prime')
     const msg = encodeURIComponent('Olá! Vim pela página do Me,up Club e quero ser Prime Fundador.')
     window.open(`https://wa.me/5516988126568?text=${msg}`, '_blank')
   }
 
   const handleFreeClick = () => {
-    console.log('[VSL Event] vsl_cta_free')
+    trackCTAEvent('click_free')
   }
 
   return (
