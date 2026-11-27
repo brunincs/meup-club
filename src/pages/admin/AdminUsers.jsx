@@ -1055,7 +1055,10 @@ export function AdminUsers() {
                             {/* Botão Excluir - escondido para admins e si mesmo */}
                             {user.role !== 'admin' && user.id !== currentUser?.id && (
                               <button
-                                onClick={() => setDeletingUser(user)}
+                                onClick={() => {
+                                  console.log('Excluir clicado, user:', user)
+                                  setDeletingUser(user)
+                                }}
                                 className="flex-1 sm:flex-none px-3 py-2.5 sm:py-2 rounded-xl text-xs font-heading font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-colors whitespace-nowrap"
                               >
                                 Excluir

@@ -12,6 +12,8 @@ export function ExcluirContaModal({ user, onClose, onSuccess }) {
   const [confirmText, setConfirmText] = useState('')
   const [processing, setProcessing] = useState(false)
 
+  console.log('ExcluirContaModal renderizado, user:', user)
+
   const canDelete = confirmText === 'EXCLUIR'
 
   const handleDelete = async () => {
