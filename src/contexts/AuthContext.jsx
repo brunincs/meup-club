@@ -203,11 +203,31 @@ export function AuthProvider({ children }) {
       }
 
       // O perfil será criado automaticamente pelo trigger no banco
-      // Mas vamos verificar se foi criado
+      // Aguardar o profile ser criado com status_acesso preenchido (loop até 8x, 500ms)
       if (data.user) {
-        // Aguardar um momento para o trigger executar
-        await new Promise(resolve => setTimeout(resolve, 500))
-        await fetchProfile(data.user.id)
+        let attempts = 0
+        const maxAttempts = 8
+        let profileReady = false
+
+        while (attempts < maxAttempts && !profileReady) {
+          await new Promise(resolve => setTimeout(resolve, 500))
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id, status_acesso')
+            .eq('id', data.user.id)
+            .single()
+
+          if (profileData?.status_acesso) {
+            profileReady = true
+            await fetchProfile(data.user.id)
+          }
+          attempts++
+        }
+
+        // Se não conseguiu, busca mesmo assim (fallback)
+        if (!profileReady) {
+          await fetchProfile(data.user.id)
+        }
       }
 
       return { data, error: null }

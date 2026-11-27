@@ -1,22 +1,64 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { Logo } from '@/components/ui/Logo'
 
 /**
  * Tela exibida para usuários com status 'em_analise' ou 'em_espera'
- * Mostra mensagem diferente antes e depois de 27/11 (data de abertura)
+ * Se NULL/em_analise: primeiro mostra "Preparando seu acesso..." com polling por 20s
+ * Depois mostra a tela de análise
  */
 export function PendingApprovalScreen() {
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, refreshProfile } = useAuth()
+  const [isPolling, setIsPolling] = useState(true)
+  const [pollCount, setPollCount] = useState(0)
+  const maxPolls = 13 // ~20s com 1.5s intervalo
+
+  // Status do usuário
+  const status = profile?.status_acesso || 'em_analise'
+  const isEmEspera = status === 'em_espera'
+
+  // Se em_espera, não faz polling (mostra tela direto)
+  useEffect(() => {
+    if (isEmEspera) {
+      setIsPolling(false)
+      return
+    }
+
+    // Polling para verificar se foi aprovado
+    if (isPolling && pollCount < maxPolls) {
+      const timer = setTimeout(async () => {
+        if (refreshProfile) {
+          await refreshProfile()
+        }
+        setPollCount(prev => prev + 1)
+      }, 1500)
+
+      return () => clearTimeout(timer)
+    } else if (pollCount >= maxPolls) {
+      setIsPolling(false)
+    }
+  }, [isPolling, pollCount, isEmEspera, refreshProfile])
+
+  // Tela de "Preparando seu acesso..." enquanto faz polling
+  if (isPolling && !isEmEspera) {
+    return (
+      <div className="min-h-screen bg-deep-purple flex flex-col items-center justify-center p-6">
+        <Logo size="lg" className="mb-8" />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="w-8 h-8 border-2 border-dusty-rose/30 border-t-antique-gold rounded-full mb-6"
+        />
+        <p className="text-ice-white/80 text-lg font-heading">Preparando seu acesso...</p>
+      </div>
+    )
+  }
 
   // Data de início das aprovações
   const dataAbertura = new Date('2026-11-27')
   const hoje = new Date()
   const antesAbertura = hoje < dataAbertura
-
-  // Status do usuário
-  const status = profile?.status_acesso || 'em_analise'
-  const isEmEspera = status === 'em_espera'
 
   // Mensagem do WhatsApp
   const whatsappMessage = encodeURIComponent(
@@ -100,9 +142,9 @@ export function PendingApprovalScreen() {
                   . Você será notificado assim que sua conta for analisada.
                 </>
               ) : isEmEspera ? (
-                'Sua solicitação está em espera. Em breve entraremos em contato.'
+                'As vagas desta abertura esgotaram. Você está na lista de espera para a próxima.'
               ) : (
-                'Sua solicitação está sendo analisada pela nossa equipe. Respondemos em até 24h úteis.'
+                'Estamos finalizando seu acesso. Se demorar, fale com a gente no WhatsApp.'
               )}
             </motion.p>
 
@@ -158,7 +200,7 @@ export function PendingApprovalScreen() {
               transition={{ delay: 0.6 }}
               className="mt-8 text-ice-white/40 text-xs"
             >
-              O Me,up Club é exclusivo para clientes Me,up Viagens e convidados especiais.
+              O Me,up Club é exclusivo para clientes Me,up Viagens e indicados por membros.
             </motion.p>
           </div>
         </main>

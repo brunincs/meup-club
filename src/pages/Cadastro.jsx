@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { getReferrerByCode } from '@/services/referralService'
 import { validateInviteCode, acceptInvite } from '@/services/inviteService'
-import { aprovarPorLink, aprovarPorIndicacao, getCodigoEntrada, limparCodigoEntrada } from '@/services/acessoService'
+import { getCodigoEntrada, limparCodigoEntrada } from '@/services/acessoService'
 import { useEligibility, useCPFValidation } from '@/hooks/useEligibility'
 import { usePreLaunch } from '@/hooks/usePreLaunch'
 import { checkAvailability } from '@/services/slotsService'
@@ -265,49 +265,16 @@ export function Cadastro() {
       // Se foi via convite, aceita o convite
       if (inviteInfo && data?.user) {
         await acceptInvite(inviteInfo.convite_id, data.user.id)
-        toast.success('Conta criada com sucesso!')
-        navigate('/dashboard')
-      } else if (data?.user) {
-        // Verificar se veio pelo link de entrada automática
-        const codigoEntrada = getCodigoEntrada()
-
-        if (codigoEntrada) {
-          // Tentar aprovação automática via link da lista
-          const resultado = await aprovarPorLink(data.user.id, codigoEntrada)
-          limparCodigoEntrada()
-
-          if (resultado?.success && resultado?.status === 'aprovado') {
-            toast.success('Bem-vindo ao Me,up Club!')
-            navigate('/dashboard')
-          } else if (resultado?.status === 'em_espera') {
-            toast.success(resultado.message || 'Você está na lista de espera.')
-            navigate('/dashboard')
-          } else {
-            // Código inválido/expirado - fluxo normal
-            toast.success('Conta criada! Aguarde a aprovação.')
-            navigate('/dashboard')
-          }
-        } else if (referrerInfo?.id) {
-          // Cadastro via indicação - entrada automática
-          const resultado = await aprovarPorIndicacao(data.user.id, referrerInfo.id)
-
-          if (resultado?.success && resultado?.status === 'aprovado') {
-            toast.success(`Bem-vindo ao Me,up Club! Indicado por ${referrerInfo.name}.`)
-            navigate('/dashboard')
-          } else if (resultado?.action === 'em_espera') {
-            toast.success(resultado.message || 'Você está na lista de espera.')
-            navigate('/dashboard')
-          } else {
-            // Fallback - conta criada mas não aprovada
-            toast.success('Conta criada! Aguarde a aprovação.')
-            navigate('/dashboard')
-          }
-        } else {
-          // Sem código: vai para análise
-          toast.success('Conta criada! Aguarde a aprovação.')
-          navigate('/dashboard')
-        }
       }
+
+      // Limpar código de entrada do localStorage
+      limparCodigoEntrada()
+
+      // A aprovação já foi feita pelo trigger no servidor
+      // O AuthContext.signUp já aguardou o profile ficar pronto
+      // Apenas navegar para o dashboard
+      toast.success('Bem-vindo ao Me,up Club!')
+      navigate('/dashboard')
     } catch (err) {
       toast.error('Erro ao criar conta')
       setLoading(false)

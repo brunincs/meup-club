@@ -33,6 +33,19 @@ export function ProtectedRoute({ children }) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
+  // Se tem user mas profile ainda não carregou, mostra spinner (não PendingApprovalScreen)
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-deep-purple">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="w-6 h-6 border border-dusty-rose/30 border-t-antique-gold rounded-full"
+        />
+      </div>
+    )
+  }
+
   // Verificar status de acesso
   const statusAcesso = profile?.status_acesso
 
