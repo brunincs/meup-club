@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { Logo } from '@/components/ui/Logo'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
@@ -138,6 +139,12 @@ export function VSLGate({ children }) {
     const video = videoRef.current
     if (!video) return
 
+    // Tocou no vídeo enquanto estava mudo pelo bloqueio do navegador: liga o som (não pausa)
+    if (isMuted && !hasInteracted) {
+      toggleMute()
+      return
+    }
+
     if (video.paused) {
       video.play()
       setIsPlaying(true)
@@ -189,16 +196,55 @@ export function VSLGate({ children }) {
     trackEvent('vsl_fim')
   }
 
-  // Autoplay muted
+  // Autoplay: tenta COM som; se o navegador bloquear (Chrome/Safari/Instagram/WhatsApp
+  // bloqueiam áudio sem interação), cai para mudo + "Toque para ouvir" e liga o som
+  // no primeiro toque/clique em qualquer lugar da página.
   useEffect(() => {
     const video = videoRef.current
     if (!video || !videoLoaded || isUnlocked) return
 
-    video.muted = true
-    video.play().catch(() => {
-      // Autoplay blocked - normal em alguns browsers
-    })
-    setIsPlaying(true)
+    let cancelled = false
+    const tentar = async () => {
+      try {
+        video.muted = false
+        await video.play()
+        if (cancelled) return
+        setIsMuted(false)
+        setIsPlaying(true)
+        setHasInteracted(true)
+        trackEvent('vsl_play')
+      } catch {
+        // Bloqueado: tocar mudo
+        video.muted = true
+        setIsMuted(true)
+        video.play().then(() => !cancelled && setIsPlaying(true)).catch(() => {})
+      }
+    }
+    tentar()
+
+    // Primeiro toque/clique/tecla em qualquer lugar: liga o som e recomeça do início
+    const ligarSom = (e) => {
+      if (!video.muted) return
+      // Se o toque foi nos próprios controles, deixa o handler deles cuidar
+      if (e?.target?.closest?.('[data-vsl-controls]')) return
+      video.currentTime = 0
+      video.muted = false
+      video.play().catch(() => {})
+      setIsMuted(false)
+      setIsPlaying(true)
+      setHasInteracted(true)
+      setWatchedSeconds(0)
+      lastTimeRef.current = 0
+      trackEvent('vsl_play')
+    }
+    const opts = { once: true, passive: true }
+    window.addEventListener('pointerdown', ligarSom, opts)
+    window.addEventListener('keydown', ligarSom, opts)
+    return () => {
+      cancelled = true
+      window.removeEventListener('pointerdown', ligarSom)
+      window.removeEventListener('keydown', ligarSom)
+    }
   }, [videoLoaded, isUnlocked])
 
   // Track events (Vercel Analytics ou console)
@@ -234,11 +280,7 @@ export function VSLGate({ children }) {
       {!isUnlocked && (
       <header className="py-4 px-4 md:px-8">
         <div className="container-premium">
-          <img
-            src="/logo-dourado.svg"
-            alt="Me,up Club"
-            className="h-8 md:h-10"
-          />
+          <Logo variant="dark" to="/" />
         </div>
       </header>
       )}
@@ -283,7 +325,7 @@ export function VSLGate({ children }) {
                       />
 
                       {/* Overlay de controles */}
-                      <div className="absolute inset-0 flex flex-col">
+                      <div className="absolute inset-0 flex flex-col" data-vsl-controls>
                         {/* Área clicável para play/pause */}
                         <div
                           className="flex-1 flex items-center justify-center cursor-pointer"
@@ -415,7 +457,7 @@ export function VSLGate({ children }) {
                     'Ganhe pontos em cada viagem que você já faria',
                     'Troque por experiências reais: assentos, bagagens, salas VIP',
                     'Suporte humano no WhatsApp, não robôs',
-                    'Sem taxa de adesão, sem mensalidade obrigatória'
+                    'Entrada grátis no Free, ou Prime para ganhar 3x mais pontos'
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <svg className="w-5 h-5 text-antique-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
