@@ -14,17 +14,17 @@ import toast from 'react-hot-toast'
 
 /**
  * AdminAcesso - Gestão do modelo exclusivo
- * 6 Abas: Solicitações, Lista de Espera, Base de Clientes, Vagas, Convites, Configurações
+ * 5 Abas: Lista de Espera, Pré-cadastro, Base de Clientes, Vagas, Configurações
+ * (Entrada agora é automática - não existe mais aprovação manual)
  */
 export default function AdminAcesso() {
   const [activeTab, setActiveTab] = useState('solicitacoes')
 
   const tabs = [
-    { id: 'solicitacoes', label: 'Solicitações' },
-    { id: 'waitlist', label: 'Lista de Espera' },
+    { id: 'solicitacoes', label: 'Lista de Espera' },
+    { id: 'waitlist', label: 'Pré-cadastro' },
     { id: 'clients', label: 'Base de Clientes' },
     { id: 'slots', label: 'Vagas' },
-    { id: 'invites', label: 'Convites' },
     { id: 'config', label: 'Configurações' }
   ]
 
@@ -54,7 +54,6 @@ export default function AdminAcesso() {
       {activeTab === 'waitlist' && <WaitlistTab />}
       {activeTab === 'clients' && <ClientsTab />}
       {activeTab === 'slots' && <SlotsTab />}
-      {activeTab === 'invites' && <InvitesTab />}
       {activeTab === 'config' && <ConfigTab />}
     </AdminLayout>
   )
@@ -203,7 +202,7 @@ function SolicitacoesTab() {
     <div>
       {/* Contadores de vagas */}
       {vagas && (
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="p-4 rounded-xl bg-green-50 border border-green-200">
             <p className="text-xs font-medium text-green-600 mb-1">Free</p>
             <p className="text-2xl font-bold text-green-700">
@@ -217,13 +216,6 @@ function SolicitacoesTab() {
               {vagas.prime?.ocupadas || 0}/{vagas.prime?.total || 30}
             </p>
             <p className="text-xs text-purple-600">{vagas.prime?.disponiveis || 0} disponíveis</p>
-          </div>
-          <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
-            <p className="text-xs font-medium text-blue-600 mb-1">Convites</p>
-            <p className="text-2xl font-bold text-blue-700">
-              {vagas.convites?.usados || 0}/{vagas.convites?.total || 60}
-            </p>
-            <p className="text-xs text-blue-600">{vagas.convites?.disponiveis || 0} disponíveis</p>
           </div>
         </div>
       )}
@@ -596,7 +588,7 @@ function SlotsTab() {
   }
 
   return (
-    <div className="grid md:grid-cols-3 gap-6">
+    <div className="grid md:grid-cols-2 gap-6">
       {/* Prime */}
       <div className="bg-gradient-to-br from-deep-purple to-purple-900 rounded-xl p-6 text-white">
         <h3 className="font-heading font-semibold text-antique-gold mb-4">Prime Fundador</h3>
@@ -632,112 +624,6 @@ function SlotsTab() {
           {slots?.free?.disponiveis || 0} disponíveis
         </p>
       </div>
-
-      {/* Convites */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-        <h3 className="font-heading font-semibold text-blue-800 mb-4">Convites</h3>
-        <div className="text-4xl font-display font-bold text-blue-800 mb-2">
-          {slots?.convites?.aceitos || 0}/{slots?.convites?.total || 0}
-        </div>
-        <p className="text-blue-600 text-sm mb-4">aceitos</p>
-        <div className="space-y-1 text-sm text-blue-700">
-          <p>Emitidos: {slots?.convites?.emitidos || 0}</p>
-          <p>Pendentes: {(slots?.convites?.emitidos || 0) - (slots?.convites?.aceitos || 0)}</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ============================================
-// ABA: CONVITES
-// ============================================
-function InvitesTab() {
-  const [invites, setInvites] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    loadInvites()
-  }, [])
-
-  const loadInvites = async () => {
-    setLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('convites')
-        .select(`
-          id,
-          codigo,
-          nome_convidado,
-          status,
-          criado_em,
-          aceito_em,
-          fundador:fundador_id (id, name, fundador_numero)
-        `)
-        .order('criado_em', { ascending: false })
-
-      if (error) throw error
-      setInvites(data || [])
-    } catch (err) {
-      console.error(err)
-    }
-    setLoading(false)
-  }
-
-  // Agrupar por fundador
-  const byFundador = invites.reduce((acc, inv) => {
-    const fid = inv.fundador?.id || 'unknown'
-    if (!acc[fid]) {
-      acc[fid] = {
-        fundador: inv.fundador,
-        convites: []
-      }
-    }
-    acc[fid].convites.push(inv)
-    return acc
-  }, {})
-
-  return (
-    <div className="space-y-6">
-      {loading ? (
-        <div className="text-center py-8 text-gray-500">Carregando...</div>
-      ) : Object.keys(byFundador).length === 0 ? (
-        <div className="text-center py-8 text-gray-500">Nenhum convite emitido</div>
-      ) : (
-        Object.values(byFundador).map(({ fundador, convites }) => (
-          <div key={fundador?.id || 'unknown'} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-              <div>
-                <span className="font-medium">{fundador?.name || 'Desconhecido'}</span>
-                {fundador?.fundador_numero && (
-                  <span className="ml-2 text-xs text-antique-gold">
-                    Fundador #{fundador.fundador_numero}
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
-                  {convites.length} emitidos
-                </span>
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">
-                  {convites.filter(c => c.status === 'aceito').length} aceitos
-                </span>
-              </div>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {convites.map(conv => (
-                <div key={conv.id} className="px-4 py-3 flex items-center justify-between">
-                  <div>
-                    <span className="font-medium text-sm">{conv.nome_convidado}</span>
-                    <span className="ml-2 text-xs text-gray-400 font-mono">{conv.codigo}</span>
-                  </div>
-                  <StatusBadge status={conv.status} />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))
-      )}
     </div>
   )
 }

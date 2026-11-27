@@ -243,7 +243,7 @@ export function Cadastro() {
       if (inviteInfo) origemCadastro = 'convite'
       else if (codigoEntrada) origemCadastro = 'link_lista'
 
-      // Criar usuário
+      // Criar usuário (codigoEntrada vai para metadados, trigger auto-aprova)
       const { data, error } = await signUp({
         email,
         password,
@@ -252,6 +252,7 @@ export function Cadastro() {
         whatsapp: whatsapp.replace(/\D/g, ''),
         referrerId: referrerInfo?.id || null,
         acceptedTerms: true,
+        codigoEntrada: codigoEntrada || null,
         origemCadastro
       })
 

@@ -173,7 +173,7 @@ export function AuthProvider({ children }) {
 
   // CADASTRO - criar nova conta
   // IMPORTANTE: NUNCA cai no demo - só cadastra no Supabase real
-  async function signUp({ email, password, name, referrerId = null, acceptedTerms = false }) {
+  async function signUp({ email, password, name, referrerId = null, acceptedTerms = false, codigoEntrada = null, origemCadastro = 'site' }) {
     // Se Supabase não está configurado, mostrar erro claro (NÃO cair no demo!)
     if (!isSupabaseConfigured()) {
       return {
@@ -191,7 +191,9 @@ export function AuthProvider({ children }) {
           data: {
             name,
             referred_by: referrerId, // Salva quem indicou nos metadados
-            accepted_terms: acceptedTerms // Salva aceite dos termos (LGPD)
+            accepted_terms: acceptedTerms, // Salva aceite dos termos (LGPD)
+            codigo_entrada: codigoEntrada, // Código do link (ex: LISTA27) para auto-aprovação
+            origem_cadastro: origemCadastro // 'site', 'link_lista', 'convite', 'indicacao'
           }
         }
       })
