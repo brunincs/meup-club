@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { Logo } from '@/components/ui/Logo'
+import { garantirAcessoAutomatico } from '@/services/acessoService'
 
 /**
  * Tela exibida para usuários com status 'em_analise' ou 'em_espera'
@@ -28,6 +29,13 @@ export function PendingApprovalScreen() {
     // Polling para verificar se foi aprovado
     if (isPolling && pollCount < maxPolls) {
       const timer = setTimeout(async () => {
+        // Rede de segurança: tenta garantir acesso automático antes de verificar
+        try {
+          await garantirAcessoAutomatico()
+        } catch (e) {
+          // Ignora erro, vai verificar de qualquer jeito
+        }
+
         if (refreshProfile) {
           await refreshProfile()
         }

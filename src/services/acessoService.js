@@ -218,3 +218,26 @@ export async function aprovarPorIndicacao(userId, referrerId) {
     return { success: false, error: error.message }
   }
 }
+
+/**
+ * Garantir acesso automático (rede de segurança)
+ * Chamado pelo PendingApprovalScreen como fallback
+ * Se o trigger não aprovou, esta função tenta aprovar
+ */
+export async function garantirAcessoAutomatico() {
+  try {
+    const { data, error } = await supabase.rpc('garantir_acesso_automatico')
+
+    if (error) throw error
+
+    // Invalidar cache se foi aprovado
+    if (data?.status === 'aprovado') {
+      invalidateMetricasCache()
+    }
+
+    return data
+  } catch (error) {
+    console.error('Erro ao garantir acesso:', error)
+    return { success: false, error: error.message }
+  }
+}
