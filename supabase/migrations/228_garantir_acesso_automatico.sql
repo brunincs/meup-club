@@ -195,12 +195,12 @@ BEGIN
 
   RAISE NOTICE 'Vagas Free: % total, % ocupadas, % livres', v_vagas_total, v_vagas_ocupadas, v_vagas_livres;
 
-  -- Aprovar usuários presos (em_analise, NULL, ou vazio)
+  -- Aprovar usuários presos (em_analise ou NULL)
   -- Por ordem de cadastro, até o limite de vagas
   FOR v_user IN
     SELECT id, email, name, referred_by
     FROM profiles
-    WHERE (status_acesso IS NULL OR status_acesso = 'em_analise' OR status_acesso = '')
+    WHERE (status_acesso IS NULL OR status_acesso = 'em_analise')
       AND COALESCE(is_teste, false) = false
     ORDER BY created_at ASC
     LIMIT v_vagas_livres
@@ -252,7 +252,7 @@ BEGIN
   SET
     status_acesso = 'em_espera',
     updated_at = NOW()
-  WHERE (status_acesso IS NULL OR status_acesso = 'em_analise' OR status_acesso = '')
+  WHERE (status_acesso IS NULL OR status_acesso = 'em_analise')
     AND COALESCE(is_teste, false) = false;
 
   RAISE NOTICE '✓ Total aprovados nesta correção: %', v_aprovados;

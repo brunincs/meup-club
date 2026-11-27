@@ -7,8 +7,16 @@
 -- 1. ALTERAR CHECK CONSTRAINT PARA PERMITIR NOVOS TIPOS
 -- ============================================
 
--- Remover constraint antiga e criar nova com mais tipos
+-- Remover constraint antiga
 ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
+
+-- Atualizar tipos inválidos para 'info' antes de criar nova constraint
+UPDATE notifications
+SET type = 'info'
+WHERE type IS NULL
+   OR type NOT IN ('info', 'success', 'warning', 'error', 'reward', 'level_up', 'sale', 'access', 'referral', 'subscription');
+
+-- Criar nova constraint com mais tipos
 ALTER TABLE notifications ADD CONSTRAINT notifications_type_check
   CHECK (type IN ('info', 'success', 'warning', 'error', 'reward', 'level_up', 'sale', 'access', 'referral', 'subscription'));
 
