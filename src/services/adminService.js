@@ -1015,6 +1015,44 @@ export async function fetchPendencias() {
   }
 }
 
+// ============================================
+// EXCLUIR USUÁRIO
+// ============================================
+
+/**
+ * Exclui conta de usuário completamente (admin-only)
+ * Remove: auth, profile, pontos, transações, indicações, etc.
+ * @param {string} userId - ID do usuário a ser excluído
+ */
+export async function excluirUsuario(userId) {
+  try {
+    const { data, error } = await supabase.rpc('admin_excluir_usuario', {
+      p_user_id: userId
+    })
+
+    if (error) {
+      console.error('Erro ao excluir usuário:', error)
+      return { success: false, error: error.message }
+    }
+
+    if (!data.success) {
+      return { success: false, error: data.error }
+    }
+
+    // Invalidar cache de métricas
+    invalidateMetricasAdminCache()
+
+    return {
+      success: true,
+      message: data.message,
+      usuarioExcluido: data.usuario_excluido
+    }
+  } catch (error) {
+    console.error('Erro ao excluir usuário:', error)
+    return { success: false, error: error.message }
+  }
+}
+
 /**
  * Busca falhas de IA nas últimas 24h
  * Para o alerta discreto no dashboard (só aparece se >= 3)
