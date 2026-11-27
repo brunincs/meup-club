@@ -3,7 +3,7 @@
 // Renderiza campos diferentes baseado no tipo_entrega
 // ============================================
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { EmissaoSelector } from './EmissaoSelector'
 import { TrechoSelector } from '@/components/viagens/TrechoSelector'
@@ -63,17 +63,29 @@ export function RedemptionFormByType({
   isDark = true,
   allowMultiPassenger = false // Permitir múltiplos passageiros (ex: assento para casal)
 }) {
-  const [formData, setFormData] = useState(initialData)
+  const [formData, setFormDataInternal] = useState(initialData)
   const [cepLoading, setCepLoading] = useState(false)
+  const onChangeRef = useRef(onChange)
+
+  // Manter ref atualizada
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
 
   const config = TIPO_ENTREGA_CONFIG[tipoEntrega] || TIPO_ENTREGA_CONFIG.voucher
 
-  // Atualizar pai quando form muda
-  useEffect(() => {
-    if (onChange) {
-      onChange(formData)
-    }
-  }, [formData, onChange])
+  // Wrapper para setFormData que também notifica o pai
+  const setFormData = useCallback((updater) => {
+    setFormDataInternal(prev => {
+      const newData = typeof updater === 'function' ? updater(prev) : updater
+      // Notificar pai imediatamente com os novos dados
+      if (onChangeRef.current) {
+        // Usar setTimeout para garantir que o estado do React foi atualizado
+        setTimeout(() => onChangeRef.current(newData), 0)
+      }
+      return newData
+    })
+  }, [])
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
