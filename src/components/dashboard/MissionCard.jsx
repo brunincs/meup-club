@@ -214,7 +214,7 @@ export function MissionCard({
               )
             ) : (
               <>
-                {/* Botão "Ir Fazer" */}
+                {/* Botão "Ir Fazer" / "Abrir o Reels" */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -225,10 +225,10 @@ export function MissionCard({
                       : 'bg-deep-purple/50 text-ice-white border border-dusty-rose/20 hover:bg-deep-purple/70'
                   }`}
                 >
-                  {action?.label || 'Ir Fazer'} {isExternal ? '↗' : '→'}
+                  {mission.linkLabel || action?.label || 'Ir Fazer'} {(isExternal || mission.linkUrl) ? '↗' : '→'}
                 </motion.button>
 
-                {/* Botão "Fiz isso" - SÓ para Instagram e Google (únicas que precisam aprovação) */}
+                {/* Botão "Fiz isso" / "Já comentei" - SÓ para Instagram e Google (únicas que precisam aprovação) */}
                 {needsApproval && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -240,7 +240,7 @@ export function MissionCard({
                         : 'bg-antique-gold text-deep-purple hover:bg-accent-light'
                     }`}
                   >
-                    Fiz isso
+                    {mission.linkUrl ? 'Já comentei' : 'Fiz isso'}
                   </motion.button>
                 )}
               </>

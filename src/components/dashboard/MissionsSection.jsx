@@ -11,8 +11,10 @@ import {
   fetchTarefas,
   fetchStatusSolicitacoes,
   solicitarTarefa,
+  solicitarTarefaComDados,
   verificarSolicitacaoPendente
 } from '@/services/experienciasService'
+import { InstagramHandleModal } from '@/components/missions/InstagramHandleModal'
 import {
   fazerCheckin,
   podeFazerCheckin,
@@ -60,6 +62,9 @@ export function MissionsSection({ variant = 'dark' }) {
 
   // Estado para indicações aprovadas (para missões de indicação)
   const [approvedReferrals, setApprovedReferrals] = useState(0)
+
+  // Estado para modal do Instagram (missões do Reels)
+  const [instagramModal, setInstagramModal] = useState(null)
 
   // Carregar tarefas e status do usuário
   useEffect(() => {
@@ -244,7 +249,9 @@ export function MissionsSection({ variant = 'dark' }) {
         progressPercent,
         isAutomatic,     // Credita via trigger, sem ação
         needsApproval,   // SÓ true para Instagram/Google
-        camposFaltantes  // Campos faltantes para missão "Completar perfil"
+        camposFaltantes, // Campos faltantes para missão "Completar perfil"
+        linkUrl: tarefa.link_url,      // URL externa (Reels, etc)
+        linkLabel: tarefa.link_label   // Label do botão (ex: "Abrir o Reels")
       }
     })
   }, [tarefas, statusMap, userStats])
@@ -394,6 +401,17 @@ export function MissionsSection({ variant = 'dark' }) {
     }
   }, [navigate, profile, user, fireConfetti, refreshPoints])
 
+  // Verificar se missão é do Instagram (precisa de @)
+  const isInstagramMission = useCallback((mission) => {
+    const name = (mission.name || mission.nome || '').toLowerCase()
+    const linkUrl = mission.link_url || mission.linkUrl || ''
+    // É do Instagram se o nome menciona ou se o link é do Instagram
+    return name.includes('instagram') ||
+           name.includes('reels') ||
+           name.includes('seguir') ||
+           linkUrl.includes('instagram.com')
+  }, [])
+
   // Handler para completar/solicitar missão
   const handleCompleteMission = useCallback(async (mission) => {
     if (!user?.id) {
@@ -414,6 +432,12 @@ export function MissionsSection({ variant = 'dark' }) {
 
     // Criar solicitação (para missões que requerem aprovação)
     if (requiresApproval(mission.name)) {
+      // Se é missão de Instagram, abrir modal para pedir @
+      if (isInstagramMission(mission)) {
+        setInstagramModal(mission)
+        return
+      }
+
       setLoadingTaskId(mission.id)
 
       try {
@@ -460,7 +484,59 @@ export function MissionsSection({ variant = 'dark' }) {
       // Missão com verificação automática - vai para a rota
       handleGoToMission(mission)
     }
-  }, [user, handleGoToMission])
+  }, [user, handleGoToMission, isInstagramMission])
+
+  // Handler para submeter missão de Instagram com @
+  const handleInstagramSubmit = useCallback(async (instagramHandle) => {
+    if (!instagramModal || !user?.id) return
+
+    setLoadingTaskId(instagramModal.id)
+
+    try {
+      // Verificar se já existe solicitação pendente
+      const checkResult = await verificarSolicitacaoPendente(user.id, instagramModal.id)
+      if (checkResult.pendente) {
+        toast('Esta missão já está aguardando aprovação', {
+          icon: '⏳',
+          style: { background: '#32113f', color: '#edf0f1' }
+        })
+        setStatusMap(prev => ({ ...prev, [instagramModal.id]: 'pendente' }))
+        setInstagramModal(null)
+        return
+      }
+
+      // Criar solicitação COM o @ do Instagram
+      const result = await solicitarTarefaComDados(user.id, instagramModal.id, {
+        instagram_handle: instagramHandle
+      })
+
+      if (result.success) {
+        setStatusMap(prev => ({ ...prev, [instagramModal.id]: 'pendente' }))
+        toast.success(
+          <div>
+            <strong>Solicitação enviada!</strong>
+            <div className="text-sm opacity-80">Aguardando aprovação</div>
+          </div>,
+          {
+            duration: 4000,
+            style: {
+              background: '#32113f',
+              color: '#edf0f1',
+              border: '1px solid rgba(162, 121, 55, 0.3)'
+            }
+          }
+        )
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error('Erro ao solicitar missão:', error)
+      toast.error('Erro ao enviar solicitação')
+    } finally {
+      setLoadingTaskId(null)
+      setInstagramModal(null)
+    }
+  }, [instagramModal, user])
 
   // Handler removido - botão "Concluída" agora é apenas badge visual inerte
   // Pontos já foram creditados quando a missão foi aprovada pelo admin
@@ -753,6 +829,13 @@ export function MissionsSection({ variant = 'dark' }) {
           </div>
         </div>
       )}
+      {/* Modal Instagram @ */}
+      <InstagramHandleModal
+        isOpen={!!instagramModal}
+        onClose={() => setInstagramModal(null)}
+        onSubmit={handleInstagramSubmit}
+        isLoading={loadingTaskId === instagramModal?.id}
+      />
     </motion.div>
   )
 }

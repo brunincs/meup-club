@@ -79,8 +79,8 @@ export async function criarEmissao(userId, valor, dataEmissao, cardUrl, cardPath
     if (!valor || valor <= 0) return { success: false, error: 'Valor inválido' }
     if (!cardUrl) return { success: false, error: 'Anexe o card Meup' }
 
-    // Calcular pontos (1 pt por R$1)
-    const pontosEstimados = Math.floor(valor * PONTOS_POR_REAL)
+    // Calcular pontos estimados (Free 0,5 pt por R$1; o valor final é calculado no servidor ao aprovar)
+    const pontosEstimados = Math.floor(valor * PONTOS_POR_REAL_FREE)
 
     const { data, error } = await supabase
       .from('emissoes')
@@ -304,7 +304,7 @@ async function aprovarEmissaoFallback(emissaoId, adminId) {
     }
 
     // 2. Calcular pontos
-    const pontos = Math.floor(emissao.valor * PONTOS_POR_REAL)
+    const pontos = Math.floor(emissao.valor * PONTOS_POR_REAL_FREE)
 
     // 3. Creditar pontos usando função existente
     const { error: creditError } = await supabase.rpc('admin_credit_points', {
