@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { AdminLayout } from '@/components/admin/AdminLayout'
+import { ExcluirContaModal } from '@/components/admin/ExcluirContaModal'
 import {
   adminGetWaitlist,
   adminUpdateWaitlistStatus,
@@ -67,6 +68,7 @@ function SolicitacoesTab() {
   const [vagas, setVagas] = useState(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(null)
+  const [deletingUser, setDeletingUser] = useState(null)
 
   useEffect(() => {
     loadData()
@@ -252,7 +254,8 @@ function SolicitacoesTab() {
             ) : solicitacoes.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                  Nenhuma solicitação pendente
+                  <p className="mb-1">Ninguém na lista de espera.</p>
+                  <p className="text-xs text-gray-400">Todas as contas novas entram automaticamente enquanto houver vagas.</p>
                 </td>
               </tr>
             ) : (
@@ -316,6 +319,12 @@ function SolicitacoesTab() {
                         >
                           Recusar
                         </button>
+                        <button
+                          onClick={() => setDeletingUser(s)}
+                          className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded hover:bg-red-200"
+                        >
+                          Excluir
+                        </button>
                         {s.phone && (
                           <button
                             onClick={() => abrirWhatsApp(s.phone, s.name)}
@@ -334,6 +343,17 @@ function SolicitacoesTab() {
           </tbody>
         </table>
       </div>
+
+      {/* Modal de exclusão */}
+      <AnimatePresence>
+        {deletingUser && (
+          <ExcluirContaModal
+            user={deletingUser}
+            onClose={() => setDeletingUser(null)}
+            onSuccess={loadData}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

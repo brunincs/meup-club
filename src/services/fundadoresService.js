@@ -1,7 +1,7 @@
 // ============================================
 // SERVIÇO DE FUNDADORES - Meup Club
 // Gerencia fundadores do Modelo Exclusivo 2026
-// 30 vagas Prime a R$597/ano, 200k pontos em sorteio
+// 30 vagas Prime a R$597/ano
 // ============================================
 
 import { supabase } from '@/lib/supabase'
@@ -9,7 +9,6 @@ import { supabase } from '@/lib/supabase'
 // Constantes do modelo exclusivo
 const VAGAS_FUNDADOR = 30
 const PRECO_FUNDADOR = 597
-const PREMIO_TOTAL = 200000
 
 /**
  * Busca dados do fundador do usuário atual
@@ -94,11 +93,6 @@ export async function getPrecoFundadorAtual() {
       vendidas_lote: vagasUsadas,
       preco_proximo: null,
       is_ultimo_lote: true,
-      // Novos campos
-      premio_total: PREMIO_TOTAL,
-      pontos_por_fundador: vagasUsadas > 0
-        ? Math.floor(PREMIO_TOTAL / vagasUsadas)
-        : Math.floor(PREMIO_TOTAL / VAGAS_FUNDADOR),
       esgotado: vagasRestantes <= 0
     }
   } catch (error) {
@@ -113,8 +107,6 @@ export async function getPrecoFundadorAtual() {
       vendidas_lote: 0,
       preco_proximo: null,
       is_ultimo_lote: true,
-      premio_total: PREMIO_TOTAL,
-      pontos_por_fundador: Math.floor(PREMIO_TOTAL / VAGAS_FUNDADOR),
       esgotado: false
     }
   }
@@ -146,18 +138,6 @@ export async function getRegulamentoUrl() {
   } catch (error) {
     return 'https://meup.club/regulamento-fundadores'
   }
-}
-
-/**
- * Calcula pontos estimados por fundador
- * @param {number} numFundadores - Número atual de fundadores
- * @returns {number} Pontos por fundador
- */
-export function calcularPontosPorFundador(numFundadores) {
-  if (numFundadores <= 0) {
-    return Math.floor(PREMIO_TOTAL / VAGAS_FUNDADOR)
-  }
-  return Math.floor(PREMIO_TOTAL / numFundadores)
 }
 
 // ============================================
@@ -198,23 +178,6 @@ export async function adminGetFundadores() {
 }
 
 /**
- * Registra ganhador do sorteio de pontos (admin)
- */
-export async function adminRegistrarGanhador(fundadorId) {
-  try {
-    const { data, error } = await supabase.rpc('admin_registrar_ganhador_fundadores', {
-      p_fundador_id: fundadorId
-    })
-
-    if (error) throw error
-    return data
-  } catch (error) {
-    console.error('Erro ao registrar ganhador:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-/**
  * Cancela assinatura no período de arrependimento (admin)
  */
 export async function adminCancelarArrependimento(userId, motivo) {
@@ -246,15 +209,12 @@ export async function adminGetFundadoresStats() {
     if (error) throw error
 
     const total = fundadores?.length || 0
-    const pontosPorFundador = calcularPontosPorFundador(total)
 
     return {
       success: true,
       total_fundadores: total,
       vagas_restantes: Math.max(0, VAGAS_FUNDADOR - total),
       vagas_total: VAGAS_FUNDADOR,
-      premio_total: PREMIO_TOTAL,
-      pontos_por_fundador: pontosPorFundador,
       preco: PRECO_FUNDADOR,
       esgotado: total >= VAGAS_FUNDADOR
     }
