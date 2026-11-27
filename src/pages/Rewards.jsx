@@ -1042,7 +1042,10 @@ export function Rewards() {
     regras: exp.regras,
     categoria: exp.categoria,
     // Campos do sistema de entrega
-    tipoEntrega: exp.tipoEntrega || 'voucher',
+    // FALLBACK: Se vinculadoViagem é true mas tipoEntrega é null/voucher, tratar como servico_voo
+    tipoEntrega: (exp.vinculadoViagem && (!exp.tipoEntrega || exp.tipoEntrega === 'voucher'))
+      ? 'servico_voo'
+      : (exp.tipoEntrega || 'voucher'),
     subtipoEntrega: exp.subtipoEntrega || null,
     // Novos campos catálogo v2
     tipo: exp.tipo || 'fixo',

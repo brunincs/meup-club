@@ -120,12 +120,36 @@ export function TrechoSelector({
 
   if (viagens.length === 0) {
     return (
-      <div className={`p-4 rounded-xl text-center ${
+      <div className={`p-4 rounded-xl text-center space-y-3 ${
         isDark ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-amber-50 border border-amber-200'
       }`}>
-        <p className={`text-xs ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
-          Nenhuma viagem futura encontrada. Este resgate será processado sem vinculação a uma viagem específica.
+        <p className={`text-sm font-heading font-medium ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
+          Você precisa ter uma viagem lançada para resgatar este item.
         </p>
+        <div className="flex gap-2 justify-center">
+          <a
+            href="/enviar-viagem"
+            className={`px-4 py-2 rounded-xl text-xs font-heading font-medium transition-colors ${
+              isDark
+                ? 'bg-antique-gold text-deep-purple hover:bg-accent-light'
+                : 'bg-deep-purple text-ice-white hover:bg-deep-purple/90'
+            }`}
+          >
+            Lançar viagem
+          </a>
+          <a
+            href="https://wa.me/5516988126568?text=Olá! Gostaria de ajuda para lançar minha viagem."
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`px-4 py-2 rounded-xl text-xs font-heading font-medium transition-colors ${
+              isDark
+                ? 'bg-white/10 text-ice-white hover:bg-white/20'
+                : 'bg-graphite/10 text-graphite hover:bg-graphite/20'
+            }`}
+          >
+            Falar com a equipe
+          </a>
+        </div>
       </div>
     )
   }
