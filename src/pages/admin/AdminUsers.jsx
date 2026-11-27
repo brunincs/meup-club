@@ -258,8 +258,12 @@ function PrimeModal({ user, onClose, onSuccess }) {
   }, [user.id])
 
   const primeConfig = planosConfig?.prime || {}
-  // Apenas plano anual disponível
-  const precoAnual = primeConfig.precoAnual || 497
+  // Apenas plano anual disponível (preço Fundador)
+  const precoAnual = primeConfig.precoFundador || 597
+  // Regras do plano atual vêm do plano_config (não do status antigo)
+  const isPrimeUser = status?.isPrime || status?.plano === 'prime'
+  const cfgPlano = (isPrimeUser ? planosConfig?.prime : planosConfig?.free) || {}
+  const fmtMult = (v) => String(v ?? (isPrimeUser ? 1.5 : 0.5)).replace('.', ',')
 
   const handleAtivar = async (ciclo) => {
     setProcessing(true)
@@ -330,10 +334,10 @@ function PrimeModal({ user, onClose, onSuccess }) {
 
             {/* Benefícios */}
             <div className="text-xs space-y-1.5 text-graphite/70">
-              <p>• Check-in: <span className="font-semibold text-graphite">{status?.pontosCheckin || 10} pts/dia</span></p>
-              <p>• Indicação: <span className="font-semibold text-graphite">{status?.pontosIndicacao?.toLocaleString('pt-BR') || '3.000'} pts</span></p>
+              <p>• Check-in: <span className="font-semibold text-graphite">{cfgPlano.pontosCheckin ?? status?.pontosCheckin ?? 10} pts/dia</span></p>
+              <p>• Indicação: <span className="font-semibold text-graphite">{(cfgPlano.pontosIndicacao ?? (isPrimeUser ? 5000 : 2000)).toLocaleString('pt-BR')} pts</span> <span className="text-graphite/50">(na 1ª viagem do indicado)</span></p>
               <p>• Aniversário: <span className="font-semibold text-graphite">{status?.pontosAniversario?.toLocaleString('pt-BR') || 0} pts</span></p>
-              <p>• Multiplicador viagem: <span className="font-semibold text-graphite">{status?.multiplicadorViagem || 1}x</span>
+              <p>• Multiplicador viagem: <span className="font-semibold text-graphite">{fmtMult(cfgPlano.multiplicadorViagem)} pt por R$ 1</span>
                 {status?.isAnual && <span className="text-amber-600 ml-1">(Prime Anual)</span>}
               </p>
             </div>
@@ -362,7 +366,7 @@ function PrimeModal({ user, onClose, onSuccess }) {
                   className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-heading font-semibold hover:from-amber-600 hover:to-amber-700 transition-colors disabled:opacity-50"
                 >
                   {processing ? 'Ativando...' : 'Ativar Prime Anual'}
-                  <span className="block text-xs font-normal opacity-80">R${formatPrice(precoAnual, false)}/ano (1.5x)</span>
+                  <span className="block text-xs font-normal opacity-80">R${formatPrice(precoAnual, false)}/ano · Fundador (1,5 pt por R$ 1)</span>
                 </button>
               </div>
             )}
