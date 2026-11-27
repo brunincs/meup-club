@@ -151,6 +151,14 @@ export function HojeSection({ variant = 'dark' }) {
 
   // Handler missão
   const handleMission = useCallback(async (mission) => {
+    // Missões do Instagram / com link: o fluxo completo (Abrir o Reels + Já comentei + @) fica em Missões
+    const nomeLower = (mission.nome || mission.name || '').toLowerCase()
+    const link = mission.link_url || mission.linkUrl || ''
+    if (nomeLower.includes('instagram') || nomeLower.includes('reels') || link) {
+      navigate(`/tarefas#missao-${mission.id}`)
+      return
+    }
+
     const action = getMissionAction(mission.nome)
 
     if (requiresApproval(mission.nome)) {
