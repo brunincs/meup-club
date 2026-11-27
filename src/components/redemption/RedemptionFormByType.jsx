@@ -196,22 +196,25 @@ export function RedemptionFormByType({
             subtipoEntrega={subtipoEntrega}
             value={formData.passageiroIds || formData.passageiroId}
             onChange={(ids, passageiros) => {
-              // Suportar tanto single quanto multi select
+              // IMPORTANTE: Atualizar todos os campos de uma vez para evitar estado inconsistente
               if (Array.isArray(ids)) {
-                handleChange('passageiroIds', ids)
-                handleChange('passageiros', passageiros)
-                // Para compatibilidade, manter passageiro como string do primeiro
-                if (passageiros.length > 0) {
-                  handleChange('passageiro', passageiros.map(p => p.nome).join(', '))
-                  handleChange('passageiroId', passageiros[0].id)
-                }
+                // Multi-select
+                setFormData(prev => ({
+                  ...prev,
+                  passageiroIds: ids,
+                  passageiros: passageiros,
+                  passageiro: passageiros.map(p => p.nome).join(', '),
+                  passageiroId: passageiros.length > 0 ? passageiros[0].id : null
+                }))
               } else {
-                handleChange('passageiroId', ids)
-                handleChange('passageiroIds', ids ? [ids] : [])
-                handleChange('passageiros', passageiros)
-                if (passageiros.length > 0) {
-                  handleChange('passageiro', passageiros[0].nome)
-                }
+                // Single-select
+                setFormData(prev => ({
+                  ...prev,
+                  passageiroId: ids,
+                  passageiroIds: ids ? [ids] : [],
+                  passageiros: passageiros,
+                  passageiro: passageiros.length > 0 ? passageiros[0].nome : ''
+                }))
               }
             }}
             multiSelect={allowMultiPassenger}
