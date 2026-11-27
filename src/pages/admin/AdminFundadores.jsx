@@ -188,10 +188,7 @@ export function AdminFundadores() {
                               Ver usuário
                             </Link>
                             <button
-                              onClick={() => {
-                                console.log('Excluir fundador clicado:', fundador)
-                                setDeletingUser(fundador)
-                              }}
+                              onClick={() => setDeletingUser(fundador)}
                               className="px-3 py-1.5 rounded-lg text-xs font-heading font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
                             >
                               Excluir
