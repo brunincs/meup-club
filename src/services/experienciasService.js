@@ -209,7 +209,9 @@ export async function createTarefa(tarefa) {
         tipo: tarefa.tipo,
         icone: tarefa.icone || '✓',
         ativa: tarefa.ativa !== false,
-        ordem: tarefa.ordem || 0
+        ordem: tarefa.ordem || 0,
+        link_url: tarefa.link_url || null,
+        link_label: tarefa.link_label || null
       }])
       .select()
       .single()
@@ -237,7 +239,9 @@ export async function updateTarefa(id, updates) {
         tipo: updates.tipo,
         icone: updates.icone,
         ativa: updates.ativa,
-        ordem: updates.ordem
+        ordem: updates.ordem,
+        link_url: updates.link_url || null,
+        link_label: updates.link_label || null
       })
       .eq('id', id)
       .select()
@@ -331,7 +335,7 @@ export async function fetchSolicitacoesPendentes() {
       .from('tarefa_solicitacoes')
       .select(`
         *,
-        tarefas (nome, pontos, icone),
+        tarefas (nome, pontos, icone, link_url, link_label),
         profiles:user_id (name, email)
       `)
       .eq('status', 'pendente')
@@ -349,6 +353,8 @@ export async function fetchSolicitacoesPendentes() {
       tarefaNome: s.tarefas?.nome || 'Tarefa',
       tarefaPontos: s.tarefas?.pontos || 0,
       tarefaIcone: s.tarefas?.icone || '✓',
+      tarefaLinkUrl: s.tarefas?.link_url || null,
+      tarefaLinkLabel: s.tarefas?.link_label || null,
       status: s.status,
       dadosExtras: s.dados_extras || {},
       instagramHandle: s.dados_extras?.instagram_handle || null,
@@ -415,6 +421,32 @@ export async function aprovarSolicitacao(solicitacaoId, adminId) {
   } catch (error) {
     console.error('Erro ao aprovar solicitação:', error)
     return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Aprovar múltiplas solicitações de tarefa em lote (admin)
+ * @param {Array} solicitacaoIds - Array de IDs de solicitações a aprovar
+ * @param {string} adminId - ID do admin que está aprovando
+ */
+export async function aprovarSolicitacoesEmLote(solicitacaoIds, adminId) {
+  const resultados = { success: 0, failed: 0, errors: [] }
+
+  for (const solicitacaoId of solicitacaoIds) {
+    const result = await aprovarSolicitacao(solicitacaoId, adminId)
+    if (result.success) {
+      resultados.success++
+    } else {
+      resultados.failed++
+      resultados.errors.push({ id: solicitacaoId, error: result.error })
+    }
+  }
+
+  return {
+    success: resultados.failed === 0,
+    aprovadas: resultados.success,
+    falhas: resultados.failed,
+    errors: resultados.errors
   }
 }
 

@@ -288,8 +288,20 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
               {/* Botões - não mostrar se concluída ou pendente */}
               {!isCompleted && !isPending && (
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0">
-                  {/* Botão "Ir Fazer" - aparece se NÃO rejeitada */}
-                  {!isRejected && (
+                  {/* Botão de link externo (ex: "Abrir o Reels") - quando task tem link_url */}
+                  {!isRejected && task.linkUrl && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => window.open(task.linkUrl, '_blank', 'noopener,noreferrer')}
+                      className="px-4 py-2.5 rounded-xl text-sm font-heading font-medium bg-antique-gold/10 text-antique-gold border border-antique-gold/30 hover:bg-antique-gold/20 transition-all whitespace-nowrap"
+                    >
+                      {task.linkLabel || 'Abrir Link'} ↗
+                    </motion.button>
+                  )}
+
+                  {/* Botão "Ir Fazer" - aparece se NÃO rejeitada e NÃO tem link_url */}
+                  {!isRejected && !task.linkUrl && (
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -300,7 +312,7 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
                     </motion.button>
                   )}
 
-                  {/* Botão "Fiz isso" - SÓ para missões externas (Instagram/Google) */}
+                  {/* Botão "Já comentei" / "Fiz isso" - SÓ para missões externas (Instagram/Google) */}
                   {needsApproval && !isRejected && (
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -322,6 +334,8 @@ function MissionCardLight({ task, onComplete, onGoTo, isLoading }) {
                           />
                           Enviando...
                         </span>
+                      ) : task.linkUrl ? (
+                        'Já comentei'
                       ) : (
                         'Fiz isso'
                       )}
@@ -463,7 +477,9 @@ export function Tasks() {
           target: 1,
           progress: status === 'aprovada' ? 1 : 0,
           needsApproval,  // SÓ true para Instagram/Google
-          isAutomatic     // Credita via trigger
+          isAutomatic,    // Credita via trigger
+          linkUrl: task.link_url,     // URL externa (ex: Reels do Instagram)
+          linkLabel: task.link_label  // Texto do botão (ex: "Abrir o Reels")
         }
       })
   }, [tarefas, solicitacoesStatus])

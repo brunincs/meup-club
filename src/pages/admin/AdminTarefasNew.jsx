@@ -8,7 +8,8 @@ import {
   toggleTarefaAtiva,
   fetchSolicitacoesPendentes,
   aprovarSolicitacao,
-  rejeitarSolicitacao
+  rejeitarSolicitacao,
+  aprovarSolicitacoesEmLote
 } from '@/services/experienciasService'
 import { useAuth } from '@/contexts/AuthContext'
 import toast from 'react-hot-toast'
@@ -104,7 +105,9 @@ function TarefaModal({ tarefa, onClose, onSave }) {
     pontos: tarefa?.pontos || '',
     tipo: tarefa?.tipo || 'unica',
     icone: tarefa?.icone || '✓',
-    ordem: tarefa?.ordem || 0
+    ordem: tarefa?.ordem || 0,
+    link_url: tarefa?.link_url || '',
+    link_label: tarefa?.link_label || ''
   })
   const [saving, setSaving] = useState(false)
 
@@ -231,6 +234,34 @@ function TarefaModal({ tarefa, onClose, onSave }) {
             </div>
           </div>
 
+          {/* Link externo (opcional) */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-graphite/60 font-heading mb-1.5">
+                Link externo (URL)
+              </label>
+              <input
+                type="url"
+                value={formData.link_url}
+                onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
+                placeholder="https://instagram.com/reel/..."
+                className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-graphite/60 font-heading mb-1.5">
+                Texto do botão
+              </label>
+              <input
+                type="text"
+                value={formData.link_label}
+                onChange={(e) => setFormData({ ...formData, link_label: e.target.value })}
+                placeholder="Ex: Abrir o Reels"
+                className="w-full px-4 py-3 rounded-xl bg-ice-white border border-dusty-rose/30 text-graphite placeholder:text-graphite/40 focus:outline-none focus:border-antique-gold/50 focus:ring-2 focus:ring-antique-gold/20 transition-all font-heading"
+              />
+            </div>
+          </div>
+
           {/* Ações */}
           <div className="flex gap-3 pt-4">
             <button
@@ -269,6 +300,8 @@ export function AdminTarefasNew() {
   const [editingTarefa, setEditingTarefa] = useState(null)
   const [rejeicaoModal, setRejeicaoModal] = useState(null) // solicitação sendo rejeitada
   const [rejeitando, setRejeitando] = useState(false)
+  const [selectedIds, setSelectedIds] = useState([]) // IDs selecionados para aprovação em lote
+  const [aprovandoLote, setAprovandoLote] = useState(false)
 
   // Carregar tarefas
   const loadTarefas = async () => {
@@ -366,6 +399,42 @@ export function AdminTarefasNew() {
     } else {
       toast.error(result.error || 'Erro ao rejeitar')
     }
+  }
+
+  // Toggle seleção individual
+  const handleToggleSelect = (id) => {
+    setSelectedIds(prev =>
+      prev.includes(id)
+        ? prev.filter(x => x !== id)
+        : [...prev, id]
+    )
+  }
+
+  // Toggle selecionar todos
+  const handleSelectAll = () => {
+    if (selectedIds.length === solicitacoes.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(solicitacoes.map(s => s.id))
+    }
+  }
+
+  // Aprovar em lote
+  const handleAprovarLote = async () => {
+    if (selectedIds.length === 0) return
+
+    setAprovandoLote(true)
+    const result = await aprovarSolicitacoesEmLote(selectedIds, user?.id)
+    setAprovandoLote(false)
+
+    if (result.success) {
+      toast.success(`${result.aprovadas} solicitações aprovadas!`)
+    } else {
+      toast.success(`${result.aprovadas} aprovadas, ${result.falhas} falharam`)
+    }
+
+    setSelectedIds([])
+    loadSolicitacoes()
   }
 
   const openCreate = () => {
@@ -555,6 +624,34 @@ export function AdminTarefasNew() {
         {/* Tab: Pendentes de Aprovação */}
         {tab === 'pendentes' && (
           <div className="space-y-3">
+            {/* Barra de ações em lote */}
+            {solicitacoes.length > 0 && (
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-dusty-rose/20 shadow-sm">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.length === solicitacoes.length && solicitacoes.length > 0}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 rounded border-dusty-rose/30 text-antique-gold focus:ring-antique-gold/30"
+                  />
+                  <span className="text-xs font-heading text-graphite/70">
+                    {selectedIds.length > 0
+                      ? `${selectedIds.length} selecionada(s)`
+                      : 'Selecionar todas'}
+                  </span>
+                </label>
+                {selectedIds.length > 0 && (
+                  <button
+                    onClick={handleAprovarLote}
+                    disabled={aprovandoLote}
+                    className="px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm disabled:opacity-50"
+                  >
+                    {aprovandoLote ? 'Aprovando...' : `Aprovar ${selectedIds.length} selecionada(s)`}
+                  </button>
+                )}
+              </div>
+            )}
+
             {loadingSolicitacoes ? (
               <div className="p-8 text-center rounded-2xl border border-dusty-rose/20 bg-white shadow-sm">
                 <motion.div
@@ -578,9 +675,21 @@ export function AdminTarefasNew() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
-                  className="p-4 rounded-2xl border border-amber-200 bg-amber-50 shadow-sm"
+                  className={`p-4 rounded-2xl border shadow-sm transition-all ${
+                    selectedIds.includes(sol.id)
+                      ? 'border-antique-gold bg-antique-gold/5'
+                      : 'border-amber-200 bg-amber-50'
+                  }`}
                 >
                   <div className="flex items-center gap-4">
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(sol.id)}
+                      onChange={() => handleToggleSelect(sol.id)}
+                      className="w-4 h-4 rounded border-dusty-rose/30 text-antique-gold focus:ring-antique-gold/30 flex-shrink-0"
+                    />
+
                     {/* Ícone */}
                     <span className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
                       {sol.tarefaIcone}
@@ -606,6 +715,19 @@ export function AdminTarefasNew() {
                             className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
                           >
                             {sol.instagramHandle} ↗
+                          </a>
+                        </p>
+                      )}
+                      {/* Link do Reels (se a tarefa tiver link_url) */}
+                      {sol.tarefaLinkUrl && (
+                        <p className="text-xs font-heading mt-1">
+                          <a
+                            href={sol.tarefaLinkUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-antique-gold hover:text-antique-gold/80 hover:underline font-medium"
+                          >
+                            Ver Reels ↗
                           </a>
                         </p>
                       )}
