@@ -260,7 +260,8 @@ function EmissaoForm({ userId, isDark, onSuccess, onCancel }) {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [valor, setValor] = useState('')
-  const [dataEmissao, setDataEmissao] = useState('')
+  // Data da compra: padrão = hoje
+  const [dataEmissao, setDataEmissao] = useState(() => new Date().toISOString().split('T')[0])
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -433,11 +434,14 @@ function EmissaoForm({ userId, isDark, onSuccess, onCancel }) {
         </div>
 
         <div>
-          <label className={`block text-xs font-heading mb-2 ${
+          <label className={`block text-xs font-heading mb-1 ${
             isDark ? 'text-dusty-rose' : 'text-graphite/60'
           }`}>
-            Data <span className="text-red-400">*</span>
+            Data da compra <span className="text-red-400">*</span>
           </label>
+          <p className={`text-[10px] mb-1.5 ${isDark ? 'text-dusty-rose/60' : 'text-graphite/40'}`}>
+            Dia em que você comprou
+          </p>
           <input
             type="date"
             value={dataEmissao}

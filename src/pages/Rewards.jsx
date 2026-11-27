@@ -17,6 +17,7 @@ import { format, levels as levelCopy } from '@/services/copy'
 import { getClassIcon, GiftIcon, PlaneIcon } from '@/components/ui/Icons'
 import { RedemptionFormByType } from '@/components/redemption/RedemptionFormByType'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
+import { PrimeUpsell } from '@/components/shared/PrimeUpsell'
 
 // ============================================
 // FOTO A VALIDAR - trocar pela oficial da Me,up depois

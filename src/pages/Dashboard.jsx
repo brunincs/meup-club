@@ -13,6 +13,7 @@ import {
 import { HojeSection } from '@/components/dashboard/HojeSection'
 import { ExperienciasParaVoce } from '@/components/dashboard/ExperienciasParaVoce'
 import { SafeSection } from '@/components/shared/ErrorBoundary'
+import { PrimeUpsell } from '@/components/shared/PrimeUpsell'
 
 // ============================================
 // DASHBOARD REESTRUTURADO - 4 BLOCOS
@@ -83,6 +84,9 @@ export function Dashboard() {
               <TripSubmitCard variant="light" />
             </SafeSection>
 
+            {/* Upsell Prime para Free */}
+            <PrimeUpsell variant="card" context="dashboard" isDark={false} />
+
             {/* Bloco 2: Próxima Viagem (BRANCO) */}
             <SafeSection name="Próxima Viagem" silent>
               <NextTripCard variant="light" />
@@ -126,6 +130,8 @@ export function Dashboard() {
               <SafeSection name="Lançar Viagem" silent>
                 <TripSubmitCard variant="light" />
               </SafeSection>
+              {/* Upsell Prime para Free */}
+              <PrimeUpsell variant="card" context="dashboard" isDark={false} />
               <SafeSection name="Próxima Viagem" silent>
                 <NextTripCard variant="light" />
               </SafeSection>

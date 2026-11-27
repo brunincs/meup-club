@@ -12,6 +12,7 @@ import { ViagemCard } from '@/components/viagens/ViagemCard'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchUserBenefits } from '@/services/subscriptionService'
 import { PlaneIcon } from '@/components/ui/Icons'
+import { PrimeUpsell } from '@/components/shared/PrimeUpsell'
 
 export function MinhasViagens() {
   const { user } = useAuth()
@@ -98,6 +99,11 @@ export function MinhasViagens() {
           </div>
         </div>
       </section>
+
+      {/* Banner Prime Upsell para Free */}
+      <div className="container-premium pt-6">
+        <PrimeUpsell variant="banner" context="viagens" isDark={false} />
+      </div>
 
       {/* Conteúdo */}
       <section className="py-8">
