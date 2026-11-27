@@ -78,14 +78,8 @@ export function RedemptionFormByType({
 
   // Atualizar múltiplos campos de uma vez
   const updateMultipleFields = (updates) => {
-    console.log('[DEBUG updateMultipleFields] updates:', updates, 'onChange exists:', !!onChange)
     if (onChange) {
-      // Usar forma funcional: prev => newState
-      onChange(prev => {
-        const newState = { ...prev, ...updates }
-        console.log('[DEBUG updateMultipleFields] prev:', prev, 'newState:', newState)
-        return newState
-      })
+      onChange(prev => ({ ...prev, ...updates }))
     }
   }
 
@@ -218,11 +212,7 @@ export function RedemptionFormByType({
             subtipoEntrega={subtipoEntrega}
             value={initialData.passageiroIds || initialData.passageiroId}
             onChange={(ids, passageiros) => {
-              console.log('[DEBUG PassageiroSelector onChange] ids:', ids, 'passageiros:', passageiros)
-              // Atualizar todos os campos de uma vez - componente controlado
               if (Array.isArray(ids)) {
-                // Multi-select
-                console.log('[DEBUG] Multi-select path')
                 updateMultipleFields({
                   passageiroIds: ids,
                   passageiros: passageiros,
@@ -230,8 +220,6 @@ export function RedemptionFormByType({
                   passageiroId: passageiros.length > 0 ? passageiros[0].id : null
                 })
               } else {
-                // Single-select
-                console.log('[DEBUG] Single-select path, setting passageiroId:', ids)
                 updateMultipleFields({
                   passageiroId: ids,
                   passageiroIds: ids ? [ids] : [],

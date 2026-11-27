@@ -68,9 +68,6 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
     const tipo = reward.tipoEntrega
     const subtipo = reward.subtipoEntrega
 
-    // DEBUG: ver estado atual
-    console.log('[DEBUG validateFormData] formData:', JSON.stringify(formData, null, 2))
-
     if (tipo === 'servico_voo') {
       // Serviço de voo requer viagem
       if (!formData.viagemId) {
@@ -83,7 +80,6 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
       // Passageiro é obrigatório para alguns subtipos
       if (['assento', 'bagagem'].includes(subtipo)) {
         const hasPassageiro = formData.passageiroId || (formData.passageiroIds?.length > 0)
-        console.log('[DEBUG] passageiroId:', formData.passageiroId, 'passageiroIds:', formData.passageiroIds, 'hasPassageiro:', hasPassageiro)
         if (!hasPassageiro) {
           errors.push('Selecione o passageiro')
         }
@@ -117,7 +113,6 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
       if (!formData.estado?.trim()) errors.push('Selecione o estado')
     }
 
-    console.log('[DEBUG validateFormData] errors finais:', errors)
     setValidationErrors(errors)
     return errors.length === 0
   }

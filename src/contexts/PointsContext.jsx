@@ -132,7 +132,9 @@ export function PointsProvider({ children }) {
     // Modo real: chama o serviço Supabase v2 com suporte a formulário e viagem
     setIsLoading(true)
     try {
-      const result = await solicitarResgateV2(experienciaId, experienciaNome, pontosUnitarios, classeMinima, quantidade, formData, emissaoId, viagemId, vooId)
+      // Passageiro vem do formulário (PassageiroSelector) - obrigatório para assento/bagagem no RPC
+      const passageiroId = formData?.passageiroId || formData?.passageiroIds?.[0] || null
+      const result = await solicitarResgateV2(experienciaId, experienciaNome, pontosUnitarios, classeMinima, quantidade, formData, emissaoId, viagemId, vooId, passageiroId)
       // Não adiciona mais a pendingIds - experiências são repetíveis
       return result
     } finally {
