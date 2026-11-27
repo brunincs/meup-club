@@ -147,8 +147,8 @@ export function AdminLinksPrime() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-display font-bold text-ice-white">Links Prime</h1>
-          <p className="text-sm text-dusty-rose mt-1">
+          <h1 className="text-xl font-display font-bold text-graphite">Links Prime</h1>
+          <p className="text-sm text-graphite/60 mt-1">
             Gere links individuais pós-pagamento para ativar Prime
           </p>
         </div>
@@ -162,17 +162,17 @@ export function AdminLinksPrime() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white/5 rounded-xl p-4 text-center">
-          <p className="text-2xl font-mono font-bold text-ice-white">{stats.total}</p>
-          <p className="text-xs text-dusty-rose">Total</p>
+        <div className="bg-white rounded-xl p-4 text-center">
+          <p className="text-2xl font-mono font-bold text-graphite">{stats.total}</p>
+          <p className="text-xs text-graphite/60">Total</p>
         </div>
-        <div className="bg-white/5 rounded-xl p-4 text-center">
-          <p className="text-2xl font-mono font-bold text-green-400">{stats.ativos}</p>
-          <p className="text-xs text-dusty-rose">Ativos</p>
+        <div className="bg-white rounded-xl p-4 text-center">
+          <p className="text-2xl font-mono font-bold text-green-700">{stats.ativos}</p>
+          <p className="text-xs text-graphite/60">Ativos</p>
         </div>
-        <div className="bg-white/5 rounded-xl p-4 text-center">
+        <div className="bg-white rounded-xl p-4 text-center">
           <p className="text-2xl font-mono font-bold text-blue-400">{stats.usados}</p>
-          <p className="text-xs text-dusty-rose">Usados</p>
+          <p className="text-xs text-graphite/60">Usados</p>
         </div>
       </div>
 
@@ -187,25 +187,25 @@ export function AdminLinksPrime() {
           >
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h3 className="font-heading font-semibold text-green-400">Link gerado para {generatedLink.nome}</h3>
-                <p className="text-xs text-dusty-rose mt-1">Válido por 7 dias</p>
+                <h3 className="font-heading font-semibold text-green-700">Link gerado para {generatedLink.nome}</h3>
+                <p className="text-xs text-graphite/60 mt-1">Válido por 7 dias</p>
               </div>
               <button
                 onClick={() => setGeneratedLink(null)}
-                className="text-dusty-rose hover:text-ice-white"
+                className="text-graphite/60 hover:text-graphite"
               >
                 ×
               </button>
             </div>
 
             <div className="bg-black/20 rounded-lg p-3 mb-3">
-              <p className="text-sm text-ice-white break-all font-mono">{generatedLink.url}</p>
+              <p className="text-sm text-graphite break-all font-mono">{generatedLink.url}</p>
             </div>
 
             <div className="flex gap-2">
               <button
                 onClick={() => handleCopy(generatedLink.url)}
-                className="flex-1 px-4 py-2 rounded-lg bg-white/10 text-ice-white text-sm font-heading hover:bg-white/20 transition-colors"
+                className="flex-1 px-4 py-2 rounded-lg bg-deep-purple/10 text-graphite text-sm font-heading hover:bg-deep-purple/20 transition-colors"
               >
                 Copiar Link
               </button>
@@ -223,46 +223,46 @@ export function AdminLinksPrime() {
       </AnimatePresence>
 
       {/* Lista de links */}
-      <div className="bg-white/5 rounded-xl overflow-hidden">
+      <div className="bg-white rounded-xl overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-dusty-rose">Carregando...</div>
+          <div className="p-8 text-center text-graphite/60">Carregando...</div>
         ) : links.length === 0 ? (
-          <div className="p-8 text-center text-dusty-rose">
+          <div className="p-8 text-center text-graphite/60">
             Nenhum link gerado ainda
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="px-4 py-3 text-left text-xs text-dusty-rose font-heading">Cliente</th>
-                  <th className="px-4 py-3 text-left text-xs text-dusty-rose font-heading">Valor</th>
-                  <th className="px-4 py-3 text-left text-xs text-dusty-rose font-heading">Criado</th>
-                  <th className="px-4 py-3 text-left text-xs text-dusty-rose font-heading">Status</th>
-                  <th className="px-4 py-3 text-left text-xs text-dusty-rose font-heading">Usado por</th>
-                  <th className="px-4 py-3 text-right text-xs text-dusty-rose font-heading">Ações</th>
+                <tr className="border-b border-graphite/10">
+                  <th className="px-4 py-3 text-left text-xs text-graphite/60 font-heading">Cliente</th>
+                  <th className="px-4 py-3 text-left text-xs text-graphite/60 font-heading">Valor</th>
+                  <th className="px-4 py-3 text-left text-xs text-graphite/60 font-heading">Criado</th>
+                  <th className="px-4 py-3 text-left text-xs text-graphite/60 font-heading">Status</th>
+                  <th className="px-4 py-3 text-left text-xs text-graphite/60 font-heading">Usado por</th>
+                  <th className="px-4 py-3 text-right text-xs text-graphite/60 font-heading">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {links.map((link) => (
-                  <tr key={link.id} className="border-b border-white/5 hover:bg-white/5">
+                  <tr key={link.id} className="border-b border-graphite/10 hover:bg-white">
                     <td className="px-4 py-3">
-                      <p className="text-ice-white font-medium">{link.nome_cliente}</p>
-                      <p className="text-xs text-dusty-rose">{link.telefone}</p>
+                      <p className="text-graphite font-medium">{link.nome_cliente}</p>
+                      <p className="text-xs text-graphite/60">{link.telefone}</p>
                     </td>
-                    <td className="px-4 py-3 text-ice-white">
+                    <td className="px-4 py-3 text-graphite">
                       R$ {link.valor_pago?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      <span className="text-xs text-dusty-rose ml-1">({link.forma_pagamento})</span>
+                      <span className="text-xs text-graphite/60 ml-1">({link.forma_pagamento})</span>
                     </td>
-                    <td className="px-4 py-3 text-dusty-rose text-xs">
+                    <td className="px-4 py-3 text-graphite/60 text-xs">
                       {formatDate(link.criado_em)}
                     </td>
                     <td className="px-4 py-3">
                       {getStatusBadge(link.status)}
                     </td>
-                    <td className="px-4 py-3 text-dusty-rose text-xs">
+                    <td className="px-4 py-3 text-graphite/60 text-xs">
                       {link.usado_por_nome ? (
-                        <span className="text-ice-white">{link.usado_por_nome}</span>
+                        <span className="text-graphite">{link.usado_por_nome}</span>
                       ) : '-'}
                       {link.usado_em && (
                         <span className="block text-[10px]">{formatDate(link.usado_em)}</span>
@@ -274,7 +274,7 @@ export function AdminLinksPrime() {
                           <>
                             <button
                               onClick={() => handleCopy(gerarUrlLinkPrime(link.token))}
-                              className="px-2 py-1 rounded text-xs bg-white/10 text-ice-white hover:bg-white/20"
+                              className="px-2 py-1 rounded text-xs bg-deep-purple/10 text-graphite hover:bg-deep-purple/20"
                             >
                               Copiar
                             </button>
@@ -282,13 +282,13 @@ export function AdminLinksPrime() {
                               href={gerarUrlWhatsAppEnvio(link.telefone, link.nome_cliente, link.token)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-2 py-1 rounded text-xs bg-green-600/20 text-green-400 hover:bg-green-600/30"
+                              className="px-2 py-1 rounded text-xs bg-green-600/20 text-green-700 hover:bg-green-600/30"
                             >
                               WhatsApp
                             </a>
                             <button
                               onClick={() => handleCancel(link.id)}
-                              className="px-2 py-1 rounded text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                              className="px-2 py-1 rounded text-xs bg-red-500/20 text-red-600 hover:bg-red-500/30"
                             >
                               Cancelar
                             </button>
