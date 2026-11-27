@@ -67,6 +67,8 @@ DECLARE
   v_pontos INTEGER;
   v_ja_creditado BOOLEAN;
   v_profile RECORD;
+  v_saldo_antes INTEGER;
+  v_saldo_depois INTEGER;
 BEGIN
   -- Verificar se usuário existe e está aprovado
   SELECT * INTO v_profile FROM profiles WHERE id = p_user_id;
@@ -80,11 +82,11 @@ BEGIN
     RETURN jsonb_build_object('success', true, 'skipped', true, 'reason', 'Conta de teste');
   END IF;
 
-  -- Verificar se já recebeu bônus de boas-vindas Free
+  -- Verificar se já recebeu bônus de boas-vindas Free (pela reason específica)
   SELECT EXISTS (
     SELECT 1 FROM point_transactions
     WHERE user_id = p_user_id
-    AND type = 'boas_vindas_free'
+    AND reason ILIKE '%boas-vindas%lançamento%'
   ) INTO v_ja_creditado;
 
   IF v_ja_creditado THEN
@@ -97,26 +99,31 @@ BEGIN
 
   v_pontos := COALESCE(v_pontos, 1000);
 
+  -- Calcular saldos
+  v_saldo_antes := COALESCE(v_profile.points, 0);
+  v_saldo_depois := v_saldo_antes + v_pontos;
+
   -- Creditar pontos
-  INSERT INTO point_transactions (user_id, amount, type, reason, operation)
+  INSERT INTO point_transactions (user_id, amount, type, reason, balance_before, balance_after)
   VALUES (
     p_user_id,
     v_pontos,
-    'boas_vindas_free',
+    'credit',
     'Bônus de boas-vindas · lançamento Me,up Club',
-    'credit'
+    v_saldo_antes,
+    v_saldo_depois
   );
 
   -- Atualizar saldo
   UPDATE profiles
-  SET points = COALESCE(points, 0) + v_pontos
+  SET points = v_saldo_depois
   WHERE id = p_user_id;
 
   -- Criar notificação
   INSERT INTO notifications (user_id, type, title, message, read)
   VALUES (
     p_user_id,
-    'bonus',
+    'welcome',
     'Bônus de boas-vindas!',
     'Você ganhou ' || v_pontos || ' pts de boas-vindas no Me,up Club!',
     FALSE
@@ -604,7 +611,7 @@ BEGIN
       )
       AND NOT EXISTS (
         SELECT 1 FROM point_transactions pt
-        WHERE pt.user_id = p.id AND pt.type = 'boas_vindas_free'
+        WHERE pt.user_id = p.id AND pt.type = 'credit'
       )
     ORDER BY p.created_at ASC
   LOOP
