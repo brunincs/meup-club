@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { fetchMySubscription, fetchPlanosConfig } from '@/services/subscriptionService'
+import { fetchMySubscription, fetchPlanosConfig, bonusPrimeAtual } from '@/services/subscriptionService'
 import { getPrecoFundadorAtual } from '@/services/fundadoresService'
 import { getFullSlotsData } from '@/services/slotsService'
 import { isPaymentEnabled, garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
@@ -77,6 +77,7 @@ export function Plans() {
   // Valores do plano - alinhados com landing
   const primeConfig = planosConfig?.prime || {}
   const freeConfig = planosConfig?.free || {}
+  const bonus = bonusPrimeAtual(primeConfig)
 
   // Dados do modelo exclusivo (fonte: slotsService, igual landing)
   const precoFundador = slotsData?.prime?.preco || 597
@@ -271,11 +272,13 @@ export function Plans() {
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-[#a27937]">★</span>
-                  <span className="text-white">Bônus de boas-vindas: <strong className="text-[#a27937]">5.000 pts</strong></span>
+                  <span className="text-white">Bônus de boas-vindas: <strong className="text-[#a27937]">{bonus.total.toLocaleString('pt-BR')} pts</strong>
+                    {bonus.dentroDoLancamento && <span className="text-xs text-white/50 ml-1">(até 30/11)</span>}
+                  </span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-[#a27937]">★</span>
-                  <span className="text-white">Indicação vale: <strong className="text-[#a27937]">5.000 pts</strong></span>
+                  <span className="text-white">Indicação vale: <strong className="text-[#a27937]">{(primeConfig.pontosIndicacao || 5000).toLocaleString('pt-BR')} pts</strong></span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-[#a27937]">★</span>

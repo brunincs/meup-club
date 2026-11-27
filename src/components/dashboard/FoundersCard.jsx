@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { getMyFundadorData, getFundadoresCount, getRegulamentoUrl } from '@/services/fundadoresService'
+import { fetchPlanosConfig, bonusPrimeAtual } from '@/services/subscriptionService'
 import { SubscribeButton } from '@/components/ui/SubscribeButton'
 import { SeloFundador } from '@/components/ui/SeloFundador'
 
@@ -15,19 +16,27 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
   const [fundadorData, setFundadorData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [regulamentoUrl, setRegulamentoUrl] = useState('')
+  const [primeConfig, setPrimeConfig] = useState(null)
 
   const isLight = variant === 'light'
   const planoEfetivo = profile?.plano_efetivo || profile?.plano || 'free'
   const isPrime = planoEfetivo === 'prime'
 
+  // Calcular bônus Prime atual
+  const bonus = bonusPrimeAtual(primeConfig)
+
   useEffect(() => {
     async function loadData() {
-      const [fundador, url] = await Promise.all([
+      const [fundador, url, planosResult] = await Promise.all([
         getMyFundadorData(),
-        getRegulamentoUrl()
+        getRegulamentoUrl(),
+        fetchPlanosConfig()
       ])
       setFundadorData(fundador)
       setRegulamentoUrl(url)
+      if (planosResult.success) {
+        setPrimeConfig(planosResult.planos?.prime)
+      }
       setLoading(false)
     }
     loadData()
@@ -89,7 +98,7 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
 
           {/* Benefícios */}
           <p className="text-sm mb-4 max-w-xs text-graphite/70">
-            Preço garantido na renovação · 1,5 pt/R$ · 5.000 pts de boas-vindas
+            Preço garantido na renovação · 1,5 pt/R$ · {bonus.total.toLocaleString('pt-BR')} pts de boas-vindas
           </p>
 
           {/* Badge */}
@@ -131,7 +140,8 @@ export function FoundersCard({ variant = 'dark', showAfterPositiveAction = false
           </h3>
           <p className={`text-sm mb-2 ${isLight ? 'text-graphite/70' : 'text-dusty-rose'}`}>
             Prime por <span className={`line-through ${isLight ? 'text-graphite/40' : 'text-dusty-rose/60'}`}>R$ 997</span>{' '}
-            <span className={`font-semibold ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>R$ 597/ano</span> + 5.000 pts de boas-vindas
+            <span className={`font-semibold ${isLight ? 'text-antique-gold' : 'text-amber-400'}`}>R$ 597/ano</span> + {bonus.total.toLocaleString('pt-BR')} pts
+            {bonus.dentroDoLancamento && <span className="text-xs opacity-60"> (até 30/11)</span>}
           </p>
 
           {(() => {

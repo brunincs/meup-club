@@ -118,7 +118,6 @@ export async function fetchPlanosConfig() {
     if (error) throw error
 
     // data já vem no formato { free: {...}, prime: {...}, config: {...} }
-    // IMPORTANTE: Free = 0.5 pt/R$, Prime = 1.5 pt/R$ | Free indicação = 2000, Prime = 5000
     const planos = {
       free: {
         nome: data.free?.nome ?? 'Free',
@@ -126,7 +125,8 @@ export async function fetchPlanosConfig() {
         pontosCheckin: data.free?.pontosCheckin ?? 10,
         pontosIndicacao: data.free?.pontosIndicacao ?? 2000,
         multiplicadorViagem: data.free?.multiplicadorViagem ?? 0.5,
-        fatorPontos: data.free?.fatorPontos ?? 150
+        fatorPontos: data.free?.fatorPontos ?? 150,
+        pontosBoasVindas: data.free?.pontosBoasVindas ?? 1000
       },
       prime: {
         nome: data.prime?.nome ?? 'Prime',
@@ -136,7 +136,10 @@ export async function fetchPlanosConfig() {
         multiplicadorViagem: data.prime?.multiplicadorViagem ?? 1.5,
         fatorPontos: data.prime?.fatorPontos ?? 130,
         pontosAnualIndicador: data.prime?.pontosAnualIndicador ?? 3000,
-        pontosAnualIndicado: data.prime?.pontosAnualIndicado ?? 1000
+        pontosAnualIndicado: data.prime?.pontosAnualIndicado ?? 1000,
+        pontosBoasVindas: data.prime?.pontosBoasVindas ?? 2000,
+        bonusLancamento: data.prime?.bonusLancamento ?? 3000,
+        bonusLancamentoAte: data.prime?.bonusLancamentoAte ?? '2026-11-30T23:59:59-03:00'
       },
       config: {
         diasBloqueio: data.config?.diasBloqueio ?? 7
@@ -146,15 +149,36 @@ export async function fetchPlanosConfig() {
     return { success: true, planos }
   } catch (error) {
     console.error('Erro ao buscar config de planos:', error)
-    // Retorna valores default como fallback (Free 0.5, Prime 1.5)
     return {
       success: false,
       error: error.message,
       planos: {
-        free: { nome: 'Free', pontosCheckin: 10, pontosIndicacao: 2000, multiplicadorViagem: 0.5, fatorPontos: 150 },
-        prime: { nome: 'Prime', pontosCheckin: 30, pontosIndicacao: 5000, multiplicadorViagem: 1.5, fatorPontos: 130 }
+        free: { nome: 'Free', pontosCheckin: 10, pontosIndicacao: 2000, multiplicadorViagem: 0.5, fatorPontos: 150, pontosBoasVindas: 1000 },
+        prime: { nome: 'Prime', pontosCheckin: 30, pontosIndicacao: 5000, multiplicadorViagem: 1.5, fatorPontos: 130, pontosBoasVindas: 2000, bonusLancamento: 3000, bonusLancamentoAte: '2026-11-30T23:59:59-03:00' }
       }
     }
+  }
+}
+
+/**
+ * Calcula o bônus Prime atual (2.000 + 3.000 até 30/11, depois só 2.000)
+ * @param {Object} primeConfig - Configuração do Prime com pontosBoasVindas, bonusLancamento, bonusLancamentoAte
+ * @returns {{ total: number, base: number, lancamento: number, dentroDoLancamento: boolean }}
+ */
+export function bonusPrimeAtual(primeConfig) {
+  const base = primeConfig?.pontosBoasVindas ?? 2000
+  const lancamento = primeConfig?.bonusLancamento ?? 3000
+  const dataLimite = primeConfig?.bonusLancamentoAte ?? '2026-11-30T23:59:59-03:00'
+
+  const agora = new Date()
+  const limite = new Date(dataLimite)
+  const dentroDoLancamento = agora <= limite
+
+  return {
+    total: dentroDoLancamento ? base + lancamento : base,
+    base,
+    lancamento: dentroDoLancamento ? lancamento : 0,
+    dentroDoLancamento
   }
 }
 

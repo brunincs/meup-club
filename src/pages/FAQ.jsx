@@ -134,7 +134,7 @@ O pagamento é processado de forma segura pelo Asaas.`
 
 • Preço especial: **R$ 597/ano** (6x R$ 99,50)
 • Selo de Fundador permanente
-• +5.000 pts de boas-vindas
+• +5.000 pts de boas-vindas (2.000 + 3.000 extras até 30/11)
 • Experiências por menos pontos
 • Indicação vale 5.000 pts
 

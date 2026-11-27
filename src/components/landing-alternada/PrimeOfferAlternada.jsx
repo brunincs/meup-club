@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { CrownIcon, GiftIcon } from '@/components/ui/Icons'
-import { fetchPlanosConfig } from '@/services/subscriptionService'
+import { fetchPlanosConfig, bonusPrimeAtual } from '@/services/subscriptionService'
 import { getFullSlotsData } from '@/services/slotsService'
 import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 import { formatPrice } from '@/config/contact'
@@ -40,6 +40,7 @@ export function PrimeOfferAlternada() {
 
   const prime = config?.prime || {}
   const free = config?.free || {}
+  const bonus = bonusPrimeAtual(prime)
 
   // Dados do modelo exclusivo
   const precoFundador = slotsData?.prime?.preco || 597
@@ -195,7 +196,8 @@ export function PrimeOfferAlternada() {
                   Economia de R${economiaFundador} · ou 6x de R$ 99,50 sem juros
                 </p>
                 <p className="text-xs text-antique-gold mt-2 flex items-center gap-1">
-                  <GiftIcon size={14} color="#a27937" /> +5.000 pts de boas-vindas
+                  <GiftIcon size={14} color="#a27937" /> +{bonus.total.toLocaleString('pt-BR')} pts de boas-vindas
+                  {bonus.dentroDoLancamento && <span className="text-[10px] text-ice-white/50 ml-1">(até 30/11)</span>}
                 </p>
               </div>
 
