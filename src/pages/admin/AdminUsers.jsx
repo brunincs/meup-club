@@ -767,8 +767,8 @@ export function AdminUsers() {
   // Filtrar e ordenar usuários
   const filteredUsers = users
     .filter(user => {
-      // Filtro de teste/equipe
-      if (ocultarTeste && user.is_teste) return false
+      // Filtro de teste/equipe (mas sempre mostrar o próprio usuário logado)
+      if (ocultarTeste && user.is_teste && user.id !== currentUser?.id) return false
       // Filtro de status
       if (statusFilter === 'todos') return true
       if (statusFilter === 'em_analise') return user.status_acesso === 'em_analise'
