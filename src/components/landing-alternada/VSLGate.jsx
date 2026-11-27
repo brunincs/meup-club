@@ -104,6 +104,10 @@ export function VSLGate({ children }) {
     })
   }, [])
 
+  // Ref para controlar eventos já disparados
+  const events30sRef = useRef(false)
+  const events60sRef = useRef(false)
+
   // Rastrear tempo assistido
   const handleTimeUpdate = useCallback(() => {
     const video = videoRef.current
@@ -116,31 +120,33 @@ export function VSLGate({ children }) {
       // Calcular incremento real (máximo 3s para tolerar buffering)
       const delta = Math.min(currentTime - lastTimeRef.current, 3)
 
-      setWatchedSeconds(prev => {
-        const newSeconds = prev + delta
-
-        // Registrar marcos (usar >= para não perder se pular exato)
-        if (prev < 30 && newSeconds >= 30) {
-          console.log('[VSL] 30s assistidos')
-          trackEvent('vsl_30s')
-        }
-
-        // Liberar após 60s
-        if (newSeconds >= UNLOCK_SECONDS && !isUnlocked) {
-          console.log('[VSL] 60s - liberando página')
-          trackEvent('vsl_60s_liberou')
-          try {
-            localStorage.setItem(STORAGE_KEY, '1')
-          } catch {}
-          setIsUnlocked(true)
-        }
-
-        return newSeconds
-      })
-
+      setWatchedSeconds(prev => prev + delta)
       lastTimeRef.current = currentTime
     }
-  }, [isUnlocked, trackEvent])
+  }, [isUnlocked])
+
+  // Efeito para disparar eventos e liberar página
+  useEffect(() => {
+    if (isUnlocked) return
+
+    // Marco 30s
+    if (watchedSeconds >= 30 && !events30sRef.current) {
+      events30sRef.current = true
+      console.log('[VSL] 30s assistidos')
+      trackEvent('vsl_30s')
+    }
+
+    // Marco 60s - liberar página
+    if (watchedSeconds >= UNLOCK_SECONDS && !events60sRef.current) {
+      events60sRef.current = true
+      console.log('[VSL] 60s - liberando página')
+      trackEvent('vsl_60s_liberou')
+      try {
+        localStorage.setItem(STORAGE_KEY, '1')
+      } catch {}
+      setIsUnlocked(true)
+    }
+  }, [watchedSeconds, isUnlocked, trackEvent])
 
   // Bloquear seek antes de 60s
   const handleSeeking = useCallback(() => {
