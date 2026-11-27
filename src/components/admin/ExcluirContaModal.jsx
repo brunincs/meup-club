@@ -18,14 +18,20 @@ export function ExcluirContaModal({ user, onClose, onSuccess }) {
     if (!canDelete) return
 
     setProcessing(true)
-    const result = await excluirUsuario(user.id)
+    try {
+      const result = await excluirUsuario(user.id)
 
-    if (result.success) {
-      toast.success(`Conta de ${user.name || user.email || 'usuário'} excluída com sucesso`)
-      onSuccess?.()
-      onClose()
-    } else {
-      toast.error(result.error || 'Erro ao excluir conta')
+      if (result.success) {
+        toast.success(`Conta de ${user.name || user.email || 'usuário'} excluída com sucesso`)
+        onSuccess?.()
+        onClose()
+      } else {
+        console.error('Erro ao excluir:', result)
+        toast.error(result.error || 'Erro ao excluir conta')
+      }
+    } catch (err) {
+      console.error('Exceção ao excluir:', err)
+      toast.error(err.message || 'Erro inesperado ao excluir conta')
     }
     setProcessing(false)
   }
