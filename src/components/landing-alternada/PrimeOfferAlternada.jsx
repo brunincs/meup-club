@@ -149,7 +149,15 @@ export function PrimeOfferAlternada() {
                 </li>
                 <li className="flex items-start gap-2 text-deep-purple/80">
                   <span className="text-green-600 mt-0.5">✓</span>
-                  <span>Pontos válidos por 12 meses</span>
+                  <span>Pontos válidos por 24 meses</span>
+                </li>
+                <li className="flex items-start gap-2 text-deep-purple/80">
+                  <span className="text-green-600 mt-0.5">✓</span>
+                  <span>Você envia o card da emissão</span>
+                </li>
+                <li className="flex items-start gap-2 text-deep-purple/80">
+                  <span className="text-green-600 mt-0.5">✓</span>
+                  <span>Indicação vale 2.000 pts</span>
                 </li>
               </ul>
             </div>
@@ -200,7 +208,7 @@ export function PrimeOfferAlternada() {
                   Economia de R${economiaFundador} · ou 6x de R$ 99,50 sem juros
                 </p>
                 <p className="text-xs text-antique-gold mt-2 flex items-center gap-1">
-                  <GiftIcon size={14} color="#a27937" /> +2.000 pts de boas-vindas
+                  <GiftIcon size={14} color="#a27937" /> +5.000 pts de boas-vindas
                 </p>
               </div>
 
@@ -259,10 +267,6 @@ export function PrimeOfferAlternada() {
                     <span className="text-antique-gold mt-0.5">★</span>
                     <span className="text-white">Indicação vale 5.000 pts</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-antique-gold mt-0.5">★</span>
-                    <span className="text-white">+5.000 pts de boas-vindas</span>
-                  </li>
                 </ul>
               </div>
             </div>
@@ -312,7 +316,7 @@ export function PrimeOfferAlternada() {
                 <ul className="text-sm text-ice-white/80 mb-5 space-y-2">
                   <li>• Preço garantido de R$ 597/ano na renovação</li>
                   <li>• 1,5 ponto a cada R$ 1 em viagens</li>
-                  <li>• +5.000 pts de boas-vindas</li>
+                  <li>• A equipe Me,up lança suas viagens</li>
                   <li>• Indicação vale 5.000 pts</li>
                   <li>• Selo de Fundador permanente</li>
                 </ul>

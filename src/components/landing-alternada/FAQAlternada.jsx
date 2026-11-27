@@ -26,7 +26,7 @@ const FAQ_ITEMS = [
   {
     id: 4,
     question: 'Os pontos expiram?',
-    answer: 'Depende do plano: no Free, os pontos valem 12 meses. No Prime, não expiram. Você acumula no seu ritmo e troca quando quiser.'
+    answer: 'Depende do plano: no Free, os pontos valem 24 meses. No Prime, não expiram. Você acumula no seu ritmo e troca quando quiser.'
   },
   {
     id: 5,
@@ -41,7 +41,7 @@ const FAQ_ITEMS = [
   {
     id: 7,
     question: 'Preciso viajar para acumular pontos?',
-    answer: 'Não! Você ganha pontos de várias formas: check-in diário (direto no clube), missões, fazer aniversário (Prime), e claro, viajando. Fundadores também ganham pontos com seus convites.'
+    answer: 'Não! Você ganha pontos de várias formas: check-in diário (direto no clube), missões, fazer aniversário (Prime), e claro, viajando. Você também ganha pontos indicando amigos: 2.000 no Free e 5.000 no Prime.'
   },
   {
     id: 8,

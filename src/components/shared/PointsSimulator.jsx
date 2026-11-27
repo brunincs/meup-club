@@ -12,9 +12,9 @@ import { garantirVagaFundadorWhatsApp } from '@/services/paymentAdapter'
 /**
  * Simulador de Pontos - Landing Page
  *
- * Layout: "Viajando | Convidando" → slider → resultado → experiências
- * MODELO EXCLUSIVO: Só Prime Fundador pode convidar (2 convites)
- * Pontos: 5.000 por convidado que viaja + 3.000 se virar Prime = até 16.000 pts
+ * Layout: "Viajando | Indicando" → slider → resultado → experiências
+ * Indicação aberta para todos: Free ganha 2.000 pts, Prime ganha 5.000 pts
+ * Se o indicado virar Prime, você ganha +3.000 pts
  */
 
 export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
@@ -35,13 +35,11 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
     load()
   }, [])
 
-  // Configurações do plano
-  const freeConfig = config?.free || { multiplicadorViagem: 1, pontosIndicacao: 3000 }
+  // Configurações do plano (Free: 0.5 pt/R$, Prime: 1.5 pt/R$)
+  const freeConfig = config?.free || { multiplicadorViagem: 0.5, pontosIndicacao: 2000 }
   const primeConfig = config?.prime || { multiplicadorViagem: 1.5, pontosIndicacao: 5000 }
 
   // Configurações por modo
-  // MODELO EXCLUSIVO: Convidando é só para Prime Fundador (2 convites máx)
-  // 5.000 pts por convidado que viaja + 3.000 se virar Prime = 8.000 por convite = 16.000 máx
   const modeConfigs = {
     travel: {
       sliderMin: 2000,
@@ -54,23 +52,20 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
         minimumFractionDigits: 0,
       }).format(value),
       formatMinMax: { min: 'R$ 2.000', max: 'R$ 50.000' },
-      calculateFree: (value) => Math.floor(value * (freeConfig.multiplicadorViagem || 1)),
+      calculateFree: (value) => Math.floor(value * (freeConfig.multiplicadorViagem || 0.5)),
       calculatePrime: (value) => Math.floor(value * (primeConfig.multiplicadorViagem || 1.5)),
       subtitle: null,
-      exclusiveBadge: null,
     },
     invite: {
       sliderMin: 1,
-      sliderMax: 2,
+      sliderMax: 10,
       sliderStep: 1,
-      sliderInitial: 2,
-      formatInput: (value) => `${value} ${value === 1 ? 'convite' : 'convites'}`,
-      formatMinMax: { min: '1 convite', max: '2 convites' },
-      // 5.000 por convidado que viaja + 3.000 se virar Prime = 8.000 por convite
-      calculateFree: () => 0, // Free não pode convidar no modelo exclusivo
-      calculatePrime: (value) => value * 8000, // 5.000 + 3.000 por convite
-      subtitle: '5.000 pts por convidado que viajar + 3.000 se virar Prime',
-      exclusiveBadge: 'Exclusivo dos Fundadores',
+      sliderInitial: 3,
+      formatInput: (value) => `${value} ${value === 1 ? 'indicação' : 'indicações'}`,
+      formatMinMax: { min: '1 indicação', max: '10 indicações' },
+      calculateFree: (value) => value * 2000,
+      calculatePrime: (value) => value * 5000,
+      subtitle: 'Free ganha 2.000 e Prime ganha 5.000 por indicado com a 1ª viagem aprovada. Se o indicado virar Prime, você ganha +3.000.',
     },
   }
 
@@ -108,7 +103,7 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
 
   return (
     <div>
-      {/* Tabs Viajando | Convidando */}
+      {/* Tabs Viajando | Indicando */}
       <div className={`flex items-center justify-center gap-1 p-1 rounded-xl mb-6 w-fit mx-auto ${tabBgClass}`}>
         <button
           onClick={() => setActiveMode('travel')}
@@ -124,7 +119,7 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
             activeMode === 'invite' ? tabActiveClass : tabInactiveClass
           }`}
         >
-          Convidando
+          Indicando
         </button>
       </div>
 
@@ -135,30 +130,18 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
         animate={{ opacity: 1, y: 0 }}
         className={`p-6 rounded-2xl border ${isLight ? 'border-deep-purple/20 bg-white shadow-lg' : 'border-dusty-rose/20 bg-deep-purple/30'}`}
       >
-        {/* Badge exclusivo para modo convite */}
-        {modeConfig.exclusiveBadge && (
-          <div className="flex justify-center mb-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-heading font-semibold bg-antique-gold/15 border border-antique-gold/30 text-antique-gold">
-              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
-              </svg>
-              {modeConfig.exclusiveBadge}
-            </span>
-          </div>
-        )}
-
         {/* Input label */}
         <div className="text-center mb-5">
           <p className={`text-sm ${textMutedClass} mb-1`}>
-            {activeMode === 'travel' ? 'Se você gastar em viagens:' : 'Seus 2 convites podem render até:'}
+            {activeMode === 'travel' ? 'Se você gastar em viagens:' : 'Quantas indicações:'}
           </p>
           <div className="text-2xl md:text-3xl font-display font-bold text-antique-gold">
-            {activeMode === 'invite' ? '16.000 pts' : modeConfig.formatInput(inputValue)}
+            {modeConfig.formatInput(inputValue)}
           </div>
         </div>
 
-        {/* Slider - apenas no modo viajando */}
-        {activeMode === 'travel' && (
+        {/* Slider */}
+        {(activeMode === 'travel' || activeMode === 'invite') && (
           <div className="mb-6">
             <input
               type="range"
@@ -183,27 +166,8 @@ export function PointsSimulatorTabs({ variant = 'light', compact = false }) {
           </p>
         )}
 
-        {/* Resultado modo convidando - card único */}
-        {activeMode === 'invite' ? (
-          <div className={`p-5 rounded-xl border-2 mb-5 ${
-            isLight
-              ? 'border-antique-gold/50 bg-gradient-to-br from-deep-purple to-deep-purple/90'
-              : 'border-antique-gold/50 bg-gradient-to-br from-antique-gold/20 to-antique-gold/10'
-          }`}>
-            <div className="text-center">
-              <span className={`text-xs font-heading font-semibold uppercase tracking-wider text-antique-gold`}>
-                Prime Fundador
-              </span>
-              <div className="text-3xl md:text-4xl font-display font-bold text-antique-gold mt-2">
-                16.000 <span className={`text-base font-normal ${isLight ? 'text-ice-white/70' : 'text-dusty-rose'}`}>pts</span>
-              </div>
-              <p className={`text-xs mt-2 ${isLight ? 'text-ice-white/60' : 'text-dusty-rose/60'}`}>
-                2 convites × (5.000 + 3.000 bônus Prime)
-              </p>
-            </div>
-          </div>
-        ) : (
-          /* Resultado modo viajando: Dois cards lado a lado */
+        {/* Resultado: Dois cards lado a lado (Free e Prime) */}
+        {(activeMode === 'travel' || activeMode === 'invite') && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
             {/* Card Prime (primeiro no mobile) */}
             <div className={`order-1 sm:order-2 p-4 rounded-xl border-2 ${

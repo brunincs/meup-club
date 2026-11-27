@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { GoldLine } from '@/components/ui/GoldLine'
 
 /**
- * Seção "Acesso por convite" - explica quem pode entrar no clube
+ * Seção "Quem pode entrar" - explica quem pode entrar no clube
  * CLARO - fundo ice-white
  */
 export function AccessSection() {
@@ -14,7 +14,7 @@ export function AccessSection() {
         </svg>
       ),
       title: 'Clientes Me,up Viagens',
-      description: 'Quem comprou com a Me,up nos últimos 15 meses pode entrar. São 70 vagas para clientes (Free) e 30 vagas Prime Fundador.'
+      description: 'Quem comprou com a Me,up pode entrar. São vagas para clientes Free e Prime, enquanto houver disponibilidade.'
     },
     {
       icon: (
@@ -22,8 +22,8 @@ export function AccessSection() {
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       ),
-      title: 'Convites de Fundadores',
-      description: 'Cada fundador pode convidar 2 pessoas especiais para o clube, mesmo que não sejam clientes.'
+      title: 'Indicação de membros',
+      description: 'Todo membro tem um link de indicação. Quem entra por ele também pode fazer parte do clube, enquanto houver vagas.'
     },
     {
       icon: (
@@ -49,7 +49,7 @@ export function AccessSection() {
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-heading font-medium tracking-wider uppercase bg-deep-purple/5 border border-deep-purple/10 text-deep-purple">
               <span className="w-1.5 h-1.5 rounded-full bg-deep-purple" />
-              Acesso por convite
+              Quem pode entrar
             </span>
           </motion.div>
 

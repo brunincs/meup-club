@@ -173,11 +173,15 @@ export function Plans() {
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-green-400">✓</span>
-                Pontos válidos por 12 meses
+                Pontos válidos por 24 meses
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-dusty-rose/40">-</span>
-                <span className="text-dusty-rose/40">Lançamento manual da viagem</span>
+                <span className="text-green-400">✓</span>
+                Você envia o card da emissão (a equipe aprova)
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                Indicação vale: <strong className="text-white">2.000 pts</strong>
               </li>
             </ul>
 
@@ -267,7 +271,11 @@ export function Plans() {
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-[#a27937]">★</span>
-                  <span className="text-white">Bônus de boas-vindas: <strong className="text-[#a27937]">2.000 pts</strong></span>
+                  <span className="text-white">Bônus de boas-vindas: <strong className="text-[#a27937]">5.000 pts</strong></span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[#a27937]">★</span>
+                  <span className="text-white">Indicação vale: <strong className="text-[#a27937]">5.000 pts</strong></span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-[#a27937]">★</span>

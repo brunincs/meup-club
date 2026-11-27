@@ -126,7 +126,7 @@ export function PointsExplanation() {
           <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
               <h3 className="text-xl md:text-2xl font-display font-bold text-deep-purple mb-2">
-                Pontos não expiram.
+                Validade dos pontos
               </h3>
               <p className="text-deep-purple/70">
                 Acumule no seu ritmo. Troque quando quiser. Sem pressa, sem pressão.
@@ -134,13 +134,13 @@ export function PointsExplanation() {
             </div>
 
             <div className="flex items-center gap-4 text-center">
-              <div className="px-6 py-3 rounded-xl bg-antique-gold/10 border border-antique-gold/30">
-                <div className="text-2xl font-display font-bold text-antique-gold">∞</div>
-                <div className="text-xs text-deep-purple/60">Validade</div>
+              <div className="px-6 py-3 rounded-xl bg-deep-purple/5 border border-deep-purple/20">
+                <div className="text-2xl font-display font-bold text-deep-purple">24</div>
+                <div className="text-xs text-deep-purple/60">meses (Free)</div>
               </div>
               <div className="px-6 py-3 rounded-xl bg-antique-gold/10 border border-antique-gold/30">
-                <div className="text-2xl font-display font-bold text-antique-gold">100%</div>
-                <div className="text-xs text-deep-purple/60">Em experiências</div>
+                <div className="text-2xl font-display font-bold text-antique-gold">∞</div>
+                <div className="text-xs text-deep-purple/60">Prime</div>
               </div>
             </div>
           </div>

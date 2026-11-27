@@ -35,7 +35,7 @@ export function HowItWorksAlternada() {
           </h2>
           <GoldLine width="60px" centered className="mb-3" />
           <p className="text-ice-white/70 max-w-md mx-auto text-sm">
-            Viaje com a Me,up e acumule pontos. Fundadores também têm convites exclusivos.
+            Viaje com a Me,up e acumule pontos. E ainda ganha pontos indicando amigos.
           </p>
         </motion.div>
 
@@ -77,7 +77,7 @@ export function HowItWorksAlternada() {
                 <span className="text-sm font-heading font-medium text-ice-white/70">Free</span>
                 <div className="text-right">
                   <span className="text-sm font-heading font-semibold text-ice-white">0,5 pt por R$ 1</span>
-                  <p className="text-xs text-ice-white/50 mt-0.5">você lança, a gente aprova</p>
+                  <p className="text-xs text-ice-white/50 mt-0.5">você envia o card da emissão, a gente aprova</p>
                 </div>
               </div>
 
@@ -97,7 +97,7 @@ export function HowItWorksAlternada() {
             </div>
           </motion.div>
 
-          {/* CARD CONVITES FUNDADOR */}
+          {/* CARD INDIQUE E GANHE */}
           <motion.div
             variants={staggerItem}
             className="group relative p-5 md:p-6 rounded-2xl border border-antique-gold/30 bg-white/5 hover:border-antique-gold/50 hover:bg-white/10 transition-all duration-300 flex flex-col"
@@ -106,7 +106,7 @@ export function HowItWorksAlternada() {
             <div className="flex items-center gap-3 mb-4">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-heading font-semibold bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
                 <span className="w-1.5 h-1.5 rounded-full bg-antique-gold" />
-                Convites
+                Indicando
               </span>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-antique-gold/20 text-antique-gold border border-antique-gold/30">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
@@ -119,22 +119,30 @@ export function HowItWorksAlternada() {
 
             {/* Título */}
             <h3 className="text-xl md:text-2xl font-display font-bold text-ice-white mb-4">
-              Fundadores têm 2 convites
+              Indique e ganhe
             </h3>
 
             {/* Linhas de comparação */}
             <div className="flex-1 space-y-0">
-              {/* Linha 1: Convidado comprou */}
+              {/* Linha 1: Free */}
               <div className="flex items-start justify-between py-3 border-b border-white/10">
-                <span className="text-sm font-heading font-medium text-ice-white/70">Convidado comprou 1ª viagem</span>
+                <span className="text-sm font-heading font-medium text-ice-white/70">Free</span>
                 <div className="text-right">
-                  <span className="text-sm font-heading font-semibold text-antique-gold">+5.000 pts</span>
+                  <span className="text-sm font-heading font-semibold text-ice-white">+2.000 pts por indicado</span>
                 </div>
               </div>
 
-              {/* Linha 2: Convidado virou Prime */}
+              {/* Linha 2: Prime */}
+              <div className="flex items-start justify-between py-3 border-b border-white/10">
+                <span className="text-sm font-heading font-medium text-antique-gold">Prime</span>
+                <div className="text-right">
+                  <span className="text-sm font-heading font-semibold text-antique-gold">+5.000 pts por indicado</span>
+                </div>
+              </div>
+
+              {/* Linha 3: Indicado virou Prime */}
               <div className="flex items-start justify-between py-3">
-                <span className="text-sm font-heading font-medium text-ice-white/70">Convidado virou Prime</span>
+                <span className="text-sm font-heading font-medium text-ice-white/70">Indicado virou Prime</span>
                 <div className="text-right">
                   <span className="text-sm font-heading font-semibold text-ice-white">
                     você <span className="text-antique-gold">+3.000</span> · ele <span className="text-antique-gold">+1.000</span>
@@ -145,7 +153,7 @@ export function HowItWorksAlternada() {
 
             {/* Nota */}
             <p className="text-xs text-ice-white/50 mt-3 pt-3 border-t border-white/10">
-              Convites exclusivos para Prime Fundador
+              Pontos liberados quando a 1ª viagem do indicado for aprovada.
             </p>
           </motion.div>
         </motion.div>
