@@ -3,7 +3,7 @@
 // Renderiza campos diferentes baseado no tipo_entrega
 // ============================================
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { EmissaoSelector } from './EmissaoSelector'
 import { TrechoSelector } from '@/components/viagens/TrechoSelector'
@@ -63,30 +63,24 @@ export function RedemptionFormByType({
   isDark = true,
   allowMultiPassenger = false // Permitir múltiplos passageiros (ex: assento para casal)
 }) {
-  // COMPONENTE CONTROLADO: usar initialData como fonte de verdade
-  // Atualizar refs IMEDIATAMENTE no render (não no useEffect que é async)
-  const initialDataRef = useRef(initialData)
-  const onChangeRef = useRef(onChange)
-
-  // Atualizar refs sincronamente no render
-  initialDataRef.current = initialData
-  onChangeRef.current = onChange
-
+  // COMPONENTE CONTROLADO
   const [cepLoading, setCepLoading] = useState(false)
 
   const config = TIPO_ENTREGA_CONFIG[tipoEntrega] || TIPO_ENTREGA_CONFIG.voucher
 
-  // Atualizar dados - usa ref para garantir dados atuais
+  // Atualizar dados - usa forma funcional do setState para garantir estado atual
   const handleChange = (field, value) => {
-    if (onChangeRef.current) {
-      onChangeRef.current({ ...initialDataRef.current, [field]: value })
+    if (onChange) {
+      // Usar forma funcional: prev => newState
+      onChange(prev => ({ ...prev, [field]: value }))
     }
   }
 
   // Atualizar múltiplos campos de uma vez
   const updateMultipleFields = (updates) => {
-    if (onChangeRef.current) {
-      onChangeRef.current({ ...initialDataRef.current, ...updates })
+    if (onChange) {
+      // Usar forma funcional: prev => newState
+      onChange(prev => ({ ...prev, ...updates }))
     }
   }
 
@@ -101,12 +95,16 @@ export function RedemptionFormByType({
       const data = await response.json()
 
       if (!data.erro) {
-        updateMultipleFields({
-          logradouro: data.logradouro || initialDataRef.current.logradouro,
-          bairro: data.bairro || initialDataRef.current.bairro,
-          cidade: data.localidade || initialDataRef.current.cidade,
-          estado: data.uf || initialDataRef.current.estado
-        })
+        // Usar forma funcional para preservar campos existentes
+        if (onChange) {
+          onChange(prev => ({
+            ...prev,
+            logradouro: data.logradouro || prev.logradouro,
+            bairro: data.bairro || prev.bairro,
+            cidade: data.localidade || prev.cidade,
+            estado: data.uf || prev.estado
+          }))
+        }
       }
     } catch (error) {
       console.error('Erro ao buscar CEP:', error)
