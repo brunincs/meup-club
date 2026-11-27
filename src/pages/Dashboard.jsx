@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 import {
   DashboardHeader,
   HeroSection,
@@ -14,6 +15,9 @@ import { HojeSection } from '@/components/dashboard/HojeSection'
 import { ExperienciasParaVoce } from '@/components/dashboard/ExperienciasParaVoce'
 import { SafeSection } from '@/components/shared/ErrorBoundary'
 import { PrimeUpsell } from '@/components/shared/PrimeUpsell'
+import toast from 'react-hot-toast'
+
+const PRIME_TOKEN_KEY = 'meup_prime_token'
 
 // ============================================
 // DASHBOARD REESTRUTURADO - 4 BLOCOS
@@ -34,6 +38,52 @@ export function Dashboard() {
       navigate('/login')
     }
   }, [user, loading, navigate])
+
+  // Rede de segurança: se tem token Prime no localStorage e ainda é Free → ativar
+  useEffect(() => {
+    async function checkPrimeToken() {
+      if (!user || !profile) return
+
+      // Já é Prime? Não faz nada
+      if (profile.plano_efetivo === 'prime' || profile.is_fundador) {
+        try { localStorage.removeItem(PRIME_TOKEN_KEY) } catch {}
+        return
+      }
+
+      // Verificar se tem token pendente
+      let token
+      try {
+        token = localStorage.getItem(PRIME_TOKEN_KEY)
+      } catch {
+        return
+      }
+
+      if (!token) return
+
+      // Tentar ativar Prime
+      try {
+        const { data, error } = await supabase.rpc('ativar_prime_por_token', { p_token: token })
+
+        if (error) {
+          console.warn('Erro ao ativar Prime via token:', error)
+          return
+        }
+
+        if (data?.success) {
+          localStorage.removeItem(PRIME_TOKEN_KEY)
+          toast.success('Prime ativado com sucesso! 👑')
+          // Recarregar página para atualizar profile
+          window.location.reload()
+        } else if (data?.already_prime) {
+          localStorage.removeItem(PRIME_TOKEN_KEY)
+        }
+      } catch (err) {
+        console.warn('Erro na rede de segurança Prime:', err)
+      }
+    }
+
+    checkPrimeToken()
+  }, [user, profile])
 
   if (loading) {
     return (

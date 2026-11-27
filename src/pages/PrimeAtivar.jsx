@@ -53,6 +53,13 @@ export function PrimeAtivar() {
     validate()
   }, [token])
 
+  // Auto-ativar quando usuário está logado e link é válido
+  useEffect(() => {
+    if (user && status === 'valid' && token) {
+      handleAtivar()
+    }
+  }, [user, status, token])
+
   // Se usuário está logado, mostrar botão de ativar
   // Se não, mostrar opções de criar conta / login
 

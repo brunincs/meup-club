@@ -11,6 +11,7 @@ import { checkAvailability } from '@/services/slotsService'
 import toast from 'react-hot-toast'
 
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1200&h=1600&fit=crop&crop=center&q=80'
+const PRIME_TOKEN_KEY = 'meup_prime_token'
 
 /**
  * Cadastro - Modelo Exclusivo 2026
@@ -42,6 +43,21 @@ export function Cadastro() {
   // Código de indicação ou convite da URL (ou localStorage como fallback)
   const refCodeFromUrl = searchParams.get('ref') || localStorage.getItem('referral_code')
   const inviteCodeFromUrl = searchParams.get('convite')
+  const origemFromUrl = searchParams.get('origem') // 'vsl', 'link_prime', etc.
+
+  // Prime token do localStorage (salvo pelo PrimeAtivar.jsx)
+  const [primeToken, setPrimeToken] = useState(null)
+  const isPrimeCadastro = origemFromUrl === 'link_prime'
+
+  // Carregar prime token do localStorage
+  useEffect(() => {
+    if (isPrimeCadastro) {
+      try {
+        const token = localStorage.getItem(PRIME_TOKEN_KEY)
+        if (token) setPrimeToken(token)
+      } catch {}
+    }
+  }, [isPrimeCadastro])
 
   // Limpar localStorage após usar
   useEffect(() => {
@@ -240,7 +256,9 @@ export function Cadastro() {
       // Determinar origem do cadastro
       const codigoEntrada = getCodigoEntrada()
       let origemCadastro = 'site'
-      if (inviteInfo) origemCadastro = 'convite'
+      if (isPrimeCadastro) origemCadastro = 'link_prime'
+      else if (origemFromUrl === 'vsl') origemCadastro = 'vsl'
+      else if (inviteInfo) origemCadastro = 'convite'
       else if (codigoEntrada) origemCadastro = 'link_lista'
 
       // Criar usuário (codigoEntrada vai para metadados, trigger auto-aprova)
@@ -253,7 +271,8 @@ export function Cadastro() {
         referrerId: referrerInfo?.id || null,
         acceptedTerms: true,
         codigoEntrada: codigoEntrada || null,
-        origemCadastro
+        origemCadastro,
+        primeToken: primeToken || null
       })
 
       if (error) {
@@ -267,13 +286,20 @@ export function Cadastro() {
         await acceptInvite(inviteInfo.convite_id, data.user.id)
       }
 
-      // Limpar código de entrada do localStorage
+      // Limpar código de entrada e prime token do localStorage
       limparCodigoEntrada()
+      try {
+        localStorage.removeItem(PRIME_TOKEN_KEY)
+      } catch {}
 
       // A aprovação já foi feita pelo trigger no servidor
       // O AuthContext.signUp já aguardou o profile ficar pronto
       // Apenas navegar para o dashboard
-      toast.success('Bem-vindo ao Me,up Club!')
+      if (isPrimeCadastro && primeToken) {
+        toast.success('Bem-vindo ao Prime! +2.000 pts')
+      } else {
+        toast.success('Bem-vindo ao Me,up Club!')
+      }
       navigate('/dashboard')
     } catch (err) {
       toast.error('Erro ao criar conta')
@@ -364,14 +390,35 @@ export function Cadastro() {
           {/* Header */}
           <div className="mb-8">
             <h2 className="font-display text-2xl font-semibold text-ice-white mb-2">
-              Criar conta
+              {isPrimeCadastro ? 'Criar conta Prime' : 'Criar conta'}
             </h2>
             <p className="text-dusty-rose text-sm">
-              {inviteInfo
-                ? 'Complete seu cadastro para entrar no clube'
-                : 'Acesso exclusivo para clientes Me,up Viagens'}
+              {isPrimeCadastro
+                ? 'Você está criando sua conta Prime Fundador'
+                : inviteInfo
+                  ? 'Complete seu cadastro para entrar no clube'
+                  : 'Acesso exclusivo para clientes Me,up Viagens'}
             </p>
           </div>
+
+          {/* Badge Prime Fundador */}
+          {isPrimeCadastro && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-xl bg-antique-gold/10 border border-antique-gold/30"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-antique-gold/20 flex items-center justify-center">
+                  <span className="text-antique-gold text-lg">👑</span>
+                </div>
+                <div>
+                  <p className="text-sm text-ice-white font-medium">Prime Fundador</p>
+                  <p className="text-xs text-antique-gold">+2.000 pts na hora · +3.000 em 7 dias</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Badge de convite */}
           {inviteInfo && (
