@@ -12,7 +12,8 @@ import {
   Rewards,
   FAQ,
   FinalCTA,
-  Footer
+  Footer,
+  VSLGate
 } from '@/components/landing-alternada'
 import { SectionDivider } from '@/components/ui/SectionDivider'
 
@@ -40,36 +41,38 @@ import { SectionDivider } from '@/components/ui/SectionDivider'
  */
 export function Home() {
   return (
-    <div className="bg-deep-purple min-h-screen">
-      <Header />
+    <VSLGate>
+      <div className="bg-deep-purple min-h-screen">
+        <Header />
 
-      {/* ATENÇÃO - Gancho + Oferta */}
-      <Hero />
+        {/* ATENÇÃO - Gancho + Oferta */}
+        <Hero />
 
-      {/* CONFIANÇA - Transferir credibilidade da Me,up */}
-      <CredibilitySection />
-      <RealProofSection />
-      <TestimonialsReal />
+        {/* CONFIANÇA - Transferir credibilidade da Me,up */}
+        <CredibilitySection />
+        <RealProofSection />
+        <TestimonialsReal />
 
-      {/* VALOR - Como funciona + Simulador */}
-      <HowItWorks />
-      <AccessSection />
-      <SectionDivider />
-      <PointsSimulator />
+        {/* VALOR - Como funciona + Simulador */}
+        <HowItWorks />
+        <AccessSection />
+        <SectionDivider />
+        <PointsSimulator />
 
-      {/* A OFERTA - Agora que já confia */}
-      <PrimeOffer />
+        {/* A OFERTA - Agora que já confia */}
+        <PrimeOffer />
 
-      {/* DETALHE - Para quem quer saber mais */}
-      <Ranking />
-      <Rewards />
+        {/* DETALHE - Para quem quer saber mais */}
+        <Ranking />
+        <Rewards />
 
-      {/* OBJEÇÕES */}
-      <FAQ />
+        {/* OBJEÇÕES */}
+        <FAQ />
 
-      {/* AÇÃO */}
-      <FinalCTA />
-      <Footer />
-    </div>
+        {/* AÇÃO */}
+        <FinalCTA />
+        <Footer />
+      </div>
+    </VSLGate>
   )
 }

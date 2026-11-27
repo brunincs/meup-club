@@ -27,3 +27,6 @@ export { AccessSection } from './AccessSection'
 export { PreLaunchLanding } from './PreLaunchLanding'
 export { WaitlistForm } from './WaitlistForm'
 export { CountdownTimer, CountdownInline } from './CountdownTimer'
+
+// VSL Gate (libera página após 60s de vídeo)
+export { VSLGate, VSLCTAButtons } from './VSLGate'
