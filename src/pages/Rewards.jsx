@@ -117,6 +117,7 @@ function RedeemModal({ reward, userPoints, onConfirm, onCancel, isLoading }) {
       if (!formData.estado?.trim()) errors.push('Selecione o estado')
     }
 
+    console.log('[DEBUG validateFormData] errors finais:', errors)
     setValidationErrors(errors)
     return errors.length === 0
   }
